@@ -28,7 +28,7 @@ sscli -b https://hnefatafl.org -r /var/www/html/
 mkdir /var/www/html/.well-known
 echo "fb1c1fdb-d01d-4918-911f-f4cf4b0540a0" > /var/www/html/.well-known/org.flathub.VerifiedApps.txt
 
-echo  "514969c804234582abafaae69c947790" > /var/www/html/514969c804234582abafaae69c947790.txt
+cp index-now/* > /var/www/html/
 
 # Install sscli with "npm i -g static-sitemap-cli".
 
