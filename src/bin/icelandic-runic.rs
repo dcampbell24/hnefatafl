@@ -1,3 +1,5 @@
+//! Icelandic Runic created by Alexander R. (<https://www.omniglot.com/conscripts/icelandicrunic.htm>)
+
 use std::io;
 
 fn main() {
@@ -18,7 +20,6 @@ fn main() {
     }
 }
 
-// Icelandic Runic created by Alexander R. (https://www.omniglot.com/conscripts/icelandicrunic.htm)
 fn translate_to_runic(c: char) -> char {
     match c {
         ' ' => ' ',
