@@ -2,15 +2,82 @@
 use std::io;
 
 fn main() -> Result<(), anyhow::Error> {
+    let mut line = String::new();
+
     loop {
-        let mut line = String::new();
+        line.clear();
         io::stdin().read_line(&mut line)?;
 
-        line = translate_to_runic_2(&line);
-        line = translate_to_runic(&line);
-
+        translate(&line);
         println!("{line}");
     }
+}
+
+fn translate(line: &str) -> String {
+    // let mut line = translate_no(&line);
+    let mut line = translate_to_runic_2(line);
+    line = translate_to_runic(&line);
+
+    line
+}
+
+fn _translate_no(string: &str) -> String {
+    let mut output = String::new();
+    let mut letter = 0;
+    let mut no = false;
+    let mut space = false;
+
+    'outer: for (i, ch) in string.chars().enumerate() {
+        match letter {
+            0 => {
+                if (i == 0 || space) && ch == 'n' {
+                    letter = 1;
+                    no = true;
+                    continue 'outer;
+                }
+            }
+            1 => {
+                if no && ch == 'n' {
+                    letter = 2;
+                    continue 'outer;
+                } else if no {
+                    output.push('k');
+                    letter = 0;
+                    no = false;
+                }
+            }
+            2 => {
+                if no && ch == 'ʊ' {
+                    letter = 3;
+                    continue 'outer;
+                } else if no {
+                    output.push_str("no");
+                    letter = 0;
+                    no = false;
+                }
+            }
+            3 => {
+                if no && (ch == ' ' || ch == '.' || ch == '!' || ch == '?') {
+                    output.push_str("ᚾᚩ");
+                } else {
+                    output.push_str("noʊ");
+                    letter = 0;
+                    no = false;
+                }
+            }
+            _ => unreachable!(),
+        }
+
+        space = ch == ' ';
+
+        output.push(ch);
+    }
+
+    if no && letter == 3 {
+        output.push_str("ᚾᚩ");
+    }
+
+    output
 }
 
 fn translate_to_runic(string: &str) -> String {
@@ -18,6 +85,7 @@ fn translate_to_runic(string: &str) -> String {
 
     for char in string.chars() {
         let runes = match char {
+            ' ' => "᛫",
             'ɑ' => "ᚪ",             // f_a_r
             'ɔ' => "ᛟ",             // h_o_t
             'æ' => "ᚫ",             // h_a_t
@@ -107,4 +175,20 @@ fn translate_to_runic_2(string: &str) -> String {
     }
 
     string
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::translate;
+
+    #[test]
+    fn know_no_etc() {
+        let mut line = String::new();
+
+        // no and know both are phonetically the same.
+        line.push_str("noʊ\n");
+        let output = translate(&line);
+        assert_eq!(output, "ᚾᚩ");
+        // It would have to be "noʊw" to get the correct translation of ᚾᚩᚹ for know.
+    }
 }
