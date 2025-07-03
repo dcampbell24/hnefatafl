@@ -1,9 +1,14 @@
-#[cfg(feature = "urls")]
+#![cfg(feature = "urls")]
+
+use std::{fs, path::PathBuf};
+
+use reqwest::blocking::Client;
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     use std::{fs, path::PathBuf};
 
     let url = "http://api.indexnow.org/IndexNow";
-    let client = reqwest::blocking::Client::new();
+    let client = Client::new();
     let mut dir = PathBuf::new();
     dir.push("website");
     dir.push("index-now");
@@ -35,9 +40,4 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     Ok(())
-}
-
-#[cfg(not(feature = "urls"))]
-fn main() {
-    println!("You didn't enable urls.");
 }

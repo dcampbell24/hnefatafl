@@ -1,21 +1,77 @@
+#![cfg(feature = "zip")]
+
 //! Futhorc created by Harys Dalvi (<https://www.harysdalvi.com/futhorc/>)
-use std::io;
+use std::{
+    collections::HashMap,
+    fs::{self, File},
+    io,
+    path::PathBuf,
+};
+
+#[cfg(feature = "zip")]
+use ripunzip::{NullProgressReporter, UnzipEngine, UnzipOptions};
 
 fn main() -> Result<(), anyhow::Error> {
+    let words_hash = words_hash()?;
+    println!("apple: {}", words_hash["apple"]);
+
     let mut line = String::new();
 
     loop {
         line.clear();
         io::stdin().read_line(&mut line)?;
 
-        translate(&line);
-        println!("{line}");
+        let output = translate(&line, &words_hash);
+        println!("{output}");
     }
 }
 
-fn translate(line: &str) -> String {
+fn words_hash() -> Result<HashMap<String, String>, anyhow::Error> {
+    let mut txt = PathBuf::new();
+    txt.push("CMU.in.IPA.txt");
+
+    if !fs::exists(&txt)? {
+        let ipa = File::open("CMU-IPA.zip")?;
+        let options = UnzipOptions {
+            output_directory: None,
+            password: None,
+            single_threaded: false,
+            filename_filter: None,
+            progress_reporter: Box::new(NullProgressReporter),
+        };
+        UnzipEngine::for_file(ipa)?.unzip(options)?;
+    }
+
+    let mut words_hash = HashMap::new();
+    let txt = fs::read_to_string(txt)?;
+    for line in txt.lines() {
+        let words: Vec<_> = line.split_ascii_whitespace().collect();
+        let mut words_0 = words[0].chars();
+        words_0.next_back();
+        let words_0 = words_0.as_str();
+
+        if words[0] == "XXXXX" {
+            continue;
+        }
+
+        words_hash.insert(words_0.to_string(), words[1].to_string());
+    }
+
+    Ok(words_hash)
+}
+
+#[must_use]
+fn translate(line: &str, words: &HashMap<String, String>) -> String {
     // let mut line = translate_no(&line);
-    let mut line = translate_to_runic_2(line);
+    let mut ipa_words = Vec::new();
+
+    for word in line.split_ascii_whitespace() {
+        ipa_words.push(words[word].clone());
+    }
+    let mut ipa_words = ipa_words.join(" ");
+    ipa_words.push('\n');
+
+    let mut line = translate_to_runic_2(&ipa_words);
     line = translate_to_runic(&line);
 
     line
@@ -179,16 +235,19 @@ fn translate_to_runic_2(string: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    use crate::translate;
+    use crate::{translate, words_hash};
 
     #[test]
-    fn know_no_etc() {
+    fn know_no_etc() -> Result<(), anyhow::Error> {
+        let words_hash = words_hash()?;
         let mut line = String::new();
 
         // no and know both are phonetically the same.
-        line.push_str("noʊ\n");
-        let output = translate(&line);
+        line.push_str("no\n");
+        let output = translate(&line, &words_hash);
         assert_eq!(output, "ᚾᚩ");
         // It would have to be "noʊw" to get the correct translation of ᚾᚩᚹ for know.
+
+        Ok(())
     }
 }

@@ -61,3 +61,7 @@ Marvin T. [@marvintubat123].
 [rocks-link]: https://github.com/dcampbell24/hnefatafl/graphs/contributors
 
 Made with [contrib.rocks](https://contrib.rocks).
+
+## American English to IPA
+
+Taken from <https://people.umass.edu/nconstan/CMU-IPA/>
