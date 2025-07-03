@@ -77,8 +77,22 @@ fn translate(mut line: String, words: &HashMap<String, String>) -> String {
     line.make_ascii_lowercase();
     let mut ipa_words = Vec::new();
 
-    for word in line.split_ascii_whitespace() {
-        ipa_words.push(words[word].clone());
+    for word in line.split_whitespace() {
+        let mut word = word.to_string();
+        let mut ch = ' ';
+        if word.ends_with('.') || word.ends_with('!') || word.ends_with('?') {
+            let mut chars = word.chars();
+            ch = chars.next_back().unwrap();
+            word = chars.as_str().to_string();
+        }
+
+        let mut ipa_word = words[&word].clone();
+
+        if ch != ' ' {
+            ipa_word.push(ch);
+        }
+
+        ipa_words.push(ipa_word);
     }
     let ipa_words = ipa_words.join(" ");
     let mut ipa_words = remove_stress_markers(&ipa_words);
