@@ -13,8 +13,6 @@ use ripunzip::{NullProgressReporter, UnzipEngine, UnzipOptions};
 
 fn main() -> Result<(), anyhow::Error> {
     let words_hash = words_hash()?;
-    println!("apple: {}", words_hash["apple"]);
-
     let mut line = String::new();
 
     loop {
@@ -24,6 +22,19 @@ fn main() -> Result<(), anyhow::Error> {
         let output = translate(&line, &words_hash);
         println!("{output}");
     }
+}
+
+fn remove_stress_markers(string: &str) -> String {
+    let mut output = String::new();
+
+    for ch in string.chars() {
+        match ch {
+            'ˈ' | 'ˌ' => {}
+            ch => output.push(ch),
+        }
+    }
+
+    output
 }
 
 fn words_hash() -> Result<HashMap<String, String>, anyhow::Error> {
@@ -57,83 +68,26 @@ fn words_hash() -> Result<HashMap<String, String>, anyhow::Error> {
         words_hash.insert(words_0.to_string(), words[1].to_string());
     }
 
+    words_hash.insert("know".to_string(), "noʊw".to_string());
+
     Ok(words_hash)
 }
 
 #[must_use]
 fn translate(line: &str, words: &HashMap<String, String>) -> String {
-    // let mut line = translate_no(&line);
     let mut ipa_words = Vec::new();
 
     for word in line.split_ascii_whitespace() {
         ipa_words.push(words[word].clone());
     }
-    let mut ipa_words = ipa_words.join(" ");
+    let ipa_words = ipa_words.join(" ");
+    let mut ipa_words = remove_stress_markers(&ipa_words);
     ipa_words.push('\n');
 
     let mut line = translate_to_runic_2(&ipa_words);
     line = translate_to_runic(&line);
 
     line
-}
-
-fn _translate_no(string: &str) -> String {
-    let mut output = String::new();
-    let mut letter = 0;
-    let mut no = false;
-    let mut space = false;
-
-    'outer: for (i, ch) in string.chars().enumerate() {
-        match letter {
-            0 => {
-                if (i == 0 || space) && ch == 'n' {
-                    letter = 1;
-                    no = true;
-                    continue 'outer;
-                }
-            }
-            1 => {
-                if no && ch == 'n' {
-                    letter = 2;
-                    continue 'outer;
-                } else if no {
-                    output.push('k');
-                    letter = 0;
-                    no = false;
-                }
-            }
-            2 => {
-                if no && ch == 'ʊ' {
-                    letter = 3;
-                    continue 'outer;
-                } else if no {
-                    output.push_str("no");
-                    letter = 0;
-                    no = false;
-                }
-            }
-            3 => {
-                if no && (ch == ' ' || ch == '.' || ch == '!' || ch == '?') {
-                    output.push_str("ᚾᚩ");
-                } else {
-                    output.push_str("noʊ");
-                    letter = 0;
-                    no = false;
-                }
-            }
-            _ => unreachable!(),
-        }
-
-        space = ch == ' ';
-
-        output.push(ch);
-    }
-
-    if no && letter == 3 {
-        output.push_str("ᚾᚩ");
-    }
-
-    output
 }
 
 fn translate_to_runic(string: &str) -> String {
@@ -203,7 +157,7 @@ fn translate_to_runic_2(string: &str) -> String {
                 skip = true;
                 "ᚪᚹ" // f_ou_nd
             }
-            ['o', 'ʊ'] => {
+            ['o', 'ʊ'] | ['o', 'w'] => {
                 skip = true;
                 "ᚩ" // n_o_
             }
@@ -242,11 +196,15 @@ mod tests {
         let words_hash = words_hash()?;
         let mut line = String::new();
 
-        // no and know both are phonetically the same.
         line.push_str("no\n");
         let output = translate(&line, &words_hash);
         assert_eq!(output, "ᚾᚩ");
-        // It would have to be "noʊw" to get the correct translation of ᚾᚩᚹ for know.
+        line.clear();
+
+        line.push_str("know\n");
+        let output = translate(&line, &words_hash);
+        assert_eq!(output, "ᚾᚩᚹ");
+        line.clear();
 
         Ok(())
     }
