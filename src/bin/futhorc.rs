@@ -13,13 +13,12 @@ use ripunzip::{NullProgressReporter, UnzipEngine, UnzipOptions};
 
 fn main() -> Result<(), anyhow::Error> {
     let words_hash = words_hash()?;
-    let mut line = String::new();
 
     loop {
-        line.clear();
+        let mut line = String::new();
         io::stdin().read_line(&mut line)?;
 
-        let output = translate(&line, &words_hash);
+        let output = translate(line, &words_hash);
         println!("{output}");
     }
 }
@@ -74,7 +73,8 @@ fn words_hash() -> Result<HashMap<String, String>, anyhow::Error> {
 }
 
 #[must_use]
-fn translate(line: &str, words: &HashMap<String, String>) -> String {
+fn translate(mut line: String, words: &HashMap<String, String>) -> String {
+    line.make_ascii_lowercase();
     let mut ipa_words = Vec::new();
 
     for word in line.split_ascii_whitespace() {
@@ -84,10 +84,10 @@ fn translate(line: &str, words: &HashMap<String, String>) -> String {
     let mut ipa_words = remove_stress_markers(&ipa_words);
     ipa_words.push('\n');
 
-    let mut line = translate_to_runic_2(&ipa_words);
-    line = translate_to_runic(&line);
+    let mut runes = translate_to_runic_2(&ipa_words);
+    runes = translate_to_runic(&runes);
 
-    line
+    runes
 }
 
 fn translate_to_runic(string: &str) -> String {
@@ -194,17 +194,16 @@ mod tests {
     #[test]
     fn know_no_etc() -> Result<(), anyhow::Error> {
         let words_hash = words_hash()?;
+
         let mut line = String::new();
-
         line.push_str("no\n");
-        let output = translate(&line, &words_hash);
+        let output = translate(line, &words_hash);
         assert_eq!(output, "ᚾᚩ");
-        line.clear();
 
+        let mut line = String::new();
         line.push_str("know\n");
-        let output = translate(&line, &words_hash);
+        let output = translate(line, &words_hash);
         assert_eq!(output, "ᚾᚩᚹ");
-        line.clear();
 
         Ok(())
     }
