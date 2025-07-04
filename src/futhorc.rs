@@ -104,7 +104,7 @@ impl Ipa {
 impl Default for Ipa {
     #[allow(clippy::missing_panics_doc)]
     fn default() -> Self {
-        let ipa = include_bytes!("CMU.in.IPA.txt");
+        let ipa = include_bytes!("../CMU.in.IPA.txt");
         let ipa = String::from_utf8(ipa.to_vec()).unwrap();
 
         let mut english_to_ipa = HashMap::new();
