@@ -17,4 +17,5 @@ jobs:
       - name: Run cargo test
         run: |
           sudo apt-get install libasound2-dev mold
+          cargo run --bin unzip-cmu-ipa --features zip
           cargo test --all-targets

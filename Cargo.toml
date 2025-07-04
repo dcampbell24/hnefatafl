@@ -69,11 +69,11 @@ server = ["dep:argon2", "dep:lettre", "dep:password-hash"]
 # client only
 icon_2 = []
 
-# futhorc only
-zip = ["dep:ripunzip"]
-
 # send-website-urls only
 urls = ["dep:reqwest"]
+
+# unzip-cmu-ipa only
+zip = ["dep:ripunzip"]
 
 [lib]
 crate-type = ["cdylib", "rlib"]
@@ -86,12 +86,12 @@ name = "hnefatafl-server-full"
 required-features = ["server"]
 
 [[bin]]
-name = "futhorc"
-required-features = ["zip"]
-
-[[bin]]
 name = "send-website-urls"
 required-features = ["urls"]
+
+[[bin]]
+name = "unzip-cmu-ipa"
+required-features = ["zip"]
 
 [[bench]]
 name = "hnefatafl_rs"
