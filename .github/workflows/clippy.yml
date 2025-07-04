@@ -20,6 +20,6 @@ jobs:
 
       - name: Run clippy
         run: |
-          sudo apt-get install libasound2-dev
+          sudo apt-get install libasound2-dev mold
           cargo run --bin unzip-cmu-ipa --features zip
           cargo clippy --all-targets
