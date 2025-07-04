@@ -79,7 +79,7 @@ fn words_hash() -> Result<HashMap<String, String>, anyhow::Error> {
 // 3.  X If there is ambiguity between /f/ and /v/, use ᚠᚠ for /f/ and ᚠ for /v/.
 //       So you have live/ᛚᛁᚠ, leave/ᛚᛁᛁᚠ, leaf/ᛚᛁᛁᚠᚠ, lives/ᛚᛁᚠᛋ, leaves/ᛚᛁᛁᚠᛋ.
 //       Note that rules apply in the order they are listed here in case of a conflict.
-// 4.    There is similar ambiguity clarification as above for /s/ (ᛋᛋ) and /z/
+// 4.  X There is similar ambiguity clarification as above for /s/ (ᛋᛋ) and /z/
 //       (ᛋ), So you have ones/ᚹᚢᚾᛋ, once/ᚹᚢᚾᛋᛋ
 // 5.  X "No" is spelled ᚾᚩ and "know" is spelled ᚾᚩᚹ.
 // 6.    Words which use "tr" for /tʃɹ/ in standard English are spelled with ᛏᚱ,
