@@ -18,7 +18,7 @@ use std::collections::HashMap;
 /// sudo cp -r pkg /var/www/html
 /// ```
 ///
-/// Or if you installed the package via npm:
+/// Or if you installed the package via npm (does not exist at the moment):
 ///
 /// ```sh
 /// sudo mkdir --parent /var/www/html/pkg
