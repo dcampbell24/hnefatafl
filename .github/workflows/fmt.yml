@@ -16,6 +16,5 @@ jobs:
 
       - name: Run cargo fmt
         run: |
-          sudo apt-get install mold
-          cargo run --bin unzip-cmu-ipa --features zip
+          unzip CMU-IPA.zip
           cargo fmt --all --check
