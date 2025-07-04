@@ -15,4 +15,6 @@ jobs:
             persist-credentials: false
 
       - name: Run cargo fmt
-        run: cargo fmt --all --check
+        run: |
+          cargo run --bin unzip-cmu-ipa --features zip
+          cargo fmt --all --check

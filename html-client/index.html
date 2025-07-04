@@ -6,12 +6,22 @@
 <body>
     <h1>Copenhagen Hnefatafl</h1>
     <script type="module">
-        import init, { Game } from '../pkg/hnefatafl_copenhagen.js';
+        import init, { Game, Ipa, ipa_to_runes_js } from '../pkg/hnefatafl_copenhagen.js';
 
         init().then(() => {
             const game = new Game();
-            const output = game.read_line_js("show_board");
-            console.log(output);
+            const output_1 = game.read_line_js("show_board");
+            console.log(output_1);
+
+            const word = "know";
+            console.log(word);
+
+            const ipa = new Ipa();
+            const ipa_word = ipa.translate_js(word)
+            console.log(ipa_word);
+
+            const rune_word = ipa_to_runes_js(ipa_word);
+            console.log(rune_word);
         });
     </script>
 </body>
