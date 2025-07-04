@@ -189,11 +189,11 @@ fn translate_to_runic_2(string: &str) -> String {
                 skip = true;
                 "ᛡ" // l_ie_
             }
+            // Added
             ['a', 'j'] => {
                 skip = true;
-                "ᛁ" // s_i_t
+                "ᛁ" // l_i_ve
             }
-            // Added
             ['a', 'ʊ'] => {
                 skip = true;
                 "ᚪᚹ" // f_ou_nd
