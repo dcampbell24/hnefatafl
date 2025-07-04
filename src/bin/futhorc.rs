@@ -6,7 +6,6 @@ use std::{
     fs::{self, File},
     io,
     path::PathBuf,
-    println,
 };
 
 #[cfg(feature = "zip")]
@@ -20,7 +19,7 @@ fn main() -> Result<(), anyhow::Error> {
         io::stdin().read_line(&mut line)?;
 
         let output = translate(line, &words_hash);
-        println!("{output}");
+        println!("{output}\n");
     }
 }
 
@@ -77,7 +76,7 @@ fn words_hash() -> Result<HashMap<String, String>, anyhow::Error> {
 // 2.    /i/ at the end of a word or before an apostrophe is simply ᛁ. So you
 //       have we'll/ᚹᛁ'ᛚ, will/ᚹᛁᛚ, wheel/ᚹᛁᛁᛚ. This applies to morphemes too:
 //       you have any/ᛖᚾᛁ, anything/ᛖᚾᛁᚦᛁᛝ. Also note that ᛁᛁ may represent /iɪ/ as in being/ᛒᛁᛁᛝ.
-// 3.    If there is ambiguity between /f/ and /v/, use ᚠᚠ for /f/ and ᚠ for /v/.
+// 3.  X If there is ambiguity between /f/ and /v/, use ᚠᚠ for /f/ and ᚠ for /v/.
 //       So you have live/ᛚᛁᚠ, leave/ᛚᛁᛁᚠ, leaf/ᛚᛁᛁᚠᚠ, lives/ᛚᛁᚠᛋ, leaves/ᛚᛁᛁᚠᛋ.
 //       Note that rules apply in the order they are listed here in case of a conflict.
 // 4.    There is similar ambiguity clarification as above for /s/ (ᛋᛋ) and /z/
@@ -119,6 +118,7 @@ fn translate(mut line: String, words: &HashMap<String, String>) -> String {
     let mut ipa_words = remove_stress_markers(&ipa_words);
     ipa_words.push('\n');
 
+    print!("{ipa_words}");
     let mut runes = translate_to_runic_2(&ipa_words);
     runes = translate_to_runic(&runes);
 
@@ -145,7 +145,8 @@ fn translate_to_runic(string: &str) -> String {
             'd' => "ᛞ",             // _d_og
             'k' => "ᚳ",             // _k_ite
             'g' => "ᚷ",             // _g_ame
-            'f' | 'v' => "ᚠ",       // _f_ear, _v_ine
+            'f' => "ᚠᚠ",            // _f_ear
+            'v' => "ᚠ",             // _v_ine
             'θ' | 'ð' => "ᚦ",       // _th_ing, _th_is
             's' => "ᛋᛋ",            // _s_ee, lot_s_
             'z' => "ᛋ",             // _z_ebra, song_s_
@@ -188,10 +189,16 @@ fn translate_to_runic_2(string: &str) -> String {
                 skip = true;
                 "ᛡ" // l_ie_
             }
+            ['a', 'j'] => {
+                skip = true;
+                "ᛁ" // s_i_t
+            }
+            // Added
             ['a', 'ʊ'] => {
                 skip = true;
                 "ᚪᚹ" // f_ou_nd
             }
+            // 2nd added.
             ['o', 'ʊ'] | ['o', 'w'] => {
                 skip = true;
                 "ᚩ" // n_o_
