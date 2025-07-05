@@ -12,7 +12,7 @@ fn main() -> Result<(), anyhow::Error> {
         io::stdin().read_line(&mut line)?;
 
         let ipa_words = ipa.translate(line);
-        println!("{ipa_words}");
-        println!("{}", ipa_to_runes(&ipa_words));
+        print!("{ipa_words}");
+        print!("{}", ipa_to_runes(&ipa_words));
     }
 }
