@@ -311,7 +311,7 @@ fn translate_to_runic_2(string: &str) -> String {
                 skip = true;
                 "ᚪᚹ" // f_ou_nd
             }
-            // 2nd added.
+            // 2nd 2nd added.
             ['o', 'ʊ' | 'w'] => {
                 skip = true;
                 "ᚩ" // n_o_
