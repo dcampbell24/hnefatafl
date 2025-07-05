@@ -131,7 +131,7 @@ impl Ipa {
     // 8.    Syllabic consonants are spelled with ᚢ before the consonant. So you have bottle/ᛒᛟᛏᚢᛚ.
     // 9.    ᛋ and ᛏ are optionally written together as the ligature ᛥ as in stone/ᛥᚩᚾ.
     //       Likewise for ᚳᚹ becoming ᛢ.
-    // 10.   The name of this alphabet is written ᚠᚢᚦᚩᚱᚳ, but pronounced /fuθork/
+    // 10. X The name of this alphabet is written ᚠᚢᚦᚩᚱᚳ, but pronounced /fuθork/
     //       like "FOO-thork" as if it were spelled ᚠᚣᚦᚩᚱᚳ.
     #[allow(clippy::missing_panics_doc)]
     #[must_use]
@@ -190,6 +190,7 @@ impl Default for Ipa {
         }
 
         english_to_ipa.insert("know".to_string(), "noʊw".to_string());
+        english_to_ipa.insert("futhorc".to_string(), "vʌθɑɹk".to_string());
 
         Self { english_to_ipa }
     }
