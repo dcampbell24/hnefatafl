@@ -139,7 +139,8 @@ impl Ipa {
         words.make_ascii_lowercase();
         let mut ipa_words = Vec::new();
 
-        // Fixme: all whitespace is turned into a space.
+        let whitespaces = parse_whitespace(&words);
+
         for word in words.split_whitespace() {
             let mut word = word.to_string();
             let mut ch = ' ';
@@ -158,7 +159,15 @@ impl Ipa {
             ipa_words.push(ipa_word);
         }
 
-        ipa_words.join(" ")
+        let mut translated = String::new();
+        translated.push_str(&whitespaces[0]);
+
+        for (i, ipa_word) in ipa_words.iter().enumerate() {
+            translated.push_str(ipa_word);
+            translated.push_str(&whitespaces[i + 1]);
+        }
+
+        translated
     }
 }
 
@@ -184,6 +193,35 @@ impl Default for Ipa {
 
         Self { english_to_ipa }
     }
+}
+
+fn parse_whitespace(words: &str) -> Vec<String> {
+    let mut space = String::new();
+    let mut spaces = Vec::new();
+    let mut on_space = true;
+
+    for ch in words.chars() {
+        if on_space {
+            if ch.is_whitespace() {
+                space.push(ch);
+            } else {
+                on_space = false;
+                spaces.push(space.clone());
+                space.clear();
+            }
+        } else if ch.is_whitespace() {
+            on_space = true;
+            space.push(ch);
+        }
+    }
+
+    if on_space {
+        spaces.push(space);
+    } else {
+        spaces.push(String::new());
+    }
+
+    spaces
 }
 
 fn remove_stress_markers(string: &str) -> String {
@@ -322,5 +360,16 @@ mod tests {
         let mut output = ipa.translate(words);
         output = ipa_to_runes(&output);
         assert_eq!(output, "ᚾᚩᚹ");
+    }
+
+    #[test]
+    fn newlines() {
+        let ipa = Ipa::default();
+
+        let mut words = String::new();
+        words.push_str("apple banana\ncarrot\n\n");
+        let mut output = ipa.translate(words);
+        output = ipa_to_runes(&output);
+        assert_eq!(output, "ᚫᛈᚢᛚ᛫ᛒᚢᚾᚫᚾᚢ\nᚳᚫᚱᚢᛏ\n\n");
     }
 }
