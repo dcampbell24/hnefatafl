@@ -296,7 +296,7 @@ fn translate_to_runic(string: &str) -> String {
             // Added below this line.
             'ʤ' => "ᚷᚻ", // _j_og
             'ʧ' => "ᚳᚻ", // _ch_eese
-            'ɚ' => "ᚢᚱ",
+            'ɚ' => "ᚢᚱ", // runn_er_
             c => &c.to_string(),
         };
 
