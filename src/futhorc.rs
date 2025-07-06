@@ -83,7 +83,7 @@ pub fn ipa_to_runes_js(ipa_words: &str) -> String {
 #[cfg(not(feature = "js"))]
 #[derive(Clone, Debug)]
 pub struct Ipa {
-    english_to_ipa: HashMap<String, String>,
+    pub english_to_ipa: HashMap<String, String>,
 }
 
 #[cfg(feature = "js")]
@@ -295,7 +295,32 @@ fn translate_to_runic(string: &str) -> String {
             'l' => "ᛚ",             // _l_ine
             'ʤ' => "ᚷᚻ",            // _j_og
             'ʧ' => "ᚳᚻ",            // _ch_eese
-            c => &c.to_string(),
+            c if c == 'ᛠ'
+                || c == 'ᛡ'
+                || c == 'ᛁ'
+                || c == 'ᚪ'
+                || c == 'ᚩ'
+                || c == 'ᚹ'
+                || c == 'ᚳ'
+                || c == 'ᚻ'
+                || c == 'ᛝ'
+                || c == 'ɚ'
+                || c == 'a'
+                || c == 'e'
+                || c == 'L'
+                || c == 'N'
+                || c == 'S'
+                || c == 'T'
+                || c == 'M'
+                || c == 'P'
+                || c == 'D'
+                || c == 'K'
+                || c == 'R'
+                || c == 'F' =>
+            {
+                &c.to_string()
+            }
+            c => panic!("We didn't translate this: {c}"),
         };
 
         output.push_str(runes);
