@@ -121,7 +121,7 @@ impl Ipa {
     // 4.  X There is similar ambiguity clarification as above for /s/ (ᛋᛋ) and /z/
     //       (ᛋ), So you have ones/ᚹᚢᚾᛋ, once/ᚹᚢᚾᛋᛋ
     // 5.  X "No" is spelled ᚾᚩ and "know" is spelled ᚾᚩᚹ.
-    // 6.    Words which use "tr" for /tʃɹ/ in standard English are spelled with ᛏᚱ,
+    // 6.  X Words which use "tr" for /tʃɹ/ in standard English are spelled with ᛏᚱ,
     //       not ᚳᚻᚱ. Similar for "dr"/ᛞᚱ and /dʒɹ/; "x"/ᛉ and /ks/. So you have
     //       truck/ᛏᚱᚢᚳ, draw/ᛞᚱᛟ, tax/ᛏᚫᛉ, racks/ᚱᚫᚳᛋ.
     // 7.  X Word-final /ə/ (Added or ʌ or ɜ) is written ᚪ. So you have comma/ᚳᛟᛗᚪ (not ᚳᛟᛗᚢ),
