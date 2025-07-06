@@ -293,6 +293,8 @@ fn translate_to_runic(string: &str) -> String {
             'w' => "ᚹ",             // _w_ind
             'ɹ' => "ᚱ",             // _r_ain
             'l' => "ᛚ",             // _l_ine
+            'ʤ' => "ᚷᚻ",            // _j_og
+            'ʧ' => "ᚳᚻ",            // _ch_eese
             c => &c.to_string(),
         };
 
