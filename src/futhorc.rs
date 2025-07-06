@@ -124,7 +124,7 @@ impl Ipa {
     // 6.    Words which use "tr" for /tʃɹ/ in standard English are spelled with ᛏᚱ,
     //       not ᚳᚻᚱ. Similar for "dr"/ᛞᚱ and /dʒɹ/; "x"/ᛉ and /ks/. So you have
     //       truck/ᛏᚱᚢᚳ, draw/ᛞᚱᛟ, tax/ᛏᚫᛉ, racks/ᚱᚫᚳᛋ.
-    // 7.  X Word-final /ə/ is written ᚪ. So you have comma/ᚳᛟᛗᚪ (not ᚳᛟᛗᚢ),
+    // 7.  X Word-final /ə/ (Added or ʌ or ɜ)is written ᚪ. So you have comma/ᚳᛟᛗᚪ (not ᚳᛟᛗᚢ),
     //       vanilla/ᚠᚢᚾᛁᛚᚪ. Exception: the/ᚦᛖ.
     // 8.    Syllabic consonants are spelled with ᚢ before the consonant. So you have bottle/ᛒᛟᛏᚢᛚ.
     // 9.    ᛋ and ᛏ are optionally written together as the ligature ᛥ as in stone/ᛥᚩᚾ.
