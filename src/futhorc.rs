@@ -68,9 +68,7 @@ use wasm_bindgen::prelude::wasm_bindgen;
 
 #[must_use]
 pub fn ipa_to_runes(ipa_words: &str) -> String {
-    let mut ipa_words = remove_stress_markers(ipa_words);
-    ipa_words.push('\n');
-
+    let ipa_words = remove_stress_markers(ipa_words);
     let runes = translate_to_runic_2(&ipa_words);
     translate_to_runic(&runes)
 }
@@ -113,7 +111,7 @@ impl Ipa {
 }
 
 impl Ipa {
-    // 1.    Apostrophes and punctuation are used just like in standard English.
+    // 1.  X Apostrophes and punctuation are used just like in standard English.
     // 2.    /i/ at the end of a word or before an apostrophe is simply ᛁ. So you
     //       have we'll/ᚹᛁ'ᛚ, will/ᚹᛁᛚ, wheel/ᚹᛁᛁᛚ. This applies to morphemes too:
     //       you have any/ᛖᚾᛁ, anything/ᛖᚾᛁᚦᛁᛝ. Also note that ᛁᛁ may represent /iɪ/ as in being/ᛒᛁᛁᛝ.
@@ -143,6 +141,7 @@ impl Ipa {
 
         for word in words.split_whitespace() {
             let mut word = word.to_string();
+
             let mut ch = ' ';
             if word.ends_with('.') || word.ends_with('!') || word.ends_with('?') {
                 let mut chars = word.chars();
@@ -151,6 +150,28 @@ impl Ipa {
             }
 
             let mut ipa_word = self.english_to_ipa[&word].clone();
+
+            if word.ends_with("'s") {
+                let mut chars = ipa_word.chars();
+                let c = chars.next_back().unwrap();
+                ipa_word = chars.as_str().to_string();
+                ipa_word.push('\'');
+                ipa_word.push(c);
+            } else if word.ends_with("'ll") {
+                if ipa_word.ends_with("ʌl") {
+                    let mut chars = ipa_word.chars();
+                    chars.next_back().unwrap();
+                    chars.next_back().unwrap();
+                    ipa_word = chars.as_str().to_string();
+                    ipa_word.push_str("'ʌl");
+                } else {
+                    let mut chars = ipa_word.chars();
+                    let c = chars.next_back().unwrap();
+                    ipa_word = chars.as_str().to_string();
+                    ipa_word.push('\'');
+                    ipa_word.push(c);
+                }
+            }
 
             if ch != ' ' {
                 ipa_word.push(ch);
@@ -339,6 +360,10 @@ fn translate_to_runic_2(string: &str) -> String {
         string.push_str(output);
     }
 
+    if !skip {
+        string.push(*vec.last().unwrap());
+    }
+
     string
 }
 
@@ -372,5 +397,34 @@ mod tests {
         let mut output = ipa.translate(words);
         output = ipa_to_runes(&output);
         assert_eq!(output, "ᚫᛈᚢᛚ᛫ᛒᚢᚾᚫᚾᚢ\nᚳᚫᚱᚢᛏ\n\n");
+    }
+
+    #[test]
+    fn apostrophes() {
+        let ipa = Ipa::default();
+
+        let mut words = String::new();
+        words.push_str("abram's");
+        let mut output = ipa.translate(words);
+        output = ipa_to_runes(&output);
+        assert_eq!(output, "eᛄᛒᚱᚢᛗ'ᛋ");
+
+        let mut words = String::new();
+        words.push_str("absolut's");
+        let mut output = ipa.translate(words);
+        output = ipa_to_runes(&output);
+        assert_eq!(output, "ᚫᛒᛋᛋᚢᛚᚣᛏ'ᛋᛋ");
+
+        let mut words = String::new();
+        words.push_str("company'll");
+        let mut output = ipa.translate(words);
+        output = ipa_to_runes(&output);
+        assert_eq!(output, "ᚳᚢᛗᛈᚢᚾᛁᛁ'ᚢᛚ");
+
+        let mut words = String::new();
+        words.push_str("he'll");
+        let mut output = ipa.translate(words);
+        output = ipa_to_runes(&output);
+        assert_eq!(output, "ᚻᛁᛁ'ᛚ");
     }
 }
