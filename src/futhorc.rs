@@ -68,9 +68,9 @@ use wasm_bindgen::prelude::wasm_bindgen;
 
 #[must_use]
 pub fn ipa_to_runes(ipa_words: &str) -> String {
-    let ipa_words = remove_stress_markers(ipa_words);
-    let runes = translate_to_runic_2(&ipa_words);
-    translate_to_runic(&runes)
+    let mut runes = translate_to_runic_2(ipa_words);
+    runes = translate_to_runic(&runes);
+    remove_stress_markers(&runes)
 }
 
 #[cfg(feature = "js")]
@@ -273,32 +273,30 @@ fn translate_to_runic(string: &str) -> String {
             'i' => "ᛁᛁ",            // s_ee_d
             'ʊ' | 'u' => "ᚣ",       // b_oo_k, f_oo_d
             'ə' | 'ʌ' | 'ɜ' => "ᚢ", // _a_bout, f_u_n, t_u_rn
-            'p' => "ᛈ",             // _p_ot
+            'p' | 'P' => "ᛈ",             // _p_ot
             'b' => "ᛒ",             // _b_oy
-            't' => "ᛏ",             // _t_ime
-            'd' => "ᛞ",             // _d_og
-            'k' => "ᚳ",             // _k_ite
+            't' | 'T' => "ᛏ",             // _t_ime
+            'd' | 'D' => "ᛞ",             // _d_og
+            'k' | 'K' => "ᚳ",             // _k_ite
             'g' => "ᚷ",             // _g_ame
-            'f' => "ᚠᚠ",            // _f_ear
+            'f' | 'F' => "ᚠᚠ",            // _f_ear
             'v' => "ᚠ",             // _v_ine
             'θ' | 'ð' => "ᚦ",       // _th_ing, _th_is
             's' => "ᛋᛋ",            // _s_ee, lot_s_
             'z' => "ᛋ",             // _z_ebra, song_s_
             'ʃ' | 'ʒ' => "ᛋᚻ",      // _sh_are, mea_s_ure
             'h' => "ᚻ",             // _h_ole
-            'm' => "ᛗ",             // _m_outh
-            'n' => "ᚾ",             // _n_ow
+            'm' | 'M' => "ᛗ",             // _m_outh
+            'n' | 'N' => "ᚾ",             // _n_ow
             'ŋ' => "ᛝ",             // ri_ng_
             'j' => "ᛄ",             // _y_ou
             'w' => "ᚹ",             // _w_ind
-            'ɹ' => "ᚱ",             // _r_ain
-            'l' => "ᛚ",             // _l_ine
+            'ɹ' | 'R' => "ᚱ",             // _r_ain
+            'l' | 'L' => "ᛚ",             // _l_ine
             'ʤ' => "ᚷᚻ",            // _j_og
             'ʧ' => "ᚳᚻ",            // _ch_eese
-            // Fixme:
-            'ɚ' | 'a' | 'e' | 'L' | 'N' | 'S' | 'T' | 'M' | 'P' | 'D' | 'K' | 'R' | 'F' => {
-                panic!("We didn't translate this: {string}")
-            }
+            // Added.
+            'ɚ' => "ᚢᚱ",
             c => &c.to_string(),
         };
 
@@ -321,7 +319,8 @@ fn translate_to_runic_2(string: &str) -> String {
         }
 
         let output = match two {
-            ['e', 'ɪ'] => {
+            // 2nd 2nd added.
+            ['e', 'ɪ' | 'j'] => {
                 skip = true;
                 "ᛠ" // st_ay_
             }
@@ -334,7 +333,8 @@ fn translate_to_runic_2(string: &str) -> String {
                 skip = true;
                 "ᛁ" // l_i_ve
             }
-            ['a', 'ʊ'] => {
+            // 2nd 2nd added.
+            ['a', 'ʊ' | 'w'] => {
                 skip = true;
                 "ᚪᚹ" // f_ou_nd
             }
@@ -358,6 +358,11 @@ fn translate_to_runic_2(string: &str) -> String {
             ['ŋ', 'g'] => {
                 skip = true;
                 "ᛝ" // ri_ng_
+            }
+            // Added.
+            ['s', 'S'] => {
+                skip = true;
+                "ᛋᛋᛋ" // ri_ng_
             }
             [one] | [one, _] => &one.to_string(),
             [] | [..] => "",
