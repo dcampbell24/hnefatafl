@@ -4,7 +4,7 @@ use std::io;
 
 use hnefatafl_copenhagen::futhorc::{Ipa, ipa_to_runes};
 
-fn main() -> Result<(), anyhow::Error>{
+fn main() -> Result<(), anyhow::Error> {
     let ipa = Ipa::default();
 
     loop {
