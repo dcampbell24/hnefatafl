@@ -293,9 +293,9 @@ fn translate_to_runic(string: &str) -> String {
             'w' => "ᚹ",             // _w_ind
             'ɹ' | 'R' => "ᚱ",       // _r_ain
             'l' | 'L' => "ᛚ",       // _l_ine
-            'ʤ' => "ᚷᚻ",            // _j_og
-            'ʧ' => "ᚳᚻ",            // _ch_eese
-            // Added.
+            // Added below this line.
+            'ʤ' => "ᚷᚻ", // _j_og
+            'ʧ' => "ᚳᚻ", // _ch_eese
             'ɚ' => "ᚢᚱ",
             c => &c.to_string(),
         };
