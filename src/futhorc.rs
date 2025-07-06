@@ -124,7 +124,7 @@ impl Ipa {
     // 6.    Words which use "tr" for /tʃɹ/ in standard English are spelled with ᛏᚱ,
     //       not ᚳᚻᚱ. Similar for "dr"/ᛞᚱ and /dʒɹ/; "x"/ᛉ and /ks/. So you have
     //       truck/ᛏᚱᚢᚳ, draw/ᛞᚱᛟ, tax/ᛏᚫᛉ, racks/ᚱᚫᚳᛋ.
-    // 7.    Word-final /ə/ is written ᚪ. So you have comma/ᚳᛟᛗᚪ (not ᚳᛟᛗᚢ),
+    // 7.  X Word-final /ə/ is written ᚪ. So you have comma/ᚳᛟᛗᚪ (not ᚳᛟᛗᚢ),
     //       vanilla/ᚠᚢᚾᛁᛚᚪ. Exception: the/ᚦᛖ.
     // 8.    Syllabic consonants are spelled with ᚢ before the consonant. So you have bottle/ᛒᛟᛏᚢᛚ.
     // 9.    ᛋ and ᛏ are optionally written together as the ligature ᛥ as in stone/ᛥᚩᚾ.
@@ -150,6 +150,13 @@ impl Ipa {
             }
 
             let mut ipa_word = self.english_to_ipa[&word].clone();
+
+            if ipa_word.ends_with('ə') || ipa_word.ends_with('ʌ') || ipa_word.ends_with('ɜ') {
+                let mut chars = ipa_word.chars();
+                chars.next_back().unwrap();
+                ipa_word = chars.as_str().to_string();
+                ipa_word.push('ɑ');
+            }
 
             if word.ends_with("'s") {
                 let mut chars = ipa_word.chars();
@@ -212,6 +219,7 @@ impl Default for Ipa {
 
         english_to_ipa.insert("know".to_string(), "noʊw".to_string());
         english_to_ipa.insert("futhorc".to_string(), "vʌθɑɹk".to_string());
+        english_to_ipa.insert("the".to_string(), "ðɛ".to_string());
 
         Self { english_to_ipa }
     }
@@ -407,20 +415,18 @@ mod tests {
         words.push_str("apple banana\ncarrot\n\n");
         let mut output = ipa.translate(words);
         output = ipa_to_runes(&output);
-        assert_eq!(output, "ᚫᛈᚢᛚ᛫ᛒᚢᚾᚫᚾᚢ\nᚳᚫᚱᚢᛏ\n\n");
+        assert_eq!(output, "ᚫᛈᚢᛚ᛫ᛒᚢᚾᚫᚾᚪ\nᚳᚫᚱᚢᛏ\n\n");
     }
 
     #[test]
     fn apostrophes() {
         let ipa = Ipa::default();
 
-        /* fixme!
         let mut words = String::new();
         words.push_str("abram's");
         let mut output = ipa.translate(words);
         output = ipa_to_runes(&output);
-        assert_eq!(output, "eᛄᛒᚱᚢᛗ'ᛋ");
-        */
+        assert_eq!(output, "ᛠᛒᚱᚢᛗ'ᛋ");
 
         let mut words = String::new();
         words.push_str("absolut's");
@@ -439,5 +445,22 @@ mod tests {
         let mut output = ipa.translate(words);
         output = ipa_to_runes(&output);
         assert_eq!(output, "ᚻᛁᛁ'ᛚ");
+    }
+
+    #[test]
+    fn final_ə() {
+        let ipa = Ipa::default();
+
+        let mut words = String::new();
+        words.push_str("ababa");
+        let mut output = ipa.translate(words);
+        output = ipa_to_runes(&output);
+        assert_eq!(output, "ᚢᛒᚪᛒᚪ");
+
+        let mut words = String::new();
+        words.push_str("the");
+        let mut output = ipa.translate(words);
+        output = ipa_to_runes(&output);
+        assert_eq!(output, "ᚦᛖ");
     }
 }
