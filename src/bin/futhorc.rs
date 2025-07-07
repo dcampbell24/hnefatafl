@@ -2,15 +2,15 @@
 
 use std::io;
 
-use hnefatafl_copenhagen::futhorc::Ipa;
+use hnefatafl_copenhagen::futhorc::EnglishToRunes;
 
 fn main() -> Result<(), anyhow::Error> {
-    let ipa = Ipa::default();
+    let dictionary = EnglishToRunes::default();
 
     loop {
         let mut line = String::new();
         io::stdin().read_line(&mut line)?;
 
-        print!("{}", ipa.translate(line));
+        print!("{}", dictionary.translate(line));
     }
 }
