@@ -527,51 +527,51 @@ mod tests {
         let output = dictionary.translate(words);
         assert_eq!(output, "ᚹᛁ'ᛚ");
     }
-
-    /*
-    The text:
-    To be, or not to be, that is the question:
-    Whether 'tis nobler in the mind to suffer
-    The slings and arrows of outrageous fortune,
-    Or to take arms against a sea of troubles,
-    And by opposing end them: to die, to sleep
-    No more; and by a sleep, to say we end
-    The heart-ache, and the thousand natural shocks
-    That Flesh is heir to? 'Tis a consummation
-    Devoutly to be wished. To die, to sleep,
-    To sleep, perchance to Dream; aye, there's the rub,
-    For in that sleep of death, what dreams may come,
-    When we have shuffled off this mortal coil,
-    Must give us pause.
-
-    My translation:
-    ᛏᚣ᛫ᛒᛁ,᛫ᛟᚱ᛫ᚾᚪᛏ᛫ᛏᚣ᛫ᛒᛁ,᛫ᚦᚫᛏ᛫ᛁᛋ᛫ᚦᛖ᛫ᚳᚹᛖᛋᛋᚳᚻᚢᚾ:
-    ᚹᛖᚦᚢᚱ᛫'ᛏᛁᛋ᛫ᚾᚩᛒᛚᚢᚱ᛫ᛁᚾ᛫ᚦᛖ᛫ᛗᛁᚾᛞ᛫ᛏᚣ᛫ᛋᛋᚢᚠᚠᚢᚱ
-    ᚦᛖ᛫ᛋᛋᛚᛁᛝᛋ᛫ᚢᚾᛞ᛫ᚫᚱᚩᛋ᛫ᚢᚠ᛫ᚪᚹᛏᚱᛠᚷᚻᚢᛋᛋ᛫ᚠᚠᛟᚱᚳᚻᚢᚾ,
-    ᛟᚱ᛫ᛏᚣ᛫ᛏᛠᚳ᛫ᚪᚱᛗᛋ᛫ᚢᚷᛖᚾᛋᛋᛏ᛫ᚪ᛫ᛋᛋᛁ᛫ᚢᚠ᛫ᛏᚱᚢᛒᚢᛚᛋ,
-    ᚢᚾᛞ᛫ᛒᛁ᛫ᚢᛈᚩᛋᛁᛝ᛫ᛖᚾᛞ᛫ᚦᛖᛗ:᛫ᛏᚣ᛫ᛞᛁ,᛫ᛏᚣ᛫ᛋᛋᛚᛁᛁᛈ
-    ᚾᚩ᛫ᛗᛟᚱ;᛫ᚢᚾᛞ᛫ᛒᛁ᛫ᚪ᛫ᛋᛋᛚᛁᛁᛈ,᛫ᛏᚣ᛫ᛋᛋᛠ᛫ᚹᛁ᛫ᛖᚾᛞ
-    ᚦᛖ᛫heart-ache᛫ᚢᚾᛞ᛫ᚦᛖ᛫ᚦᚪᚹᛋᚢᚾᛞ᛫ᚾᚫᚳᚻᚢᚱᚢᛚ᛫ᛋᚻᚪᚳᛋᛋ
-    ᚦᚫᛏ᛫ᚠᚠᛚᛖᛋᚻ᛫ᛁᛋ᛫ᛖᚱ᛫ᛏᚣ?᛫'ᛏᛁᛋ᛫ᚪ᛫ᚳᚪᚾᛋᛋᚢᛗᛠᛋᚻᚢᚾ
-    ᛞᛁᚠᚪᚹᛏᛚᛁ᛫ᛏᚣ᛫ᛒᛁ᛫ᚹᛁᛋᚻᛏ.᛫ᛏᚣ᛫ᛞᛁ,᛫ᛏᚣ᛫ᛋᛋᛚᛁᛁᛈ,
-    ᛏᚣ᛫ᛋᛋᛚᛁᛁᛈ,᛫ᛈᚢᚱᚳᚻᚫᚾᛋᛋ᛫ᛏᚣ᛫ᛞᚱᛁᛁᛗ;᛫ᛁ,᛫ᚦᛖᚱ'ᛋ᛫ᚦᛖ᛫ᚱᚢᛒ,
-    ᚠᚠᛟᚱ᛫ᛁᚾ᛫ᚦᚫᛏ᛫ᛋᛋᛚᛁᛁᛈ᛫ᚢᚠ᛫ᛞᛖᚦ,᛫ᚹᚢᛏ᛫ᛞᚱᛁᛁᛗᛋ᛫ᛗᛠ᛫ᚳᚢᛗ,
-    ᚹᛖᚾ᛫ᚹᛁ᛫ᚻᚫᚠ᛫ᛋᚻᚢᚠᚠᚢᛚᛞ᛫ᛟᚠᚠ᛫ᚦᛁᛋᛋ᛫ᛗᛟᚱᛏᚢᛚ᛫ᚳᛟᛄᛚ,
-    ᛗᚢᛋᛋᛏ᛫ᚷᛁᚠ᛫ᚢᛋᛋ᛫ᛈᛟᛋ.
-
-    The original translation:
-    ᛏᚣ᛫ᛒᛁ, ᚪᚱ᛫ᚾᛟᛏ᛫ᛏᚣ᛫ᛒᛁ, ᚦᚫᛏ᛫ᛁᛋ᛫ᚦᛖ᛫ᚳᚹᛖᛋᚳᚻᚢᚾ:
-    ᚹᛖᚦᚢᚱ᛫'ᛏᛁᛋ᛫ᚾᚩᛒᛚᚢᚱ᛫ᛁᚾ᛫ᚦᛖ᛫ᛗᛡᚾᛞ᛫ᛏᚣ᛫ᛋᚢᚠᚢᚱ
-    ᚦᛖ᛫ᛋᛚᛁᛝᛋ᛫ᚫᚾᛞ᛫ᚫᚱᚩᛋ᛫ᛟᚠ᛫ᚪᚹᛏᚱᛠᚷᚻᚢᛋ᛫ᚠᚩᚱᚳᚻᚢᚾ,
-    ᚪᚱ᛫ᛏᚣ᛫ᛏᛠᚳ᛫ᚪᚱᛗᛋ᛫ᚢᚷᛖᚾᛥ᛫ᚢ᛫ᛋᛁ᛫ᛟᚠ᛫ᛏᚱᚢᛒᚢᛚᛋ,
-    ᚫᚾᛞ᛫ᛒᛡ᛫ᚢᛈᚩᛋᛁᛝ᛫ᛖᚾᛞ᛫ᚦᛖᛗ: ᛏᚣ᛫ᛞᛡ, ᛏᚣ᛫ᛋᛚᛁᛁᛈ
-    ᚾᚩ᛫ᛗᚩᚱ; ᚫᚾᛞ᛫ᛒᛡ᛫ᚢ᛫ᛋᛚᛁᛁᛈ, ᛏᚣ᛫ᛋᛠ᛫ᚹᛁ᛫ᛖᚾᛞ
-    ᚦᛖ᛫ᚻᚪᚱᛏ-ᛠᚳ, ᚫᚾᛞ᛫ᚦᛖ᛫ᚦᚪᚹᛋᚢᚾᛞ᛫ᚾᚫᚳᚻᚢᚱᚢᛚ᛫ᛋᚻᛟᚳᛋ
-    ᚦᚫᛏ᛫ᚠᛚᛖᛋᚻ᛫ᛁᛋ᛫ᛠᚱ᛫ᛏᚣ? 'ᛏᛁᛋ᛫ᚢ᛫ᚳᛟᚾᛋᚢᛗᛠᛋᚻᚢᚾ
-    ᛞᚢᚠᚪᚹᛏᛚᛁ᛫ᛏᚣ᛫ᛒᛁ᛫ᚹᛁᛋᚻᛞ. ᛏᚣ᛫ᛞᛡ, ᛏᚣ᛫ᛋᛚᛁᛁᛈ,
-    ᛏᚣ᛫ᛋᛚᛁᛁᛈ, ᛈᚢᚱᚳᚫᚾᛋ᛫ᛏᚣ᛫ᛞᚱᛁᛁᛗ; ᛡ, ᚦᛠᚱ'ᛋ᛫ᚦᛖ᛫ᚱᚢᛒ,
-    ᚠᚪᚱ᛫ᛁᚾ᛫ᚦᚫᛏ᛫ᛋᛚᛁᛁᛈ᛫ᛟᚠ᛫ᛞᛖᚦ᛫ᚹᚢᛏ᛫ᛞᚱᛁᛁᛗᛋ᛫ᛗᛠ᛫ᚳᚢᛗ,
-    ᚹᛖᚾ᛫ᚹᛁ᛫ᚻᚫᚠ᛫ᛋᚻᚢᚠᚢᛚᛞ᛫ᛟᚠᚠ᛫ᚦᛁᛋ᛫ᛗᚪᚱᛏᚢᛚ᛫ᚳᚩᛁᛚ,
-    ᛗᚢᛥ᛫ᚷᛁᚠ᛫ᚢᛋ᛫ᛈᛟᛋ.
-    */
 }
+
+/*
+The text:
+To be, or not to be, that is the question:
+Whether 'tis nobler in the mind to suffer
+The slings and arrows of outrageous fortune,
+Or to take arms against a sea of troubles,
+And by opposing end them: to die, to sleep
+No more; and by a sleep, to say we end
+The heart-ache, and the thousand natural shocks
+That Flesh is heir to? 'Tis a consummation
+Devoutly to be wished. To die, to sleep,
+To sleep, perchance to Dream; aye, there's the rub,
+For in that sleep of death, what dreams may come,
+When we have shuffled off this mortal coil,
+Must give us pause.
+
+My translation:
+ᛏᚣ᛫ᛒᛁ,᛫ᛟᚱ᛫ᚾᚪᛏ᛫ᛏᚣ᛫ᛒᛁ,᛫ᚦᚫᛏ᛫ᛁᛋ᛫ᚦᛖ᛫ᚳᚹᛖᛋᛋᚳᚻᚢᚾ:
+ᚹᛖᚦᚢᚱ᛫'ᛏᛁᛋ᛫ᚾᚩᛒᛚᚢᚱ᛫ᛁᚾ᛫ᚦᛖ᛫ᛗᛁᚾᛞ᛫ᛏᚣ᛫ᛋᛋᚢᚠᚠᚢᚱ
+ᚦᛖ᛫ᛋᛋᛚᛁᛝᛋ᛫ᚢᚾᛞ᛫ᚫᚱᚩᛋ᛫ᚢᚠ᛫ᚪᚹᛏᚱᛠᚷᚻᚢᛋᛋ᛫ᚠᚠᛟᚱᚳᚻᚢᚾ,
+ᛟᚱ᛫ᛏᚣ᛫ᛏᛠᚳ᛫ᚪᚱᛗᛋ᛫ᚢᚷᛖᚾᛋᛋᛏ᛫ᚪ᛫ᛋᛋᛁ᛫ᚢᚠ᛫ᛏᚱᚢᛒᚢᛚᛋ,
+ᚢᚾᛞ᛫ᛒᛁ᛫ᚢᛈᚩᛋᛁᛝ᛫ᛖᚾᛞ᛫ᚦᛖᛗ:᛫ᛏᚣ᛫ᛞᛁ,᛫ᛏᚣ᛫ᛋᛋᛚᛁᛁᛈ
+ᚾᚩ᛫ᛗᛟᚱ;᛫ᚢᚾᛞ᛫ᛒᛁ᛫ᚪ᛫ᛋᛋᛚᛁᛁᛈ,᛫ᛏᚣ᛫ᛋᛋᛠ᛫ᚹᛁ᛫ᛖᚾᛞ
+ᚦᛖ᛫heart-ache᛫ᚢᚾᛞ᛫ᚦᛖ᛫ᚦᚪᚹᛋᚢᚾᛞ᛫ᚾᚫᚳᚻᚢᚱᚢᛚ᛫ᛋᚻᚪᚳᛋᛋ
+ᚦᚫᛏ᛫ᚠᚠᛚᛖᛋᚻ᛫ᛁᛋ᛫ᛖᚱ᛫ᛏᚣ?᛫'ᛏᛁᛋ᛫ᚪ᛫ᚳᚪᚾᛋᛋᚢᛗᛠᛋᚻᚢᚾ
+ᛞᛁᚠᚪᚹᛏᛚᛁ᛫ᛏᚣ᛫ᛒᛁ᛫ᚹᛁᛋᚻᛏ.᛫ᛏᚣ᛫ᛞᛁ,᛫ᛏᚣ᛫ᛋᛋᛚᛁᛁᛈ,
+ᛏᚣ᛫ᛋᛋᛚᛁᛁᛈ,᛫ᛈᚢᚱᚳᚻᚫᚾᛋᛋ᛫ᛏᚣ᛫ᛞᚱᛁᛁᛗ;᛫ᛁ,᛫ᚦᛖᚱ'ᛋ᛫ᚦᛖ᛫ᚱᚢᛒ,
+ᚠᚠᛟᚱ᛫ᛁᚾ᛫ᚦᚫᛏ᛫ᛋᛋᛚᛁᛁᛈ᛫ᚢᚠ᛫ᛞᛖᚦ,᛫ᚹᚢᛏ᛫ᛞᚱᛁᛁᛗᛋ᛫ᛗᛠ᛫ᚳᚢᛗ,
+ᚹᛖᚾ᛫ᚹᛁ᛫ᚻᚫᚠ᛫ᛋᚻᚢᚠᚠᚢᛚᛞ᛫ᛟᚠᚠ᛫ᚦᛁᛋᛋ᛫ᛗᛟᚱᛏᚢᛚ᛫ᚳᛟᛄᛚ,
+ᛗᚢᛋᛋᛏ᛫ᚷᛁᚠ᛫ᚢᛋᛋ᛫ᛈᛟᛋ.
+
+The original translation:
+ᛏᚣ᛫ᛒᛁ, ᚪᚱ᛫ᚾᛟᛏ᛫ᛏᚣ᛫ᛒᛁ, ᚦᚫᛏ᛫ᛁᛋ᛫ᚦᛖ᛫ᚳᚹᛖᛋᚳᚻᚢᚾ:
+ᚹᛖᚦᚢᚱ᛫'ᛏᛁᛋ᛫ᚾᚩᛒᛚᚢᚱ᛫ᛁᚾ᛫ᚦᛖ᛫ᛗᛡᚾᛞ᛫ᛏᚣ᛫ᛋᚢᚠᚢᚱ
+ᚦᛖ᛫ᛋᛚᛁᛝᛋ᛫ᚫᚾᛞ᛫ᚫᚱᚩᛋ᛫ᛟᚠ᛫ᚪᚹᛏᚱᛠᚷᚻᚢᛋ᛫ᚠᚩᚱᚳᚻᚢᚾ,
+ᚪᚱ᛫ᛏᚣ᛫ᛏᛠᚳ᛫ᚪᚱᛗᛋ᛫ᚢᚷᛖᚾᛥ᛫ᚢ᛫ᛋᛁ᛫ᛟᚠ᛫ᛏᚱᚢᛒᚢᛚᛋ,
+ᚫᚾᛞ᛫ᛒᛡ᛫ᚢᛈᚩᛋᛁᛝ᛫ᛖᚾᛞ᛫ᚦᛖᛗ: ᛏᚣ᛫ᛞᛡ, ᛏᚣ᛫ᛋᛚᛁᛁᛈ
+ᚾᚩ᛫ᛗᚩᚱ; ᚫᚾᛞ᛫ᛒᛡ᛫ᚢ᛫ᛋᛚᛁᛁᛈ, ᛏᚣ᛫ᛋᛠ᛫ᚹᛁ᛫ᛖᚾᛞ
+ᚦᛖ᛫ᚻᚪᚱᛏ-ᛠᚳ, ᚫᚾᛞ᛫ᚦᛖ᛫ᚦᚪᚹᛋᚢᚾᛞ᛫ᚾᚫᚳᚻᚢᚱᚢᛚ᛫ᛋᚻᛟᚳᛋ
+ᚦᚫᛏ᛫ᚠᛚᛖᛋᚻ᛫ᛁᛋ᛫ᛠᚱ᛫ᛏᚣ? 'ᛏᛁᛋ᛫ᚢ᛫ᚳᛟᚾᛋᚢᛗᛠᛋᚻᚢᚾ
+ᛞᚢᚠᚪᚹᛏᛚᛁ᛫ᛏᚣ᛫ᛒᛁ᛫ᚹᛁᛋᚻᛞ. ᛏᚣ᛫ᛞᛡ, ᛏᚣ᛫ᛋᛚᛁᛁᛈ,
+ᛏᚣ᛫ᛋᛚᛁᛁᛈ, ᛈᚢᚱᚳᚫᚾᛋ᛫ᛏᚣ᛫ᛞᚱᛁᛁᛗ; ᛡ, ᚦᛠᚱ'ᛋ᛫ᚦᛖ᛫ᚱᚢᛒ,
+ᚠᚪᚱ᛫ᛁᚾ᛫ᚦᚫᛏ᛫ᛋᛚᛁᛁᛈ᛫ᛟᚠ᛫ᛞᛖᚦ᛫ᚹᚢᛏ᛫ᛞᚱᛁᛁᛗᛋ᛫ᛗᛠ᛫ᚳᚢᛗ,
+ᚹᛖᚾ᛫ᚹᛁ᛫ᚻᚫᚠ᛫ᛋᚻᚢᚠᚢᛚᛞ᛫ᛟᚠᚠ᛫ᚦᛁᛋ᛫ᛗᚪᚱᛏᚢᛚ᛫ᚳᚩᛁᛚ,
+ᛗᚢᛥ᛫ᚷᛁᚠ᛫ᚢᛋ᛫ᛈᛟᛋ.
+*/
