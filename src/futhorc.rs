@@ -118,12 +118,13 @@ impl EnglishToRunes {
         words.make_ascii_lowercase();
         let mut ipa_words = Vec::new();
 
-        let whitespaces = parse_whitespace(&words);
+        let mut whitespaces = parse_whitespace(&words);
+        let mut j = 0;
 
-        for word in words.split_whitespace() {
+        for (i, word) in words.split_whitespace().enumerate() {
             let mut word = word.to_string();
-
             let mut ch = ' ';
+
             if word.ends_with(',')
                 || word.ends_with(':')
                 || word.ends_with(';')
@@ -137,73 +138,34 @@ impl EnglishToRunes {
             }
 
             if let Some(ipa_word) = self.english_to_ipa.get(&word) {
-                let mut ipa_word = remove_stress_markers(ipa_word);
+                handle_ipa_word(&mut ipa_words, ipa_word, &word);
 
-                if ipa_word.ends_with('ə') || ipa_word.ends_with('ʌ') || ipa_word.ends_with('ɜ')
-                {
-                    let mut chars = ipa_word.chars();
-                    chars.next_back().unwrap();
-                    ipa_word = chars.as_str().to_string();
-                    ipa_word.push('ɑ');
+                if ch != ' ' {
+                    let (ipa_word, _) = ipa_words.last_mut().unwrap();
+                    ipa_word.push(ch);
                 }
+            } else if word.contains('-') {
+                let mut skip = true;
 
-                if ipa_word.ends_with('i') {
-                    let mut chars = ipa_word.chars();
-                    chars.next_back().unwrap();
-                    ipa_word = chars.as_str().to_string();
-                    ipa_word.push('I');
-                }
-
-                if word.ends_with("'s") {
-                    let mut chars = ipa_word.chars();
-                    let c = chars.next_back().unwrap();
-
-                    if Some('i') == chars.clone().last() {
-                        chars.next_back().unwrap();
-                        ipa_word = chars.as_str().to_string();
-                        ipa_word.push('I');
+                for split_word in word.split('-') {
+                    if let Some(ipa_word) = self.english_to_ipa.get(split_word) {
+                        handle_ipa_word(&mut ipa_words, ipa_word, &word);
                     } else {
-                        ipa_word = chars.as_str().to_string();
+                        ipa_words.push((split_word.to_string(), false));
                     }
 
-                    ipa_word.push('\'');
-                    ipa_word.push(c);
-                } else if word.ends_with("'ll") {
-                    let mut chars = ipa_word.chars();
-
-                    if ipa_word.ends_with("ʌl") {
-                        chars.next_back().unwrap();
-                        chars.next_back().unwrap();
-
-                        if Some('i') == chars.clone().last() {
-                            chars.next_back().unwrap();
-                            ipa_word = chars.as_str().to_string();
-                            ipa_word.push_str("I'ʌl");
-                        } else {
-                            ipa_word = chars.as_str().to_string();
-                            ipa_word.push_str("'ʌl");
-                        }
-                    } else {
-                        let c = chars.next_back().unwrap();
-
-                        if Some('i') == chars.clone().last() {
-                            chars.next_back().unwrap();
-                            ipa_word = chars.as_str().to_string();
-                            ipa_word.push_str("I'");
-                            ipa_word.push(c);
-                        } else {
-                            ipa_word = chars.as_str().to_string();
-                            ipa_word.push('\'');
-                            ipa_word.push(c);
-                        }
+                    if !skip {
+                        whitespaces.insert(i + j + 1, "-".to_string());
+                        j += 1;
                     }
+
+                    skip = false;
                 }
 
                 if ch != ' ' {
+                    let (ipa_word, _) = ipa_words.last_mut().unwrap();
                     ipa_word.push(ch);
                 }
-
-                ipa_words.push((ipa_word, true));
             } else {
                 ipa_words.push((word, false));
             }
@@ -256,6 +218,71 @@ impl Default for EnglishToRunes {
 
         Self { english_to_ipa }
     }
+}
+
+fn handle_ipa_word(ipa_words: &mut Vec<(String, bool)>, ipa_word: &str, word: &str) {
+    let mut ipa_word = remove_stress_markers(ipa_word);
+
+    if ipa_word.ends_with('ə') || ipa_word.ends_with('ʌ') || ipa_word.ends_with('ɜ') {
+        let mut chars = ipa_word.chars();
+        chars.next_back().unwrap();
+        ipa_word = chars.as_str().to_string();
+        ipa_word.push('ɑ');
+    }
+
+    if ipa_word.ends_with('i') {
+        let mut chars = ipa_word.chars();
+        chars.next_back().unwrap();
+        ipa_word = chars.as_str().to_string();
+        ipa_word.push('I');
+    }
+
+    if word.ends_with("'s") {
+        let mut chars = ipa_word.chars();
+        let c = chars.next_back().unwrap();
+
+        if Some('i') == chars.clone().last() {
+            chars.next_back().unwrap();
+            ipa_word = chars.as_str().to_string();
+            ipa_word.push('I');
+        } else {
+            ipa_word = chars.as_str().to_string();
+        }
+
+        ipa_word.push('\'');
+        ipa_word.push(c);
+    } else if word.ends_with("'ll") {
+        let mut chars = ipa_word.chars();
+
+        if ipa_word.ends_with("ʌl") {
+            chars.next_back().unwrap();
+            chars.next_back().unwrap();
+
+            if Some('i') == chars.clone().last() {
+                chars.next_back().unwrap();
+                ipa_word = chars.as_str().to_string();
+                ipa_word.push_str("I'ʌl");
+            } else {
+                ipa_word = chars.as_str().to_string();
+                ipa_word.push_str("'ʌl");
+            }
+        } else {
+            let c = chars.next_back().unwrap();
+
+            if Some('i') == chars.clone().last() {
+                chars.next_back().unwrap();
+                ipa_word = chars.as_str().to_string();
+                ipa_word.push_str("I'");
+                ipa_word.push(c);
+            } else {
+                ipa_word = chars.as_str().to_string();
+                ipa_word.push('\'');
+                ipa_word.push(c);
+            }
+        }
+    }
+
+    ipa_words.push((ipa_word, true));
 }
 
 fn parse_whitespace(words: &str) -> Vec<String> {
