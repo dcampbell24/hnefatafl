@@ -124,7 +124,11 @@ impl EnglishToRunes {
             let mut word = word.to_string();
 
             let mut ch = ' ';
-            if word.ends_with('.') || word.ends_with('!') || word.ends_with('?') {
+            if word.ends_with(',')
+                || word.ends_with('.')
+                || word.ends_with('!')
+                || word.ends_with('?')
+            {
                 let mut chars = word.chars();
                 ch = chars.next_back().unwrap();
                 word = chars.as_str().to_string();
