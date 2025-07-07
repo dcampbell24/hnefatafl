@@ -58,19 +58,11 @@ use std::collections::HashMap;
 #[must_use]
 pub fn words_to_runes(words: String) -> String {
     let ipa = Ipa::default();
-
-    let ipa_words = ipa.translate(words);
-    ipa_to_runes(&ipa_words)
+    ipa.translate(words)
 }
 
 #[cfg(feature = "js")]
 use wasm_bindgen::prelude::wasm_bindgen;
-
-#[must_use]
-pub fn ipa_to_runes(ipa_words: &str) -> String {
-    let runes = translate_to_runic_2(ipa_words);
-    translate_to_runic(&runes)
-}
 
 #[cfg(feature = "js")]
 #[wasm_bindgen]
@@ -215,18 +207,28 @@ impl Ipa {
                     ipa_word.push(ch);
                 }
 
-                ipa_words.push(ipa_word);
+                ipa_words.push((ipa_word, true));
             } else {
-                ipa_words.push(word);
+                ipa_words.push((word, false));
             }
         }
 
         let mut translated = String::new();
         translated.push_str(&whitespaces[0]);
 
-        for (i, ipa_word) in ipa_words.iter().enumerate() {
-            translated.push_str(ipa_word);
-            translated.push_str(&whitespaces[i + 1]);
+        for (i, (word, translated_to_ipa)) in ipa_words.iter().enumerate() {
+            if *translated_to_ipa {
+                let rune_word = translate_to_runic(&translate_to_runic_2(word));
+
+                #[cfg(feature = "debug")]
+                println!("{word} {rune_word}");
+
+                translated.push_str(&rune_word);
+            } else {
+                translated.push_str(word);
+            }
+
+            translated.push_str(&translate_to_runic(&whitespaces[i + 1]));
         }
 
         translated
@@ -422,7 +424,7 @@ fn translate_to_runic_2(string: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    use crate::futhorc::{Ipa, ipa_to_runes};
+    use crate::futhorc::Ipa;
 
     #[test]
     fn know_no_etc() {
@@ -430,14 +432,12 @@ mod tests {
 
         let mut words = String::new();
         words.push_str("no");
-        let mut output = ipa.translate(words);
-        output = ipa_to_runes(&output);
+        let output = ipa.translate(words);
         assert_eq!(output, "ᚾᚩ");
 
         let mut words = String::new();
         words.push_str("know");
-        let mut output = ipa.translate(words);
-        output = ipa_to_runes(&output);
+        let output = ipa.translate(words);
         assert_eq!(output, "ᚾᚩᚹ");
     }
 
@@ -447,8 +447,7 @@ mod tests {
 
         let mut words = String::new();
         words.push_str("apple banana\ncarrot\n\n");
-        let mut output = ipa.translate(words);
-        output = ipa_to_runes(&output);
+        let output = ipa.translate(words);
         assert_eq!(output, "ᚫᛈᚢᛚ᛫ᛒᚢᚾᚫᚾᚪ\nᚳᚫᚱᚢᛏ\n\n");
     }
 
@@ -458,26 +457,22 @@ mod tests {
 
         let mut words = String::new();
         words.push_str("abram's");
-        let mut output = ipa.translate(words);
-        output = ipa_to_runes(&output);
+        let output = ipa.translate(words);
         assert_eq!(output, "ᛠᛒᚱᚢᛗ'ᛋ");
 
         let mut words = String::new();
         words.push_str("absolut's");
-        let mut output = ipa.translate(words);
-        output = ipa_to_runes(&output);
+        let output = ipa.translate(words);
         assert_eq!(output, "ᚫᛒᛋᛋᚢᛚᚣᛏ'ᛋᛋ");
 
         let mut words = String::new();
         words.push_str("company'll");
-        let mut output = ipa.translate(words);
-        output = ipa_to_runes(&output);
+        let output = ipa.translate(words);
         assert_eq!(output, "ᚳᚢᛗᛈᚢᚾᛁ'ᚢᛚ");
 
         let mut words = String::new();
         words.push_str("he'll");
-        let mut output = ipa.translate(words);
-        output = ipa_to_runes(&output);
+        let output = ipa.translate(words);
         assert_eq!(output, "ᚻᛁ'ᛚ");
     }
 
@@ -487,14 +482,12 @@ mod tests {
 
         let mut words = String::new();
         words.push_str("ababa");
-        let mut output = ipa.translate(words);
-        output = ipa_to_runes(&output);
+        let output = ipa.translate(words);
         assert_eq!(output, "ᚢᛒᚪᛒᚪ");
 
         let mut words = String::new();
         words.push_str("the");
-        let mut output = ipa.translate(words);
-        output = ipa_to_runes(&output);
+        let output = ipa.translate(words);
         assert_eq!(output, "ᚦᛖ");
     }
 
@@ -504,8 +497,7 @@ mod tests {
 
         let mut words = String::new();
         words.push_str("bottle");
-        let mut output = ipa.translate(words);
-        output = ipa_to_runes(&output);
+        let output = ipa.translate(words);
         assert_eq!(output, "ᛒᚪᛏᚢᛚ"); // Not ᛒᛟᛏᚢᛚ via CMU
     }
 
@@ -515,14 +507,12 @@ mod tests {
 
         let mut words = String::new();
         words.push_str("wheel");
-        let mut output = ipa.translate(words);
-        output = ipa_to_runes(&output);
+        let output = ipa.translate(words);
         assert_eq!(output, "ᚹᛁᛁᛚ");
 
         let mut words = String::new();
         words.push_str("any");
-        let mut output = ipa.translate(words);
-        output = ipa_to_runes(&output);
+        let output = ipa.translate(words);
         assert_eq!(output, "ᛖᚾᛁ");
     }
 
@@ -532,14 +522,12 @@ mod tests {
 
         let mut words = String::new();
         words.push_str("renaissance's");
-        let mut output = ipa.translate(words);
-        output = ipa_to_runes(&output);
+        let output = ipa.translate(words);
         assert_eq!(output, "ᚱᛖᚾᚢᛋᛋᚪᚾᛋᛋᛁ'ᛋ");
 
         let mut words = String::new();
         words.push_str("we'll");
-        let mut output = ipa.translate(words);
-        output = ipa_to_runes(&output);
+        let output = ipa.translate(words);
         assert_eq!(output, "ᚹᛁ'ᛚ");
     }
 }
