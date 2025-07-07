@@ -6,7 +6,7 @@
 <body>
     <h1>Copenhagen Hnefatafl</h1>
     <script type="module">
-        import init, { Game, Ipa, ipa_to_runes_js } from '../pkg/hnefatafl_copenhagen.js';
+        import init, { Game, EnglishToRunes } from '../pkg/hnefatafl_copenhagen.js';
 
         init().then(() => {
             const game = new Game();
@@ -16,12 +16,9 @@
             const word = "know";
             console.log(word);
 
-            const ipa = new Ipa();
-            const ipa_word = ipa.translate_js(word)
-            console.log(ipa_word);
-
-            const rune_word = ipa_to_runes_js(ipa_word);
-            console.log(rune_word);
+            const dictionary = new EnglishToRunes();
+            const runes = dictionary.translate_js(word)
+            console.log(runes);
         });
     </script>
 </body>

@@ -37,18 +37,15 @@ use std::collections::HashMap;
 /// <body>
 ///     <h1>Copenhagen Hnefatafl</h1>
 ///     <script type="module">
-///         import init, { Ipa, ipa_to_runes_js } from '../pkg/hnefatafl_copenhagen.js';
+///         import init, { EnglishToRunes } from '../pkg/hnefatafl_copenhagen.js';
 ///
 ///         init().then(() => {
 ///             const word = "know";
 ///             console.log(word);
 ///
-///             const ipa = new Ipa();
-///             const ipa_word = ipa.translate_js(word)
-///             console.log(ipa_word);
-///
-///             const rune_word = ipa_to_runes_js(ipa_word);
-///             console.log(rune_word);
+///             const dictionary = new EnglishToRunes();
+///             const runes = dictionary.translate_js(word)
+///             console.log(runes);
 ///         });
 ///     </script>
 /// </body>
@@ -57,23 +54,16 @@ use std::collections::HashMap;
 /// ```
 #[must_use]
 pub fn words_to_runes(words: String) -> String {
-    let ipa = Ipa::default();
-    ipa.translate(words)
+    let dictionary = EnglishToRunes::default();
+    dictionary.translate(words)
 }
 
 #[cfg(feature = "js")]
 use wasm_bindgen::prelude::wasm_bindgen;
 
-#[cfg(feature = "js")]
-#[wasm_bindgen]
-#[must_use]
-pub fn ipa_to_runes_js(ipa_words: &str) -> String {
-    ipa_to_runes(ipa_words)
-}
-
 #[cfg(not(feature = "js"))]
 #[derive(Clone, Debug)]
-pub struct Ipa {
+pub struct EnglishToRunes {
     pub english_to_ipa: HashMap<String, String>,
 }
 
@@ -81,18 +71,18 @@ pub struct Ipa {
 #[wasm_bindgen]
 #[allow(clippy::unsafe_derive_deserialize)]
 #[derive(Clone, Debug)]
-pub struct Ipa {
+pub struct EnglishToRunes {
     #[wasm_bindgen(skip)]
     pub english_to_ipa: HashMap<String, String>,
 }
 
 #[cfg(feature = "js")]
 #[wasm_bindgen]
-impl Ipa {
+impl EnglishToRunes {
     #[must_use]
     #[wasm_bindgen(constructor)]
-    pub fn new() -> Ipa {
-        Ipa::default()
+    pub fn new() -> EnglishToRunes {
+        EnglishToRunes::default()
     }
 
     #[must_use]
@@ -101,7 +91,7 @@ impl Ipa {
     }
 }
 
-impl Ipa {
+impl EnglishToRunes {
     // 1.  Apostrophes and punctuation are used just like in standard English.
     // 2.  /i/ at the end of a word or before an apostrophe is simply ᛁ. So you
     //     have we'll/ᚹᛁ'ᛚ, will/ᚹᛁᛚ, wheel/ᚹᛁᛁᛚ. This applies to morphemes too:
@@ -235,7 +225,7 @@ impl Ipa {
     }
 }
 
-impl Default for Ipa {
+impl Default for EnglishToRunes {
     fn default() -> Self {
         let ipa = include_str!("../CMU.in.IPA.txt");
 
@@ -424,110 +414,110 @@ fn translate_to_runic_2(string: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    use crate::futhorc::Ipa;
+    use crate::futhorc::EnglishToRunes;
 
     #[test]
     fn know_no_etc() {
-        let ipa = Ipa::default();
+        let dictionary = EnglishToRunes::default();
 
         let mut words = String::new();
         words.push_str("no");
-        let output = ipa.translate(words);
+        let output = dictionary.translate(words);
         assert_eq!(output, "ᚾᚩ");
 
         let mut words = String::new();
         words.push_str("know");
-        let output = ipa.translate(words);
+        let output = dictionary.translate(words);
         assert_eq!(output, "ᚾᚩᚹ");
     }
 
     #[test]
     fn newlines() {
-        let ipa = Ipa::default();
+        let dictionary = EnglishToRunes::default();
 
         let mut words = String::new();
         words.push_str("apple banana\ncarrot\n\n");
-        let output = ipa.translate(words);
+        let output = dictionary.translate(words);
         assert_eq!(output, "ᚫᛈᚢᛚ᛫ᛒᚢᚾᚫᚾᚪ\nᚳᚫᚱᚢᛏ\n\n");
     }
 
     #[test]
     fn apostrophes() {
-        let ipa = Ipa::default();
+        let dictionary = EnglishToRunes::default();
 
         let mut words = String::new();
         words.push_str("abram's");
-        let output = ipa.translate(words);
+        let output = dictionary.translate(words);
         assert_eq!(output, "ᛠᛒᚱᚢᛗ'ᛋ");
 
         let mut words = String::new();
         words.push_str("absolut's");
-        let output = ipa.translate(words);
+        let output = dictionary.translate(words);
         assert_eq!(output, "ᚫᛒᛋᛋᚢᛚᚣᛏ'ᛋᛋ");
 
         let mut words = String::new();
         words.push_str("company'll");
-        let output = ipa.translate(words);
+        let output = dictionary.translate(words);
         assert_eq!(output, "ᚳᚢᛗᛈᚢᚾᛁ'ᚢᛚ");
 
         let mut words = String::new();
         words.push_str("he'll");
-        let output = ipa.translate(words);
+        let output = dictionary.translate(words);
         assert_eq!(output, "ᚻᛁ'ᛚ");
     }
 
     #[test]
     fn final_ə() {
-        let ipa = Ipa::default();
+        let dictionary = EnglishToRunes::default();
 
         let mut words = String::new();
         words.push_str("ababa");
-        let output = ipa.translate(words);
+        let output = dictionary.translate(words);
         assert_eq!(output, "ᚢᛒᚪᛒᚪ");
 
         let mut words = String::new();
         words.push_str("the");
-        let output = ipa.translate(words);
+        let output = dictionary.translate(words);
         assert_eq!(output, "ᚦᛖ");
     }
 
     #[test]
     fn syllabic_consonants() {
-        let ipa = Ipa::default();
+        let dictionary = EnglishToRunes::default();
 
         let mut words = String::new();
         words.push_str("bottle");
-        let output = ipa.translate(words);
+        let output = dictionary.translate(words);
         assert_eq!(output, "ᛒᚪᛏᚢᛚ"); // Not ᛒᛟᛏᚢᛚ via CMU
     }
 
     #[test]
     fn ends_with_i() {
-        let ipa = Ipa::default();
+        let dictionary = EnglishToRunes::default();
 
         let mut words = String::new();
         words.push_str("wheel");
-        let output = ipa.translate(words);
+        let output = dictionary.translate(words);
         assert_eq!(output, "ᚹᛁᛁᛚ");
 
         let mut words = String::new();
         words.push_str("any");
-        let output = ipa.translate(words);
+        let output = dictionary.translate(words);
         assert_eq!(output, "ᛖᚾᛁ");
     }
 
     #[test]
     fn i_apostrophe() {
-        let ipa = Ipa::default();
+        let dictionary = EnglishToRunes::default();
 
         let mut words = String::new();
         words.push_str("renaissance's");
-        let output = ipa.translate(words);
+        let output = dictionary.translate(words);
         assert_eq!(output, "ᚱᛖᚾᚢᛋᛋᚪᚾᛋᛋᛁ'ᛋ");
 
         let mut words = String::new();
         words.push_str("we'll");
-        let output = ipa.translate(words);
+        let output = dictionary.translate(words);
         assert_eq!(output, "ᚹᛁ'ᛚ");
     }
 }
