@@ -148,73 +148,77 @@ impl Ipa {
                 word = chars.as_str().to_string();
             }
 
-            let mut ipa_word = self.english_to_ipa[&word].clone();
-            ipa_word = remove_stress_markers(&ipa_word);
+            if let Some(ipa_word) = self.english_to_ipa.get(&word) {
+                let mut ipa_word = remove_stress_markers(ipa_word);
 
-            if ipa_word.ends_with('ə') || ipa_word.ends_with('ʌ') || ipa_word.ends_with('ɜ') {
-                let mut chars = ipa_word.chars();
-                chars.next_back().unwrap();
-                ipa_word = chars.as_str().to_string();
-                ipa_word.push('ɑ');
-            }
+                if ipa_word.ends_with('ə') || ipa_word.ends_with('ʌ') || ipa_word.ends_with('ɜ')
+                {
+                    let mut chars = ipa_word.chars();
+                    chars.next_back().unwrap();
+                    ipa_word = chars.as_str().to_string();
+                    ipa_word.push('ɑ');
+                }
 
-            if ipa_word.ends_with('i') {
-                let mut chars = ipa_word.chars();
-                chars.next_back().unwrap();
-                ipa_word = chars.as_str().to_string();
-                ipa_word.push('I');
-            }
-
-            if word.ends_with("'s") {
-                let mut chars = ipa_word.chars();
-                let c = chars.next_back().unwrap();
-
-                if Some('i') == chars.clone().last() {
+                if ipa_word.ends_with('i') {
+                    let mut chars = ipa_word.chars();
                     chars.next_back().unwrap();
                     ipa_word = chars.as_str().to_string();
                     ipa_word.push('I');
-                } else {
-                    ipa_word = chars.as_str().to_string();
                 }
 
-                ipa_word.push('\'');
-                ipa_word.push(c);
-            } else if word.ends_with("'ll") {
-                let mut chars = ipa_word.chars();
-
-                if ipa_word.ends_with("ʌl") {
-                    chars.next_back().unwrap();
-                    chars.next_back().unwrap();
-
-                    if Some('i') == chars.clone().last() {
-                        chars.next_back().unwrap();
-                        ipa_word = chars.as_str().to_string();
-                        ipa_word.push_str("I'ʌl");
-                    } else {
-                        ipa_word = chars.as_str().to_string();
-                        ipa_word.push_str("'ʌl");
-                    }
-                } else {
+                if word.ends_with("'s") {
+                    let mut chars = ipa_word.chars();
                     let c = chars.next_back().unwrap();
 
                     if Some('i') == chars.clone().last() {
                         chars.next_back().unwrap();
                         ipa_word = chars.as_str().to_string();
-                        ipa_word.push_str("I'");
-                        ipa_word.push(c);
+                        ipa_word.push('I');
                     } else {
                         ipa_word = chars.as_str().to_string();
-                        ipa_word.push('\'');
-                        ipa_word.push(c);
+                    }
+
+                    ipa_word.push('\'');
+                    ipa_word.push(c);
+                } else if word.ends_with("'ll") {
+                    let mut chars = ipa_word.chars();
+
+                    if ipa_word.ends_with("ʌl") {
+                        chars.next_back().unwrap();
+                        chars.next_back().unwrap();
+
+                        if Some('i') == chars.clone().last() {
+                            chars.next_back().unwrap();
+                            ipa_word = chars.as_str().to_string();
+                            ipa_word.push_str("I'ʌl");
+                        } else {
+                            ipa_word = chars.as_str().to_string();
+                            ipa_word.push_str("'ʌl");
+                        }
+                    } else {
+                        let c = chars.next_back().unwrap();
+
+                        if Some('i') == chars.clone().last() {
+                            chars.next_back().unwrap();
+                            ipa_word = chars.as_str().to_string();
+                            ipa_word.push_str("I'");
+                            ipa_word.push(c);
+                        } else {
+                            ipa_word = chars.as_str().to_string();
+                            ipa_word.push('\'');
+                            ipa_word.push(c);
+                        }
                     }
                 }
-            }
 
-            if ch != ' ' {
-                ipa_word.push(ch);
-            }
+                if ch != ' ' {
+                    ipa_word.push(ch);
+                }
 
-            ipa_words.push(ipa_word);
+                ipa_words.push(ipa_word);
+            } else {
+                ipa_words.push(word);
+            }
         }
 
         let mut translated = String::new();
