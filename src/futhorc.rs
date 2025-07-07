@@ -68,9 +68,8 @@ use wasm_bindgen::prelude::wasm_bindgen;
 
 #[must_use]
 pub fn ipa_to_runes(ipa_words: &str) -> String {
-    let mut runes = translate_to_runic_2(ipa_words);
-    runes = translate_to_runic(&runes);
-    remove_stress_markers(&runes)
+    let runes = translate_to_runic_2(ipa_words);
+    translate_to_runic(&runes)
 }
 
 #[cfg(feature = "js")]
@@ -111,26 +110,26 @@ impl Ipa {
 }
 
 impl Ipa {
-    // 1.  X Apostrophes and punctuation are used just like in standard English.
-    // 2.    /i/ at the end of a word or before an apostrophe is simply ᛁ. So you
-    //       have we'll/ᚹᛁ'ᛚ, will/ᚹᛁᛚ, wheel/ᚹᛁᛁᛚ. This applies to morphemes too:
-    //       you have any/ᛖᚾᛁ, anything/ᛖᚾᛁᚦᛁᛝ. Also note that ᛁᛁ may represent /iɪ/ as in being/ᛒᛁᛁᛝ.
-    // 3.  X If there is ambiguity between /f/ and /v/, use ᚠᚠ for /f/ and ᚠ for /v/.
-    //       So you have live/ᛚᛁᚠ, leave/ᛚᛁᛁᚠ, leaf/ᛚᛁᛁᚠᚠ, lives/ᛚᛁᚠᛋ, leaves/ᛚᛁᛁᚠᛋ.
-    //       Note that rules apply in the order they are listed here in case of a conflict.
-    // 4.  X There is similar ambiguity clarification as above for /s/ (ᛋᛋ) and /z/
-    //       (ᛋ), So you have ones/ᚹᚢᚾᛋ, once/ᚹᚢᚾᛋᛋ
-    // 5.  X "No" is spelled ᚾᚩ and "know" is spelled ᚾᚩᚹ.
-    // 6.  X Words which use "tr" for /tʃɹ/ in standard English are spelled with ᛏᚱ,
-    //       not ᚳᚻᚱ. Similar for "dr"/ᛞᚱ and /dʒɹ/; "x"/ᛉ and /ks/. So you have
-    //       truck/ᛏᚱᚢᚳ, draw/ᛞᚱᛟ, tax/ᛏᚫᛉ, racks/ᚱᚫᚳᛋ.
-    // 7.  X Word-final /ə/ (Added or ʌ or ɜ) is written ᚪ. So you have comma/ᚳᛟᛗᚪ (not ᚳᛟᛗᚢ),
-    //       vanilla/ᚠᚢᚾᛁᛚᚪ. Exception: the/ᚦᛖ.
-    // 8.  X Syllabic consonants are spelled with ᚢ before the consonant. So you have bottle/ᛒᛟᛏᚢᛚ.
-    // 9.  X ᛋ and ᛏ are optionally written together as the ligature ᛥ as in stone/ᛥᚩᚾ.
-    //       Likewise for ᚳᚹ becoming ᛢ (Optional, not doing...).
-    // 10. X The name of this alphabet is written ᚠᚢᚦᚩᚱᚳ, but pronounced /fuθork/
-    //       like "FOO-thork" as if it were spelled ᚠᚣᚦᚩᚱᚳ.
+    // 1.  Apostrophes and punctuation are used just like in standard English.
+    // 2.  /i/ at the end of a word or before an apostrophe is simply ᛁ. So you
+    //     have we'll/ᚹᛁ'ᛚ, will/ᚹᛁᛚ, wheel/ᚹᛁᛁᛚ. This applies to morphemes too:
+    //     you have any/ᛖᚾᛁ, anything/ᛖᚾᛁᚦᛁᛝ. Also note that ᛁᛁ may represent /iɪ/ as in being/ᛒᛁᛁᛝ.
+    // 3.  If there is ambiguity between /f/ and /v/, use ᚠᚠ for /f/ and ᚠ for /v/.
+    //     So you have live/ᛚᛁᚠ, leave/ᛚᛁᛁᚠ, leaf/ᛚᛁᛁᚠᚠ, lives/ᛚᛁᚠᛋ, leaves/ᛚᛁᛁᚠᛋ.
+    //     Note that rules apply in the order they are listed here in case of a conflict.
+    // 4.  There is similar ambiguity clarification as above for /s/ (ᛋᛋ) and /z/
+    //     (ᛋ), So you have ones/ᚹᚢᚾᛋ, once/ᚹᚢᚾᛋᛋ
+    // 5.  "No" is spelled ᚾᚩ and "know" is spelled ᚾᚩᚹ.
+    // 6.  Words which use "tr" for /tʃɹ/ in standard English are spelled with ᛏᚱ,
+    //     not ᚳᚻᚱ. Similar for "dr"/ᛞᚱ and /dʒɹ/; "x"/ᛉ and /ks/. So you have
+    //     truck/ᛏᚱᚢᚳ, draw/ᛞᚱᛟ, tax/ᛏᚫᛉ, racks/ᚱᚫᚳᛋ.
+    // 7.  Word-final /ə/ (Added or ʌ or ɜ) is written ᚪ. So you have comma/ᚳᛟᛗᚪ (not ᚳᛟᛗᚢ),
+    //     vanilla/ᚠᚢᚾᛁᛚᚪ. Exception: the/ᚦᛖ.
+    // 8.  Syllabic consonants are spelled with ᚢ before the consonant. So you have bottle/ᛒᛟᛏᚢᛚ.
+    // 9.  ᛋ and ᛏ are optionally written together as the ligature ᛥ as in stone/ᛥᚩᚾ.
+    //     Likewise for ᚳᚹ becoming ᛢ (Optional, not doing...).
+    // 10. The name of this alphabet is written ᚠᚢᚦᚩᚱᚳ, but pronounced /fuθork/
+    //     like "FOO-thork" as if it were spelled ᚠᚣᚦᚩᚱᚳ.
     #[allow(clippy::missing_panics_doc)]
     #[must_use]
     pub fn translate(&self, mut words: String) -> String {
@@ -150,6 +149,7 @@ impl Ipa {
             }
 
             let mut ipa_word = self.english_to_ipa[&word].clone();
+            ipa_word = remove_stress_markers(&ipa_word);
 
             if ipa_word.ends_with('ə') || ipa_word.ends_with('ʌ') || ipa_word.ends_with('ɜ') {
                 let mut chars = ipa_word.chars();
@@ -158,25 +158,55 @@ impl Ipa {
                 ipa_word.push('ɑ');
             }
 
+            if ipa_word.ends_with('i') {
+                let mut chars = ipa_word.chars();
+                chars.next_back().unwrap();
+                ipa_word = chars.as_str().to_string();
+                ipa_word.push('I');
+            }
+
             if word.ends_with("'s") {
                 let mut chars = ipa_word.chars();
                 let c = chars.next_back().unwrap();
-                ipa_word = chars.as_str().to_string();
+
+                if Some('i') == chars.clone().last() {
+                    chars.next_back().unwrap();
+                    ipa_word = chars.as_str().to_string();
+                    ipa_word.push('I');
+                } else {
+                    ipa_word = chars.as_str().to_string();
+                }
+
                 ipa_word.push('\'');
                 ipa_word.push(c);
             } else if word.ends_with("'ll") {
+                let mut chars = ipa_word.chars();
+
                 if ipa_word.ends_with("ʌl") {
-                    let mut chars = ipa_word.chars();
                     chars.next_back().unwrap();
                     chars.next_back().unwrap();
-                    ipa_word = chars.as_str().to_string();
-                    ipa_word.push_str("'ʌl");
+
+                    if Some('i') == chars.clone().last() {
+                        chars.next_back().unwrap();
+                        ipa_word = chars.as_str().to_string();
+                        ipa_word.push_str("I'ʌl");
+                    } else {
+                        ipa_word = chars.as_str().to_string();
+                        ipa_word.push_str("'ʌl");
+                    }
                 } else {
-                    let mut chars = ipa_word.chars();
                     let c = chars.next_back().unwrap();
-                    ipa_word = chars.as_str().to_string();
-                    ipa_word.push('\'');
-                    ipa_word.push(c);
+
+                    if Some('i') == chars.clone().last() {
+                        chars.next_back().unwrap();
+                        ipa_word = chars.as_str().to_string();
+                        ipa_word.push_str("I'");
+                        ipa_word.push(c);
+                    } else {
+                        ipa_word = chars.as_str().to_string();
+                        ipa_word.push('\'');
+                        ipa_word.push(c);
+                    }
                 }
             }
 
@@ -277,7 +307,7 @@ fn translate_to_runic(string: &str) -> String {
             'ɔ' => "ᛟ",             // h_o_t
             'æ' => "ᚫ",             // h_a_t
             'ɛ' => "ᛖ",             // s_e_nd
-            'ɪ' => "ᛁ",             // s_i_t
+            'ɪ' | 'I' => "ᛁ",       // s_i_t, w_e_'ll, an_y_
             'i' => "ᛁᛁ",            // s_ee_d
             'ʊ' | 'u' => "ᚣ",       // b_oo_k, f_oo_d
             'ə' | 'ʌ' | 'ɜ' => "ᚢ", // _a_bout, f_u_n, t_u_rn
@@ -438,13 +468,13 @@ mod tests {
         words.push_str("company'll");
         let mut output = ipa.translate(words);
         output = ipa_to_runes(&output);
-        assert_eq!(output, "ᚳᚢᛗᛈᚢᚾᛁᛁ'ᚢᛚ");
+        assert_eq!(output, "ᚳᚢᛗᛈᚢᚾᛁ'ᚢᛚ");
 
         let mut words = String::new();
         words.push_str("he'll");
         let mut output = ipa.translate(words);
         output = ipa_to_runes(&output);
-        assert_eq!(output, "ᚻᛁᛁ'ᛚ");
+        assert_eq!(output, "ᚻᛁ'ᛚ");
     }
 
     #[test]
@@ -473,5 +503,39 @@ mod tests {
         let mut output = ipa.translate(words);
         output = ipa_to_runes(&output);
         assert_eq!(output, "ᛒᚪᛏᚢᛚ"); // Not ᛒᛟᛏᚢᛚ via CMU
+    }
+
+    #[test]
+    fn ends_with_i() {
+        let ipa = Ipa::default();
+
+        let mut words = String::new();
+        words.push_str("wheel");
+        let mut output = ipa.translate(words);
+        output = ipa_to_runes(&output);
+        assert_eq!(output, "ᚹᛁᛁᛚ");
+
+        let mut words = String::new();
+        words.push_str("any");
+        let mut output = ipa.translate(words);
+        output = ipa_to_runes(&output);
+        assert_eq!(output, "ᛖᚾᛁ");
+    }
+
+    #[test]
+    fn i_apostrophe() {
+        let ipa = Ipa::default();
+
+        let mut words = String::new();
+        words.push_str("renaissance's");
+        let mut output = ipa.translate(words);
+        output = ipa_to_runes(&output);
+        assert_eq!(output, "ᚱᛖᚾᚢᛋᛋᚪᚾᛋᛋᛁ'ᛋ");
+
+        let mut words = String::new();
+        words.push_str("we'll");
+        let mut output = ipa.translate(words);
+        output = ipa_to_runes(&output);
+        assert_eq!(output, "ᚹᛁ'ᛚ");
     }
 }
