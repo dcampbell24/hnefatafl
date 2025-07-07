@@ -139,11 +139,7 @@ impl EnglishToRunes {
 
             if let Some(ipa_word) = self.english_to_ipa.get(&word) {
                 handle_ipa_word(&mut ipa_words, ipa_word, &word);
-
-                if ch != ' ' {
-                    let (ipa_word, _) = ipa_words.last_mut().unwrap();
-                    ipa_word.push(ch);
-                }
+                handle_punctuation(ch, &mut ipa_words, &mut whitespaces, i + j + 1);
             } else if word.contains('-') {
                 let mut skip = true;
 
@@ -162,17 +158,10 @@ impl EnglishToRunes {
                     skip = false;
                 }
 
-                if ch != ' ' {
-                    let (ipa_word, _) = ipa_words.last_mut().unwrap();
-                    ipa_word.push(ch);
-                }
+                handle_punctuation(ch, &mut ipa_words, &mut whitespaces, i + j + 1);
             } else {
                 ipa_words.push((word, false));
-
-                if ch != ' ' {
-                    let (ipa_word, _) = ipa_words.last_mut().unwrap();
-                    ipa_word.push(ch);
-                }
+                handle_punctuation(ch, &mut ipa_words, &mut whitespaces, i + j + 1);
             }
         }
 
@@ -290,6 +279,24 @@ fn handle_ipa_word(ipa_words: &mut Vec<(String, bool)>, ipa_word: &str, word: &s
     ipa_words.push((ipa_word, true));
 }
 
+fn handle_punctuation(
+    ch: char,
+    ipa_words: &mut [(String, bool)],
+    whitespaces: &mut [String],
+    index: usize,
+) {
+    if ch != ' ' {
+        let (ipa_word, _) = ipa_words.last_mut().unwrap();
+        ipa_word.push(ch);
+
+        let whitespace = &mut whitespaces[index];
+        if whitespace.starts_with(' ') {
+            whitespace.remove(0);
+            whitespace.insert(0, 'X');
+        }
+    }
+}
+
 fn parse_whitespace(words: &str) -> Vec<String> {
     let mut space = String::new();
     let mut spaces = Vec::new();
@@ -337,6 +344,7 @@ fn translate_to_runic(string: &str) -> String {
 
     for char in string.chars() {
         let runes = match char {
+            'X' => " ",
             ' ' => "᛫",
             'ɑ' => "ᚪ",             // f_a_r
             'ɔ' => "ᛟ",             // h_o_t
