@@ -125,6 +125,8 @@ impl EnglishToRunes {
 
             let mut ch = ' ';
             if word.ends_with(',')
+                || word.ends_with(':')
+                || word.ends_with(';')
                 || word.ends_with('.')
                 || word.ends_with('!')
                 || word.ends_with('?')
@@ -250,6 +252,7 @@ impl Default for EnglishToRunes {
         english_to_ipa.insert("know".to_string(), "noʊw".to_string());
         english_to_ipa.insert("futhorc".to_string(), "vʌθɑɹk".to_string());
         english_to_ipa.insert("the".to_string(), "ðɛ".to_string());
+        english_to_ipa.insert("'tis".to_string(), "'tɪz".to_string());
 
         Self { english_to_ipa }
     }
@@ -524,4 +527,42 @@ mod tests {
         let output = dictionary.translate(words);
         assert_eq!(output, "ᚹᛁ'ᛚ");
     }
+
+    /*
+        #[test]
+        fn to_be() {
+            let dictionary = EnglishToRunes::default();
+
+            let to_be = "To be, or not to be, that is the question: \
+    Whether 'tis nobler in the mind to suffer \
+    The slings and arrows of outrageous fortune, \
+    Or to take arms against a sea of troubles, \
+    And by opposing end them: to die, to sleep \
+    No more; and by a sleep, to say we end \
+    The heart-ache, and the thousand natural shocks \
+    That Flesh is heir to? 'Tis a consummation \
+    Devoutly to be wished. To die, to sleep, \
+    To sleep, perchance to Dream; aye, there's the rub, \
+    For in that sleep of death, what dreams may come, \
+    When we have shuffled off this mortal coil, \
+    Must give us pause.".to_string();
+
+    let to_be_runes = "ᛏᚣ᛫ᛒᛁ, ᚪᚱ᛫ᚾᛟᛏ᛫ᛏᚣ᛫ᛒᛁ, ᚦᚫᛏ᛫ᛁᛋ᛫ᚦᛖ᛫ᚳᚹᛖᛋᚳᚻᚢᚾ: \
+    ᚹᛖᚦᚢᚱ᛫'ᛏᛁᛋ᛫ᚾᚩᛒᛚᚢᚱ᛫ᛁᚾ᛫ᚦᛖ᛫ᛗᛡᚾᛞ᛫ᛏᚣ᛫ᛋᚢᚠᚢᚱ᛫\
+    ᚦᛖ᛫ᛋᛚᛁᛝᛋ᛫ᚫᚾᛞ᛫ᚫᚱᚩᛋ᛫ᛟᚠ᛫ᚪᚹᛏᚱᛠᚷᚻᚢᛋ᛫ᚠᚩᚱᚳᚻᚢᚾ,᛫\
+    ᚪᚱ᛫ᛏᚣ᛫ᛏᛠᚳ᛫ᚪᚱᛗᛋ᛫ᚢᚷᛖᚾᛥ᛫ᚢ᛫ᛋᛁ᛫ᛟᚠ᛫ᛏᚱᚢᛒᚢᛚᛋ,᛫\
+    ᚫᚾᛞ᛫ᛒᛡ᛫ᚢᛈᚩᛋᛁᛝ᛫ᛖᚾᛞ᛫ᚦᛖᛗ: ᛏᚣ᛫ᛞᛡ, ᛏᚣ᛫ᛋᛚᛁᛁᛈ᛫\
+    ᚾᚩ᛫ᛗᚩᚱ; ᚫᚾᛞ᛫ᛒᛡ᛫ᚢ᛫ᛋᛚᛁᛁᛈ, ᛏᚣ᛫ᛋᛠ᛫ᚹᛁ᛫ᛖᚾᛞ᛫\
+    ᚦᛖ᛫ᚻᚪᚱᛏ-ᛠᚳ, ᚫᚾᛞ᛫ᚦᛖ᛫ᚦᚪᚹᛋᚢᚾᛞ᛫ᚾᚫᚳᚻᚢᚱᚢᛚ᛫ᛋᚻᛟᚳᛋ᛫\
+    ᚦᚫᛏ᛫ᚠᛚᛖᛋᚻ᛫ᛁᛋ᛫ᛠᚱ᛫ᛏᚣ? 'ᛏᛁᛋ᛫ᚢ᛫ᚳᛟᚾᛋᚢᛗᛠᛋᚻᚢᚾ᛫\
+    ᛞᚢᚠᚪᚹᛏᛚᛁ᛫ᛏᚣ᛫ᛒᛁ᛫ᚹᛁᛋᚻᛞ. ᛏᚣ᛫ᛞᛡ, ᛏᚣ᛫ᛋᛚᛁᛁᛈ,᛫\
+    ᛏᚣ᛫ᛋᛚᛁᛁᛈ, ᛈᚢᚱᚳᚫᚾᛋ᛫ᛏᚣ᛫ᛞᚱᛁᛁᛗ; ᛡ, ᚦᛠᚱ'ᛋ᛫ᚦᛖ᛫ᚱᚢᛒ,᛫\
+    ᚠᚪᚱ᛫ᛁᚾ᛫ᚦᚫᛏ᛫ᛋᛚᛁᛁᛈ᛫ᛟᚠ᛫ᛞᛖᚦ᛫ᚹᚢᛏ᛫ᛞᚱᛁᛁᛗᛋ᛫ᛗᛠ᛫ᚳᚢᛗ,᛫\
+    ᚹᛖᚾ᛫ᚹᛁ᛫ᚻᚫᚠ᛫ᛋᚻᚢᚠᚢᛚᛞ᛫ᛟᚠᚠ᛫ᚦᛁᛋ᛫ᛗᚪᚱᛏᚢᛚ᛫ᚳᚩᛁᛚ,᛫\
+    ᛗᚢᛥ᛫ᚷᛁᚠ᛫ᚢᛋ᛫ᛈᛟᛋ.";
+
+            let output = dictionary.translate(to_be);
+            assert_eq!(output, to_be_runes);
+        }
+        */
 }
