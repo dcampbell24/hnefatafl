@@ -32,7 +32,7 @@ cargo-deps:
 
 .PHONY: js
 js:
-	wasm-pack build --target web --no-default-features --features js
+	wasm-pack build --target web --no-default-features --features js,zip
 
 .PHONY: html-client
 html-client:
