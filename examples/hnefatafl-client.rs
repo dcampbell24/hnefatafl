@@ -253,6 +253,8 @@ struct Client {
     #[serde(skip)]
     archived_games: Vec<ArchivedGame>,
     #[serde(skip)]
+    archived_games_filtered: Vec<ArchivedGame>,
+    #[serde(skip)]
     archived_game_selected: Option<ArchivedGame>,
     #[serde(skip)]
     archived_game_handle: Option<ArchivedGameHandle>,
@@ -292,6 +294,8 @@ struct Client {
     game_settings: NewGameSettings,
     #[serde(default)]
     locale_selected: Locale,
+    #[serde(skip)]
+    my_games_only: bool,
     #[serde(skip)]
     my_turn: bool,
     #[serde(skip)]
@@ -836,7 +840,8 @@ impl<'a> Client {
             Message::AccountSettings => self.screen = Screen::AccountSettings,
             Message::ArchivedGames(mut archived_games) => {
                 archived_games.reverse();
-                self.archived_games = archived_games;
+                self.archived_games = archived_games.clone();
+                self.archived_games_filtered = archived_games;
             }
             Message::ArchivedGamesGet => self.send("archived_games\n".to_string()),
             Message::ArchivedGameSelected(game) => self.archived_game_selected = Some(game),
@@ -932,6 +937,22 @@ impl<'a> Client {
 
                 self.locale_selected = locale;
                 self.save_client();
+            }
+            Message::MyGamesOnly(selected) => {
+                if selected {
+                    self.archived_games_filtered = self
+                        .archived_games
+                        .iter()
+                        .filter(|game| {
+                            game.attacker == self.username || game.defender == self.username
+                        })
+                        .cloned()
+                        .collect();
+                } else {
+                    self.archived_games_filtered = self.archived_games.clone();
+                }
+
+                self.my_games_only = selected;
             }
             Message::OpenUrl(string) => open_url(&string),
             Message::GameNew => {
@@ -2189,15 +2210,6 @@ impl<'a> Client {
                     ]
                 };
 
-                // Todo: make a translation.
-                let get_archived_games = button(
-                    text(self.strings["Get Archived Games"].as_str())
-                        .shaping(text::Shaping::Advanced),
-                )
-                .on_press(Message::ArchivedGamesGet);
-
-                theme = theme.push(get_archived_games);
-
                 if self.email_everyone {
                     let email_everyone = button("Email Everyone").on_press(Message::EmailEveryone);
                     theme = theme.push(email_everyone);
@@ -2214,6 +2226,18 @@ impl<'a> Client {
                 let username = container(username)
                     .padding(PADDING / 2)
                     .style(container::bordered_box);
+
+                let my_games = checkbox(t!("My Games Only"), self.my_games_only)
+                    .size(32)
+                    .on_toggle(Message::MyGamesOnly);
+
+                let get_archived_games = button(
+                    text(self.strings["Get Archived Games"].as_str())
+                        .shaping(text::Shaping::Advanced),
+                )
+                .on_press(Message::ArchivedGamesGet);
+
+                let username = row![username, get_archived_games, my_games].spacing(SPACING);
 
                 let create_game = button(
                     text(self.strings["Create Game"].as_str()).shaping(text::Shaping::Advanced),
@@ -2251,7 +2275,7 @@ impl<'a> Client {
                 }
 
                 let review_game_pick = pick_list(
-                    self.archived_games.clone(),
+                    self.archived_games_filtered.clone(),
                     self.archived_game_selected.clone(),
                     Message::ArchivedGameSelected,
                 )
@@ -2259,7 +2283,7 @@ impl<'a> Client {
 
                 let review_game = row![review_game, review_game_pick].spacing(SPACING);
 
-                column![theme, username, top, review_game, user_area]
+                column![theme, username, review_game, top, user_area]
                     .padding(PADDING)
                     .spacing(SPACING)
                     .into()
@@ -2500,6 +2524,7 @@ enum Message {
     GameWatch(usize),
     Leave,
     LocaleSelected(Locale),
+    MyGamesOnly(bool),
     OpenUrl(String),
     PasswordChanged(String),
     PasswordShow(bool),
@@ -2629,6 +2654,7 @@ fn pass_messages() -> impl Stream<Item = Message> {
                             handle_error(reader.read_exact(&mut buf));
                             let archived_games: Vec<ArchivedGame> =
                                 handle_error(postcard::from_bytes(&buf));
+
                             handle_error(executor::block_on(
                                 sender.send(Message::ArchivedGames(archived_games)),
                             ));
