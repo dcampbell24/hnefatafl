@@ -1516,6 +1516,9 @@ impl Server {
         let Ok(id) = id.parse::<usize>() else {
             return Some((self.clients.get(&index_supplied)?.clone(), false, command));
         };
+        if let Some(account) = self.accounts.0.get_mut(username) {
+            account.active_games.remove(&id);
+        }
 
         info!("{index_supplied} {username} leave_game {id}");
 
@@ -1607,6 +1610,15 @@ impl Server {
     ) -> Option<(mpsc::Sender<String>, bool, String)> {
         // The username is in the database and already logged in.
         if let Some(account) = self.accounts.0.get_mut(username) {
+            for game in &account.active_games {
+                if let Some(tx) = &self.tx {
+                    let _ok = tx.send((
+                        format!("{index_supplied} {username} leave_game {game}"),
+                        None,
+                    ));
+                }
+            }
+
             if let Some(index_database) = account.logged_in {
                 if index_database == index_supplied {
                     info!("{index_supplied} {username} logged out");
@@ -1688,8 +1700,12 @@ impl Server {
 
         let command = format!("{command} {game:?}");
         self.games_light.0.insert(self.game_id, game);
-        self.game_id += 1;
 
+        if let Some(account) = self.accounts.0.get_mut(username) {
+            account.active_games.insert(self.game_id);
+        }
+
+        self.game_id += 1;
         Some((self.clients.get(&index_supplied)?.clone(), true, command))
     }
 
