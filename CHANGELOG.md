@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- hnefatafl-server-full: leave all active games when you quit without clicking quit.
 - hnefatafl-client: add review only my games checkbox.
 - Update the documentation.
 - hnefatafl-client: focus the text boxes with `Tab` and `Shift` + `Tab`.

@@ -1,4 +1,7 @@
-use std::{collections::HashMap, fmt};
+use std::{
+    collections::{HashMap, HashSet},
+    fmt,
+};
 
 #[cfg(feature = "server")]
 use lettre::message::Mailbox;
@@ -37,6 +40,8 @@ pub struct Account {
     pub rating: Rating,
     #[serde(default)]
     pub send_emails: bool,
+    #[serde(skip)]
+    pub active_games: HashSet<usize>,
 }
 
 impl fmt::Display for Account {
