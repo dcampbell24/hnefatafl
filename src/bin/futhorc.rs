@@ -1,10 +1,8 @@
-//! Futhorc created by Harys Dalvi (<https://www.harysdalvi.com/futhorc/>)
-
-use std::io;
-
-use hnefatafl_copenhagen::futhorc::EnglishToRunes;
-
+#[cfg(feature = "zip")]
 fn main() -> Result<(), anyhow::Error> {
+    use hnefatafl_copenhagen::futhorc::EnglishToRunes;
+    use std::io;
+
     let dictionary = EnglishToRunes::default();
 
     loop {
@@ -13,4 +11,9 @@ fn main() -> Result<(), anyhow::Error> {
 
         print!("{}", dictionary.translate(line));
     }
+}
+
+#[cfg(not(feature = "zip"))]
+fn main() {
+    panic!("You didn't enable the feature zip");
 }

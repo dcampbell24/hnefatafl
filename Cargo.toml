@@ -63,6 +63,7 @@ default = ["server"]
 debug = []
 js = ["dep:wasm-bindgen", "getrandom/js"]
 server = ["dep:argon2", "dep:lettre", "dep:password-hash"]
+zip = []
 
 # client only
 icon_2 = []

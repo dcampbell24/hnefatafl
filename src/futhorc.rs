@@ -1,3 +1,4 @@
+#![cfg(feature = "zip")]
 //! Futhorc created by Harys Dalvi (<https://www.harysdalvi.com/futhorc/>)
 
 use std::collections::HashMap;
