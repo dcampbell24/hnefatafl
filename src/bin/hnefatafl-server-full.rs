@@ -1439,13 +1439,18 @@ impl Server {
                 ))
                 .ok()?;
         }
+
         let new_game = ServerGame::new(
             self.clients.get(&attacker_tx)?.clone(),
             self.clients.get(&defender_tx)?.clone(),
             game.clone(),
         );
-
         self.games.0.insert(id, new_game);
+
+        if let Some(account) = self.accounts.0.get_mut(username) {
+            account.pending_games.remove(&id);
+        }
+
         self.clients
             .get(&attacker_tx)?
             .send(format!("game {id} generate_move attacker"))
@@ -1517,7 +1522,7 @@ impl Server {
             return Some((self.clients.get(&index_supplied)?.clone(), false, command));
         };
         if let Some(account) = self.accounts.0.get_mut(username) {
-            account.active_games.remove(&id);
+            account.pending_games.remove(&id);
         }
 
         info!("{index_supplied} {username} leave_game {id}");
@@ -1610,7 +1615,7 @@ impl Server {
     ) -> Option<(mpsc::Sender<String>, bool, String)> {
         // The username is in the database and already logged in.
         if let Some(account) = self.accounts.0.get_mut(username) {
-            for game in &account.active_games {
+            for game in &account.pending_games {
                 if let Some(tx) = &self.tx {
                     let _ok = tx.send((
                         format!("{index_supplied} {username} leave_game {game}"),
@@ -1702,7 +1707,7 @@ impl Server {
         self.games_light.0.insert(self.game_id, game);
 
         if let Some(account) = self.accounts.0.get_mut(username) {
-            account.active_games.insert(self.game_id);
+            account.pending_games.insert(self.game_id);
         }
 
         self.game_id += 1;
