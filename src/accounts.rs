@@ -41,7 +41,7 @@ pub struct Account {
     #[serde(default)]
     pub send_emails: bool,
     #[serde(skip)]
-    pub active_games: HashSet<usize>,
+    pub pending_games: HashSet<usize>,
 }
 
 impl fmt::Display for Account {
