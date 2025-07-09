@@ -22,4 +22,4 @@ jobs:
         run: |
           sudo apt-get install libasound2-dev mold
           unzip CMU-IPA.zip
-          cargo clippy --all-targets --features zip
+          cargo clippy --all-targets --features js,zip
