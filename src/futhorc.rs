@@ -275,6 +275,8 @@ fn handle_ipa_word(ipa_words: &mut Vec<(String, bool)>, ipa_word: &str, word: &s
                 ipa_word.push(c);
             }
         }
+    } else if word.ends_with('\'') {
+        ipa_word.push('\'');
     }
 
     ipa_words.push((ipa_word, true));
@@ -567,6 +569,16 @@ mod tests {
         words.push_str("we'll");
         let output = dictionary.translate(words);
         assert_eq!(output, "ᚹᛁ'ᛚ");
+    }
+
+    #[test]
+    fn plural_possessive() {
+        let dictionary = EnglishToRunes::default();
+
+        let mut words = String::new();
+        words.push_str("immigrants'");
+        let output = dictionary.translate(words);
+        assert_eq!(output, "ᛁᛗᛁᚷᚱᚢᚾᛏᛋᛋ'");
     }
 }
 
