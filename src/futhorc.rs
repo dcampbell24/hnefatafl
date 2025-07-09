@@ -580,6 +580,36 @@ mod tests {
         let output = dictionary.translate(words);
         assert_eq!(output, "ᛁᛗᛁᚷᚱᚢᚾᛏᛋᛋ'");
     }
+
+    //#[test]
+    fn _other_apostrophes() {
+        let dictionary = EnglishToRunes::default();
+
+        let mut words = String::new();
+        words.push_str("who'd");
+        let output = dictionary.translate(words);
+        assert_eq!(output, "ᛁᛗᛁᚷᚱᚢᚾᛏᛋᛋ'");
+
+        let mut words = String::new();
+        words.push_str("who'll");
+        let output = dictionary.translate(words);
+        assert_eq!(output, "ᛁᛗᛁᚷᚱᚢᚾᛏᛋᛋ'");
+
+        let mut words = String::new();
+        words.push_str("who're'");
+        let output = dictionary.translate(words);
+        assert_eq!(output, "ᛁᛗᛁᚷᚱᚢᚾᛏᛋᛋ'");
+
+        let mut words = String::new();
+        words.push_str("who's'");
+        let output = dictionary.translate(words);
+        assert_eq!(output, "ᛁᛗᛁᚷᚱᚢᚾᛏᛋᛋ'");
+
+        let mut words = String::new();
+        words.push_str("who've");
+        let output = dictionary.translate(words);
+        assert_eq!(output, "ᛁᛗᛁᚷᚱᚢᚾᛏᛋᛋ'");
+    }
 }
 
 /*
