@@ -15,5 +15,5 @@ fn main() -> Result<(), anyhow::Error> {
 
 #[cfg(not(feature = "zip"))]
 fn main() {
-    panic!("You didn't enable the feature zip");
+    panic!("You didn't enable the feature zip.");
 }
