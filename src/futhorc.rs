@@ -1,7 +1,11 @@
 #![cfg(feature = "zip")]
+
 //! Futhorc created by Harys Dalvi (<https://www.harysdalvi.com/futhorc/>)
 
 use std::collections::HashMap;
+
+#[cfg(feature = "js")]
+use wasm_bindgen::prelude::wasm_bindgen;
 
 /// # Javascript Package
 ///
@@ -58,9 +62,6 @@ pub fn words_to_runes(words: String) -> String {
     let dictionary = EnglishToRunes::default();
     dictionary.translate(words)
 }
-
-#[cfg(feature = "js")]
-use wasm_bindgen::prelude::wasm_bindgen;
 
 #[cfg(not(feature = "js"))]
 #[derive(Clone, Debug)]
@@ -232,7 +233,24 @@ fn handle_ipa_word(ipa_words: &mut Vec<(String, bool)>, ipa_word: &str, word: &s
         ipa_word.push('I');
     }
 
-    if word.ends_with("'s") {
+    if word.ends_with("'d") {
+        let mut chars = ipa_word.chars();
+        let c = chars.next_back().unwrap();
+
+        if Some('ʌ') == chars.clone().last() {
+            chars.next_back().unwrap();
+            ipa_word = chars.as_str().to_string();
+            ipa_word.push_str("'ʌd");
+        } else if Some('ɪ') == chars.clone().last() {
+            chars.next_back().unwrap();
+            ipa_word = chars.as_str().to_string();
+            ipa_word.push_str("'ɪd");
+        } else {
+            ipa_word = chars.as_str().to_string();
+            ipa_word.push('\'');
+            ipa_word.push(c);
+        }
+    } else if word.ends_with("'s") {
         let mut chars = ipa_word.chars();
         let c = chars.next_back().unwrap();
 
@@ -579,6 +597,26 @@ mod tests {
         words.push_str("immigrants'");
         let output = dictionary.translate(words);
         assert_eq!(output, "ᛁᛗᛁᚷᚱᚢᚾᛏᛋᛋ'");
+    }
+
+    #[test]
+    fn apostrophe_d() {
+        let dictionary = EnglishToRunes::default();
+
+        let mut words = String::new();
+        words.push_str("who'd");
+        let output = dictionary.translate(words);
+        assert_eq!(output, "ᚻᚣ'ᛞ");
+
+        let mut words = String::new();
+        words.push_str("it'd");
+        let output = dictionary.translate(words);
+        assert_eq!(output, "ᛁᛏ'ᚢᛞ");
+
+        let mut words = String::new();
+        words.push_str("that'd");
+        let output = dictionary.translate(words);
+        assert_eq!(output, "ᚦᚫᛏ'ᛁᛞ");
     }
 
     //#[test]
