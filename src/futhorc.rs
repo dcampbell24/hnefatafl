@@ -626,7 +626,7 @@ mod tests {
         let mut words = String::new();
         words.push_str("who'd");
         let output = dictionary.translate(words);
-        assert_eq!(output, "ᛁᛗᛁᚷᚱᚢᚾᛏᛋᛋ'");
+        assert_eq!(output, "ᚻᚣ'ᛞ");
 
         let mut words = String::new();
         words.push_str("who'll");
