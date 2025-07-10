@@ -619,7 +619,7 @@ mod tests {
         assert_eq!(output, "ᚦᚫᛏ'ᛁᛞ");
     }
 
-    //#[test]
+    // #[test]
     fn _other_apostrophes() {
         let dictionary = EnglishToRunes::default();
 
@@ -631,22 +631,22 @@ mod tests {
         let mut words = String::new();
         words.push_str("who'll");
         let output = dictionary.translate(words);
-        assert_eq!(output, "ᛁᛗᛁᚷᚱᚢᚾᛏᛋᛋ'");
+        assert_eq!(output, "ᚻᚣ'ᛚ");
 
         let mut words = String::new();
-        words.push_str("who're'");
+        words.push_str("who're");
         let output = dictionary.translate(words);
-        assert_eq!(output, "ᛁᛗᛁᚷᚱᚢᚾᛏᛋᛋ'");
+        assert_eq!(output, "");
 
         let mut words = String::new();
-        words.push_str("who's'");
+        words.push_str("who's");
         let output = dictionary.translate(words);
-        assert_eq!(output, "ᛁᛗᛁᚷᚱᚢᚾᛏᛋᛋ'");
+        assert_eq!(output, "ᚻᚣ'ᛋ");
 
         let mut words = String::new();
         words.push_str("who've");
         let output = dictionary.translate(words);
-        assert_eq!(output, "ᛁᛗᛁᚷᚱᚢᚾᛏᛋᛋ'");
+        assert_eq!(output, "");
     }
 }
 
