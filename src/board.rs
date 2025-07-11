@@ -2,7 +2,6 @@ use std::{collections::HashMap, fmt};
 
 use rustc_hash::{FxBuildHasher, FxHashSet};
 use serde::{Deserialize, Serialize};
-use serde_with::serde_as;
 
 use crate::{
     game::PreviousBoards,
@@ -43,11 +42,9 @@ const RESTRICTED_SQUARES: [Vertex; 5] = [
     THRONE,
 ];
 
-#[serde_as]
 #[derive(Clone, Deserialize, Eq, Hash, PartialEq, Serialize)]
 pub struct Board {
-    #[serde_as(as = "[_; 121]")]
-    pub spaces: [Space; 11 * 11],
+    pub spaces: Vec<Space>,
 }
 
 impl Default for Board {
@@ -139,7 +136,9 @@ impl TryFrom<[&str; 11]> for Board {
             }
         }
 
-        Ok(Self { spaces })
+        Ok(Self {
+            spaces: spaces.into(),
+        })
     }
 }
 
@@ -222,7 +221,7 @@ impl Board {
         let mut defender = 0;
         let mut king = true;
 
-        for space in self.spaces {
+        for space in &self.spaces {
             match space {
                 Space::Attacker => attacker += 1,
                 Space::Empty => {}
