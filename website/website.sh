@@ -2,6 +2,9 @@
 
 mdbook build --dest-dir /var/www/html/
 
+sed -i 's/<meta name="description" content=".*">/<meta name="description" content="Determine how to install the software. Install using the Arch User Repository, https:\/\/community.chocolatey.org, a .deb package, https:\/\/flathub.org, or cargo.">/' /var/www/html/install.html
+sed -i 's/<meta name="description" content=".*">/<meta name="description" content="Learn the rules to the game of Copenhagen Hnefatafl. Move your pieces until you achieve victory or lose. Try not to get surrounded as the defenders and escape.">/' /var/www/html/rules.html
+
 cat << EOF > /var/www/html/robots.txt
 User-agent: *
 Allow: /
