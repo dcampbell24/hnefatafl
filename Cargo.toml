@@ -45,7 +45,6 @@ rand = "0.8"
 ron = "0.10"
 rustc-hash = "2"
 serde = { version = "1", features = ["derive"] }
-serde_with = "3"
 
 # js engine only
 wasm-bindgen = { version = "0.2", optional = true }

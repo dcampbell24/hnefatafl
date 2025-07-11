@@ -463,7 +463,7 @@ impl Game {
 
         let mut defender_left = 0;
         let mut attacker_left = 0;
-        for space in self.board.spaces {
+        for space in &self.board.spaces {
             match space {
                 Space::Attacker => attacker_left += 1,
                 Space::Empty | Space::King => {}
