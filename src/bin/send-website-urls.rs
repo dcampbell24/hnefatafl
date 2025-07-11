@@ -10,7 +10,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let url = "http://api.indexnow.org/IndexNow";
     let client = Client::new();
     let mut dir = PathBuf::new();
-    dir.push("..");
     dir.push("website");
     dir.push("index-now");
 
