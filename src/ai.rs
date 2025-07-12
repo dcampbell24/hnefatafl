@@ -21,22 +21,29 @@ pub struct AiBanal;
 
 impl AI for AiBanal {
     fn generate_move(&mut self, game: &Game) -> Option<Plae> {
+        let board_size = game.board.len();
+
         if game.status != Status::Ongoing {
             return None;
         }
         let mut game_clone = game.clone();
 
-        for x_from in 0..11 {
-            for y_from in 0..11 {
-                for x_to in 0..11 {
-                    for y_to in 0..11 {
+        for x_from in 0..board_size {
+            for y_from in 0..board_size {
+                for x_to in 0..board_size {
+                    for y_to in 0..board_size {
                         let play = Plae::Play(Play {
                             role: game.turn,
                             from: Vertex {
+                                board_size,
                                 x: x_from,
                                 y: y_from,
                             },
-                            to: Vertex { x: x_to, y: y_to },
+                            to: Vertex {
+                                board_size,
+                                x: x_to,
+                                y: y_to,
+                            },
                         });
 
                         if game_clone.play(&play).is_ok() {
@@ -165,6 +172,7 @@ impl AiBasic {
     }
 }
 
+// Fixme!
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ZobristTable {
     /// Bitstrings representing piece placement

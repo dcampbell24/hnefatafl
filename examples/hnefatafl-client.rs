@@ -420,7 +420,11 @@ impl<'a> Client {
             column = column.push(text(letter).size(letter_size));
 
             for y in 0..11 {
-                let vertex = Vertex { x, y };
+                let vertex = Vertex {
+                    board_size: board.len(),
+                    x,
+                    y,
+                };
 
                 let mut text_ = match board.get(&vertex) {
                     Space::Empty => {

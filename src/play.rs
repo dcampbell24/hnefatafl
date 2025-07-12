@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{role::Role, time::TimeSettings};
 
-pub const BOARD_LETTERS: &str = "ABCDEFGHIJK";
+pub const BOARD_LETTERS: &str = "ABCDEFGHIJKLM";
 
 #[derive(Clone, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
 pub struct PlayRecord {
@@ -127,17 +127,24 @@ impl fmt::Display for Captures {
 
 #[derive(Clone, Debug, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize)]
 pub struct Vertex {
+    pub board_size: usize,
     pub x: usize,
     pub y: usize,
 }
 
 impl fmt::Display for Vertex {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let letters = if self.board_size == 11 {
+            &BOARD_LETTERS.to_lowercase()
+        } else {
+            BOARD_LETTERS
+        };
+
         write!(
             f,
             "{}{}",
-            BOARD_LETTERS.chars().collect::<Vec<_>>()[self.x],
-            11 - self.y
+            letters.chars().collect::<Vec<_>>()[self.x],
+            self.board_size - self.y
         )
     }
 }
@@ -149,15 +156,17 @@ impl FromStr for Vertex {
         let mut chars = vertex.chars();
 
         if let Some(mut ch) = chars.next() {
+            let board_size = if ch.is_lowercase() { 11 } else { 13 };
+
             ch = ch.to_ascii_uppercase();
-            let x = BOARD_LETTERS
+            let x = BOARD_LETTERS[..board_size]
                 .find(ch)
                 .context("play: the first letter is not a legal char")?;
 
             let mut y = chars.as_str().parse()?;
-            if y > 0 && y < 12 {
-                y = 11 - y;
-                return Ok(Self { x, y });
+            if y > 0 && y <= board_size {
+                y = board_size - y;
+                return Ok(Self { board_size, x, y });
             }
         }
 
@@ -171,7 +180,7 @@ impl Vertex {
         format!(
             "{}{}",
             BOARD_LETTERS.chars().collect::<Vec<_>>()[self.x],
-            11 - self.y
+            self.board_size - self.y
         )
     }
 
@@ -179,6 +188,7 @@ impl Vertex {
     pub fn up(&self) -> Option<Vertex> {
         if self.y > 0 {
             Some(Vertex {
+                board_size: self.board_size,
                 x: self.x,
                 y: self.y - 1,
             })
@@ -191,6 +201,7 @@ impl Vertex {
     pub fn left(&self) -> Option<Vertex> {
         if self.x > 0 {
             Some(Vertex {
+                board_size: self.board_size,
                 x: self.x - 1,
                 y: self.y,
             })
@@ -203,6 +214,7 @@ impl Vertex {
     pub fn down(&self) -> Option<Vertex> {
         if self.y < 10 {
             Some(Vertex {
+                board_size: self.board_size,
                 x: self.x,
                 y: self.y + 1,
             })
@@ -215,6 +227,7 @@ impl Vertex {
     pub fn right(&self) -> Option<Vertex> {
         if self.x < 10 {
             Some(Vertex {
+                board_size: self.board_size,
                 x: self.x + 1,
                 y: self.y,
             })

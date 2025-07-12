@@ -10,6 +10,8 @@ use crate::{
 
 /// hnefatafl-text-protocol binary and javascript pkg
 ///
+/// All of the positions are lowercase for 11x11 and uppercase for 13x13.
+///
 /// The engine is line orientated and takes UTF-8 encoded text. The engine takes the below commands
 /// and returns `= response` on success and `? error_message` on failure. If only comments and
 /// whitespace or the empty string are passed the engine ignores the input and requests another
@@ -70,6 +72,11 @@ use crate::{
 #[allow(clippy::doc_markdown)]
 #[derive(Debug, Clone)]
 pub enum Message {
+    /// `board_size` 11 | `board_size` 13
+    ///
+    ///  Sets the board size and resets the board state to initial conditions.
+    BoardSize(usize),
+
     /// The empty string or only comments and whitespace was passed.
     Empty,
 
@@ -146,7 +153,8 @@ pub enum Message {
     Version,
 }
 
-pub static COMMANDS: [&str; 14] = [
+pub static COMMANDS: [&str; 15] = [
+    "board_size",
     "final_status",
     "generate_move",
     "known_command",
@@ -174,6 +182,9 @@ impl FromStr for Message {
         }
 
         match *args.first().unwrap() {
+            "board_size" => Ok(Self::BoardSize(
+                (*args.get(1).context("expected: board_size uint")?).parse()?,
+            )),
             "final_status" => Ok(Self::FinalStatus),
             "generate_move" => Ok(Self::GenerateMove),
             "known_command" => Ok(Self::KnownCommand(
