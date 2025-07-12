@@ -359,66 +359,30 @@ impl Board {
         }
     }
 
-    #[allow(clippy::collapsible_if)]
     fn captures(&mut self, play_to: &Vertex, role_from: Role, captures: &mut Vec<Vertex>) {
-        if let Some(up_1) = play_to.up() {
-            let space = self.get(&up_1);
-            if space != Space::King && space.role() == role_from.opposite() {
-                if let Some(up_2) = up_1.up() {
-                    if (on_restricted_square(&self.spaces, &up_2) && self.get(&up_2) != Space::King)
-                        || self.get(&up_2).role() == role_from
-                    {
-                        if self.set_if_not_king(&up_1, Space::Empty) {
-                            captures.push(up_1);
-                        }
-                    }
-                }
-            }
-        }
+        self.captures_(play_to, role_from, captures, super::play::Vertex::up);
+        self.captures_(play_to, role_from, captures, super::play::Vertex::left);
+        self.captures_(play_to, role_from, captures, super::play::Vertex::down);
+        self.captures_(play_to, role_from, captures, super::play::Vertex::right);
+    }
 
-        if let Some(left_1) = play_to.left() {
-            let space = self.get(&left_1);
-            if space != Space::King && space.role() == role_from.opposite() {
-                if let Some(left_2) = left_1.left() {
-                    if (on_restricted_square(&self.spaces, &left_2)
-                        && self.get(&left_2) != Space::King)
-                        || self.get(&left_2).role() == role_from
-                    {
-                        if self.set_if_not_king(&left_1, Space::Empty) {
-                            captures.push(left_1);
-                        }
-                    }
-                }
-            }
-        }
-
-        if let Some(down_1) = play_to.down() {
-            let space = self.get(&down_1);
-            if space != Space::King && space.role() == role_from.opposite() {
-                if let Some(down_2) = down_1.down() {
-                    if (on_restricted_square(&self.spaces, &down_2)
-                        && self.get(&down_2) != Space::King)
-                        || self.get(&down_2).role() == role_from
-                    {
-                        if self.set_if_not_king(&down_1, Space::Empty) {
-                            captures.push(down_1);
-                        }
-                    }
-                }
-            }
-        }
-
-        if let Some(right_1) = play_to.right() {
+    fn captures_<T: Fn(&Vertex) -> Option<Vertex>>(
+        &mut self,
+        play_to: &Vertex,
+        role_from: Role,
+        captures: &mut Vec<Vertex>,
+        over: T,
+    ) {
+        if let Some(right_1) = over(play_to) {
             let space = self.get(&right_1);
             if space != Space::King && space.role() == role_from.opposite() {
-                if let Some(right_2) = right_1.right() {
-                    if (on_restricted_square(&self.spaces, &right_2)
+                if let Some(right_2) = over(&right_1) {
+                    if ((on_restricted_square(&self.spaces, &right_2)
                         && self.get(&right_2) != Space::King)
-                        || self.get(&right_2).role() == role_from
+                        || self.get(&right_2).role() == role_from)
+                        && self.set_if_not_king(&right_1, Space::Empty)
                     {
-                        if self.set_if_not_king(&right_1, Space::Empty) {
-                            captures.push(right_1);
-                        }
+                        captures.push(right_1);
                     }
                 }
             }
@@ -427,7 +391,6 @@ impl Board {
 
     // y counts up going down.
     #[allow(clippy::too_many_lines)]
-    #[allow(clippy::collapsible_if)]
     fn captures_shield_wall(
         &mut self,
         role_from: Role,
@@ -480,8 +443,9 @@ impl Board {
                     y: board_size - 1,
                 };
                 let role = self.get(&vertex).role();
-                if count > 1 && (role == role_from || on_restricted_square(&self.spaces, &vertex)) {
-                    if vertex_to
+                if count > 1
+                    && (role == role_from || on_restricted_square(&self.spaces, &vertex))
+                    && (vertex_to
                         == &(Vertex {
                             board_size,
                             x: start - 1,
@@ -492,17 +456,16 @@ impl Board {
                                 board_size,
                                 x: finish,
                                 y: board_size - 1,
-                            })
-                    {
-                        for x_2 in start..finish {
-                            let vertex = Vertex {
-                                board_size,
-                                x: x_2,
-                                y: board_size - 1,
-                            };
-                            if self.set_if_not_king(&vertex, Space::Empty) {
-                                captures.push(vertex);
-                            }
+                            }))
+                {
+                    for x_2 in start..finish {
+                        let vertex = Vertex {
+                            board_size,
+                            x: x_2,
+                            y: board_size - 1,
+                        };
+                        if self.set_if_not_king(&vertex, Space::Empty) {
+                            captures.push(vertex);
                         }
                     }
                 }
@@ -553,8 +516,9 @@ impl Board {
                     y: 0,
                 };
                 let role = self.get(&vertex).role();
-                if count > 1 && (role == role_from || on_restricted_square(&self.spaces, &vertex)) {
-                    if vertex_to
+                if count > 1
+                    && (role == role_from || on_restricted_square(&self.spaces, &vertex))
+                    && (vertex_to
                         == &(Vertex {
                             board_size,
                             x: start - 1,
@@ -565,17 +529,16 @@ impl Board {
                                 board_size,
                                 x: finish,
                                 y: 0,
-                            })
-                    {
-                        for x_2 in start..finish {
-                            let vertex = Vertex {
-                                board_size,
-                                x: x_2,
-                                y: 0,
-                            };
-                            if self.set_if_not_king(&vertex, Space::Empty) {
-                                captures.push(vertex);
-                            }
+                            }))
+                {
+                    for x_2 in start..finish {
+                        let vertex = Vertex {
+                            board_size,
+                            x: x_2,
+                            y: 0,
+                        };
+                        if self.set_if_not_king(&vertex, Space::Empty) {
+                            captures.push(vertex);
                         }
                     }
                 }
@@ -626,8 +589,9 @@ impl Board {
                     y: finish,
                 };
                 let role = self.get(&vertex).role();
-                if count > 1 && (role == role_from || on_restricted_square(&self.spaces, &vertex)) {
-                    if vertex_to
+                if count > 1
+                    && (role == role_from || on_restricted_square(&self.spaces, &vertex))
+                    && (vertex_to
                         == &(Vertex {
                             board_size,
                             x: 0,
@@ -638,17 +602,16 @@ impl Board {
                                 board_size,
                                 x: 0,
                                 y: finish,
-                            })
-                    {
-                        for y_2 in start..finish {
-                            let vertex = Vertex {
-                                board_size,
-                                x: 0,
-                                y: y_2,
-                            };
-                            if self.set_if_not_king(&vertex, Space::Empty) {
-                                captures.push(vertex);
-                            }
+                            }))
+                {
+                    for y_2 in start..finish {
+                        let vertex = Vertex {
+                            board_size,
+                            x: 0,
+                            y: y_2,
+                        };
+                        if self.set_if_not_king(&vertex, Space::Empty) {
+                            captures.push(vertex);
                         }
                     }
                 }
@@ -699,8 +662,9 @@ impl Board {
                     y: finish,
                 };
                 let role = self.get(&vertex).role();
-                if count > 1 && (role == role_from || on_restricted_square(&self.spaces, &vertex)) {
-                    if vertex_to
+                if count > 1
+                    && (role == role_from || on_restricted_square(&self.spaces, &vertex))
+                    && (vertex_to
                         == &(Vertex {
                             board_size,
                             x: board_size - 1,
@@ -711,17 +675,16 @@ impl Board {
                                 board_size,
                                 x: board_size - 1,
                                 y: finish,
-                            })
-                    {
-                        for y_2 in start..finish {
-                            let vertex = Vertex {
-                                board_size,
-                                x: board_size - 1,
-                                y: y_2,
-                            };
-                            if self.set_if_not_king(&vertex, Space::Empty) {
-                                captures.push(vertex);
-                            }
+                            }))
+                {
+                    for y_2 in start..finish {
+                        let vertex = Vertex {
+                            board_size,
+                            x: board_size - 1,
+                            y: y_2,
+                        };
+                        if self.set_if_not_king(&vertex, Space::Empty) {
+                            captures.push(vertex);
                         }
                     }
                 }
