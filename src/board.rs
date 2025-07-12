@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     game::PreviousBoards,
-    play::{BOARD_LETTERS, Plae, Play, Vertex},
+    play::{BOARD_LETTERS, BoardSize, Plae, Play, Vertex},
     role::Role,
     space::Space,
     status::Status,
@@ -43,51 +43,51 @@ pub const STARTING_POSITION_13X13: [&str; 13] = [
 
 const EXIT_SQUARES_11X11: [Vertex; 4] = [
     Vertex {
-        board_size: 11,
+        board_size: BoardSize(11),
         x: 0,
         y: 0,
     },
     Vertex {
-        board_size: 11,
+        board_size: BoardSize(11),
         x: 10,
         y: 0,
     },
     Vertex {
-        board_size: 11,
+        board_size: BoardSize(11),
         x: 0,
         y: 10,
     },
     Vertex {
-        board_size: 11,
+        board_size: BoardSize(11),
         x: 10,
         y: 10,
     },
 ];
 
 const THRONE_11X11: Vertex = Vertex {
-    board_size: 11,
+    board_size: BoardSize(11),
     x: 5,
     y: 5,
 };
 
 const RESTRICTED_SQUARES_11X11: [Vertex; 5] = [
     Vertex {
-        board_size: 11,
+        board_size: BoardSize(11),
         x: 0,
         y: 0,
     },
     Vertex {
-        board_size: 11,
+        board_size: BoardSize(11),
         x: 10,
         y: 0,
     },
     Vertex {
-        board_size: 11,
+        board_size: BoardSize(11),
         x: 0,
         y: 10,
     },
     Vertex {
-        board_size: 11,
+        board_size: BoardSize(11),
         x: 10,
         y: 10,
     },
@@ -96,51 +96,51 @@ const RESTRICTED_SQUARES_11X11: [Vertex; 5] = [
 
 const EXIT_SQUARES_13X13: [Vertex; 4] = [
     Vertex {
-        board_size: 13,
+        board_size: BoardSize(13),
         x: 0,
         y: 0,
     },
     Vertex {
-        board_size: 13,
+        board_size: BoardSize(13),
         x: 12,
         y: 0,
     },
     Vertex {
-        board_size: 13,
+        board_size: BoardSize(13),
         x: 0,
         y: 12,
     },
     Vertex {
-        board_size: 13,
+        board_size: BoardSize(13),
         x: 12,
         y: 12,
     },
 ];
 
 const THRONE_13X13: Vertex = Vertex {
-    board_size: 13,
+    board_size: BoardSize(13),
     x: 6,
     y: 6,
 };
 
 const RESTRICTED_SQUARES_13X13: [Vertex; 5] = [
     Vertex {
-        board_size: 13,
+        board_size: BoardSize(13),
         x: 0,
         y: 0,
     },
     Vertex {
-        board_size: 13,
+        board_size: BoardSize(13),
         x: 12,
         y: 0,
     },
     Vertex {
-        board_size: 13,
+        board_size: BoardSize(13),
         x: 0,
         y: 12,
     },
     Vertex {
-        board_size: 13,
+        board_size: BoardSize(13),
         x: 12,
         y: 12,
     },
@@ -236,7 +236,7 @@ impl TryFrom<[&str; 11]> for Board {
                 match space {
                     Space::Attacker | Space::Defender => {
                         let vertex = Vertex {
-                            board_size: 11,
+                            board_size: BoardSize(11),
                             x,
                             y,
                         };
@@ -304,7 +304,11 @@ impl Board {
 
         for y in 0..board_size {
             for x in 0..board_size {
-                let vertex = Vertex { board_size, x, y };
+                let vertex = Vertex {
+                    board_size: BoardSize(board_size),
+                    x,
+                    y,
+                };
                 if self.get(&vertex).role() == *turn {
                     possible_vertexes.push(vertex);
                 }
@@ -318,7 +322,11 @@ impl Board {
         for vertex_from in possible_vertexes {
             for y in 0..board_size {
                 for x in 0..board_size {
-                    let vertex_to = Vertex { board_size, x, y };
+                    let vertex_to = Vertex {
+                        board_size: BoardSize(board_size),
+                        x,
+                        y,
+                    };
                     let play = Play {
                         role: *turn,
                         from: vertex_from.clone(),
@@ -402,7 +410,7 @@ impl Board {
         // bottom row
         for x_1 in 0..self.len() {
             let vertex_1 = Vertex {
-                board_size,
+                board_size: BoardSize(board_size),
                 x: x_1,
                 y: board_size - 1,
             };
@@ -418,12 +426,12 @@ impl Board {
 
                 for x_2 in start..board_size {
                     let vertex_2 = Vertex {
-                        board_size,
+                        board_size: BoardSize(board_size),
                         x: x_2,
                         y: board_size - 1,
                     };
                     let vertex_3 = Vertex {
-                        board_size,
+                        board_size: BoardSize(board_size),
                         x: x_2,
                         y: board_size - 2,
                     };
@@ -438,7 +446,7 @@ impl Board {
 
                 let finish = start + count;
                 let vertex = Vertex {
-                    board_size,
+                    board_size: BoardSize(board_size),
                     x: finish,
                     y: board_size - 1,
                 };
@@ -447,20 +455,20 @@ impl Board {
                     && (role == role_from || on_restricted_square(&self.spaces, &vertex))
                     && (vertex_to
                         == &(Vertex {
-                            board_size,
+                            board_size: BoardSize(board_size),
                             x: start - 1,
                             y: board_size - 1,
                         })
                         || vertex_to
                             == &(Vertex {
-                                board_size,
+                                board_size: BoardSize(board_size),
                                 x: finish,
                                 y: board_size - 1,
                             }))
                 {
                     for x_2 in start..finish {
                         let vertex = Vertex {
-                            board_size,
+                            board_size: BoardSize(board_size),
                             x: x_2,
                             y: board_size - 1,
                         };
@@ -475,7 +483,7 @@ impl Board {
         // top row
         for x_1 in 0..self.len() {
             let vertex_1 = Vertex {
-                board_size,
+                board_size: BoardSize(board_size),
                 x: x_1,
                 y: 0,
             };
@@ -491,12 +499,12 @@ impl Board {
 
                 for x_2 in start..board_size {
                     let vertex_2 = Vertex {
-                        board_size,
+                        board_size: BoardSize(board_size),
                         x: x_2,
                         y: 0,
                     };
                     let vertex_3 = Vertex {
-                        board_size,
+                        board_size: BoardSize(board_size),
                         x: x_2,
                         y: 1,
                     };
@@ -511,7 +519,7 @@ impl Board {
 
                 let finish = start + count;
                 let vertex = Vertex {
-                    board_size,
+                    board_size: BoardSize(board_size),
                     x: finish,
                     y: 0,
                 };
@@ -520,20 +528,20 @@ impl Board {
                     && (role == role_from || on_restricted_square(&self.spaces, &vertex))
                     && (vertex_to
                         == &(Vertex {
-                            board_size,
+                            board_size: BoardSize(board_size),
                             x: start - 1,
                             y: 0,
                         })
                         || vertex_to
                             == &(Vertex {
-                                board_size,
+                                board_size: BoardSize(board_size),
                                 x: finish,
                                 y: 0,
                             }))
                 {
                     for x_2 in start..finish {
                         let vertex = Vertex {
-                            board_size,
+                            board_size: BoardSize(board_size),
                             x: x_2,
                             y: 0,
                         };
@@ -548,7 +556,7 @@ impl Board {
         // left row
         for y_1 in 0..self.len() {
             let vertex_1 = Vertex {
-                board_size,
+                board_size: BoardSize(board_size),
                 x: 0,
                 y: y_1,
             };
@@ -564,12 +572,12 @@ impl Board {
 
                 for y_2 in start..board_size {
                     let vertex_2 = Vertex {
-                        board_size,
+                        board_size: BoardSize(board_size),
                         x: 0,
                         y: y_2,
                     };
                     let vertex_3 = Vertex {
-                        board_size,
+                        board_size: BoardSize(board_size),
                         x: 1,
                         y: y_2,
                     };
@@ -584,7 +592,7 @@ impl Board {
 
                 let finish = start + count;
                 let vertex = Vertex {
-                    board_size,
+                    board_size: BoardSize(board_size),
                     x: 0,
                     y: finish,
                 };
@@ -593,20 +601,20 @@ impl Board {
                     && (role == role_from || on_restricted_square(&self.spaces, &vertex))
                     && (vertex_to
                         == &(Vertex {
-                            board_size,
+                            board_size: BoardSize(board_size),
                             x: 0,
                             y: start - 1,
                         })
                         || vertex_to
                             == &(Vertex {
-                                board_size,
+                                board_size: BoardSize(board_size),
                                 x: 0,
                                 y: finish,
                             }))
                 {
                     for y_2 in start..finish {
                         let vertex = Vertex {
-                            board_size,
+                            board_size: BoardSize(board_size),
                             x: 0,
                             y: y_2,
                         };
@@ -621,7 +629,7 @@ impl Board {
         // right row
         for y_1 in 0..self.len() {
             let vertex_1 = Vertex {
-                board_size,
+                board_size: BoardSize(board_size),
                 x: board_size - 1,
                 y: y_1,
             };
@@ -637,12 +645,12 @@ impl Board {
 
                 for y_2 in start..board_size {
                     let vertex_2 = Vertex {
-                        board_size,
+                        board_size: BoardSize(board_size),
                         x: board_size - 1,
                         y: y_2,
                     };
                     let vertex_3 = Vertex {
-                        board_size,
+                        board_size: BoardSize(board_size),
                         x: board_size - 2,
                         y: y_2,
                     };
@@ -657,7 +665,7 @@ impl Board {
 
                 let finish = start + count;
                 let vertex = Vertex {
-                    board_size,
+                    board_size: BoardSize(board_size),
                     x: board_size - 1,
                     y: finish,
                 };
@@ -666,20 +674,20 @@ impl Board {
                     && (role == role_from || on_restricted_square(&self.spaces, &vertex))
                     && (vertex_to
                         == &(Vertex {
-                            board_size,
+                            board_size: BoardSize(board_size),
                             x: board_size - 1,
                             y: start - 1,
                         })
                         || vertex_to
                             == &(Vertex {
-                                board_size,
+                                board_size: BoardSize(board_size),
                                 x: board_size - 1,
                                 y: finish,
                             }))
                 {
                     for y_2 in start..finish {
                         let vertex = Vertex {
-                            board_size,
+                            board_size: BoardSize(board_size),
                             x: board_size - 1,
                             y: y_2,
                         };
@@ -700,7 +708,11 @@ impl Board {
 
         for y in 0..board_size {
             for x in 0..board_size {
-                let v = Vertex { board_size, x, y };
+                let v = Vertex {
+                    board_size: BoardSize(board_size),
+                    x,
+                    y,
+                };
                 if self.get(&v) == Space::King {
                     return Ok(Some(v));
                 }
@@ -836,7 +848,11 @@ impl Board {
 
                 for y in 0..board_size {
                     for x in 0..board_size {
-                        let vertex = Vertex { board_size, x, y };
+                        let vertex = Vertex {
+                            board_size: BoardSize(board_size),
+                            x,
+                            y,
+                        };
                         if self.get(&vertex).role() == Role::Defender
                             && !already_checked.contains(&vertex)
                         {
@@ -862,7 +878,11 @@ impl Board {
         let mut count = 0;
         'outer: for y in 0..board_size {
             for x in 0..board_size {
-                let vertex = Vertex { board_size, x, y };
+                let vertex = Vertex {
+                    board_size: BoardSize(board_size),
+                    x,
+                    y,
+                };
                 if self.get(&vertex).role() == Role::Attacker {
                     count += 1;
                 }
@@ -1000,7 +1020,11 @@ impl Board {
 
         for y in 0..board_size {
             for x in 0..board_size {
-                let v = Vertex { board_size, x, y };
+                let v = Vertex {
+                    board_size: BoardSize(board_size),
+                    x,
+                    y,
+                };
                 if self.get(&v).role() == Role::Attacker {
                     return false;
                 }
@@ -1093,7 +1117,7 @@ impl Board {
             let x_diff_sign = x_diff.signum();
             for x_diff in 1..=x_diff.abs() {
                 let vertex = Vertex {
-                    board_size,
+                    board_size: BoardSize(board_size),
                     x: (play.from.x as i32 - (x_diff * x_diff_sign)) as usize,
                     y: play.from.y,
                 };
@@ -1109,7 +1133,7 @@ impl Board {
             let y_diff_sign = y_diff.signum();
             for y_diff in 1..=y_diff.abs() {
                 let vertex = Vertex {
-                    board_size,
+                    board_size: BoardSize(board_size),
                     x: play.from.x,
                     y: (play.from.y as i32 - (y_diff * y_diff_sign)) as usize,
                 };

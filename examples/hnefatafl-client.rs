@@ -26,6 +26,7 @@ use clap::{CommandFactory, Parser, command};
 use env_logger::Builder;
 use futures::{SinkExt, executor};
 use hnefatafl_copenhagen::LONG_VERSION;
+use hnefatafl_copenhagen::play::BoardSize;
 use hnefatafl_copenhagen::server_game::{ArchivedGame, ArchivedGameHandle};
 use hnefatafl_copenhagen::{
     COPYRIGHT, VERSION_ID,
@@ -381,7 +382,6 @@ impl<'a> Client {
     #[allow(clippy::too_many_lines)]
     #[must_use]
     fn board(&self) -> Row<Message> {
-        let letters: Vec<_> = BOARD_LETTERS.chars().collect();
         let (board_size, letter_size, piece_size, spacing) = match self.screen_size {
             Size::Large | Size::Giant => (75, 55, 60, 6),
             Size::Medium => (65, 45, 50, 8),
@@ -398,6 +398,8 @@ impl<'a> Client {
             &game.board
         };
 
+        let board_length = board.len();
+        let letters: Vec<_> = BOARD_LETTERS[..board_length].chars().collect();
         let mut game_display = Row::new().spacing(2);
 
         let mut possible_moves = None;
@@ -409,8 +411,8 @@ impl<'a> Client {
 
         let mut column = column![text(" ").size(letter_size)].spacing(spacing);
 
-        for i in 0..11 {
-            let i = 11 - i;
+        for i in 0..board_length {
+            let i = board_length - i;
             column = column.push(text!("{i:2}").size(letter_size).align_y(Vertical::Center));
         }
         game_display = game_display.push(column);
@@ -419,20 +421,27 @@ impl<'a> Client {
             let mut column = Column::new().spacing(2).align_x(Horizontal::Center);
             column = column.push(text(letter).size(letter_size));
 
-            for y in 0..11 {
+            for y in 0..board_length {
                 let vertex = Vertex {
-                    board_size: board.len(),
+                    board_size: BoardSize(board.len()),
                     x,
                     y,
                 };
 
                 let mut text_ = match board.get(&vertex) {
                     Space::Empty => {
-                        if (y, x) == (0, 0)
-                            || (y, x) == (10, 0)
-                            || (y, x) == (0, 10)
-                            || (y, x) == (10, 10)
-                            || (y, x) == (5, 5)
+                        if (board_length == 11
+                            && ((y, x) == (0, 0)
+                                || (y, x) == (10, 0)
+                                || (y, x) == (0, 10)
+                                || (y, x) == (10, 10)
+                                || (y, x) == (5, 5)))
+                            || (board_length == 13
+                                && ((y, x) == (0, 0)
+                                    || (y, x) == (12, 0)
+                                    || (y, x) == (0, 12)
+                                    || (y, x) == (12, 12)
+                                    || (y, x) == (6, 6)))
                         {
                             text("⌘")
                         } else {
@@ -505,8 +514,8 @@ impl<'a> Client {
         }
 
         let mut column = column![text(" ").size(letter_size)].spacing(spacing);
-        for i in 0..11 {
-            let i = 11 - i;
+        for i in 0..board_length {
+            let i = board_length - i;
             column = column.push(text!("{i:2}").size(letter_size).align_y(Vertical::Center));
         }
 

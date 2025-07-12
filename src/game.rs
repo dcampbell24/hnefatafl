@@ -10,7 +10,7 @@ use crate::{
     ai::{AI, AiBanal},
     board::{Board, STARTING_POSITION_13X13},
     message::{COMMANDS, Message},
-    play::{Captures, Plae, Play, Plays, Vertex},
+    play::{BoardSize, Captures, Plae, Play, Plays, Vertex},
     role::Role,
     space::Space,
     status::Status,
@@ -134,16 +134,18 @@ impl Game {
 impl Game {
     #[must_use]
     pub fn all_legal_moves(&self) -> LegalMoves {
+        let board_size = self.board.len();
+
         let mut possible_vertexes = Vec::new();
         let mut legal_moves = LegalMoves {
             role: self.turn,
             moves: HashMap::new(),
         };
 
-        for y in 0..11 {
-            for x in 0..11 {
+        for y in 0..board_size {
+            for x in 0..board_size {
                 let vertex = Vertex {
-                    board_size: self.board.len(),
+                    board_size: BoardSize(board_size),
                     x,
                     y,
                 };
@@ -156,10 +158,10 @@ impl Game {
         for vertex_from in possible_vertexes {
             let mut vertexes_to = Vec::new();
 
-            for y in 0..11 {
-                for x in 0..11 {
+            for y in 0..board_size {
+                for x in 0..board_size {
                     let vertex_to = Vertex {
-                        board_size: self.board.len(),
+                        board_size: BoardSize(board_size),
                         x,
                         y,
                     };
@@ -221,22 +223,22 @@ impl Game {
         let board_size = self.board.len();
 
         let exit_1 = Vertex {
-            board_size,
+            board_size: BoardSize(board_size),
             x: 0,
             y: 0,
         };
         let exit_2 = Vertex {
-            board_size,
+            board_size: BoardSize(board_size),
             x: board_size - 1,
             y: 0,
         };
         let exit_3 = Vertex {
-            board_size,
+            board_size: BoardSize(board_size),
             x: 0,
             y: board_size - 1,
         };
         let exit_4 = Vertex {
-            board_size,
+            board_size: BoardSize(board_size),
             x: board_size - 1,
             y: board_size - 1,
         };

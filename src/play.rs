@@ -125,16 +125,32 @@ impl fmt::Display for Captures {
     }
 }
 
+#[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize)]
+pub struct BoardSize(pub usize);
+
+impl Default for BoardSize {
+    fn default() -> Self {
+        Self(11)
+    }
+}
+
+impl fmt::Display for BoardSize {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
 #[derive(Clone, Debug, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize)]
 pub struct Vertex {
-    pub board_size: usize,
+    #[serde(default)]
+    pub board_size: BoardSize,
     pub x: usize,
     pub y: usize,
 }
 
 impl fmt::Display for Vertex {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let letters = if self.board_size == 11 {
+        let letters = if self.board_size == BoardSize(11) {
             &BOARD_LETTERS.to_lowercase()
         } else {
             BOARD_LETTERS
@@ -144,7 +160,7 @@ impl fmt::Display for Vertex {
             f,
             "{}{}",
             letters.chars().collect::<Vec<_>>()[self.x],
-            self.board_size - self.y
+            self.board_size.0 - self.y
         )
     }
 }
@@ -166,7 +182,11 @@ impl FromStr for Vertex {
             let mut y = chars.as_str().parse()?;
             if y > 0 && y <= board_size {
                 y = board_size - y;
-                return Ok(Self { board_size, x, y });
+                return Ok(Self {
+                    board_size: BoardSize(board_size),
+                    x,
+                    y,
+                });
             }
         }
 
@@ -180,7 +200,7 @@ impl Vertex {
         format!(
             "{}{}",
             BOARD_LETTERS.chars().collect::<Vec<_>>()[self.x],
-            self.board_size - self.y
+            self.board_size.0 - self.y
         )
     }
 
