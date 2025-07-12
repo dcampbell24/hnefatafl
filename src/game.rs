@@ -8,7 +8,7 @@ use wasm_bindgen::prelude::wasm_bindgen;
 
 use crate::{
     ai::{AI, AiBanal},
-    board::Board,
+    board::{Board, STARTING_POSITION_13X13},
     message::{COMMANDS, Message},
     play::{Captures, Plae, Play, Plays, Vertex},
     role::Role,
@@ -142,7 +142,11 @@ impl Game {
 
         for y in 0..11 {
             for x in 0..11 {
-                let vertex = Vertex { x, y };
+                let vertex = Vertex {
+                    board_size: self.board.len(),
+                    x,
+                    y,
+                };
                 if self.board.get(&vertex).role() == self.turn {
                     possible_vertexes.push(vertex);
                 }
@@ -154,7 +158,11 @@ impl Game {
 
             for y in 0..11 {
                 for x in 0..11 {
-                    let vertex_to = Vertex { x, y };
+                    let vertex_to = Vertex {
+                        board_size: self.board.len(),
+                        x,
+                        y,
+                    };
                     let play = Play {
                         role: self.turn,
                         from: vertex_from.clone(),
@@ -210,10 +218,28 @@ impl Game {
 
     #[must_use]
     pub fn exit_one(&self) -> bool {
-        let exit_1 = Vertex { x: 0, y: 0 };
-        let exit_2 = Vertex { x: 10, y: 0 };
-        let exit_3 = Vertex { x: 0, y: 10 };
-        let exit_4 = Vertex { x: 10, y: 10 };
+        let board_size = self.board.len();
+
+        let exit_1 = Vertex {
+            board_size,
+            x: 0,
+            y: 0,
+        };
+        let exit_2 = Vertex {
+            board_size,
+            x: board_size - 1,
+            y: 0,
+        };
+        let exit_3 = Vertex {
+            board_size,
+            x: 0,
+            y: board_size - 1,
+        };
+        let exit_4 = Vertex {
+            board_size,
+            x: board_size - 1,
+            y: board_size - 1,
+        };
 
         let mut game = self.clone();
         if let Ok(Some(king)) = self.board.find_the_king() {
@@ -361,10 +387,32 @@ impl Game {
     /// # Errors
     ///
     /// If the command is illegal or invalid.
+    #[allow(clippy::missing_panics_doc)]
+    #[allow(clippy::too_many_lines)]
     pub fn update(&mut self, message: Message) -> anyhow::Result<Option<String>> {
         let mut ai: Box<dyn AI> = Box::new(AiBanal);
 
         match message {
+            Message::BoardSize(size) => {
+                *self = Game::default();
+
+                match size {
+                    11 => {
+                        self.board = Board::default();
+                        Ok(Some(String::new()))
+                    }
+                    13 => {
+                        let spaces: Vec<Space> = STARTING_POSITION_13X13
+                            .iter()
+                            .flat_map(|space| space.chars().map(|ch| ch.try_into().unwrap()))
+                            .collect();
+
+                        self.board = Board { spaces };
+                        Ok(Some(String::new()))
+                    }
+                    _ => Err(anyhow::Error::msg("the board size must be 11 or 13")),
+                }
+            }
             Message::Empty => Ok(None),
             Message::FinalStatus => Ok(Some(format!("{}", self.status))),
             Message::GenerateMove => Ok(self.generate_move(&mut ai).map(|play| play.to_string())),
