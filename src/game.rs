@@ -397,10 +397,7 @@ impl Game {
                 *self = Game::default();
 
                 match size {
-                    11 => {
-                        self.board = Board::default();
-                        Ok(Some(String::new()))
-                    }
+                    11 => Ok(Some(String::new())),
                     13 => {
                         let spaces: Vec<Space> = STARTING_POSITION_13X13
                             .iter()
@@ -470,10 +467,6 @@ impl Game {
             }
             Message::ProtocolVersion => Ok(Some("1-beta".to_string())),
             Message::Quit => exit(0),
-            Message::ResetBoard => {
-                *self = Game::default();
-                Ok(Some(String::new()))
-            }
             Message::ShowBoard => Ok(Some(self.board.to_string())),
             Message::TimeSettings(time_settings) => {
                 match time_settings {
