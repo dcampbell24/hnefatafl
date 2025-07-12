@@ -11,7 +11,7 @@ use crate::{
     status::Status,
 };
 
-pub const STARTING_POSITION: [&str; 11] = [
+pub const STARTING_POSITION_11X11: [&str; 11] = [
     "...XXXXX...",
     ".....X.....",
     "...........",
@@ -25,21 +25,54 @@ pub const STARTING_POSITION: [&str; 11] = [
     "...XXXXX...",
 ];
 
-const EXIT_SQUARES: [Vertex; 4] = [
+pub const STARTING_POSITION_13X13: [&str; 13] = [
+    "....XXXXX....",
+    ".....XXX.....",
+    "......O......",
+    "......O......",
+    "X.....O.....X",
+    "XX...O.O...XX",
+    "XXOOO.K.OOOXX",
+    "XX...O.O...XX",
+    "X.....O.....X",
+    "......O......",
+    "......O......",
+    ".....XXX.....",
+    "....XXXXX....",
+];
+
+const EXIT_SQUARES_11X11: [Vertex; 4] = [
     Vertex { x: 0, y: 0 },
     Vertex { x: 10, y: 0 },
     Vertex { x: 0, y: 10 },
     Vertex { x: 10, y: 10 },
 ];
 
-const THRONE: Vertex = Vertex { x: 5, y: 5 };
+const THRONE_11X11: Vertex = Vertex { x: 5, y: 5 };
 
-const RESTRICTED_SQUARES: [Vertex; 5] = [
+const RESTRICTED_SQUARES_11X11: [Vertex; 5] = [
     Vertex { x: 0, y: 0 },
     Vertex { x: 10, y: 0 },
     Vertex { x: 0, y: 10 },
     Vertex { x: 10, y: 10 },
-    THRONE,
+    THRONE_11X11,
+];
+
+const EXIT_SQUARES_13X13: [Vertex; 4] = [
+    Vertex { x: 0, y: 0 },
+    Vertex { x: 12, y: 0 },
+    Vertex { x: 0, y: 12 },
+    Vertex { x: 12, y: 12 },
+];
+
+const THRONE_13X13: Vertex = Vertex { x: 6, y: 6 };
+
+const RESTRICTED_SQUARES_13X13: [Vertex; 5] = [
+    Vertex { x: 0, y: 0 },
+    Vertex { x: 12, y: 0 },
+    Vertex { x: 0, y: 12 },
+    Vertex { x: 12, y: 12 },
+    THRONE_13X13,
 ];
 
 #[derive(Clone, Deserialize, Eq, Hash, PartialEq, Serialize)]
@@ -49,7 +82,12 @@ pub struct Board {
 
 impl Default for Board {
     fn default() -> Self {
-        STARTING_POSITION.try_into().unwrap()
+        let spaces: Vec<Space> = STARTING_POSITION_11X11
+            .iter()
+            .flat_map(|space| space.chars().map(|ch| ch.try_into().unwrap()))
+            .collect();
+
+        Board { spaces }
     }
 }
 
@@ -60,7 +98,7 @@ impl fmt::Debug for Board {
             write!(f, r#"""#)?;
 
             for x in 0..11 {
-                match self.spaces[(y * 10) + x] {
+                match self.spaces[(y * 11) + x] {
                     Space::Attacker => write!(f, "X")?,
                     Space::Empty => write!(f, ".")?,
                     Space::King => write!(f, "K")?,
@@ -108,7 +146,7 @@ impl TryFrom<[&str; 11]> for Board {
     type Error = anyhow::Error;
 
     fn try_from(value: [&str; 11]) -> anyhow::Result<Self> {
-        let mut spaces = [Space::Empty; 11 * 11];
+        let mut spaces = Vec::with_capacity(11 * 11);
         let mut kings = 0;
 
         for (y, row) in value.iter().enumerate() {
@@ -117,7 +155,7 @@ impl TryFrom<[&str; 11]> for Board {
                 match space {
                     Space::Attacker | Space::Defender => {
                         let vertex = Vertex { x, y };
-                        if RESTRICTED_SQUARES.contains(&vertex) {
+                        if on_restricted_square(&value, &vertex) {
                             return Err(anyhow::Error::msg(
                                 "Only the king is allowed on restricted squares!",
                             ));
@@ -132,13 +170,11 @@ impl TryFrom<[&str; 11]> for Board {
                     }
                 }
 
-                spaces[y * 11 + x] = space;
+                spaces.push(space);
             }
         }
 
-        Ok(Self {
-            spaces: spaces.into(),
-        })
+        Ok(Self { spaces })
     }
 }
 
@@ -243,7 +279,7 @@ impl Board {
             let space = self.get(&up_1);
             if space != Space::King && space.role() == role_from.opposite() {
                 if let Some(up_2) = up_1.up() {
-                    if (RESTRICTED_SQUARES.contains(&up_2) && self.get(&up_2) != Space::King)
+                    if (on_restricted_square(&self.spaces, &up_2) && self.get(&up_2) != Space::King)
                         || self.get(&up_2).role() == role_from
                     {
                         if self.set_if_not_king(&up_1, Space::Empty) {
@@ -258,7 +294,8 @@ impl Board {
             let space = self.get(&left_1);
             if space != Space::King && space.role() == role_from.opposite() {
                 if let Some(left_2) = left_1.left() {
-                    if (RESTRICTED_SQUARES.contains(&left_2) && self.get(&left_2) != Space::King)
+                    if (on_restricted_square(&self.spaces, &left_2)
+                        && self.get(&left_2) != Space::King)
                         || self.get(&left_2).role() == role_from
                     {
                         if self.set_if_not_king(&left_1, Space::Empty) {
@@ -273,7 +310,8 @@ impl Board {
             let space = self.get(&down_1);
             if space != Space::King && space.role() == role_from.opposite() {
                 if let Some(down_2) = down_1.down() {
-                    if (RESTRICTED_SQUARES.contains(&down_2) && self.get(&down_2) != Space::King)
+                    if (on_restricted_square(&self.spaces, &down_2)
+                        && self.get(&down_2) != Space::King)
                         || self.get(&down_2).role() == role_from
                     {
                         if self.set_if_not_king(&down_1, Space::Empty) {
@@ -288,7 +326,8 @@ impl Board {
             let space = self.get(&right_1);
             if space != Space::King && space.role() == role_from.opposite() {
                 if let Some(right_2) = right_1.right() {
-                    if (RESTRICTED_SQUARES.contains(&right_2) && self.get(&right_2) != Space::King)
+                    if (on_restricted_square(&self.spaces, &right_2)
+                        && self.get(&right_2) != Space::King)
                         || self.get(&right_2).role() == role_from
                     {
                         if self.set_if_not_king(&right_1, Space::Empty) {
@@ -310,9 +349,11 @@ impl Board {
         captures: &mut Vec<Vertex>,
     ) {
         // bottom row
-        for x_1 in 0..11 {
+        for x_1 in 0..self.len() {
             let vertex_1 = Vertex { x: x_1, y: 10 };
-            if self.get(&vertex_1).role() == role_from || RESTRICTED_SQUARES.contains(&vertex_1) {
+            if self.get(&vertex_1).role() == role_from
+                || on_restricted_square(&self.spaces, &vertex_1)
+            {
                 let mut count = 0;
 
                 if x_1 == 10 {
@@ -335,7 +376,7 @@ impl Board {
                 let finish = start + count;
                 let vertex = Vertex { x: finish, y: 10 };
                 let role = self.get(&vertex).role();
-                if count > 1 && (role == role_from || RESTRICTED_SQUARES.contains(&vertex)) {
+                if count > 1 && (role == role_from || on_restricted_square(&self.spaces, &vertex)) {
                     if vertex_to
                         == &(Vertex {
                             x: start - 1,
@@ -355,9 +396,11 @@ impl Board {
         }
 
         // top row
-        for x_1 in 0..11 {
+        for x_1 in 0..self.len() {
             let vertex_1 = Vertex { x: x_1, y: 0 };
-            if self.get(&vertex_1).role() == role_from || RESTRICTED_SQUARES.contains(&vertex_1) {
+            if self.get(&vertex_1).role() == role_from
+                || on_restricted_square(&self.spaces, &vertex_1)
+            {
                 let mut count = 0;
 
                 if x_1 == 10 {
@@ -380,7 +423,7 @@ impl Board {
                 let finish = start + count;
                 let vertex = Vertex { x: finish, y: 0 };
                 let role = self.get(&vertex).role();
-                if count > 1 && (role == role_from || RESTRICTED_SQUARES.contains(&vertex)) {
+                if count > 1 && (role == role_from || on_restricted_square(&self.spaces, &vertex)) {
                     if vertex_to == &(Vertex { x: start - 1, y: 0 })
                         || vertex_to == &(Vertex { x: finish, y: 0 })
                     {
@@ -396,9 +439,11 @@ impl Board {
         }
 
         // left row
-        for y_1 in 0..11 {
+        for y_1 in 0..self.len() {
             let vertex_1 = Vertex { x: 0, y: y_1 };
-            if self.get(&vertex_1).role() == role_from || RESTRICTED_SQUARES.contains(&vertex_1) {
+            if self.get(&vertex_1).role() == role_from
+                || on_restricted_square(&self.spaces, &vertex_1)
+            {
                 let mut count = 0;
 
                 if y_1 == 10 {
@@ -421,7 +466,7 @@ impl Board {
                 let finish = start + count;
                 let vertex = Vertex { x: 0, y: finish };
                 let role = self.get(&vertex).role();
-                if count > 1 && (role == role_from || RESTRICTED_SQUARES.contains(&vertex)) {
+                if count > 1 && (role == role_from || on_restricted_square(&self.spaces, &vertex)) {
                     if vertex_to == &(Vertex { x: 0, y: start - 1 })
                         || vertex_to == &(Vertex { x: 0, y: finish })
                     {
@@ -437,9 +482,11 @@ impl Board {
         }
 
         // right row
-        for y_1 in 0..11 {
+        for y_1 in 0..self.len() {
             let vertex_1 = Vertex { x: 10, y: y_1 };
-            if self.get(&vertex_1).role() == role_from || RESTRICTED_SQUARES.contains(&vertex_1) {
+            if self.get(&vertex_1).role() == role_from
+                || on_restricted_square(&self.spaces, &vertex_1)
+            {
                 let mut count = 0;
 
                 if y_1 == 10 {
@@ -462,7 +509,7 @@ impl Board {
                 let finish = start + count;
                 let vertex = Vertex { x: 10, y: finish };
                 let role = self.get(&vertex).role();
-                if count > 1 && (role == role_from || RESTRICTED_SQUARES.contains(&vertex)) {
+                if count > 1 && (role == role_from || on_restricted_square(&self.spaces, &vertex)) {
                     if vertex_to
                         == &(Vertex {
                             x: 10,
@@ -512,7 +559,7 @@ impl Board {
                         played_to_capture = true;
                     }
 
-                    if vertex != THRONE && self.get(&vertex) != Space::Attacker {
+                    if !self.on_throne(&vertex) && self.get(&vertex) != Space::Attacker {
                         return Ok(false);
                     }
                 } else {
@@ -524,7 +571,7 @@ impl Board {
                         played_to_capture = true;
                     }
 
-                    if vertex != THRONE && self.get(&vertex) != Space::Attacker {
+                    if !self.on_throne(&vertex) && self.get(&vertex) != Space::Attacker {
                         return Ok(false);
                     }
                 } else {
@@ -536,7 +583,7 @@ impl Board {
                         played_to_capture = true;
                     }
 
-                    if vertex != THRONE && self.get(&vertex) != Space::Attacker {
+                    if !self.on_throne(&vertex) && self.get(&vertex) != Space::Attacker {
                         return Ok(false);
                     }
                 } else {
@@ -548,7 +595,7 @@ impl Board {
                         played_to_capture = true;
                     }
 
-                    if vertex != THRONE && self.get(&vertex) != Space::Attacker {
+                    if !self.on_throne(&vertex) && self.get(&vertex) != Space::Attacker {
                         return Ok(false);
                     }
                 } else {
@@ -760,6 +807,24 @@ impl Board {
     }
 
     #[must_use]
+    pub fn len(&self) -> usize {
+        let len = self.spaces.len();
+
+        if len == 11 * 11 {
+            11
+        } else if len == 13 * 13 {
+            13
+        } else {
+            unreachable!()
+        }
+    }
+
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.spaces.len() == 0
+    }
+
+    #[must_use]
     fn no_attacker_pieces_left(&self) -> bool {
         for y in 0..11 {
             for x in 0..11 {
@@ -771,6 +836,19 @@ impl Board {
         }
 
         true
+    }
+
+    #[must_use]
+    fn on_throne(&self, vertex: &Vertex) -> bool {
+        let len = self.len();
+
+        if len == 11 {
+            THRONE_11X11 == *vertex
+        } else if len == 13 {
+            THRONE_13X13 == *vertex
+        } else {
+            panic!("The board size is {len}!");
+        }
     }
 
     /// # Errors
@@ -868,7 +946,7 @@ impl Board {
             }
         }
 
-        if space_from != Space::King && RESTRICTED_SQUARES.contains(&play.to) {
+        if space_from != Space::King && on_restricted_square(&self.spaces, &play.to) {
             return Err(anyhow::Error::msg(
                 "play: only the king may move to a restricted square",
             ));
@@ -888,7 +966,9 @@ impl Board {
         board.captures(&play.to, role_from, &mut captures);
         board.captures_shield_wall(role_from, &play.to, &mut captures);
 
-        if EXIT_SQUARES.contains(&play.to) {
+        if (self.spaces.len() == 11 * 11 && EXIT_SQUARES_11X11.contains(&play.to))
+            || (self.spaces.len() == 13 * 13 && EXIT_SQUARES_13X13.contains(&play.to))
+        {
             return Ok((board, captures, Status::DefenderWins));
         }
 
@@ -976,5 +1056,26 @@ fn expand_flood_fill(
         true
     } else {
         false
+    }
+}
+
+#[must_use]
+fn on_restricted_square<T>(spaces: &[T], vertex: &Vertex) -> bool {
+    let mut len = spaces.len();
+
+    len = if len == 11 * 11 {
+        11
+    } else if len == 13 * 13 {
+        13
+    } else {
+        len
+    };
+
+    if len == 11 {
+        RESTRICTED_SQUARES_11X11.contains(vertex)
+    } else if len == 13 {
+        RESTRICTED_SQUARES_13X13.contains(vertex)
+    } else {
+        panic!("The board size is {len}!");
     }
 }

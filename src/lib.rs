@@ -199,7 +199,7 @@ mod tests {
     use crate::ai::{AI, AiBanal};
 
     use super::*;
-    use board::{Board, STARTING_POSITION};
+    use board::{Board, STARTING_POSITION_11X11};
     use game::Game;
     use play::Vertex;
     use role::Role;
@@ -272,7 +272,7 @@ mod tests {
     #[test]
     fn starting_position() -> anyhow::Result<()> {
         let game = Game::default();
-        assert_eq!(game.board, STARTING_POSITION.try_into()?);
+        assert_eq!(game.board, STARTING_POSITION_11X11.try_into()?);
 
         Ok(())
     }
@@ -1792,6 +1792,48 @@ mod tests {
     }
 
     // Seven
+
+    #[test]
+    fn kings_not_captured() -> anyhow::Result<()> {
+        let board_1 = [
+            "...........",
+            "...........",
+            "...........",
+            ".....X.....",
+            "...........",
+            ".....KX....",
+            ".....X.....",
+            "...........",
+            "...........",
+            "...........",
+            "...........",
+        ];
+
+        let board_2 = [
+            "...........",
+            "...........",
+            "...........",
+            "...........",
+            ".....X.....",
+            ".....KX....",
+            ".....X.....",
+            "...........",
+            "...........",
+            "...........",
+            "...........",
+        ]
+        .try_into()?;
+
+        let mut game = game::Game {
+            board: board_1.try_into()?,
+            ..Default::default()
+        };
+
+        game.read_line("play attacker f8 f7")?;
+        assert_eq!(game.board, board_2);
+
+        Ok(())
+    }
 
     #[test]
     fn kings_captured_1() -> anyhow::Result<()> {
