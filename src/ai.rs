@@ -6,7 +6,7 @@ use rand::{RngCore, rngs::OsRng};
 use crate::{
     board::Board,
     game::Game,
-    play::{Plae, Play, Vertex},
+    play::{BoardSize, Plae, Play, Vertex},
     role::Role,
     space::Space,
     status::Status,
@@ -35,12 +35,12 @@ impl AI for AiBanal {
                         let play = Plae::Play(Play {
                             role: game.turn,
                             from: Vertex {
-                                board_size,
+                                board_size: BoardSize(board_size),
                                 x: x_from,
                                 y: y_from,
                             },
                             to: Vertex {
-                                board_size,
+                                board_size: BoardSize(board_size),
                                 x: x_to,
                                 y: y_to,
                             },
