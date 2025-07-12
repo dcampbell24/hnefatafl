@@ -74,7 +74,7 @@ use crate::{
 pub enum Message {
     /// `board_size` 11 | `board_size` 13
     ///
-    ///  Sets the board size and sets the board state to initial conditions.
+    ///  Sets the game to initial conditions with board size 11 or 13.
     BoardSize(usize),
 
     /// The empty string or only comments and whitespace was passed.
