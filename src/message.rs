@@ -74,7 +74,7 @@ use crate::{
 pub enum Message {
     /// `board_size` 11 | `board_size` 13
     ///
-    ///  Sets the board size and resets the board state to initial conditions.
+    ///  Sets the board size and sets the board state to initial conditions.
     BoardSize(usize),
 
     /// The empty string or only comments and whitespace was passed.
@@ -130,11 +130,6 @@ pub enum Message {
     /// quits the engine.
     Quit,
 
-    /// `reset_board`
-    ///
-    /// Sets the board to the starting position.
-    ResetBoard,
-
     /// `show_board`
     ///
     /// Displays the board
@@ -153,7 +148,7 @@ pub enum Message {
     Version,
 }
 
-pub static COMMANDS: [&str; 15] = [
+pub static COMMANDS: [&str; 14] = [
     "board_size",
     "final_status",
     "generate_move",
@@ -165,7 +160,6 @@ pub static COMMANDS: [&str; 15] = [
     "play_to",
     "protocol_version",
     "quit",
-    "reset_board",
     "show_board",
     "time_settings",
     "version",
@@ -208,7 +202,6 @@ impl FromStr for Message {
             }
             "protocol_version" => Ok(Self::ProtocolVersion),
             "quit" => Ok(Self::Quit),
-            "reset_board" => Ok(Self::ResetBoard),
             "show_board" => Ok(Self::ShowBoard),
             "time_settings" => {
                 let time_settings = time::TimeSettings::try_from(args)?;
