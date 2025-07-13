@@ -3,7 +3,7 @@
 mdbook build --dest-dir /var/www/html/
 
 cd ..
-cargo build --bin replace_strings
+cargo build --bin replace_strings --no-default-features
 cd website
 ../target/debug/replace_strings
 
