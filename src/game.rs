@@ -8,7 +8,7 @@ use wasm_bindgen::prelude::wasm_bindgen;
 
 use crate::{
     ai::{AI, AiBanal},
-    board::{Board, STARTING_POSITION_13X13},
+    board::{Board, board_11x11, board_13x13},
     message::{COMMANDS, Message},
     play::{BoardSize, Captures, Plae, Play, Plays, Vertex},
     role::Role,
@@ -65,6 +65,7 @@ impl Default for PreviousBoards {
     fn default() -> Self {
         let mut boards = FxHashSet::default();
 
+        // Fixme!
         boards.insert(Board::default());
         Self(boards)
     }
@@ -399,14 +400,12 @@ impl Game {
                 *self = Game::default();
 
                 match size {
-                    11 => Ok(Some(String::new())),
+                    11 => {
+                        self.board = board_11x11();
+                        Ok(Some(String::new()))
+                    }
                     13 => {
-                        let spaces: Vec<Space> = STARTING_POSITION_13X13
-                            .iter()
-                            .flat_map(|space| space.chars().map(|ch| ch.try_into().unwrap()))
-                            .collect();
-
-                        self.board = Board { spaces };
+                        self.board = board_13x13();
                         Ok(Some(String::new()))
                     }
                     _ => Err(anyhow::Error::msg("the board size must be 11 or 13")),

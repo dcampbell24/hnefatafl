@@ -348,6 +348,8 @@ struct Client {
 #[derive(Debug, Default, Deserialize, Serialize)]
 struct NewGameSettings {
     #[serde(skip)]
+    board_size: Option<BoardDimensions>,
+    #[serde(skip)]
     rated: Rated,
     #[serde(skip)]
     role_selected: Option<Role>,
@@ -382,13 +384,6 @@ impl<'a> Client {
     #[allow(clippy::too_many_lines)]
     #[must_use]
     fn board(&self) -> Row<Message> {
-        let (board_size, letter_size, piece_size, spacing) = match self.screen_size {
-            Size::Large | Size::Giant => (75, 55, 60, 6),
-            Size::Medium => (65, 45, 50, 8),
-            Size::Small => (55, 35, 40, 11),
-            Size::Tiny => (40, 20, 25, 16),
-        };
-
         let board = if let Some(game_handle) = &self.archived_game_handle {
             &game_handle.boards[game_handle.play]
         } else {
@@ -399,6 +394,23 @@ impl<'a> Client {
         };
 
         let board_length = board.len();
+
+        let (board_size, letter_size, piece_size, spacing) = match board_length {
+            11 => match self.screen_size {
+                Size::Large | Size::Giant => (75, 55, 60, 6),
+                Size::Medium => (65, 45, 50, 8),
+                Size::Small => (55, 35, 40, 11),
+                Size::Tiny => (40, 20, 25, 16),
+            },
+            13 => match self.screen_size {
+                Size::Large | Size::Giant => (65, 45, 50, 8),
+                Size::Medium => (58, 38, 43, 10),
+                Size::Small => (50, 30, 35, 12), //
+                Size::Tiny => (40, 20, 25, 15),
+            },
+            _ => unreachable!(),
+        };
+
         let letters: Vec<_> = BOARD_LETTERS[..board_length].chars().collect();
         let mut game_display = Row::new().spacing(2);
 
@@ -862,6 +874,7 @@ impl<'a> Client {
                 self.theme = theme;
                 self.save_client();
             }
+            Message::BoardSizeSelected(size) => self.game_settings.board_size = Some(size),
             Message::ConnectedTo(address) => self.connected_to = address,
             Message::DeleteAccount => {
                 if self.delete_account {
@@ -1302,6 +1315,8 @@ impl<'a> Client {
                                 ]) else {
                                     panic!("there should be a valid time settings");
                                 };
+
+                                // Fixme!
 
                                 let mut game = Game {
                                     attacker_time: timed.clone(),
@@ -2083,7 +2098,7 @@ impl<'a> Client {
                 .text_shaping(text::Shaping::Advanced);
 
                 let defender = radio(
-                    t!("defender"),
+                    format!("{},", t!("defender")),
                     Role::Defender,
                     self.game_settings.role_selected,
                     Message::RoleSelected,
@@ -2097,7 +2112,9 @@ impl<'a> Client {
                 let mut new_game = button(
                     text(self.strings["New Game"].as_str()).shaping(text::Shaping::Advanced),
                 );
-                if self.game_settings.role_selected.is_some() {
+                if self.game_settings.role_selected.is_some()
+                    && self.game_settings.board_size.is_some()
+                {
                     new_game = new_game.on_press(Message::GameSubmit);
                 }
 
@@ -2105,10 +2122,27 @@ impl<'a> Client {
                     button(text(self.strings["Leave"].as_str()).shaping(text::Shaping::Advanced))
                         .on_press(Message::Leave);
 
+                let d11x11 = radio(
+                    "11x11",
+                    BoardDimensions::_11x11,
+                    self.game_settings.board_size,
+                    Message::BoardSizeSelected,
+                );
+
+                let d13x13 = radio(
+                    "13x13,",
+                    BoardDimensions::_13x13,
+                    self.game_settings.board_size,
+                    Message::BoardSizeSelected,
+                );
+
                 let mut time = row![
-                    checkbox(t!("timed"), self.game_settings.timed.clone().into())
-                        .text_shaping(text::Shaping::Advanced)
-                        .on_toggle(Message::TimeCheckbox)
+                    checkbox(
+                        format!("{}:", t!("timed")),
+                        self.game_settings.timed.clone().into()
+                    )
+                    .text_shaping(text::Shaping::Advanced)
+                    .on_toggle(Message::TimeCheckbox)
                 ];
 
                 if let TimeSettings::Timed(_) = self.game_settings.timed {
@@ -2132,13 +2166,21 @@ impl<'a> Client {
                     attacker,
                     defender,
                     rated,
+                ]
+                .padding(PADDING)
+                .spacing(SPACING);
+
+                let row_2 = row![
+                    text!("{}:", t!("board size")).shaping(text::Shaping::Advanced),
+                    d11x11,
+                    d13x13,
                     time,
                 ]
                 .padding(PADDING)
                 .spacing(SPACING);
 
-                let row_2 = row![new_game, leave].padding(PADDING).spacing(SPACING);
-                column![row_1, row_2].into()
+                let row_3 = row![new_game, leave].padding(PADDING).spacing(SPACING);
+                column![row_1, row_2, row_3].into()
             }
             Screen::GameNewFrozen => {
                 let Some(role) = self.game_settings.role_selected else {
@@ -2521,6 +2563,7 @@ enum Message {
     ArchivedGames(Vec<ArchivedGame>),
     ArchivedGamesGet,
     ArchivedGameSelected(ArchivedGame),
+    BoardSizeSelected(BoardDimensions),
     ChangeTheme(Theme),
     ConnectedTo(String),
     DeleteAccount,
@@ -2747,6 +2790,12 @@ fn split_whitespace(string: &str) -> (String, bool) {
 fn text_collect(text: SplitAsciiWhitespace<'_>) -> String {
     let text: Vec<&str> = text.collect();
     text.join(" ")
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
+enum BoardDimensions {
+    _11x11,
+    _13x13,
 }
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
