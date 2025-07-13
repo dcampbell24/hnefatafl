@@ -154,12 +154,7 @@ pub struct Board {
 
 impl Default for Board {
     fn default() -> Self {
-        let spaces: Vec<Space> = STARTING_POSITION_11X11
-            .iter()
-            .flat_map(|space| space.chars().map(|ch| ch.try_into().unwrap()))
-            .collect();
-
-        Board { spaces }
+        board_11x11()
     }
 }
 
@@ -360,9 +355,21 @@ impl Board {
             }
         }
 
+        match self.len() {
+            11 => {
+                attacker = 24 - attacker;
+                defender = 12 - defender;
+            }
+            13 => {
+                attacker = 48 - attacker;
+                defender = 24 - defender;
+            }
+            _ => unreachable!(),
+        }
+
         Captured {
-            attacker: 24 - attacker,
-            defender: 12 - defender,
+            attacker,
+            defender,
             king,
         }
     }
@@ -1206,6 +1213,28 @@ impl Board {
             true
         }
     }
+}
+
+#[must_use]
+#[allow(clippy::missing_panics_doc)]
+pub fn board_11x11() -> Board {
+    let spaces: Vec<Space> = STARTING_POSITION_11X11
+        .iter()
+        .flat_map(|space| space.chars().map(|ch| ch.try_into().unwrap()))
+        .collect();
+
+    Board { spaces }
+}
+
+#[must_use]
+#[allow(clippy::missing_panics_doc)]
+pub fn board_13x13() -> Board {
+    let spaces: Vec<Space> = STARTING_POSITION_13X13
+        .iter()
+        .flat_map(|space| space.chars().map(|ch| ch.try_into().unwrap()))
+        .collect();
+
+    Board { spaces }
 }
 
 pub struct Captured {
