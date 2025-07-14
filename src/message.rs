@@ -177,7 +177,10 @@ impl FromStr for Message {
 
         match *args.first().unwrap() {
             "board_size" => Ok(Self::BoardSize(
-                (*args.get(1).context("expected: board_size uint")?).parse()?,
+                (*args
+                    .get(1)
+                    .context("expected: board_size 11 or board_size 13")?)
+                .parse()?,
             )),
             "final_status" => Ok(Self::FinalStatus),
             "generate_move" => Ok(Self::GenerateMove),

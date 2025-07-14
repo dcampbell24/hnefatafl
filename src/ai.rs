@@ -6,7 +6,7 @@ use rand::{RngCore, rngs::OsRng};
 use crate::{
     board::Board,
     game::Game,
-    play::{BoardSize, Plae, Play, Vertex},
+    play::{Plae, Play, Vertex},
     role::Role,
     space::Space,
     status::Status,
@@ -21,26 +21,27 @@ pub struct AiBanal;
 
 impl AI for AiBanal {
     fn generate_move(&mut self, game: &Game) -> Option<Plae> {
-        let board_size = game.board.len();
+        let board_size = game.board.size();
+        let board_size_usize = board_size.into();
 
         if game.status != Status::Ongoing {
             return None;
         }
         let mut game_clone = game.clone();
 
-        for x_from in 0..board_size {
-            for y_from in 0..board_size {
-                for x_to in 0..board_size {
-                    for y_to in 0..board_size {
+        for x_from in 0..board_size_usize {
+            for y_from in 0..board_size_usize {
+                for x_to in 0..board_size_usize {
+                    for y_to in 0..board_size_usize {
                         let play = Plae::Play(Play {
                             role: game.turn,
                             from: Vertex {
-                                board_size: BoardSize(board_size),
+                                board_size,
                                 x: x_from,
                                 y: y_from,
                             },
                             to: Vertex {
-                                board_size: BoardSize(board_size),
+                                board_size,
                                 x: x_to,
                                 y: y_to,
                             },

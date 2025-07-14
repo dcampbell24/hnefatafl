@@ -270,6 +270,7 @@ impl ServerGameLight {
     }
 }
 
+// Fixme!
 impl fmt::Debug for ServerGameLight {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let attacker = if let Some(name) = &self.attacker {

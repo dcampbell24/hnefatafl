@@ -26,7 +26,7 @@ use clap::{CommandFactory, Parser, command};
 use env_logger::Builder;
 use futures::{SinkExt, executor};
 use hnefatafl_copenhagen::LONG_VERSION;
-use hnefatafl_copenhagen::play::BoardSize;
+use hnefatafl_copenhagen::board::BoardSize;
 use hnefatafl_copenhagen::server_game::{ArchivedGame, ArchivedGameHandle};
 use hnefatafl_copenhagen::{
     COPYRIGHT, VERSION_ID,
@@ -348,7 +348,7 @@ struct Client {
 #[derive(Debug, Default, Deserialize, Serialize)]
 struct NewGameSettings {
     #[serde(skip)]
-    board_size: Option<BoardDimensions>,
+    board_size: Option<BoardSize>,
     #[serde(skip)]
     rated: Rated,
     #[serde(skip)]
@@ -393,25 +393,25 @@ impl<'a> Client {
             &game.board
         };
 
-        let board_length = board.len();
+        let board_size = board.size();
+        let board_size_usize: usize = board_size.into();
 
-        let (board_size, letter_size, piece_size, spacing) = match board_length {
-            11 => match self.screen_size {
+        let (board_dimension, letter_size, piece_size, spacing) = match board_size {
+            BoardSize::Size11 => match self.screen_size {
                 Size::Large | Size::Giant => (75, 55, 60, 6),
                 Size::Medium => (65, 45, 50, 8),
                 Size::Small => (55, 35, 40, 11),
                 Size::Tiny => (40, 20, 25, 16),
             },
-            13 => match self.screen_size {
+            BoardSize::Size13 => match self.screen_size {
                 Size::Large | Size::Giant => (65, 45, 50, 8),
                 Size::Medium => (58, 38, 43, 10),
                 Size::Small => (50, 30, 35, 12), //
                 Size::Tiny => (40, 20, 25, 15),
             },
-            _ => unreachable!(),
         };
 
-        let letters: Vec<_> = BOARD_LETTERS[..board_length].chars().collect();
+        let letters: Vec<_> = BOARD_LETTERS[..board_size_usize].chars().collect();
         let mut game_display = Row::new().spacing(2);
 
         let mut possible_moves = None;
@@ -423,8 +423,8 @@ impl<'a> Client {
 
         let mut column = column![text(" ").size(letter_size)].spacing(spacing);
 
-        for i in 0..board_length {
-            let i = board_length - i;
+        for i in 0..board_size_usize {
+            let i = board_size_usize - i;
             column = column.push(text!("{i:2}").size(letter_size).align_y(Vertical::Center));
         }
         game_display = game_display.push(column);
@@ -433,22 +433,22 @@ impl<'a> Client {
             let mut column = Column::new().spacing(2).align_x(Horizontal::Center);
             column = column.push(text(letter).size(letter_size));
 
-            for y in 0..board_length {
+            for y in 0..board_size_usize {
                 let vertex = Vertex {
-                    board_size: BoardSize(board.len()),
+                    board_size: board.size(),
                     x,
                     y,
                 };
 
                 let mut text_ = match board.get(&vertex) {
                     Space::Empty => {
-                        if (board_length == 11
+                        if (board_size == BoardSize::Size11
                             && ((y, x) == (0, 0)
                                 || (y, x) == (10, 0)
                                 || (y, x) == (0, 10)
                                 || (y, x) == (10, 10)
                                 || (y, x) == (5, 5)))
-                            || (board_length == 13
+                            || (board_size == BoardSize::Size13
                                 && ((y, x) == (0, 0)
                                     || (y, x) == (12, 0)
                                     || (y, x) == (0, 12)
@@ -497,7 +497,7 @@ impl<'a> Client {
                     text_ = text("X").size(piece_size).center();
                 }
 
-                let mut button_ = button(text_).width(board_size).height(board_size);
+                let mut button_ = button(text_).width(board_dimension).height(board_dimension);
 
                 if let Some(legal_moves) = &possible_moves {
                     if let Some(vertex_from) = self.play_from.as_ref() {
@@ -526,8 +526,8 @@ impl<'a> Client {
         }
 
         let mut column = column![text(" ").size(letter_size)].spacing(spacing);
-        for i in 0..board_length {
-            let i = board_length - i;
+        for i in 0..board_size_usize {
+            let i = board_size_usize - i;
             column = column.push(text!("{i:2}").size(letter_size).align_y(Vertical::Center));
         }
 
@@ -1023,10 +1023,15 @@ impl<'a> Client {
 
                     self.screen = Screen::GameNewFrozen;
 
-                    // new_game (attacker | defender) (rated | unrated) [TIME_MINUTES] [ADD_SECONDS_AFTER_EACH_MOVE]
+                    let Some(_board_size) = self.game_settings.board_size else {
+                        unreachable!();
+                    };
+
+                    // <- new_game (attacker | defender) (rated | unrated) (TIME_MINUTES | _) (ADD_SECONDS_AFTER_EACH_MOVE | _) board_size
+                    // -> game id rated attacker defender un-timed _ _ challenger challenge_accepted spectators
                     self.send(format!(
                         "new_game {role} {} {:?}\n",
-                        self.game_settings.rated, self.game_settings.timed
+                        self.game_settings.rated, self.game_settings.timed,
                     ));
                 }
             }
@@ -2122,16 +2127,16 @@ impl<'a> Client {
                     button(text(self.strings["Leave"].as_str()).shaping(text::Shaping::Advanced))
                         .on_press(Message::Leave);
 
-                let d11x11 = radio(
+                let size_11x11 = radio(
                     "11x11",
-                    BoardDimensions::_11x11,
+                    BoardSize::Size11,
                     self.game_settings.board_size,
                     Message::BoardSizeSelected,
                 );
 
-                let d13x13 = radio(
+                let size_13x13 = radio(
                     "13x13,",
-                    BoardDimensions::_13x13,
+                    BoardSize::Size13,
                     self.game_settings.board_size,
                     Message::BoardSizeSelected,
                 );
@@ -2172,8 +2177,8 @@ impl<'a> Client {
 
                 let row_2 = row![
                     text!("{}:", t!("board size")).shaping(text::Shaping::Advanced),
-                    d11x11,
-                    d13x13,
+                    size_11x11,
+                    size_13x13,
                     time,
                 ]
                 .padding(PADDING)
@@ -2563,7 +2568,7 @@ enum Message {
     ArchivedGames(Vec<ArchivedGame>),
     ArchivedGamesGet,
     ArchivedGameSelected(ArchivedGame),
-    BoardSizeSelected(BoardDimensions),
+    BoardSizeSelected(BoardSize),
     ChangeTheme(Theme),
     ConnectedTo(String),
     DeleteAccount,
@@ -2790,12 +2795,6 @@ fn split_whitespace(string: &str) -> (String, bool) {
 fn text_collect(text: SplitAsciiWhitespace<'_>) -> String {
     let text: Vec<&str> = text.collect();
     text.join(" ")
-}
-
-#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
-enum BoardDimensions {
-    _11x11,
-    _13x13,
 }
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]

@@ -3,7 +3,7 @@ use std::{fmt, str::FromStr};
 use anyhow::Context;
 use serde::{Deserialize, Serialize};
 
-use crate::{role::Role, time::TimeSettings};
+use crate::{board::BoardSize, role::Role, time::TimeSettings};
 
 pub const BOARD_LETTERS: &str = "ABCDEFGHIJKLM";
 
@@ -125,21 +125,6 @@ impl fmt::Display for Captures {
     }
 }
 
-#[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize)]
-pub struct BoardSize(pub usize);
-
-impl Default for BoardSize {
-    fn default() -> Self {
-        Self(11)
-    }
-}
-
-impl fmt::Display for BoardSize {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
-
 #[derive(Clone, Debug, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize)]
 pub struct Vertex {
     #[serde(default)]
@@ -150,17 +135,19 @@ pub struct Vertex {
 
 impl fmt::Display for Vertex {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let letters = if self.board_size == BoardSize(11) {
+        let letters = if self.board_size == BoardSize::Size11 {
             &BOARD_LETTERS.to_lowercase()
         } else {
             BOARD_LETTERS
         };
 
+        let board_size: usize = self.board_size.into();
+
         write!(
             f,
             "{}{}",
             letters.chars().collect::<Vec<_>>()[self.x],
-            self.board_size.0 - self.y
+            board_size - self.y
         )
     }
 }
@@ -183,7 +170,7 @@ impl FromStr for Vertex {
             if y > 0 && y <= board_size {
                 y = board_size - y;
                 return Ok(Self {
-                    board_size: BoardSize(board_size),
+                    board_size: board_size.try_into()?,
                     x,
                     y,
                 });
@@ -197,10 +184,12 @@ impl FromStr for Vertex {
 impl Vertex {
     #[must_use]
     pub fn fmt_other(&self) -> String {
+        let board_size: usize = self.board_size.into();
+
         format!(
             "{}{}",
             BOARD_LETTERS.chars().collect::<Vec<_>>()[self.x],
-            self.board_size.0 - self.y
+            board_size - self.y
         )
     }
 
