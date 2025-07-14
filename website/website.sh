@@ -14,7 +14,6 @@ Allow: /
 Sitemap: https://hnefatafl.org/sitemap.xml
 EOF
 
-
 mkdir --parents /var/www/html/binaries/debian/
 cp ../../hnefatafl-copenhagen_2.1.0-1_amd64.deb /var/www/html/binaries/debian/
 
