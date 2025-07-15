@@ -110,7 +110,11 @@ impl ArchivedGameHandle {
                     Role::Defender => Role::Attacker,
                 };
             } else {
-                boards.push(Board::default());
+                let board = match game.board_size {
+                    BoardSize::Size11 => board::board_11x11(),
+                    BoardSize::Size13 => board::board_13x13(),
+                };
+                boards.push(board);
             }
         }
 
