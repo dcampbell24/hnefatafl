@@ -25,7 +25,6 @@ use chrono::{Local, Utc};
 use clap::{CommandFactory, Parser, command};
 use env_logger::Builder;
 use futures::{SinkExt, executor};
-use hnefatafl_copenhagen::LONG_VERSION;
 use hnefatafl_copenhagen::board::BoardSize;
 use hnefatafl_copenhagen::server_game::{ArchivedGame, ArchivedGameHandle};
 use hnefatafl_copenhagen::{
@@ -42,6 +41,7 @@ use hnefatafl_copenhagen::{
     status::Status,
     time::{Time, TimeSettings},
 };
+use hnefatafl_copenhagen::{LONG_VERSION, board};
 use iced::keyboard::Key;
 use iced::keyboard::key::Named;
 use iced::widget::{focus_next, focus_previous};
@@ -613,11 +613,10 @@ impl<'a> Client {
                 row![
                     text(attacker_time).size(35).center(),
                     text("🗡").shaping(text::Shaping::Advanced).size(35).center(),
-                    text(captured.defender().to_string())
-                        .shaping(text::Shaping::Advanced)
-                        .size(35),
                 ]
                 .spacing(SPACING),
+                row![text(captured.defender().to_string()).shaping(text::Shaping::Advanced)]
+                    .spacing(SPACING),
             ]
             .spacing(SPACING),
         )
@@ -637,11 +636,10 @@ impl<'a> Client {
                         .shaping(text::Shaping::Advanced)
                         .size(35.0)
                         .center(),
-                    text(captured.attacker().to_string())
-                        .shaping(text::Shaping::Advanced)
-                        .size(35),
                 ]
                 .spacing(SPACING),
+                row![text(captured.attacker().to_string()).shaping(text::Shaping::Advanced)]
+                    .spacing(SPACING),
             ]
             .spacing(SPACING),
         )
@@ -1023,14 +1021,14 @@ impl<'a> Client {
 
                     self.screen = Screen::GameNewFrozen;
 
-                    let Some(_board_size) = self.game_settings.board_size else {
+                    let Some(board_size) = self.game_settings.board_size else {
                         unreachable!();
                     };
 
                     // <- new_game (attacker | defender) (rated | unrated) (TIME_MINUTES | _) (ADD_SECONDS_AFTER_EACH_MOVE | _) board_size
-                    // -> game id rated attacker defender un-timed _ _ challenger challenge_accepted spectators
+                    // -> game id rated attacker defender un-timed _ _ board_size challenger challenge_accepted spectators
                     self.send(format!(
-                        "new_game {role} {} {:?}\n",
+                        "new_game {role} {} {:?} {board_size}\n",
                         self.game_settings.rated, self.game_settings.timed,
                     ));
                 }
@@ -1165,7 +1163,7 @@ impl<'a> Client {
                             Some("display_games") => {
                                 self.games_light.0.clear();
                                 let games: Vec<&str> = text.collect();
-                                for chunks in games.chunks_exact(11) {
+                                for chunks in games.chunks_exact(12) {
                                     let game = ServerGameLight::try_from(chunks)
                                         .expect("the value should be a valid ServerGameLight");
 
@@ -1321,11 +1319,22 @@ impl<'a> Client {
                                     panic!("there should be a valid time settings");
                                 };
 
-                                // Fixme!
+                                let Some(board_size) = text.next() else {
+                                    panic!("there should be a valid board size");
+                                };
+                                let Ok(board_size) = BoardSize::from_str(board_size) else {
+                                    panic!("there should be a valid board size");
+                                };
+
+                                let board = match board_size {
+                                    BoardSize::Size11 => board::board_11x11(),
+                                    BoardSize::Size13 => board::board_13x13(),
+                                };
 
                                 let mut game = Game {
                                     attacker_time: timed.clone(),
                                     defender_time: timed.clone(),
+                                    board,
                                     ..Game::default()
                                 };
 
@@ -2188,16 +2197,9 @@ impl<'a> Client {
                 column![row_1, row_2, row_3].into()
             }
             Screen::GameNewFrozen => {
-                let Some(role) = self.game_settings.role_selected else {
-                    panic!("You can't get to GameNewFrozen unless you have selected a role!");
-                };
-
                 let mut buttons_live = false;
-                let mut game_display = column![
-                    text!("{}: {}", t!("role"), t!(role.to_string()))
-                        .shaping(text::Shaping::Advanced)
-                ]
-                .padding(PADDING);
+                let mut game_display = Column::new().padding(PADDING);
+
                 if let Some(game) = self.games_light.0.get(&self.game_id) {
                     game_display =
                         game_display.push(text(game.to_string()).shaping(text::Shaping::Advanced));

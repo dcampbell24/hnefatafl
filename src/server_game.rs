@@ -8,7 +8,7 @@ use std::{
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    board::Board,
+    board::{self, Board, BoardSize},
     game::{Game, PreviousBoards},
     glicko::Rating,
     play::{PlayRecord, Plays},
@@ -29,6 +29,8 @@ pub struct ArchivedGame {
     pub plays: Vec<PlayRecord>,
     pub status: Status,
     pub texts: VecDeque<String>,
+    #[serde(default)]
+    pub board_size: BoardSize,
 }
 
 impl ArchivedGame {
@@ -44,6 +46,7 @@ impl ArchivedGame {
             plays: game.game.plays.0,
             status: game.game.status,
             texts: game.texts,
+            board_size: game.game.board.size(),
         }
     }
 }
@@ -83,7 +86,11 @@ impl ArchivedGameHandle {
     pub fn new(game: &ArchivedGame) -> ArchivedGameHandle {
         let mut boards = Vec::new();
         let mut turn = Role::default();
-        let mut board = Board::default();
+
+        let mut board = match game.board_size {
+            BoardSize::Size11 => board::board_11x11(),
+            BoardSize::Size13 => board::board_13x13(),
+        };
 
         for play in &game.plays {
             if let Some(play) = &play.play {
@@ -154,6 +161,11 @@ impl ServerGame {
         };
         let plays = Plays(vec![play_record]);
 
+        let board = match game.board_size {
+            BoardSize::Size11 => board::board_11x11(),
+            BoardSize::Size13 => board::board_13x13(),
+        };
+
         Self {
             id: game.id,
             attacker,
@@ -164,6 +176,7 @@ impl ServerGame {
             game: Game {
                 attacker_time: game.timed.clone(),
                 defender_time: game.timed,
+                board,
                 plays,
                 ..Game::default()
             },
@@ -226,6 +239,7 @@ pub struct ServerGameLight {
     pub spectators: HashMap<String, usize>,
     pub challenge_accepted: bool,
     pub game_over: bool,
+    pub board_size: BoardSize,
 }
 
 impl ServerGameLight {
@@ -235,6 +249,7 @@ impl ServerGameLight {
         username: String,
         rated: Rated,
         timed: TimeSettings,
+        board_size: BoardSize,
         index_supplied: usize,
         role: Role,
     ) -> Self {
@@ -246,6 +261,7 @@ impl ServerGameLight {
                 challenger: Challenger::default(),
                 rated,
                 timed,
+                board_size,
                 attacker_channel: Some(index_supplied),
                 defender_channel: None,
                 spectators: HashMap::new(),
@@ -260,6 +276,7 @@ impl ServerGameLight {
                 challenger: Challenger::default(),
                 rated,
                 timed,
+                board_size,
                 attacker_channel: None,
                 defender_channel: Some(index_supplied),
                 spectators: HashMap::new(),
@@ -270,7 +287,6 @@ impl ServerGameLight {
     }
 }
 
-// Fixme!
 impl fmt::Debug for ServerGameLight {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let attacker = if let Some(name) = &self.attacker {
@@ -291,8 +307,13 @@ impl fmt::Debug for ServerGameLight {
 
         write!(
             f,
-            "game {} {attacker} {defender} {} {:?} {:?} {} {spectators}",
-            self.id, self.rated, self.timed, self.challenger, self.challenge_accepted
+            "game {} {attacker} {defender} {} {:?} {} {:?} {} {spectators}",
+            self.id,
+            self.rated,
+            self.timed,
+            self.board_size,
+            self.challenger,
+            self.challenge_accepted,
         )
     }
 }
@@ -313,8 +334,8 @@ impl fmt::Display for ServerGameLight {
 
         write!(
             f,
-            "#{}: {attacker}, {defender}, {}, time: {}, {}",
-            self.id, self.rated, self.timed, self.challenger
+            "#{}\n{attacker}, {defender}, {}\ntime: {}, {}, board size: {}",
+            self.id, self.rated, self.timed, self.challenger, self.board_size,
         )
     }
 }
@@ -330,9 +351,10 @@ impl TryFrom<&[&str]> for ServerGameLight {
         let timed = vector[5];
         let minutes = vector[6];
         let add_seconds = vector[7];
-        let challenger = vector[8];
-        let challenge_accepted = vector[9];
-        let spectators = vector[10];
+        let board_size = vector[8];
+        let challenger = vector[9];
+        let challenge_accepted = vector[10];
+        let spectators = vector[11];
 
         let id = id.parse::<usize>()?;
 
@@ -357,6 +379,8 @@ impl TryFrom<&[&str]> for ServerGameLight {
             _ => TimeSettings::UnTimed,
         };
 
+        let board_size = BoardSize::from_str(board_size)?;
+
         let Ok(challenge_accepted) = <bool as FromStr>::from_str(challenge_accepted) else {
             panic!("the value should be a bool");
         };
@@ -371,6 +395,7 @@ impl TryFrom<&[&str]> for ServerGameLight {
             challenger: Challenger::default(),
             rated: Rated::from_str(rated)?,
             timed,
+            board_size,
             attacker_channel: None,
             defender_channel: None,
             spectators,
