@@ -3,15 +3,16 @@ use std::{fmt, str::FromStr};
 use anyhow::Context;
 use serde::{Deserialize, Serialize};
 
-use crate::{board::BoardSize, role::Role, time::TimeSettings};
+use crate::{board::BoardSize, role::Role, time::TimeLeft};
 
 pub const BOARD_LETTERS: &str = "ABCDEFGHIJKLM";
 
+// Only should store milliseconds left.
 #[derive(Clone, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
 pub struct PlayRecord {
     pub play: Option<Plae>,
-    pub attacker_time: TimeSettings,
-    pub defender_time: TimeSettings,
+    pub attacker_time: TimeLeft,
+    pub defender_time: TimeLeft,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]

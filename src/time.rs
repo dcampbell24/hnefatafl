@@ -45,14 +45,6 @@ pub enum TimeSettings {
     UnTimed,
 }
 
-impl Default for TimeSettings {
-    fn default() -> Self {
-        Self::Timed(Time {
-            ..Default::default()
-        })
-    }
-}
-
 impl TimeSettings {
     #[must_use]
     pub fn fmt_shorthand(&self) -> String {
@@ -60,6 +52,57 @@ impl TimeSettings {
             Self::Timed(time) => time.fmt_shorthand(),
             Self::UnTimed => "-".to_string(),
         }
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
+pub enum TimeLeft {
+    Timed(TimeLeftStruct),
+    UnTimed,
+}
+
+impl From<TimeSettings> for TimeLeft {
+    fn from(value: TimeSettings) -> Self {
+        match value {
+            TimeSettings::Timed(time) => TimeLeft::Timed(TimeLeftStruct {
+                milliseconds_left: time.milliseconds_left,
+            }),
+            TimeSettings::UnTimed => TimeLeft::UnTimed,
+        }
+    }
+}
+
+impl TimeLeft {
+    #[must_use]
+    pub fn fmt_shorthand(&self) -> String {
+        match self {
+            Self::Timed(time) => time.fmt_shorthand(),
+            Self::UnTimed => "-".to_string(),
+        }
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
+pub struct TimeLeftStruct {
+    pub milliseconds_left: i64,
+}
+
+impl TimeLeftStruct {
+    #[must_use]
+    pub fn fmt_shorthand(&self) -> String {
+        let minutes = self.milliseconds_left / 60_000;
+        let mut seconds = self.milliseconds_left % 60_000;
+        seconds /= 1_000;
+
+        format!("{minutes:02}:{seconds:02}")
+    }
+}
+
+impl Default for TimeSettings {
+    fn default() -> Self {
+        Self::Timed(Time {
+            ..Default::default()
+        })
     }
 }
 

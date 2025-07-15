@@ -300,8 +300,8 @@ impl Game {
                         self.status = Status::DefenderWins;
                         self.plays.0.push(crate::play::PlayRecord {
                             play: Some(play.clone()),
-                            attacker_time: self.attacker_time.clone(),
-                            defender_time: self.defender_time.clone(),
+                            attacker_time: self.attacker_time.clone().into(),
+                            defender_time: self.defender_time.clone().into(),
                         });
                         Ok(Captures::default())
                     } else {
@@ -313,8 +313,8 @@ impl Game {
                         self.status = Status::AttackerWins;
                         self.plays.0.push(crate::play::PlayRecord {
                             play: Some(play.clone()),
-                            attacker_time: self.attacker_time.clone(),
-                            defender_time: self.defender_time.clone(),
+                            attacker_time: self.attacker_time.clone().into(),
+                            defender_time: self.defender_time.clone().into(),
                         });
                         Ok(Captures::default())
                     } else {
@@ -340,8 +340,8 @@ impl Game {
                     self.status = status;
                     self.plays.0.push(crate::play::PlayRecord {
                         play: Some(Plae::Play(play.clone())),
-                        attacker_time: self.attacker_time.clone(),
-                        defender_time: self.defender_time.clone(),
+                        attacker_time: self.attacker_time.clone().into(),
+                        defender_time: self.defender_time.clone().into(),
                     });
 
                     if self.status == Status::Ongoing {
