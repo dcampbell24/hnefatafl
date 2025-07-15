@@ -1927,6 +1927,7 @@ impl Server {
         None
     }
 
+    ////
     fn watch_game(
         &mut self,
         username: &str,
@@ -1966,11 +1967,12 @@ impl Server {
         self.clients
             .get(&index_supplied)?
             .send(format!(
-                "= watch_game {} {} {} {:?} {board} {texts}",
+                "= watch_game {} {} {} {:?} {} {board} {texts}",
                 game.attacker.clone()?,
                 game.defender.clone()?,
                 game.rated,
                 game.timed,
+                game.board_size,
             ))
             .ok()?;
 
