@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fmt};
+use std::{collections::HashMap, fmt, str::FromStr};
 
 use rustc_hash::{FxBuildHasher, FxHashSet};
 use serde::{Deserialize, Serialize};
@@ -356,8 +356,8 @@ impl Board {
                 defender = 12 - defender;
             }
             BoardSize::Size13 => {
-                attacker = 48 - attacker;
-                defender = 24 - defender;
+                attacker = 32 - attacker;
+                defender = 16 - defender;
             }
         }
 
@@ -1219,6 +1219,18 @@ impl From<BoardSize> for usize {
         match size {
             BoardSize::Size11 => 11,
             BoardSize::Size13 => 13,
+        }
+    }
+}
+
+impl FromStr for BoardSize {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "11" => Ok(BoardSize::Size11),
+            "13" => Ok(BoardSize::Size13),
+            _ => Err(anyhow::Error::msg(format!("expected 11 or 13, got {s}"))),
         }
     }
 }

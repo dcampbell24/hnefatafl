@@ -22,6 +22,7 @@ use env_logger::Builder;
 use hnefatafl_copenhagen::{
     COPYRIGHT, LONG_VERSION, VERSION_ID,
     accounts::{Account, Accounts, Email},
+    board::BoardSize,
     draw::Draw,
     game::TimeUnix,
     glicko::Outcome,
@@ -598,6 +599,7 @@ impl Server {
                 challenger: Challenger::default(),
                 rated: game_old.rated,
                 timed: game_old.timed,
+                board_size: game_old.board_size,
                 attacker_channel,
                 defender_channel,
                 spectators: game_old.spectators,
@@ -1431,11 +1433,12 @@ impl Server {
             self.clients
                 .get(tx)?
                 .send(format!(
-                    "= join_game {} {} {} {:?}",
+                    "= join_game {} {} {} {:?} {}",
                     game.attacker.clone()?,
                     game.defender.clone()?,
                     game.rated,
                     game.timed,
+                    game.board_size,
                 ))
                 .ok()?;
         }
@@ -1641,7 +1644,7 @@ impl Server {
     }
 
     /// ```sh
-    /// <- new_game attacker rated fischer 900000 10
+    /// <- new_game attacker rated fischer 900000 10 13
     /// -> = new_game game 6 player-1 _ rated fischer 900000 10 _ false {}
     /// ```
     fn new_game(
@@ -1651,7 +1654,7 @@ impl Server {
         command: &str,
         the_rest: &[&str],
     ) -> Option<(mpsc::Sender<String>, bool, String)> {
-        if the_rest.len() < 5 {
+        if the_rest.len() < 6 {
             return Some((
                 self.clients.get(&index_supplied)?.clone(),
                 false,
@@ -1690,8 +1693,11 @@ impl Server {
             ));
         };
 
+        let board_size = the_rest.get(5)?;
+        let board_size = BoardSize::from_str(board_size).ok()?;
+
         info!(
-            "{index_supplied} {username} new_game {} {role} {rated} {timed:?}",
+            "{index_supplied} {username} new_game {} {role} {rated} {timed:?} {board_size}",
             self.game_id
         );
         let game = ServerGameLight::new(
@@ -1699,6 +1705,7 @@ impl Server {
             (*username).to_string(),
             rated,
             timed,
+            board_size,
             index_supplied,
             role,
         );
@@ -1769,11 +1776,12 @@ impl Server {
         self.clients
             .get(&index_supplied)?
             .send(format!(
-                "= resume_game {} {} {} {:?} {board} {texts}",
+                "= resume_game {} {} {} {:?} {} {board} {texts}",
                 game_light.attacker.clone()?,
                 game_light.defender.clone()?,
                 game_light.rated,
                 game_light.timed,
+                game_light.board_size,
             ))
             .ok()?;
 
@@ -2112,11 +2120,11 @@ mod tests {
         assert_eq!(buf, "= change_password\n");
         buf.clear();
 
-        tcp_1.write_all(b"new_game attacker rated fischer 900000 10\n")?;
+        tcp_1.write_all(b"new_game attacker rated fischer 900000 10 11\n")?;
         reader_1.read_line(&mut buf)?;
         assert_eq!(
             buf,
-            "= new_game game 0 player-1 _ rated fischer 900000 10 _ false {}\n"
+            "= new_game game 0 player-1 _ rated fischer 900000 10 11 _ false {}\n"
         );
         buf.clear();
 
@@ -2142,14 +2150,14 @@ mod tests {
         reader_1.read_line(&mut buf)?;
         assert_eq!(
             buf,
-            "= join_game player-1 player-2 rated fischer 900000 10\n"
+            "= join_game player-1 player-2 rated fischer 900000 10 11\n"
         );
         buf.clear();
 
         reader_2.read_line(&mut buf)?;
         assert_eq!(
             buf,
-            "= join_game player-1 player-2 rated fischer 900000 10\n"
+            "= join_game player-1 player-2 rated fischer 900000 10 11\n"
         );
         buf.clear();
 
