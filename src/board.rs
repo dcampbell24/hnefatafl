@@ -260,6 +260,46 @@ impl TryFrom<[&str; 11]> for Board {
     }
 }
 
+impl TryFrom<[&str; 13]> for Board {
+    type Error = anyhow::Error;
+
+    fn try_from(value: [&str; 13]) -> anyhow::Result<Self> {
+        let mut spaces = Vec::with_capacity(13 * 13);
+        let mut kings = 0;
+
+        for (y, row) in value.iter().enumerate() {
+            for (x, ch) in row.chars().enumerate() {
+                let space = ch.try_into()?;
+                match space {
+                    Space::Attacker | Space::Defender => {
+                        let vertex = Vertex {
+                            board_size: BoardSize::Size13,
+                            x,
+                            y,
+                        };
+                        if on_restricted_square(&value, &vertex) {
+                            return Err(anyhow::Error::msg(
+                                "Only the king is allowed on restricted squares!",
+                            ));
+                        }
+                    }
+                    Space::Empty => {}
+                    Space::King => {
+                        kings += 1;
+                        if kings > 1 {
+                            return Err(anyhow::Error::msg("You can only have one king!"));
+                        }
+                    }
+                }
+
+                spaces.push(space);
+            }
+        }
+
+        Ok(Self { spaces })
+    }
+}
+
 impl Board {
     fn able_to_move(&self, play_from: &Vertex) -> bool {
         if let Some(vertex) = play_from.up() {
