@@ -160,8 +160,8 @@ impl ServerGame {
 
         let play_record = PlayRecord {
             play: None,
-            attacker_time: game.timed.clone(),
-            defender_time: game.timed.clone(),
+            attacker_time: game.timed.clone().into(),
+            defender_time: game.timed.clone().into(),
         };
         let plays = Plays(vec![play_record]);
 
