@@ -1759,6 +1759,36 @@ mod tests {
     }
 
     #[test]
+    fn defender_wins_escape_fort_1_13() -> anyhow::Result<()> {
+        let board = [
+            "....OKO......",
+            "....O........",
+            "....OOO......",
+            "....XX.......",
+            ".............",
+            ".............",
+            ".............",
+            ".............",
+            ".............",
+            ".............",
+            ".............",
+            ".............",
+            ".............",
+        ];
+
+        let mut game = game::Game {
+            board: board.try_into()?,
+            turn: Role::Defender,
+            ..Default::default()
+        };
+
+        game.read_line("play defender G11 G12")?;
+        assert_eq!(game.status, Status::DefenderWins);
+
+        Ok(())
+    }
+
+    #[test]
     fn defender_wins_escape_fort_2() -> anyhow::Result<()> {
         let board = [
             "...........",
