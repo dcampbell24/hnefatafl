@@ -11,7 +11,7 @@ use crate::{
     board::{self, Board, BoardSize},
     game::{Game, PreviousBoards},
     glicko::Rating,
-    play::{PlayRecord, Plays},
+    play::{PlayRecordTimed, Plays},
     rating::Rated,
     role::Role,
     status::Status,
@@ -26,7 +26,7 @@ pub struct ArchivedGame {
     pub defender: String,
     pub defender_rating: Rating,
     pub rated: Rated,
-    pub plays: Vec<PlayRecord>,
+    pub plays: Plays,
     pub status: Status,
     pub texts: VecDeque<String>,
     #[serde(default)]
@@ -43,7 +43,7 @@ impl ArchivedGame {
             defender: game.defender,
             defender_rating,
             rated: game.rated,
-            plays: game.game.plays.0,
+            plays: game.game.plays,
             status: game.game.status,
             texts: game.texts,
             board_size: game.game.board.size(),
@@ -92,8 +92,15 @@ impl ArchivedGameHandle {
             BoardSize::Size13 => board::board_13x13(),
         };
 
-        for play in &game.plays {
-            if let Some(play) = &play.play {
+        let plays = match &game.plays {
+            Plays::PlayRecordsTimed(plays) => {
+                plays.iter().map(|record| record.play.clone()).collect()
+            }
+            Plays::PlayRecords(plays) => plays.clone(),
+        };
+
+        for play in &plays {
+            if let Some(play) = &play {
                 board
                     .play(
                         play,
@@ -158,12 +165,14 @@ impl ServerGame {
             panic!("attacker and defender should be set");
         };
 
-        let play_record = PlayRecord {
-            play: None,
-            attacker_time: game.timed.clone().into(),
-            defender_time: game.timed.clone().into(),
+        let plays = match game.timed {
+            TimeSettings::Timed(time) => Plays::PlayRecordsTimed(vec![PlayRecordTimed {
+                play: None,
+                attacker_time: time.into(),
+                defender_time: time.into(),
+            }]),
+            TimeSettings::UnTimed => Plays::PlayRecords(vec![None]),
         };
-        let plays = Plays(vec![play_record]);
 
         let board = match game.board_size {
             BoardSize::Size11 => board::board_11x11(),

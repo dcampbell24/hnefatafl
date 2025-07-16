@@ -137,7 +137,7 @@ pub enum Message {
 
     /// `time_settings un-timed` | `time_settings fischer MILLISECONDS ADD_SECONDS`
     ///
-    /// Choose the time settings. For fischer time **MILLISECONDS** is the starting time and
+    /// Choose the time settings and reset the plays. For fischer time **MILLISECONDS** is the starting time and
     /// **ADD_SECONDS** is how much time to add after each move. **ADD_SECONDS** may be zero, in
     /// which case the time settings are really absolute time.
     TimeSettings(time::TimeSettings),
