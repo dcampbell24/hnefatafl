@@ -21,8 +21,8 @@ pub struct AiBanal;
 
 impl AI for AiBanal {
     fn generate_move(&mut self, game: &Game) -> Option<Plae> {
-        let board_size = game.board.size();
-        let board_size_usize = board_size.into();
+        let size = game.board.size();
+        let board_size_usize = size.into();
 
         if game.status != Status::Ongoing {
             return None;
@@ -36,12 +36,12 @@ impl AI for AiBanal {
                         let play = Plae::Play(Play {
                             role: game.turn,
                             from: Vertex {
-                                board_size,
+                                size,
                                 x: x_from,
                                 y: y_from,
                             },
                             to: Vertex {
-                                board_size,
+                                size,
                                 x: x_to,
                                 y: y_to,
                             },
