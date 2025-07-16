@@ -193,19 +193,19 @@ impl fmt::Display for Captures {
 
 #[derive(Clone, Debug, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize)]
 pub struct Vertex {
-    pub board_size: BoardSize,
+    pub size: BoardSize,
     pub x: usize,
     pub y: usize,
 }
 
 impl fmt::Display for Vertex {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let letters = match self.board_size {
+        let letters = match self.size {
             BoardSize::_11 => &BOARD_LETTERS.to_lowercase(),
             BoardSize::_13 => BOARD_LETTERS,
         };
 
-        let board_size: usize = self.board_size.into();
+        let board_size: usize = self.size.into();
 
         write!(
             f,
@@ -223,18 +223,18 @@ impl FromStr for Vertex {
         let mut chars = vertex.chars();
 
         if let Some(mut ch) = chars.next() {
-            let board_size = if ch.is_lowercase() { 11 } else { 13 };
+            let size = if ch.is_lowercase() { 11 } else { 13 };
 
             ch = ch.to_ascii_uppercase();
-            let x = BOARD_LETTERS[..board_size]
+            let x = BOARD_LETTERS[..size]
                 .find(ch)
                 .context("play: the first letter is not a legal char")?;
 
             let mut y = chars.as_str().parse()?;
-            if y > 0 && y <= board_size {
-                y = board_size - y;
+            if y > 0 && y <= size {
+                y = size - y;
                 return Ok(Self {
-                    board_size: board_size.try_into()?,
+                    size: size.try_into()?,
                     x,
                     y,
                 });
@@ -250,7 +250,7 @@ impl Vertex {
     pub fn up(&self) -> Option<Vertex> {
         if self.y > 0 {
             Some(Vertex {
-                board_size: self.board_size,
+                size: self.size,
                 x: self.x,
                 y: self.y - 1,
             })
@@ -263,7 +263,7 @@ impl Vertex {
     pub fn left(&self) -> Option<Vertex> {
         if self.x > 0 {
             Some(Vertex {
-                board_size: self.board_size,
+                size: self.size,
                 x: self.x - 1,
                 y: self.y,
             })
@@ -274,11 +274,11 @@ impl Vertex {
 
     #[must_use]
     pub fn down(&self) -> Option<Vertex> {
-        let board_size: usize = self.board_size.into();
+        let board_size: usize = self.size.into();
 
         if self.y < board_size - 1 {
             Some(Vertex {
-                board_size: self.board_size,
+                size: self.size,
                 x: self.x,
                 y: self.y + 1,
             })
@@ -289,11 +289,11 @@ impl Vertex {
 
     #[must_use]
     pub fn right(&self) -> Option<Vertex> {
-        let board_size: usize = self.board_size.into();
+        let board_size: usize = self.size.into();
 
         if self.x < board_size - 1 {
             Some(Vertex {
-                board_size: self.board_size,
+                size: self.size,
                 x: self.x + 1,
                 y: self.y,
             })
@@ -304,7 +304,7 @@ impl Vertex {
 
     #[must_use]
     pub fn touches_wall(&self) -> bool {
-        let board_size: usize = self.board_size.into();
+        let board_size: usize = self.size.into();
 
         self.x == 0 || self.x == board_size - 1 || self.y == 0 || self.y == board_size - 1
     }

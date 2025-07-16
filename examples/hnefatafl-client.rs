@@ -436,7 +436,7 @@ impl<'a> Client {
 
             for y in 0..board_size_usize {
                 let vertex = Vertex {
-                    board_size: board.size(),
+                    size: board.size(),
                     x,
                     y,
                 };

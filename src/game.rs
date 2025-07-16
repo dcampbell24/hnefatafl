@@ -135,8 +135,8 @@ impl Game {
 impl Game {
     #[must_use]
     pub fn all_legal_moves(&self) -> LegalMoves {
-        let board_size = self.board.size();
-        let board_size_usize = board_size.into();
+        let size = self.board.size();
+        let board_size_usize = size.into();
 
         let mut possible_vertexes = Vec::new();
         let mut legal_moves = LegalMoves {
@@ -146,7 +146,7 @@ impl Game {
 
         for y in 0..board_size_usize {
             for x in 0..board_size_usize {
-                let vertex = Vertex { board_size, x, y };
+                let vertex = Vertex { size, x, y };
                 if self.board.get(&vertex).role() == self.turn {
                     possible_vertexes.push(vertex);
                 }
@@ -158,7 +158,7 @@ impl Game {
 
             for y in 0..board_size_usize {
                 for x in 0..board_size_usize {
-                    let vertex_to = Vertex { board_size, x, y };
+                    let vertex_to = Vertex { size, x, y };
                     let play = Play {
                         role: self.turn,
                         from: vertex_from.clone(),
@@ -214,26 +214,22 @@ impl Game {
 
     #[must_use]
     pub fn exit_one(&self) -> bool {
-        let board_size = self.board.size();
-        let board_size_usize: usize = board_size.into();
+        let size = self.board.size();
+        let board_size_usize: usize = size.into();
 
-        let exit_1 = Vertex {
-            board_size,
-            x: 0,
-            y: 0,
-        };
+        let exit_1 = Vertex { size, x: 0, y: 0 };
         let exit_2 = Vertex {
-            board_size,
+            size,
             x: board_size_usize - 1,
             y: 0,
         };
         let exit_3 = Vertex {
-            board_size,
+            size,
             x: 0,
             y: board_size_usize - 1,
         };
         let exit_4 = Vertex {
-            board_size,
+            size,
             x: board_size_usize - 1,
             y: board_size_usize - 1,
         };
