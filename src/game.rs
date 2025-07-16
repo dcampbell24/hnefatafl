@@ -65,8 +65,8 @@ impl Default for PreviousBoards {
     fn default() -> Self {
         let mut boards = FxHashSet::default();
 
-        // Fixme!
-        boards.insert(Board::default());
+        boards.insert(board_11x11());
+        boards.insert(board_13x13());
         Self(boards)
     }
 }
