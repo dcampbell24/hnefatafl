@@ -88,8 +88,8 @@ impl ArchivedGameHandle {
         let mut turn = Role::default();
 
         let mut board = match game.board_size {
-            BoardSize::Size11 => board::board_11x11(),
-            BoardSize::Size13 => board::board_13x13(),
+            BoardSize::_11 => board::board_11x11(),
+            BoardSize::_13 => board::board_13x13(),
         };
 
         let plays = match &game.plays {
@@ -118,8 +118,8 @@ impl ArchivedGameHandle {
                 };
             } else {
                 let board = match game.board_size {
-                    BoardSize::Size11 => board::board_11x11(),
-                    BoardSize::Size13 => board::board_13x13(),
+                    BoardSize::_11 => board::board_11x11(),
+                    BoardSize::_13 => board::board_13x13(),
                 };
                 boards.push(board);
             }
@@ -175,8 +175,8 @@ impl ServerGame {
         };
 
         let board = match game.board_size {
-            BoardSize::Size11 => board::board_11x11(),
-            BoardSize::Size13 => board::board_13x13(),
+            BoardSize::_11 => board::board_11x11(),
+            BoardSize::_13 => board::board_13x13(),
         };
 
         Self {

@@ -200,10 +200,9 @@ pub struct Vertex {
 
 impl fmt::Display for Vertex {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let letters = if self.board_size == BoardSize::Size11 {
-            &BOARD_LETTERS.to_lowercase()
-        } else {
-            BOARD_LETTERS
+        let letters = match self.board_size {
+            BoardSize::_11 => &BOARD_LETTERS.to_lowercase(),
+            BoardSize::_13 => BOARD_LETTERS,
         };
 
         let board_size: usize = self.board_size.into();

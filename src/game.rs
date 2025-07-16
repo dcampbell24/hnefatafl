@@ -485,8 +485,8 @@ impl Game {
             Message::TimeSettings(time_settings) => {
                 self.plays = Plays::new(&time_settings);
                 self.board = match self.board.size() {
-                    BoardSize::Size11 => board_11x11(),
-                    BoardSize::Size13 => board_13x13(),
+                    BoardSize::_11 => board_11x11(),
+                    BoardSize::_13 => board_13x13(),
                 };
 
                 match time_settings {
