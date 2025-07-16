@@ -43,51 +43,51 @@ pub const STARTING_POSITION_13X13: [&str; 13] = [
 
 const EXIT_SQUARES_11X11: [Vertex; 4] = [
     Vertex {
-        board_size: BoardSize::Size11,
+        board_size: BoardSize::_11,
         x: 0,
         y: 0,
     },
     Vertex {
-        board_size: BoardSize::Size11,
+        board_size: BoardSize::_11,
         x: 10,
         y: 0,
     },
     Vertex {
-        board_size: BoardSize::Size11,
+        board_size: BoardSize::_11,
         x: 0,
         y: 10,
     },
     Vertex {
-        board_size: BoardSize::Size11,
+        board_size: BoardSize::_11,
         x: 10,
         y: 10,
     },
 ];
 
 const THRONE_11X11: Vertex = Vertex {
-    board_size: BoardSize::Size11,
+    board_size: BoardSize::_11,
     x: 5,
     y: 5,
 };
 
 const RESTRICTED_SQUARES_11X11: [Vertex; 5] = [
     Vertex {
-        board_size: BoardSize::Size11,
+        board_size: BoardSize::_11,
         x: 0,
         y: 0,
     },
     Vertex {
-        board_size: BoardSize::Size11,
+        board_size: BoardSize::_11,
         x: 10,
         y: 0,
     },
     Vertex {
-        board_size: BoardSize::Size11,
+        board_size: BoardSize::_11,
         x: 0,
         y: 10,
     },
     Vertex {
-        board_size: BoardSize::Size11,
+        board_size: BoardSize::_11,
         x: 10,
         y: 10,
     },
@@ -96,51 +96,51 @@ const RESTRICTED_SQUARES_11X11: [Vertex; 5] = [
 
 const EXIT_SQUARES_13X13: [Vertex; 4] = [
     Vertex {
-        board_size: BoardSize::Size13,
+        board_size: BoardSize::_13,
         x: 0,
         y: 0,
     },
     Vertex {
-        board_size: BoardSize::Size13,
+        board_size: BoardSize::_13,
         x: 12,
         y: 0,
     },
     Vertex {
-        board_size: BoardSize::Size13,
+        board_size: BoardSize::_13,
         x: 0,
         y: 12,
     },
     Vertex {
-        board_size: BoardSize::Size13,
+        board_size: BoardSize::_13,
         x: 12,
         y: 12,
     },
 ];
 
 const THRONE_13X13: Vertex = Vertex {
-    board_size: BoardSize::Size13,
+    board_size: BoardSize::_13,
     x: 6,
     y: 6,
 };
 
 const RESTRICTED_SQUARES_13X13: [Vertex; 5] = [
     Vertex {
-        board_size: BoardSize::Size13,
+        board_size: BoardSize::_13,
         x: 0,
         y: 0,
     },
     Vertex {
-        board_size: BoardSize::Size13,
+        board_size: BoardSize::_13,
         x: 12,
         y: 0,
     },
     Vertex {
-        board_size: BoardSize::Size13,
+        board_size: BoardSize::_13,
         x: 0,
         y: 12,
     },
     Vertex {
-        board_size: BoardSize::Size13,
+        board_size: BoardSize::_13,
         x: 12,
         y: 12,
     },
@@ -233,7 +233,7 @@ impl TryFrom<[&str; 11]> for Board {
                 match space {
                     Space::Attacker | Space::Defender => {
                         let vertex = Vertex {
-                            board_size: BoardSize::Size11,
+                            board_size: BoardSize::_11,
                             x,
                             y,
                         };
@@ -273,7 +273,7 @@ impl TryFrom<[&str; 13]> for Board {
                 match space {
                     Space::Attacker | Space::Defender => {
                         let vertex = Vertex {
-                            board_size: BoardSize::Size13,
+                            board_size: BoardSize::_13,
                             x,
                             y,
                         };
@@ -391,11 +391,11 @@ impl Board {
         }
 
         match self.size() {
-            BoardSize::Size11 => {
+            BoardSize::_11 => {
                 attacker = 24 - attacker;
                 defender = 12 - defender;
             }
-            BoardSize::Size13 => {
+            BoardSize::_13 => {
                 attacker = 32 - attacker;
                 defender = 16 - defender;
             }
@@ -1037,9 +1037,9 @@ impl Board {
         let len = self.spaces.len();
 
         if len == 11 * 11 {
-            BoardSize::Size11
+            BoardSize::_11
         } else if len == 13 * 13 {
-            BoardSize::Size13
+            BoardSize::_13
         } else {
             unreachable!()
         }
@@ -1241,15 +1241,15 @@ impl Board {
 )]
 pub enum BoardSize {
     #[default]
-    Size11,
-    Size13,
+    _11,
+    _13,
 }
 
 impl fmt::Display for BoardSize {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            BoardSize::Size11 => write!(f, "11"),
-            BoardSize::Size13 => write!(f, "13"),
+            BoardSize::_11 => write!(f, "11"),
+            BoardSize::_13 => write!(f, "13"),
         }
     }
 }
@@ -1257,8 +1257,8 @@ impl fmt::Display for BoardSize {
 impl From<BoardSize> for usize {
     fn from(size: BoardSize) -> Self {
         match size {
-            BoardSize::Size11 => 11,
-            BoardSize::Size13 => 13,
+            BoardSize::_11 => 11,
+            BoardSize::_13 => 13,
         }
     }
 }
@@ -1268,8 +1268,8 @@ impl FromStr for BoardSize {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "11" => Ok(BoardSize::Size11),
-            "13" => Ok(BoardSize::Size13),
+            "11" => Ok(BoardSize::_11),
+            "13" => Ok(BoardSize::_13),
             _ => Err(anyhow::Error::msg(format!("expected 11 or 13, got {s}"))),
         }
     }
@@ -1280,8 +1280,8 @@ impl TryFrom<usize> for BoardSize {
 
     fn try_from(value: usize) -> Result<Self, Self::Error> {
         match value {
-            11 => Ok(BoardSize::Size11),
-            13 => Ok(BoardSize::Size13),
+            11 => Ok(BoardSize::_11),
+            13 => Ok(BoardSize::_13),
             _ => Err(anyhow::Error::msg(format!(
                 "an invalid board size was passed: {value}"
             ))),

@@ -398,13 +398,13 @@ impl<'a> Client {
         let board_size_usize: usize = board_size.into();
 
         let (board_dimension, letter_size, piece_size, spacing) = match board_size {
-            BoardSize::Size11 => match self.screen_size {
+            BoardSize::_11 => match self.screen_size {
                 Size::Large | Size::Giant => (75, 55, 60, 6),
                 Size::Medium => (65, 45, 50, 8),
                 Size::Small => (55, 35, 40, 11),
                 Size::Tiny => (40, 20, 25, 16),
             },
-            BoardSize::Size13 => match self.screen_size {
+            BoardSize::_13 => match self.screen_size {
                 Size::Large | Size::Giant => (65, 45, 50, 8),
                 Size::Medium => (58, 38, 43, 10),
                 Size::Small => (50, 30, 35, 12),
@@ -443,13 +443,13 @@ impl<'a> Client {
 
                 let mut text_ = match board.get(&vertex) {
                     Space::Empty => {
-                        if (board_size == BoardSize::Size11
+                        if (board_size == BoardSize::_11
                             && ((y, x) == (0, 0)
                                 || (y, x) == (10, 0)
                                 || (y, x) == (0, 10)
                                 || (y, x) == (10, 10)
                                 || (y, x) == (5, 5)))
-                            || (board_size == BoardSize::Size13
+                            || (board_size == BoardSize::_13
                                 && ((y, x) == (0, 0)
                                     || (y, x) == (12, 0)
                                     || (y, x) == (0, 12)
@@ -1330,8 +1330,8 @@ impl<'a> Client {
                                 };
 
                                 let board = match board_size {
-                                    BoardSize::Size11 => board::board_11x11(),
-                                    BoardSize::Size13 => board::board_13x13(),
+                                    BoardSize::_11 => board::board_11x11(),
+                                    BoardSize::_13 => board::board_13x13(),
                                 };
 
                                 let mut game = Game {
@@ -2142,14 +2142,14 @@ impl<'a> Client {
 
                 let size_11x11 = radio(
                     "11x11",
-                    BoardSize::Size11,
+                    BoardSize::_11,
                     self.game_settings.board_size,
                     Message::BoardSizeSelected,
                 );
 
                 let size_13x13 = radio(
                     "13x13,",
-                    BoardSize::Size13,
+                    BoardSize::_13,
                     self.game_settings.board_size,
                     Message::BoardSizeSelected,
                 );
