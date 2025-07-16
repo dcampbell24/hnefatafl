@@ -29,7 +29,6 @@ pub struct ArchivedGame {
     pub plays: Plays,
     pub status: Status,
     pub texts: VecDeque<String>,
-    #[serde(default)]
     pub board_size: BoardSize,
 }
 

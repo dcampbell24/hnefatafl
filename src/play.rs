@@ -193,7 +193,6 @@ impl fmt::Display for Captures {
 
 #[derive(Clone, Debug, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize)]
 pub struct Vertex {
-    #[serde(default)]
     pub board_size: BoardSize,
     pub x: usize,
     pub y: usize,
