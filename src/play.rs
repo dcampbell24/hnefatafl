@@ -249,17 +249,6 @@ impl FromStr for Vertex {
 
 impl Vertex {
     #[must_use]
-    pub fn fmt_other(&self) -> String {
-        let board_size: usize = self.board_size.into();
-
-        format!(
-            "{}{}",
-            BOARD_LETTERS.chars().collect::<Vec<_>>()[self.x],
-            board_size - self.y
-        )
-    }
-
-    #[must_use]
     pub fn up(&self) -> Option<Vertex> {
         if self.y > 0 {
             Some(Vertex {
@@ -287,7 +276,9 @@ impl Vertex {
 
     #[must_use]
     pub fn down(&self) -> Option<Vertex> {
-        if self.y < 10 {
+        let board_size: usize = self.board_size.into();
+
+        if self.y < board_size - 1 {
             Some(Vertex {
                 board_size: self.board_size,
                 x: self.x,
@@ -300,7 +291,9 @@ impl Vertex {
 
     #[must_use]
     pub fn right(&self) -> Option<Vertex> {
-        if self.x < 10 {
+        let board_size: usize = self.board_size.into();
+
+        if self.x < board_size - 1 {
             Some(Vertex {
                 board_size: self.board_size,
                 x: self.x + 1,
@@ -313,6 +306,8 @@ impl Vertex {
 
     #[must_use]
     pub fn touches_wall(&self) -> bool {
-        self.x == 0 || self.x == 10 || self.y == 0 || self.y == 10
+        let board_size: usize = self.board_size.into();
+
+        self.x == 0 || self.x == board_size - 1 || self.y == 0 || self.y == board_size - 1
     }
 }
