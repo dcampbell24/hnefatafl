@@ -962,6 +962,32 @@ Get Archived Games:
 
 My Games Only:
   en-US: My Games Only
+  zh-CN: 仅限我的游戏
+  es: Solo mis juegos
+  ar: ألعابي فقط
+  id: Hanya Game Saya
+  pt-BR: Somente meus jogos
+  pt-PT: Somente os meus jogos
+  fr: Mes jeux uniquement
+  ja: 私のゲームのみ
+  ru: Только мои игры
+  de: Nur meine Spiele
+  is-IS: Aðeins mínir leikir
+  is-RU: ᛆᚧᛂᛁᚿᛋ ᛘᛇᚿᛁᚱ ᛚᛂᛁᚴᛁᚱ
+  sv-SE: Bara mina spel
 
 board size:
   en-US: board size
+  zh-CN: 板尺寸
+  es: tamaño del tablero
+  ar: حجم اللوحة
+  id: ukuran papan
+  pt-BR: tamanho do tabuleiro
+  pt-PT: tamanho do tabuleiro
+  fr: taille de la planche
+  ja: ボードサイズ
+  ru: размер платы
+  de: Brettgröße
+  is-IS: stærð borðs
+  is-RU: ᛋᛐᛅᚱᚧ ᛒᚮᚱᚧᛋ
+  sv-SE: brädestorlek
