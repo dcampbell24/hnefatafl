@@ -1684,6 +1684,7 @@ impl<'a> Client {
         let mut defenders = Column::new().spacing(SPACING_B);
         let mut ratings = Column::new().spacing(SPACING_B);
         let mut timings = Column::new().spacing(SPACING_B);
+        let mut sizes = Column::new().spacing(SPACING_B);
         let mut buttons = Column::new().spacing(SPACING);
 
         let mut server_games: Vec<&ServerGameLight> = self.games_light.0.values().collect();
@@ -1706,6 +1707,7 @@ impl<'a> Client {
 
             ratings = ratings.push(text(game.rated.to_string()));
             timings = timings.push(text(game.timed.to_string()));
+            sizes = sizes.push(text(game.board_size.to_string()));
 
             let mut buttons_row = Row::new().spacing(SPACING);
 
@@ -1736,7 +1738,7 @@ impl<'a> Client {
             buttons = buttons.push(buttons_row);
         }
 
-        let game_id = t!("game id");
+        let game_id = t!("ID");
         let game_ids = column![
             text(game_id.to_string()).shaping(text::Shaping::Advanced),
             text("-".repeat(game_id.chars().count())),
@@ -1771,10 +1773,17 @@ impl<'a> Client {
             timings
         ]
         .padding(PADDING);
+        let size = t!("size");
+        let sizes = column![
+            text(size.to_string()).shaping(text::Shaping::Advanced),
+            text("-".repeat(size.chars().count())),
+            sizes
+        ]
+        .padding(PADDING);
         let buttons = column![text(""), text(""), buttons].padding(PADDING);
 
         scrollable(row![
-            game_ids, attackers, defenders, ratings, timings, buttons
+            game_ids, attackers, defenders, ratings, timings, sizes, buttons
         ])
     }
 
@@ -2295,6 +2304,7 @@ impl<'a> Client {
 
                 let my_games = checkbox(t!("My Games Only"), self.my_games_only)
                     .size(32)
+                    .text_shaping(text::Shaping::Advanced)
                     .on_toggle(Message::MyGamesOnly);
 
                 let get_archived_games = button(

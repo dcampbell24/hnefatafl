@@ -32,21 +32,21 @@ password:
   is-RU: ᛚᛣᚴᛁᛚᚮᚱᚧ
   sv-SE: lösenord
 
-game id:
-  en-US: game id
-  zh-CN: 游戏ID
-  es: identificación del juego
-  ar: معرف اللعبة
-  id: ID permainan
-  pt-BR: id do jogo
-  pt-PT: id do jogo
-  fr: identifiant de jeu
-  ja: ゲームID
-  ru: идентификатор игры
-  de: Spiel-ID
-  is-IS: leikjaauðkenni
-  is-RU: ᛚᛂᛁᚴᛃᛆᛆᚢᚧᚴᛂᚿᚿᛁ
-  sv-SE: spel-ID
+ID:
+  en-US: ID
+  zh-CN: ID
+  es: IDENTIFICACIÓN
+  ar: بطاقة تعريف
+  id: PENGENAL
+  pt-BR: EU IA
+  pt-PT: EU IA
+  fr: IDENTIFIANT
+  ja: ID
+  ru: ИДЕНТИФИКАТОР
+  de: AUSWEIS
+  is-IS: Auðkenni
+  is-RU: ᛆᚢᚧᚴᛂᚿᚿᛁ
+  sv-SE: ID
 
 attacker:
   en-US: attacker
@@ -991,3 +991,19 @@ board size:
   is-IS: stærð borðs
   is-RU: ᛋᛐᛅᚱᚧ ᛒᚮᚱᚧᛋ
   sv-SE: brädestorlek
+
+size:
+  en-US: size
+  zh-CN: 尺寸
+  es: tamaño
+  ar: مقاس
+  id: ukuran
+  pt-BR: tamanho
+  pt-PT: tamanho
+  fr: taille
+  ja: サイズ
+  ru: размер
+  de: Größe
+  is-IS: stærð
+  is-RU: ᛋᛐᛅᚱᚧ
+  sv-SE: storlek
