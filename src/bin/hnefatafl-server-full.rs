@@ -104,7 +104,12 @@ fn main() -> anyhow::Result<()> {
         match &fs::read_to_string(&data_file) {
             Ok(string) => match ron::from_str(string.as_str()) {
                 Ok(server_ron) => server = server_ron,
-                Err(err) => return Err(anyhow::Error::msg(err.to_string())),
+                Err(err) => {
+                    return Err(anyhow::Error::msg(format!(
+                        "RON: {}: {err}",
+                        data_file.display(),
+                    )));
+                }
             },
             Err(err) => match err.kind() {
                 ErrorKind::NotFound => {}
@@ -112,12 +117,21 @@ fn main() -> anyhow::Result<()> {
             },
         }
 
-        match fs::read_to_string(archived_games_file()) {
+        let archived_games_file = archived_games_file();
+        match fs::read_to_string(&archived_games_file) {
             Ok(archived_games_string) => {
                 let mut archived_games = Vec::new();
 
                 for line in archived_games_string.lines() {
-                    let archived_game: ArchivedGame = ron::from_str(line)?;
+                    let archived_game: ArchivedGame = match ron::from_str(line) {
+                        Ok(archived_game) => archived_game,
+                        Err(err) => {
+                            return Err(anyhow::Error::msg(format!(
+                                "RON: {}: {err}",
+                                archived_games_file.display(),
+                            )));
+                        }
+                    };
                     archived_games.push(archived_game);
                 }
 

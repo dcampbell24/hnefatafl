@@ -3,13 +3,16 @@ use std::{fmt, str::FromStr};
 use anyhow::Context;
 use serde::{Deserialize, Serialize};
 
-use crate::{board::BoardSize, role::Role, time::TimeLeft};
+use crate::{
+    board::BoardSize,
+    role::Role,
+    time::{TimeLeft, TimeSettings},
+};
 
 pub const BOARD_LETTERS: &str = "ABCDEFGHIJKLM";
 
-// Only should store milliseconds left.
 #[derive(Clone, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
-pub struct PlayRecord {
+pub struct PlayRecordTimed {
     pub play: Option<Plae>,
     pub attacker_time: TimeLeft,
     pub defender_time: TimeLeft,
@@ -81,18 +84,80 @@ impl TryFrom<Vec<&str>> for Plae {
     }
 }
 
-#[derive(Clone, Debug, Default, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
-pub struct Plays(pub Vec<PlayRecord>);
+#[derive(Clone, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
+pub enum Plays {
+    PlayRecordsTimed(Vec<PlayRecordTimed>),
+    PlayRecords(Vec<Option<Plae>>),
+}
+
+impl Plays {
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        match self {
+            Plays::PlayRecordsTimed(plays) => plays.is_empty(),
+            Plays::PlayRecords(plays) => plays.is_empty(),
+        }
+    }
+
+    #[must_use]
+    pub fn len(&self) -> usize {
+        match self {
+            Plays::PlayRecordsTimed(plays) => plays.len(),
+            Plays::PlayRecords(plays) => plays.len(),
+        }
+    }
+
+    #[must_use]
+    pub fn new(time_settings: &TimeSettings) -> Self {
+        match time_settings {
+            TimeSettings::Timed(_) => Plays::PlayRecordsTimed(Vec::new()),
+            TimeSettings::UnTimed => Plays::PlayRecords(Vec::new()),
+        }
+    }
+
+    #[must_use]
+    pub fn time_left(&self, role: Role, index: usize) -> String {
+        match self {
+            Plays::PlayRecordsTimed(plays) => match role {
+                Role::Attacker => plays[index].attacker_time.to_string(),
+                Role::Defender => plays[index].defender_time.to_string(),
+                Role::Roleless => unreachable!(),
+            },
+            Plays::PlayRecords(_) => "-".to_string(),
+        }
+    }
+}
+
+impl Default for Plays {
+    fn default() -> Self {
+        Plays::PlayRecordsTimed(Vec::new())
+    }
+}
 
 impl fmt::Display for Plays {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if !self.0.is_empty() {
-            writeln!(f)?;
-        }
+        match self {
+            Plays::PlayRecordsTimed(plays) => {
+                if !plays.is_empty() {
+                    writeln!(f)?;
+                }
 
-        for play in &self.0 {
-            if let Some(play) = &play.play {
-                write!(f, "    {play}")?;
+                for play in plays {
+                    if let Some(play) = &play.play {
+                        write!(f, "    {play}")?;
+                    }
+                }
+            }
+            Plays::PlayRecords(plays) => {
+                if !plays.is_empty() {
+                    writeln!(f)?;
+                }
+
+                for play in plays {
+                    if let Some(play) = &play {
+                        write!(f, "    {play}")?;
+                    }
+                }
             }
         }
 

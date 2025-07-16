@@ -3,7 +3,7 @@ use std::fmt;
 use anyhow::Context;
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
+#[derive(Clone, Copy, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
 pub struct Time {
     pub add_seconds: i64,
     pub milliseconds_left: i64,
@@ -55,46 +55,39 @@ impl TimeSettings {
     }
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
-pub enum TimeLeft {
-    Timed(TimeLeftStruct),
-    UnTimed,
-}
-
-impl From<TimeSettings> for TimeLeft {
-    fn from(value: TimeSettings) -> Self {
-        match value {
-            TimeSettings::Timed(time) => TimeLeft::Timed(TimeLeftStruct {
-                milliseconds_left: time.milliseconds_left,
-            }),
-            TimeSettings::UnTimed => TimeLeft::UnTimed,
-        }
-    }
-}
-
-impl TimeLeft {
-    #[must_use]
-    pub fn fmt_shorthand(&self) -> String {
-        match self {
-            Self::Timed(time) => time.fmt_shorthand(),
-            Self::UnTimed => "-".to_string(),
-        }
-    }
-}
-
-#[derive(Clone, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
-pub struct TimeLeftStruct {
+#[derive(Clone, Copy, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
+pub struct TimeLeft {
     pub milliseconds_left: i64,
 }
 
-impl TimeLeftStruct {
-    #[must_use]
-    pub fn fmt_shorthand(&self) -> String {
+impl fmt::Display for TimeLeft {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let minutes = self.milliseconds_left / 60_000;
         let mut seconds = self.milliseconds_left % 60_000;
         seconds /= 1_000;
 
-        format!("{minutes:02}:{seconds:02}")
+        write!(f, "{minutes:02}:{seconds:02}")
+    }
+}
+
+impl From<Time> for TimeLeft {
+    fn from(time: Time) -> Self {
+        TimeLeft {
+            milliseconds_left: time.milliseconds_left,
+        }
+    }
+}
+
+impl TryFrom<TimeSettings> for TimeLeft {
+    type Error = anyhow::Error;
+
+    fn try_from(time: TimeSettings) -> Result<TimeLeft, anyhow::Error> {
+        match time {
+            TimeSettings::Timed(time) => Ok(TimeLeft {
+                milliseconds_left: time.milliseconds_left,
+            }),
+            TimeSettings::UnTimed => Err(anyhow::Error::msg("the time settings are un-timed")),
+        }
     }
 }
 

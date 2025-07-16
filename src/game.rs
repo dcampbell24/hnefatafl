@@ -8,9 +8,9 @@ use wasm_bindgen::prelude::wasm_bindgen;
 
 use crate::{
     ai::{AI, AiBanal},
-    board::{Board, board_11x11, board_13x13},
+    board::{Board, BoardSize, board_11x11, board_13x13},
     message::{COMMANDS, Message},
-    play::{Captures, Plae, Play, Plays, Vertex},
+    play::{Captures, Plae, Play, PlayRecordTimed, Plays, Vertex},
     role::Role,
     space::Space,
     status::Status,
@@ -75,7 +75,7 @@ impl fmt::Display for Game {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(f, "{}\n", self.board)?;
 
-        if self.plays.0.is_empty() {
+        if self.plays.is_empty() {
             writeln!(f, "plays: {}", self.plays)?;
         } else {
             write!(f, "plays: {}", self.plays)?;
@@ -265,6 +265,7 @@ impl Game {
     /// # Errors
     ///
     /// If the game is already over or the move is illegal.
+    #[allow(clippy::too_many_lines)]
     pub fn play(&mut self, play: &Plae) -> anyhow::Result<Captures> {
         if self.status == Status::Ongoing {
             if let (status, TimeSettings::Timed(timer), TimeUnix::Time(time)) = match self.turn {
@@ -298,11 +299,18 @@ impl Game {
                 Plae::AttackerResigns => {
                     if self.turn == Role::Attacker {
                         self.status = Status::DefenderWins;
-                        self.plays.0.push(crate::play::PlayRecord {
-                            play: Some(play.clone()),
-                            attacker_time: self.attacker_time.clone().into(),
-                            defender_time: self.defender_time.clone().into(),
-                        });
+
+                        match &mut self.plays {
+                            Plays::PlayRecordsTimed(plays) => {
+                                plays.push(PlayRecordTimed {
+                                    play: Some(play.clone()),
+                                    attacker_time: self.attacker_time.clone().try_into()?,
+                                    defender_time: self.defender_time.clone().try_into()?,
+                                });
+                            }
+                            Plays::PlayRecords(plays) => plays.push(Some(play.clone())),
+                        }
+
                         Ok(Captures::default())
                     } else {
                         Err(anyhow::Error::msg("You can't resign for the other player."))
@@ -311,11 +319,18 @@ impl Game {
                 Plae::DefenderResigns => {
                     if self.turn == Role::Defender {
                         self.status = Status::AttackerWins;
-                        self.plays.0.push(crate::play::PlayRecord {
-                            play: Some(play.clone()),
-                            attacker_time: self.attacker_time.clone().into(),
-                            defender_time: self.defender_time.clone().into(),
-                        });
+
+                        match &mut self.plays {
+                            Plays::PlayRecordsTimed(plays) => {
+                                plays.push(PlayRecordTimed {
+                                    play: Some(play.clone()),
+                                    attacker_time: self.attacker_time.clone().try_into()?,
+                                    defender_time: self.defender_time.clone().try_into()?,
+                                });
+                            }
+                            Plays::PlayRecords(plays) => plays.push(Some(play.clone())),
+                        }
+
                         Ok(Captures::default())
                     } else {
                         Err(anyhow::Error::msg("You can't resign for the other player."))
@@ -338,11 +353,17 @@ impl Game {
                     )?;
 
                     self.status = status;
-                    self.plays.0.push(crate::play::PlayRecord {
-                        play: Some(Plae::Play(play.clone())),
-                        attacker_time: self.attacker_time.clone().into(),
-                        defender_time: self.defender_time.clone().into(),
-                    });
+
+                    match &mut self.plays {
+                        Plays::PlayRecordsTimed(plays) => {
+                            plays.push(PlayRecordTimed {
+                                play: Some(Plae::Play(play.clone())),
+                                attacker_time: self.attacker_time.clone().try_into()?,
+                                defender_time: self.defender_time.clone().try_into()?,
+                            });
+                        }
+                        Plays::PlayRecords(plays) => plays.push(Some(Plae::Play(play.clone()))),
+                    }
 
                     if self.status == Status::Ongoing {
                         self.turn = self.turn.opposite();
@@ -462,9 +483,15 @@ impl Game {
             Message::Quit => exit(0),
             Message::ShowBoard => Ok(Some(self.board.to_string())),
             Message::TimeSettings(time_settings) => {
+                self.plays = Plays::new(&time_settings);
+                self.board = match self.board.size() {
+                    BoardSize::Size11 => board_11x11(),
+                    BoardSize::Size13 => board_13x13(),
+                };
+
                 match time_settings {
                     TimeSettings::Timed(time) => {
-                        self.attacker_time = TimeSettings::Timed(time.clone());
+                        self.attacker_time = TimeSettings::Timed(time);
                         self.defender_time = TimeSettings::Timed(time);
                         self.time = TimeUnix::default();
                     }

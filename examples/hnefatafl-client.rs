@@ -26,6 +26,7 @@ use clap::{CommandFactory, Parser, command};
 use env_logger::Builder;
 use futures::{SinkExt, executor};
 use hnefatafl_copenhagen::board::BoardSize;
+use hnefatafl_copenhagen::play::Plays;
 use hnefatafl_copenhagen::server_game::{ArchivedGame, ArchivedGameHandle};
 use hnefatafl_copenhagen::{
     COPYRIGHT, VERSION_ID,
@@ -406,7 +407,7 @@ impl<'a> Client {
             BoardSize::Size13 => match self.screen_size {
                 Size::Large | Size::Giant => (65, 45, 50, 8),
                 Size::Medium => (58, 38, 43, 10),
-                Size::Small => (50, 30, 35, 12), //
+                Size::Small => (50, 30, 35, 12),
                 Size::Tiny => (40, 20, 25, 15),
             },
         };
@@ -554,13 +555,15 @@ impl<'a> Client {
                 (
                     &game_handle.game.id,
                     &game_handle.game.attacker,
-                    game_handle.game.plays[game_handle.play]
-                        .attacker_time
-                        .fmt_shorthand(),
+                    game_handle
+                        .game
+                        .plays
+                        .time_left(Role::Attacker, game_handle.play),
                     &game_handle.game.defender,
-                    game_handle.game.plays[game_handle.play]
-                        .defender_time
-                        .fmt_shorthand(),
+                    game_handle
+                        .game
+                        .plays
+                        .time_left(Role::Defender, game_handle.play),
                     &game_handle.boards[game_handle.play],
                     game_handle.play,
                     status,
@@ -1334,6 +1337,7 @@ impl<'a> Client {
                                 let mut game = Game {
                                     attacker_time: timed.clone(),
                                     defender_time: timed.clone(),
+                                    plays: Plays::new(&timed),
                                     board,
                                     ..Game::default()
                                 };
