@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.1] - 2025-07-17
+
 - hnefatafl-client: display strange characters in names.
 - hnefatafl-client: rated / unrated -> yes / no
 
@@ -324,7 +326,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - hnefatafl-client: Make users and games scrollable.
 - Make all the features dependencies.
 
-[unreleased]: https://github.com/dcampbell24/hnefatafl/compare/v3.0.0...main
+[unreleased]: https://github.com/dcampbell24/hnefatafl/compare/v3.0.1...main
+[3.0.1]: https://github.com/dcampbell24/hnefatafl/compare/v3.0.0...v3.0.1
 [3.0.0]: https://github.com/dcampbell24/hnefatafl/compare/v2.1.0...v3.0.0
 [2.1.0]: https://github.com/dcampbell24/hnefatafl/compare/v2.0.3...v2.1.0
 [2.0.3]: https://github.com/dcampbell24/hnefatafl/compare/v1.2.1...v2.0.3
