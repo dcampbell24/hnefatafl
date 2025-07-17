@@ -590,7 +590,7 @@ impl<'a> Client {
                     &self.defender,
                     self.time_defender.fmt_shorthand(),
                     &game.board,
-                    game.previous_boards.0.len(),
+                    game.previous_boards.0.len() - 1,
                     &self.status,
                     &self.texts_game,
                 )

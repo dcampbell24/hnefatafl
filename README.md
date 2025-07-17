@@ -9,6 +9,8 @@
 [docs-rs]: https://img.shields.io/badge/docs.rs-66c2a5?logo=docs.rs
 [docs-rs-link]: https://docs.rs/hnefatafl-copenhagen
 
+![Opening Game](website/src/screenshots/opening_game.png)
+
 An [engine] similar to the [Go Text Protocol], a [client], and a [server].
 
 [engine]: https://github.com/dcampbell24/hnefatafl/blob/main/src/bin/hnefatafl-text-protocol.rs
