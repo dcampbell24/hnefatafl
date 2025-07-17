@@ -1007,3 +1007,51 @@ size:
   is-IS: stærð
   is-RU: ᛋᛐᛅᚱᚧ
   sv-SE: storlek
+
+none:
+  en-US: none
+  zh-CN: 没有任何
+  es: ninguno
+  ar: لا أحد
+  id: tidak ada
+  pt-BR: nenhum
+  pt-PT: nenhum
+  fr: aucun
+  ja: なし
+  ru: никто
+  de: keiner
+  is-IS: enginn
+  is-RU: ᛂᚿᚵᛁᚿᚿ
+  sv-SE: ingen
+
+unrated:
+  en-US: unrated
+  zh-CN: 未分级
+  es: sin calificación
+  ar: غير مصنف
+  id: tidak diberi peringkat
+  pt-BR: sem classificação
+  pt-PT: sem classificação
+  fr: non classé
+  ja: 未評価
+  ru: без рейтинга
+  de: nicht bewertet
+  is-IS: óflokkað
+  is-RU: ᛟᚠᛚᚮᚴᚴᛆᚧ
+  sv-SE: oklassificerad
+
+time:
+  en-US: time
+  zh-CN: 时间
+  es: tiempo
+  ar: وقت
+  id: waktu
+  pt-BR: tempo
+  pt-PT: hora
+  fr: temps
+  ja: 時間
+  ru: время
+  de: Zeit
+  is-IS: tími
+  is-RU: ᛐᛇᛘᛁ
+  sv-SE: tid

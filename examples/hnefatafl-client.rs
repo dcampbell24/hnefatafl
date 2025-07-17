@@ -2214,8 +2214,8 @@ impl<'a> Client {
                 let mut game_display = Column::new().padding(PADDING);
 
                 if let Some(game) = self.games_light.0.get(&self.game_id) {
-                    game_display =
-                        game_display.push(text(game.to_string()).shaping(text::Shaping::Advanced));
+                    game_display = game_display
+                        .push(text(display_game(game)).shaping(text::Shaping::Advanced));
 
                     if game.attacker.is_some() && game.defender.is_some() {
                         buttons_live = true;
@@ -2838,4 +2838,32 @@ struct User {
     draws: String,
     rating: Rating,
     logged_in: bool,
+}
+
+fn display_game(game: &ServerGameLight) -> String {
+    let attacker = t!("attacker");
+    let defender = t!("defender");
+    let rated = t!(game.rated.to_string());
+    let none = t!("none");
+
+    let attacker = if let Some(name) = &game.attacker {
+        &format!("{attacker}: {name}")
+    } else {
+        &format!("{attacker}: {none}")
+    };
+
+    let defender = if let Some(name) = &game.defender {
+        &format!("{defender}: {name}")
+    } else {
+        &format!("{defender}: {none}")
+    };
+
+    format!(
+        "# {}\n{attacker}, {defender}, {rated}\n{}: {}, {}: {}",
+        game.id,
+        t!("time"),
+        game.timed,
+        t!("board size"),
+        game.board_size,
+    )
 }
