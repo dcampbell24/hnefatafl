@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.0] - 2025-07-16
+
+- Add 13x13 board size, add translations, change the structs and serialization format.
 - hnefatafl-server-full: leave all active games when you quit without clicking quit.
 - hnefatafl-client: add review only my games checkbox.
 - Update the documentation.
@@ -318,7 +321,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - hnefatafl-client: Make users and games scrollable.
 - Make all the features dependencies.
 
-[unreleased]: https://github.com/dcampbell24/hnefatafl/compare/v2.1.0...main
+[unreleased]: https://github.com/dcampbell24/hnefatafl/compare/v3.0.0...main
+[3.0.0]: https://github.com/dcampbell24/hnefatafl/compare/v2.1.0...v3.0.0
 [2.1.0]: https://github.com/dcampbell24/hnefatafl/compare/v2.0.3...v2.1.0
 [2.0.3]: https://github.com/dcampbell24/hnefatafl/compare/v1.2.1...v2.0.3
 [1.2.1]:  https://github.com/dcampbell24/hnefatafl/compare/v1.2.0...v1.2.1
