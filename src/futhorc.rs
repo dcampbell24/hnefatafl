@@ -23,7 +23,7 @@ use wasm_bindgen::prelude::wasm_bindgen;
 /// sudo cp -r pkg /var/www/html
 /// ```
 ///
-/// Or if you installed the package via npm (does not exist at the moment):
+/// Or if you installed the package via npm:
 ///
 /// ```sh
 /// sudo mkdir --parent /var/www/html/pkg
