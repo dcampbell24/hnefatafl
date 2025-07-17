@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- hnefatafl-client: don't log when the rodio stream is closed.
+
 ## [3.0.1] - 2025-07-17
 
 - hnefatafl-client: display strange characters in names.
