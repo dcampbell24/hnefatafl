@@ -54,7 +54,7 @@ impl fmt::Display for ArchivedGame {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(
             f,
-            "Game ID: {}, Attacker: {} {}, Defender: {} {}, Size: {}",
+            "ID: {}, Attacker: {} {}, Defender: {} {}, Size: {}",
             self.id,
             self.attacker,
             self.attacker_rating.to_string_rounded(),
@@ -327,28 +327,6 @@ impl fmt::Debug for ServerGameLight {
             self.board_size,
             self.challenger,
             self.challenge_accepted,
-        )
-    }
-}
-
-impl fmt::Display for ServerGameLight {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let attacker = if let Some(name) = &self.attacker {
-            &format!("attacker: {name}")
-        } else {
-            "attacker: none"
-        };
-
-        let defender = if let Some(name) = &self.defender {
-            &format!("defender: {name}")
-        } else {
-            "defender: none"
-        };
-
-        write!(
-            f,
-            "#{}\n{attacker}, {defender}, {}\ntime: {}, {}, board size: {}",
-            self.id, self.rated, self.timed, self.challenger, self.board_size,
         )
     }
 }
