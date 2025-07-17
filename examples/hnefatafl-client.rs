@@ -611,6 +611,7 @@ impl<'a> Client {
                 row![
                     text(attacker).shaping(text::Shaping::Advanced),
                     text(attacker_rating).center(),
+                    text(captured.defender().to_string()).shaping(text::Shaping::Advanced)
                 ]
                 .spacing(SPACING),
                 row![
@@ -618,8 +619,6 @@ impl<'a> Client {
                     text("🗡").shaping(text::Shaping::Advanced).size(35).center(),
                 ]
                 .spacing(SPACING),
-                row![text(captured.defender().to_string()).shaping(text::Shaping::Advanced)]
-                    .spacing(SPACING),
             ]
             .spacing(SPACING),
         )
@@ -631,6 +630,7 @@ impl<'a> Client {
                 row![
                     text(defender).shaping(text::Shaping::Advanced),
                     text(defender_rating).center(),
+                    text(captured.attacker().to_string()).shaping(text::Shaping::Advanced)
                 ]
                 .spacing(SPACING),
                 row![
@@ -641,8 +641,6 @@ impl<'a> Client {
                         .center(),
                 ]
                 .spacing(SPACING),
-                row![text(captured.attacker().to_string()).shaping(text::Shaping::Advanced)]
-                    .spacing(SPACING),
             ]
             .spacing(SPACING),
         )
