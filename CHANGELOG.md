@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- hnefatafl-client: display strange characters in names.
+- hnefatafl-client: rated / unrated -> yes / no
+
 ## [3.0.0] - 2025-07-16
 
 - Add 13x13 board size, add translations, change the structs and serialization format.

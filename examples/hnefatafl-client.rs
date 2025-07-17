@@ -1677,6 +1677,7 @@ impl<'a> Client {
         users
     }
 
+    #[allow(clippy::too_many_lines)]
     #[must_use]
     fn games(&self) -> Scrollable<Message> {
         let mut game_ids = Column::new().spacing(SPACING_B);
@@ -1695,17 +1696,20 @@ impl<'a> Client {
             game_ids = game_ids.push(text(id));
 
             attackers = if let Some(attacker) = &game.attacker {
-                attackers.push(text(attacker))
+                attackers.push(text(attacker).shaping(text::Shaping::Advanced))
             } else {
-                attackers.push(text("none"))
+                attackers.push(text(t!("none")).shaping(text::Shaping::Advanced))
             };
             defenders = if let Some(defender) = &game.defender {
-                defenders.push(text(defender))
+                defenders.push(text(defender).shaping(text::Shaping::Advanced))
             } else {
-                defenders.push(text("none"))
+                defenders.push(text(t!("none")).shaping(text::Shaping::Advanced))
             };
 
-            ratings = ratings.push(text(game.rated.to_string()));
+            let rating: bool = game.rated.into();
+            let rating = if rating { t!("yes") } else { t!("no") };
+            ratings = ratings.push(text(rating).shaping(text::Shaping::Advanced));
+
             timings = timings.push(text(game.timed.to_string()));
             sizes = sizes.push(text(game.board_size.to_string()));
 
@@ -1861,7 +1865,7 @@ impl<'a> Client {
         for user in self.users_sorted() {
             if logged_in == user.logged_in {
                 ratings = ratings.push(text(user.rating.to_string_rounded()));
-                usernames = usernames.push(text(user.name));
+                usernames = usernames.push(text(user.name).shaping(text::Shaping::Advanced));
                 wins = wins.push(text(user.wins));
                 losses = losses.push(text(user.losses));
                 draws = draws.push(text(user.draws));
