@@ -1263,12 +1263,12 @@ impl<'a> Client {
 
                                 if !self.sound_muted {
                                     thread::spawn(move || {
-                                        let (_stream, stream_handle) =
-                                            rodio::OutputStream::try_default()?;
+                                        let stream_handle =
+                                            rodio::OutputStreamBuilder::open_default_stream()?;
 
                                         let game_over = include_bytes!("game_over.ogg");
                                         let cursor = Cursor::new(game_over);
-                                        let sound = stream_handle.play_once(cursor)?;
+                                        let sound = rodio::play(stream_handle.mixer(), cursor)?;
                                         sound.set_volume(1.0);
                                         thread::sleep(Duration::from_secs(1));
 
@@ -1834,7 +1834,7 @@ impl<'a> Client {
         let capture = !self.captures.is_empty();
 
         thread::spawn(move || {
-            let (_stream, stream_handle) = rodio::OutputStream::try_default()?;
+            let stream_handle = rodio::OutputStreamBuilder::open_default_stream()?;
             let cursor = if capture {
                 let capture_ogg = include_bytes!("capture.ogg").to_vec();
                 Cursor::new(capture_ogg)
@@ -1842,7 +1842,7 @@ impl<'a> Client {
                 let move_ogg = include_bytes!("move.ogg").to_vec();
                 Cursor::new(move_ogg)
             };
-            let sound = stream_handle.play_once(cursor)?;
+            let sound = rodio::play(stream_handle.mixer(), cursor)?;
             sound.set_volume(1.0);
             thread::sleep(Duration::from_secs(1));
 
