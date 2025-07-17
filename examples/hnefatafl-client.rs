@@ -4,8 +4,8 @@
 #[macro_use]
 extern crate rust_i18n;
 
+use std::io::Cursor;
 use std::io::Read;
-use std::{io::Cursor, time::Duration};
 
 use std::{
     collections::{HashMap, HashSet, VecDeque},
@@ -1268,7 +1268,7 @@ impl<'a> Client {
                                         let cursor = Cursor::new(game_over);
                                         let sound = rodio::play(stream.mixer(), cursor)?;
                                         sound.set_volume(1.0);
-                                        thread::sleep(Duration::from_secs(1));
+                                        sound.sleep_until_end();
 
                                         stream.log_on_drop(false);
                                         Ok::<(), anyhow::Error>(())
@@ -1847,7 +1847,7 @@ impl<'a> Client {
             };
             let sound = rodio::play(stream.mixer(), cursor)?;
             sound.set_volume(1.0);
-            thread::sleep(Duration::from_secs(1));
+            sound.sleep_until_end();
 
             stream.log_on_drop(false);
             Ok::<(), anyhow::Error>(())
