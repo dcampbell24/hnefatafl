@@ -1,11 +1,12 @@
-/website/index-now
 /profile.json
 /profile.json.gz
 /ssl
 /target
 /website/book
+/website/index-now
 /.vs
 
 CMU.in.IPA.txt
 hnefatafl-client-installer-3.0.1.exe
 hnefatafl-copenhagen.3.0.1.nupkg
+names.txt
