@@ -60,7 +60,7 @@ In your terminal run the following to run the client with [Rust's][2] cargo:
 
 ```sh
 git clone https://github.com/dcampbell24/hnefatafl.git
-cd hnefatafl-copenhagen
+cd hnefatafl
 cargo run --release --example hnefatafl-client
 ```
 
