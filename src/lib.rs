@@ -33,7 +33,7 @@ pub mod status;
 pub mod time;
 
 pub static HOME: &str = "hnefatafl-copenhagen";
-pub static VERSION_ID: &str = "3b769ca0";
+pub static VERSION_ID: &str = "ad746a65";
 
 pub static COPYRIGHT: &str = r#".SH COPYRIGHT
 Copyright (c) 2025 David Lawrence Campbell
