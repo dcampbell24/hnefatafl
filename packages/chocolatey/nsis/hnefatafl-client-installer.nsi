@@ -11,7 +11,7 @@
 
   ;Name and file
   Name "Hnefatafl"
-  OutFile "..\hnefatafl-copenhagen\tools\hnefatafl-client-installer-3.0.1.exe"
+  OutFile "..\hnefatafl-copenhagen\tools\hnefatafl-client-installer-4.0.0.exe"
   Unicode True
 
   ;Default installation folder
@@ -69,7 +69,7 @@ SectionEnd
 ;Descriptions
 
   ;Language strings
-  LangString DESC_SecHnefatafl ${LANG_ENGLISH} "Hnefatafl Copenhagen client that connects to a server."
+  LangString DESC_SecHnefatafl ${LANG_ENGLISH} "Copenhagen Hnefatafl client that connects to a server."
 
   ;Assign language strings to sections
   !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
