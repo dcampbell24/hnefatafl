@@ -26,19 +26,19 @@ pub const STARTING_POSITION_11X11: [&str; 11] = [
 ];
 
 pub const STARTING_POSITION_13X13: [&str; 13] = [
-    "....XXXXX....",
-    ".....XXX.....",
-    "......O......",
-    "......O......",
+    "...XXXXXXX...",
+    "......X......",
+    ".............",
     "X.....O.....X",
-    "XX...O.O...XX",
-    "XXOOO.K.OOOXX",
-    "XX...O.O...XX",
     "X.....O.....X",
-    "......O......",
-    "......O......",
-    ".....XXX.....",
-    "....XXXXX....",
+    "X....OOO....X",
+    "XX.OOOKOOO.XX",
+    "X....OOO....X",
+    "X.....O.....X",
+    "X.....O.....X",
+    ".............",
+    "......X......",
+    "...XXXXXXX...",
 ];
 
 const EXIT_SQUARES_11X11: [Vertex; 4] = [

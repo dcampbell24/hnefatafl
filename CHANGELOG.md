@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.0.0] - 2024-07-19
+
+- Change the initial board layout for 13x13.
 - hnefatafl-client: don't log when the rodio stream is closed.
 
 ## [3.0.1] - 2025-07-17
@@ -328,19 +331,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - hnefatafl-client: Make users and games scrollable.
 - Make all the features dependencies.
 
-[unreleased]: https://github.com/dcampbell24/hnefatafl/compare/v3.0.1...main
+[unreleased]: https://github.com/dcampbell24/hnefatafl/compare/v4.0.0...main
+[4.0.0]: https://github.com/dcampbell24/hnefatafl/compare/v3.0.1...v4.0.0
 [3.0.1]: https://github.com/dcampbell24/hnefatafl/compare/v3.0.0...v3.0.1
 [3.0.0]: https://github.com/dcampbell24/hnefatafl/compare/v2.1.0...v3.0.0
 [2.1.0]: https://github.com/dcampbell24/hnefatafl/compare/v2.0.3...v2.1.0
 [2.0.3]: https://github.com/dcampbell24/hnefatafl/compare/v1.2.1...v2.0.3
-[1.2.1]:  https://github.com/dcampbell24/hnefatafl/compare/v1.2.0...v1.2.1
-[1.2.0]:  https://github.com/dcampbell24/hnefatafl/compare/v1.1.4...v1.2.0
-[1.1.4]:  https://github.com/dcampbell24/hnefatafl/compare/v1.1.3...v1.1.4
-[1.1.3]:  https://github.com/dcampbell24/hnefatafl/compare/v1.1.2...v1.1.3
-[1.1.2]:  https://github.com/dcampbell24/hnefatafl/compare/v1.1.1...v1.1.2
-[1.1.1]:  https://github.com/dcampbell24/hnefatafl/compare/v1.1.0...v1.1.1
-[1.1.0]:  https://github.com/dcampbell24/hnefatafl/compare/v1.0.0...v1.1.0
-[1.0.0]:  https://github.com/dcampbell24/hnefatafl/compare/v0.13.4...v1.0.0
+[1.2.1]: https://github.com/dcampbell24/hnefatafl/compare/v1.2.0...v1.2.1
+[1.2.0]: https://github.com/dcampbell24/hnefatafl/compare/v1.1.4...v1.2.0
+[1.1.4]: https://github.com/dcampbell24/hnefatafl/compare/v1.1.3...v1.1.4
+[1.1.3]: https://github.com/dcampbell24/hnefatafl/compare/v1.1.2...v1.1.3
+[1.1.2]: https://github.com/dcampbell24/hnefatafl/compare/v1.1.1...v1.1.2
+[1.1.1]: https://github.com/dcampbell24/hnefatafl/compare/v1.1.0...v1.1.1
+[1.1.0]: https://github.com/dcampbell24/hnefatafl/compare/v1.0.0...v1.1.0
+[1.0.0]: https://github.com/dcampbell24/hnefatafl/compare/v0.13.4...v1.0.0
 [0.13.4]: https://github.com/dcampbell24/hnefatafl/compare/v0.13.3...v0.13.4
 [0.13.3]: https://github.com/dcampbell24/hnefatafl/compare/v0.13.2...v0.13.3
 [0.13.2]: https://github.com/dcampbell24/hnefatafl/compare/v0.13.1...v0.13.2
