@@ -31,11 +31,29 @@ impl Default for Time {
 
 impl fmt::Display for Time {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let minutes = self.milliseconds_left / 60_000;
-        let mut seconds = self.milliseconds_left % 60_000;
-        seconds /= 1_000;
+        let day = 24 * 60 * 60 * 1_000;
+        let hour = 60 * 60 * 1_000;
+        let minute = 60 * 1_000;
 
-        write!(f, "{minutes:02}:{seconds:02} / {}s", self.add_seconds)
+        let days = self.milliseconds_left / day;
+        let hours = (self.milliseconds_left % day) / hour;
+        let minutes = (self.milliseconds_left % hour) / minute;
+
+        let add_hours = self.add_seconds / (60 * 60);
+        let add_minutes = (self.add_seconds % (60 * 60)) / 60;
+        let add_seconds = self.add_seconds % 60;
+
+        if days == 0 {
+            write!(
+                f,
+                "{hours:02}:{minutes:02} | {add_hours:02}:{add_minutes:02}:{add_seconds:02}"
+            )
+        } else {
+            write!(
+                f,
+                "{days} {hours:02}:{minutes:02} | {add_hours:02}:{add_minutes:02}:{add_seconds:02}"
+            )
+        }
     }
 }
 

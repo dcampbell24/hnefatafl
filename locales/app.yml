@@ -1055,3 +1055,69 @@ time:
   is-IS: tími
   is-RU: ᛐᛇᛘᛁ
   sv-SE: tid
+
+days:
+  en-US: 
+  zh-CN: 
+  es: 
+  ar: 
+  id: 
+  pt-BR: 
+  pt-PT: 
+  fr: 
+  ja: 
+  ru: 
+  de: 
+  is-IS: 
+  is-RU: 
+  sv-SE: 
+  
+hours:
+  en-US: 
+  zh-CN: 
+  es: 
+  ar: 
+  id: 
+  pt-BR: 
+  pt-PT: 
+  fr: 
+  ja: 
+  ru: 
+  de: 
+  is-IS: 
+  is-RU: 
+  sv-SE: 
+  
+add hours:
+  en-US: 
+  zh-CN: 
+  es: 
+  ar: 
+  id: 
+  pt-BR: 
+  pt-PT: 
+  fr: 
+  ja: 
+  ru: 
+  de: 
+  is-IS: 
+  is-RU: 
+  sv-SE: 
+  
+add minutes:
+  en-US: 
+  zh-CN: 
+  es: 
+  ar: 
+  id: 
+  pt-BR: 
+  pt-PT: 
+  fr: 
+  ja: 
+  ru: 
+  de: 
+  is-IS: 
+  is-RU: 
+  sv-SE: 
+  
+

@@ -357,7 +357,15 @@ struct NewGameSettings {
     #[serde(skip)]
     timed: TimeSettings,
     #[serde(skip)]
+    time_days: String,
+    #[serde(skip)]
+    time_hours: String,
+    #[serde(skip)]
     time_minutes: String,
+    #[serde(skip)]
+    time_add_hours: String,
+    #[serde(skip)]
+    time_add_minutes: String,
     #[serde(skip)]
     time_add_seconds: String,
 }
@@ -992,32 +1000,34 @@ impl<'a> Client {
             Message::GameSubmit => {
                 if let Some(role) = self.game_settings.role_selected {
                     if let TimeSettings::Timed(_) = self.game_settings.timed {
-                        match (
-                            self.game_settings.time_minutes.parse::<i64>(),
-                            self.game_settings.time_add_seconds.parse::<i64>(),
-                        ) {
-                            (Ok(minutes), Ok(add_seconds)) => {
-                                self.game_settings.timed = TimeSettings::Timed(Time {
-                                    add_seconds,
-                                    milliseconds_left: minutes * 60_000,
-                                });
-                            }
-                            (Ok(minutes), Err(_)) => {
-                                self.game_settings.timed = TimeSettings::Timed(Time {
-                                    milliseconds_left: minutes * 60_000,
-                                    ..Time::default()
-                                });
-                            }
-                            (Err(_), Ok(add_seconds)) => {
-                                self.game_settings.timed = TimeSettings::Timed(Time {
-                                    add_seconds,
-                                    ..Time::default()
-                                });
-                            }
-                            (Err(_), Err(_)) => {
-                                self.game_settings.timed = TimeSettings::default();
-                            }
-                        }
+                        let days: i64 = self.game_settings.time_days.parse().unwrap_or_default();
+                        let hours: i64 = self.game_settings.time_hours.parse().unwrap_or_default();
+                        let minutes: i64 = self.game_settings.time_minutes.parse().unwrap_or(15);
+                        let milliseconds_left = (days * 24 * 60 * 60 * 1_000)
+                            + (hours * 60 * 60 * 1_000)
+                            + (minutes * 60 * 1_000);
+
+                        let add_hours: i64 = self
+                            .game_settings
+                            .time_add_hours
+                            .parse()
+                            .unwrap_or_default();
+
+                        let add_minutes: i64 = self
+                            .game_settings
+                            .time_add_minutes
+                            .parse()
+                            .unwrap_or_default();
+
+                        let add_seconds: i64 =
+                            self.game_settings.time_add_seconds.parse().unwrap_or(10);
+
+                        let add_seconds = (add_hours * 60 * 60) + (add_minutes * 60) + add_seconds;
+
+                        self.game_settings.timed = TimeSettings::Timed(Time {
+                            add_seconds,
+                            milliseconds_left,
+                        });
                     }
 
                     self.screen = Screen::GameNewFrozen;
@@ -1630,9 +1640,23 @@ impl<'a> Client {
                     }
                 }
             }
+            Message::TimeAddHours(string) => {
+                if string.parse::<u32>().is_ok() {
+                    self.game_settings.time_add_hours = string;
+                }
+            }
+            Message::TimeAddMinutes(string) => {
+                if let Ok(minutes) = string.parse::<u32>() {
+                    if minutes < 60 {
+                        self.game_settings.time_add_minutes = string;
+                    }
+                }
+            }
             Message::TimeAddSeconds(string) => {
-                if string.parse::<u64>().is_ok() {
-                    self.game_settings.time_add_seconds = string;
+                if let Ok(seconds) = string.parse::<u32>() {
+                    if seconds < 60 {
+                        self.game_settings.time_add_seconds = string;
+                    }
                 }
             }
             Message::TimeCheckbox(time_selected) => {
@@ -1642,9 +1666,23 @@ impl<'a> Client {
                     self.game_settings.timed = TimeSettings::UnTimed;
                 }
             }
+            Message::TimeDays(string) => {
+                if string.parse::<u32>().is_ok() {
+                    self.game_settings.time_days = string;
+                }
+            }
+            Message::TimeHours(string) => {
+                if let Ok(hours) = string.parse::<u32>() {
+                    if hours < 24 {
+                        self.game_settings.time_hours = string;
+                    }
+                }
+            }
             Message::TimeMinutes(string) => {
-                if string.parse::<u64>().is_ok() {
-                    self.game_settings.time_minutes = string;
+                if let Ok(minutes) = string.parse::<u32>() {
+                    if minutes < 60 {
+                        self.game_settings.time_minutes = string;
+                    }
                 }
             }
             Message::Users => self.screen = Screen::Users,
@@ -1923,8 +1961,7 @@ impl<'a> Client {
         let texting = self.texting(texts).padding(PADDING);
         let users = self.users(true);
 
-        let user_area = column![games, users];
-        let user_area = row![texting, user_area];
+        let user_area = scrollable(column![games, users, texting]);
         container(user_area)
             .padding(PADDING)
             .style(container::bordered_box)
@@ -2167,30 +2204,15 @@ impl<'a> Client {
                     Message::BoardSizeSelected,
                 );
 
-                let mut time = row![
+                let time = row![
                     checkbox(
                         format!("{}:", t!("timed")),
                         self.game_settings.timed.clone().into()
                     )
                     .text_shaping(text::Shaping::Advanced)
                     .on_toggle(Message::TimeCheckbox)
-                ];
-
-                if let TimeSettings::Timed(_) = self.game_settings.timed {
-                    time = time.push(text(t!("minutes")).shaping(text::Shaping::Advanced));
-                    time = time.push(
-                        text_input("15", &self.game_settings.time_minutes)
-                            .on_input(Message::TimeMinutes)
-                            .on_paste(Message::TimeMinutes),
-                    );
-                    time = time.push(text(t!("add seconds")).shaping(text::Shaping::Advanced));
-                    time = time.push(
-                        text_input("10", &self.game_settings.time_add_seconds)
-                            .on_input(Message::TimeAddSeconds)
-                            .on_paste(Message::TimeAddSeconds),
-                    );
-                }
-                time = time.spacing(SPACING);
+                ]
+                .spacing(SPACING);
 
                 let row_1 = row![
                     text!("{}:", t!("role")).shaping(text::Shaping::Advanced),
@@ -2210,8 +2232,51 @@ impl<'a> Client {
                 .padding(PADDING)
                 .spacing(SPACING);
 
-                let row_3 = row![new_game, leave].padding(PADDING).spacing(SPACING);
-                column![row_1, row_2, row_3].into()
+                let mut row_3 = Row::new().spacing(SPACING).padding(PADDING);
+                let mut row_4 = Row::new().spacing(SPACING).padding(PADDING);
+
+                if let TimeSettings::Timed(_) = self.game_settings.timed {
+                    row_3 = row_3.push(text(t!("days")).shaping(text::Shaping::Advanced));
+                    row_3 = row_3.push(
+                        text_input("0", &self.game_settings.time_days)
+                            .on_input(Message::TimeDays)
+                            .on_paste(Message::TimeDays),
+                    );
+                    row_3 = row_3.push(text(t!("hours")).shaping(text::Shaping::Advanced));
+                    row_3 = row_3.push(
+                        text_input("0", &self.game_settings.time_hours)
+                            .on_input(Message::TimeHours)
+                            .on_paste(Message::TimeHours),
+                    );
+                    row_3 = row_3.push(text(t!("minutes")).shaping(text::Shaping::Advanced));
+                    row_3 = row_3.push(
+                        text_input("15", &self.game_settings.time_minutes)
+                            .on_input(Message::TimeMinutes)
+                            .on_paste(Message::TimeMinutes),
+                    );
+
+                    row_4 = row_4.push(text(t!("add hours")).shaping(text::Shaping::Advanced));
+                    row_4 = row_4.push(
+                        text_input("0", &self.game_settings.time_add_hours)
+                            .on_input(Message::TimeAddHours)
+                            .on_paste(Message::TimeAddHours),
+                    );
+                    row_4 = row_4.push(text(t!("add minutes")).shaping(text::Shaping::Advanced));
+                    row_4 = row_4.push(
+                        text_input("0", &self.game_settings.time_add_minutes)
+                            .on_input(Message::TimeAddMinutes)
+                            .on_paste(Message::TimeAddMinutes),
+                    );
+                    row_4 = row_4.push(text(t!("add seconds")).shaping(text::Shaping::Advanced));
+                    row_4 = row_4.push(
+                        text_input("10", &self.game_settings.time_add_seconds)
+                            .on_input(Message::TimeAddSeconds)
+                            .on_paste(Message::TimeAddSeconds),
+                    );
+                }
+
+                let row_5 = row![new_game, leave].padding(PADDING).spacing(SPACING);
+                column![row_1, row_2, row_3, row_4, row_5].into()
             }
             Screen::GameNewFrozen => {
                 let mut buttons_live = false;
@@ -2634,8 +2699,12 @@ enum Message {
     TextSendCreateAccount,
     TextSendLogin,
     Tick,
+    TimeAddHours(String),
+    TimeAddMinutes(String),
     TimeAddSeconds(String),
     TimeCheckbox(bool),
+    TimeDays(String),
+    TimeHours(String),
     TimeMinutes(String),
     Users,
     WindowResized((f32, f32)),
