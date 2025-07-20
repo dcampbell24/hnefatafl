@@ -1057,67 +1057,65 @@ time:
   sv-SE: tid
 
 days:
-  en-US: 
-  zh-CN: 
-  es: 
-  ar: 
-  id: 
-  pt-BR: 
-  pt-PT: 
-  fr: 
-  ja: 
-  ru: 
-  de: 
-  is-IS: 
-  is-RU: 
-  sv-SE: 
-  
-hours:
-  en-US: 
-  zh-CN: 
-  es: 
-  ar: 
-  id: 
-  pt-BR: 
-  pt-PT: 
-  fr: 
-  ja: 
-  ru: 
-  de: 
-  is-IS: 
-  is-RU: 
-  sv-SE: 
-  
-add hours:
-  en-US: 
-  zh-CN: 
-  es: 
-  ar: 
-  id: 
-  pt-BR: 
-  pt-PT: 
-  fr: 
-  ja: 
-  ru: 
-  de: 
-  is-IS: 
-  is-RU: 
-  sv-SE: 
-  
-add minutes:
-  en-US: 
-  zh-CN: 
-  es: 
-  ar: 
-  id: 
-  pt-BR: 
-  pt-PT: 
-  fr: 
-  ja: 
-  ru: 
-  de: 
-  is-IS: 
-  is-RU: 
-  sv-SE: 
-  
+  en-US: days
+  zh-CN: 天
+  es: días
+  ar: أيام
+  id: hari
+  pt-BR: dias
+  pt-PT: dias
+  fr: jours
+  ja: 日数
+  ru: дней
+  de: Tage
+  is-IS: dagar
+  is-RU: ᛑᛆᚵᛆᚱ
+  sv-SE: dagar
 
+hours:
+  en-US: hours
+  zh-CN: 小时
+  es: horas
+  ar: ساعات
+  id: jam
+  pt-BR: horas
+  pt-PT: horas
+  fr: heures
+  ja: 時間
+  ru: часы
+  de: Std.
+  is-IS: klukkustundir
+  is-RU: ᚴᛚᚢᚴᚴᚢᛋᛐᚢᚿᛑᛁᚱ
+  sv-SE: timmar
+
+add hours:
+  en-US: add hours
+  zh-CN: 添加小时
+  es: añadir horas
+  ar: إضافة ساعات
+  id: tambahkan jam
+  pt-BR: adicionar horas
+  pt-PT: adicionar horas
+  fr: ajouter des heures
+  ja: 時間を追加
+  ru: добавить часы
+  de: Stunden hinzufügen
+  is-IS: bæta við opnunartíma
+  is-RU: ᛒᛅᛐᛆ ᚡᛁᚧ ᚮᛔᚿᚢᚿᛆᚱᛐᛇᛘᛆ
+  sv-SE: lägg till öppettider
+
+add minutes:
+  en-US: add minutes
+  zh-CN: 添加分钟
+  es: añadir minutos
+  ar: إضافة دقائق
+  id: tambahkan menit
+  pt-BR: adicionar minutos
+  pt-PT: adicionar minutos
+  fr: ajouter des minutes
+  ja: 数分追加
+  ru: добавить минуты
+  de: Minuten hinzufügen
+  is-IS: bæta við mínútum
+  is-RU: ᛒᛅᛐᛆ ᚡᛁᚧ ᛘᛇᚿᚤᛐᚢᛘ
+  sv-SE: lägg till minuter
