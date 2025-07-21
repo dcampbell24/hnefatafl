@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- hnefatafl-client: remove the arrows from replaying a game.
 - hnefatafl-client: log when we get an unexpected message.
 - Add a ping command.
 - hnefatafl-client: get rid of "I'm rejoining" and "I'm leaving".
