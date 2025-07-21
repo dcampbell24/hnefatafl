@@ -25,7 +25,7 @@ impl Default for Time {
     fn default() -> Self {
         Self {
             add_seconds: 10,
-            milliseconds_left: 15 * 60_000,
+            milliseconds_left: 15 * MINUTE,
         }
     }
 }
