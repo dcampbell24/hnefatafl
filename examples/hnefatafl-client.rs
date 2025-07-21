@@ -594,9 +594,9 @@ impl<'a> Client {
                 (
                     &self.game_id,
                     &self.attacker,
-                    self.time_attacker.fmt_shorthand(),
+                    self.time_attacker.time_left(),
                     &self.defender,
-                    self.time_defender.fmt_shorthand(),
+                    self.time_defender.time_left(),
                     &game.board,
                     game.previous_boards.0.len() - 1,
                     &self.status,
