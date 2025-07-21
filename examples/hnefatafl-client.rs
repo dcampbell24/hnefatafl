@@ -1,5 +1,3 @@
-// Todo: reset the arrows.
-
 // Don't open the terminal on Windows.
 #![windows_subsystem = "windows"]
 
@@ -1130,6 +1128,11 @@ impl<'a> Client {
                 if let Some(archived_game) = &self.archived_game_selected {
                     self.archived_game_handle = Some(ArchivedGameHandle::new(archived_game));
                     self.screen = Screen::GameReview;
+
+                    self.captures = HashSet::new();
+                    self.play_from = None;
+                    self.play_from_previous = None;
+                    self.play_to_previous = None;
                 }
             }
             Message::ReviewGameBackward => {
