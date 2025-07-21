@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- hnefatafl-client: get rid of "I'm rejoining" and "I'm leaving".
 - hnefatafl-client: display messages in a column on the main page.
 - hnefatafl-client: add to the time setting.
 

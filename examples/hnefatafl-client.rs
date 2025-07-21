@@ -937,13 +937,6 @@ impl<'a> Client {
                     self.text_input = String::new();
                 }
                 Screen::Game => {
-                    if self.username == self.attacker || self.username == self.defender {
-                        self.send(format!(
-                            "text_game {} {}\n",
-                            self.game_id,
-                            t!("I'm leaving.")
-                        ));
-                    }
                     self.screen = Screen::Games;
                     self.my_turn = false;
                     self.request_draw = false;
@@ -995,7 +988,6 @@ impl<'a> Client {
             Message::GameResume(id) => {
                 self.game_id = id;
                 self.send(format!("resume_game {id}\n"));
-                self.send(format!("text_game {id} {}\n", t!("I rejoined.")));
             }
             Message::GameSubmit => {
                 if let Some(role) = self.game_settings.role_selected {
