@@ -17,16 +17,7 @@ pub struct Time {
 impl Time {
     #[must_use]
     pub fn time_left(&self) -> String {
-        let days = self.milliseconds_left / DAY;
-        let hours = (self.milliseconds_left % DAY) / HOUR;
-        let minutes = (self.milliseconds_left % HOUR) / MINUTE;
-        let seconds = (self.milliseconds_left % MINUTE) / SECOND;
-
-        if days == 0 {
-            format!("{hours:02}:{minutes:02}:{seconds:02}")
-        } else {
-            format!("{days} {hours:02}:{minutes:02}:{seconds:02}")
-        }
+        time_left(self.milliseconds_left)
     }
 }
 
@@ -86,16 +77,7 @@ pub struct TimeLeft {
 
 impl fmt::Display for TimeLeft {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let days = self.milliseconds_left / DAY;
-        let hours = (self.milliseconds_left % DAY) / HOUR;
-        let minutes = (self.milliseconds_left % HOUR) / MINUTE;
-        let seconds = (self.milliseconds_left % MINUTE) / SECOND;
-
-        if days == 0 {
-            write!(f, "{hours:02}:{minutes:02}:{seconds:02}")
-        } else {
-            write!(f, "{days} {hours:02}:{minutes:02}:{seconds:02}")
-        }
+        write!(f, "{}", time_left(self.milliseconds_left))
     }
 }
 
@@ -187,5 +169,26 @@ impl TryFrom<Vec<&str>> for TimeSettings {
         } else {
             Err(anyhow::Error::msg(err_msg))
         }
+    }
+}
+
+fn time_left(milliseconds_left: i64) -> String {
+    let days = milliseconds_left / DAY;
+    let hours = (milliseconds_left % DAY) / HOUR;
+    let minutes = (milliseconds_left % HOUR) / MINUTE;
+    let seconds = (milliseconds_left % MINUTE) / SECOND;
+
+    if days == 0 {
+        if hours == 0 {
+            if minutes == 0 {
+                format!("{seconds:02}")
+            } else {
+                format!("{minutes:02}:{seconds:02}")
+            }
+        } else {
+            format!("{hours:02}:{minutes:02}:{seconds:02}")
+        }
+    } else {
+        format!("{days} {hours:02}:{minutes:02}:{seconds:02}")
     }
 }
