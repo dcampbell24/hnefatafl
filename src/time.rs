@@ -3,6 +3,11 @@ use std::fmt;
 use anyhow::Context;
 use serde::{Deserialize, Serialize};
 
+const DAY: i64 = 24 * 60 * 60 * 1_000;
+const HOUR: i64 = 60 * 60 * 1_000;
+const MINUTE: i64 = 60 * 1_000;
+const SECOND: i64 = 1_000;
+
 #[derive(Clone, Copy, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
 pub struct Time {
     pub add_seconds: i64,
@@ -11,12 +16,17 @@ pub struct Time {
 
 impl Time {
     #[must_use]
-    pub fn fmt_shorthand(&self) -> String {
-        let minutes = self.milliseconds_left / 60_000;
-        let mut seconds = self.milliseconds_left % 60_000;
-        seconds /= 1_000;
+    pub fn time_left(&self) -> String {
+        let days = self.milliseconds_left / DAY;
+        let hours = (self.milliseconds_left % DAY) / HOUR;
+        let minutes = (self.milliseconds_left % HOUR) / MINUTE;
+        let seconds = (self.milliseconds_left % MINUTE) / SECOND;
 
-        format!("{minutes:02}:{seconds:02}")
+        if days == 0 {
+            format!("{hours:02}:{minutes:02}:{seconds:02}")
+        } else {
+            format!("{days} {hours:02}:{minutes:02}:{seconds:02}")
+        }
     }
 }
 
@@ -31,13 +41,9 @@ impl Default for Time {
 
 impl fmt::Display for Time {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let day = 24 * 60 * 60 * 1_000;
-        let hour = 60 * 60 * 1_000;
-        let minute = 60 * 1_000;
-
-        let days = self.milliseconds_left / day;
-        let hours = (self.milliseconds_left % day) / hour;
-        let minutes = (self.milliseconds_left % hour) / minute;
+        let days = self.milliseconds_left / DAY;
+        let hours = (self.milliseconds_left % DAY) / HOUR;
+        let minutes = (self.milliseconds_left % HOUR) / MINUTE;
 
         let add_hours = self.add_seconds / (60 * 60);
         let add_minutes = (self.add_seconds % (60 * 60)) / 60;
@@ -65,9 +71,9 @@ pub enum TimeSettings {
 
 impl TimeSettings {
     #[must_use]
-    pub fn fmt_shorthand(&self) -> String {
+    pub fn time_left(&self) -> String {
         match self {
-            Self::Timed(time) => time.fmt_shorthand(),
+            Self::Timed(time) => time.time_left(),
             Self::UnTimed => "-".to_string(),
         }
     }
@@ -80,11 +86,16 @@ pub struct TimeLeft {
 
 impl fmt::Display for TimeLeft {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let minutes = self.milliseconds_left / 60_000;
-        let mut seconds = self.milliseconds_left % 60_000;
-        seconds /= 1_000;
+        let days = self.milliseconds_left / DAY;
+        let hours = (self.milliseconds_left % DAY) / HOUR;
+        let minutes = (self.milliseconds_left % HOUR) / MINUTE;
+        let seconds = (self.milliseconds_left % MINUTE) / SECOND;
 
-        write!(f, "{minutes:02}:{seconds:02}")
+        if days == 0 {
+            write!(f, "{hours:02}:{minutes:02}:{seconds:02}")
+        } else {
+            write!(f, "{days} {hours:02}:{minutes:02}:{seconds:02}")
+        }
     }
 }
 
