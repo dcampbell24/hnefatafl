@@ -1,3 +1,5 @@
+// Todo: reset the arrows.
+
 // Don't open the terminal on Windows.
 #![windows_subsystem = "windows"]
 
@@ -269,6 +271,8 @@ struct Client {
     #[serde(skip)]
     captures: HashSet<Vertex>,
     #[serde(skip)]
+    counter: u64,
+    #[serde(skip)]
     challenger: bool,
     #[serde(skip)]
     connected_tcp: bool,
@@ -300,6 +304,10 @@ struct Client {
     my_games_only: bool,
     #[serde(skip)]
     my_turn: bool,
+    #[serde(skip)]
+    now: i64,
+    #[serde(skip)]
+    now_diff: i64,
     #[serde(skip)]
     password: String,
     #[serde(skip)]
@@ -657,9 +665,16 @@ impl<'a> Client {
 
         let mut watching = false;
 
-        let mut user_area =
-            column![text!("#{game_id} {}", &self.username).shaping(text::Shaping::Advanced)]
-                .spacing(SPACING);
+        let mut user_area = column![
+            text!(
+                "#{game_id} {} {}: {:.2e} μs",
+                &self.username,
+                t!("lag"),
+                self.now_diff
+            )
+            .shaping(text::Shaping::Advanced)
+        ]
+        .spacing(SPACING);
 
         let is_rated = match self.game_settings.rated {
             Rated::No => t!("no"),
@@ -1163,6 +1178,7 @@ impl<'a> Client {
                     Some("=") => {
                         let text_next = text.next();
                         match text_next {
+                            Some("archived_games" | "challenge_requested" | "game") => {}
                             Some("display_games") => {
                                 self.games_light.0.clear();
                                 let games: Vec<&str> = text.collect();
@@ -1258,7 +1274,7 @@ impl<'a> Client {
                                 match text.next() {
                                     Some("attacker_wins") => self.status = Status::AttackerWins,
                                     Some("defender_wins") => self.status = Status::DefenderWins,
-                                    _ => {}
+                                    _ => error!("(1) unexpected text: {}", string.trim()),
                                 }
 
                                 if !self.sound_muted {
@@ -1428,9 +1444,13 @@ impl<'a> Client {
                                     self.game_id = game_id;
                                 }
                             }
+                            Some("ping") => {
+                                let after = Utc::now().timestamp_micros();
+                                self.now_diff = after - self.now;
+                            }
                             Some("text") => self.texts.push_front(text_collect(text)),
                             Some("text_game") => self.texts_game.push_front(text_collect(text)),
-                            _ => {}
+                            _ => error!("(2) unexpected text: {}", string.trim()),
                         }
                     }
                     Some("?") => {
@@ -1449,7 +1469,7 @@ impl<'a> Client {
                             Some("email_code") => {
                                 self.error_email = Some("invalid email code".to_string());
                             }
-                            _ => {}
+                            _ => error!("(3) unexpected text: {}", string.trim()),
                         }
                     }
                     Some("game") => {
@@ -1518,7 +1538,7 @@ impl<'a> Client {
                             self.request_draw = true;
                         }
                     }
-                    _ => {}
+                    _ => error!("(4) unexpected text: {}", string.trim()),
                 }
             }
             Message::TextSend => {
@@ -1610,6 +1630,12 @@ impl<'a> Client {
                 self.save_client();
             }
             Message::Tick => {
+                self.counter = self.counter.wrapping_add(1);
+                if self.counter % 25 == 0 {
+                    self.now = Utc::now().timestamp_micros();
+                    self.send("ping\n".to_string());
+                }
+
                 if let Some(game) = &mut self.game {
                     match game.turn {
                         Role::Attacker => {
@@ -2746,7 +2772,12 @@ fn pass_messages() -> impl Stream<Item = Message> {
                     loop {
                         let message = handle_error(rx.recv());
                         let message_trim = message.trim();
-                        debug!("<- {message_trim}");
+
+                        if message_trim == "ping" {
+                            trace!("<- {message_trim}");
+                        } else {
+                            debug!("<- {message_trim}");
+                        }
 
                         if message_trim != "quit" {
                             handle_error(tcp_stream.write_all(message.as_bytes()));
@@ -2780,6 +2811,7 @@ fn pass_messages() -> impl Stream<Item = Message> {
 
                         if buffer_trim_vec[1] == "display_users"
                             || buffer_trim_vec[1] == "display_games"
+                            || buffer_trim_vec[1] == "ping"
                         {
                             trace!("-> {buffer_trim}");
                         } else {

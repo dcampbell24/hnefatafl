@@ -1341,6 +1341,11 @@ impl Server {
                 ),
                 "logout" => self.logout(username, index_supplied, command),
                 "new_game" => self.new_game(username, index_supplied, command, the_rest.as_slice()),
+                "ping" => Some((
+                    self.clients.get(&index_supplied)?.clone(),
+                    true,
+                    (*command).to_string(),
+                )),
                 "reset_password" => {
                     let account = self.accounts.0.get_mut(*username)?;
                     if let Some(email) = &account.email {
