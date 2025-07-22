@@ -1662,19 +1662,19 @@ impl<'a> Client {
                 }
             }
             Message::TimeAddHours(string) => {
-                if string.parse::<u32>().is_ok() {
+                if string.parse::<u8>().is_ok() {
                     self.game_settings.time_add_hours = string;
                 }
             }
             Message::TimeAddMinutes(string) => {
-                if let Ok(minutes) = string.parse::<u32>() {
+                if let Ok(minutes) = string.parse::<u8>() {
                     if minutes < 60 {
                         self.game_settings.time_add_minutes = string;
                     }
                 }
             }
             Message::TimeAddSeconds(string) => {
-                if let Ok(seconds) = string.parse::<u32>() {
+                if let Ok(seconds) = string.parse::<u8>() {
                     if seconds < 60 {
                         self.game_settings.time_add_seconds = string;
                     }
@@ -1688,19 +1688,19 @@ impl<'a> Client {
                 }
             }
             Message::TimeDays(string) => {
-                if string.parse::<u32>().is_ok() {
+                if string.parse::<u8>().is_ok() {
                     self.game_settings.time_days = string;
                 }
             }
             Message::TimeHours(string) => {
-                if let Ok(hours) = string.parse::<u32>() {
+                if let Ok(hours) = string.parse::<u8>() {
                     if hours < 24 {
                         self.game_settings.time_hours = string;
                     }
                 }
             }
             Message::TimeMinutes(string) => {
-                if let Ok(minutes) = string.parse::<u32>() {
+                if let Ok(minutes) = string.parse::<u8>() {
                     if minutes < 60 {
                         self.game_settings.time_minutes = string;
                     }
