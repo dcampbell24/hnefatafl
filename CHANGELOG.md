@@ -27,71 +27,125 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [4.0.0] - 2024-07-19
 
+### Fixed
+
 - Change the initial board layout for 13x13.
 - hnefatafl-client: don't log when the rodio stream is closed.
 
 ## [3.0.1] - 2025-07-17
+
+### Fixed
 
 - hnefatafl-client: display strange characters in names.
 - hnefatafl-client: rated / unrated -> yes / no
 
 ## [3.0.0] - 2025-07-16
 
-- Add 13x13 board size, add translations, change the structs and serialization format.
-- hnefatafl-server-full: leave all active games when you quit without clicking quit.
+### Added
+
+- 13x13 board size
+- translations
 - hnefatafl-client: add review only my games checkbox.
-- Update the documentation.
 - hnefatafl-client: focus the text boxes with `Tab` and `Shift` + `Tab`.
 
+### Changed
+
+- The structs and serialization format.
+- Update the documentation.
+
+### Fixed
+
+- hnefatafl-server-full: leave all active games when you quit without clicking quit.
+
 ## [2.1.0] - 2025-06-20
+
+### Fixed
 
 - Make it so you can get the archived games from the client.
 
 ## [2.0.3] - 2025-06-18
 
-- hnefatafl-client: add `Review Game`.
-- hnefatafl-client: round the rating when displayed.
-- hnefatafl-client: add Swedish translation.
-- Update the `Message` documentation.
-- hnefatafl-server-full: don't delete server_game_light when a game ends so you
-  can still send messages.
-- hnefatafl-client: don't connect via TCP till you have to.
-- hnefatafl-client: fix a bug where the player ends a game with PlayFrom set.
-- hnefatafl-client: reset the new game settings every time you enter them.
-- hnefatafl-client: default to timed and rated.
+### Added
+
+- hnefatafl-client: `Review Game`.
+- hnefatafl-client: Swedish translation.
 - hnefatafl-server-full: archive games to file and load from file.
 
+### Changed
+
+- Update the `Message` documentation.
+- hnefatafl-client: default to timed and rated.
+
+### Fixed
+
+- hnefatafl-client: don't connect via TCP till you have to.
+- hnefatafl-client: round the rating when displayed.
+- hnefatafl-server-full: don't delete server_game_light when a game ends so you
+  can still send messages.
+- hnefatafl-client: a bug where the player ends a game with PlayFrom set.
+- hnefatafl-client: reset the new game settings every time you enter them.
+
 ## 1.2.3 - 2025-06-07
+
+### Changed
 
 - Update the `Message` documentation.
 
 ## 1.2.2 - 2025-06-06
 
+### Added
+
 - document `Message`.
-- hnefatafl-client: add Icelandic and Icelandic Runic.
+- hnefatafl-client: Icelandic and Icelandic Runic.
 
 ## [1.2.1] - 2025-06-03
 
-- hnefatafl-client: update the swords (to be a dagger) and shield icon.
+### Added
+
 - hnefatafl-client: finish the translations.
+
+### Changed
+
+- hnefatafl-client: update the swords (to be a dagger) and shield icon.
 
 ## [1.2.0] - 2025-06-02
 
-- hnefatafl-client: limit the passwords to length 32 and usernames to length 16.
-- hnefatafl-client: change the game layout.
+### Added
+
 - hnefatafl-client: add the argument `--tiny-window`.
 - hnefatafl-client: add i18n.
-- hnefatafl-client: remove decline draw.
+
+### Changed
+
+- hnefatafl-client: limit the passwords to length 32 and usernames to length 16.
+- hnefatafl-client: the game layout.
+
+### Removed
+
+- hnefatafl-client: decline draw.
+
+### Fixed
+
 - Always report the errors with ? in javascript.
 - hnefatafl-client: handle whitespace in a password better.
 
 ## [1.1.4] - 2025-05-23
 
+### Added
+
 - Port the engine to javascript and WASM.
+
+### Changed
+
 - hnefatafl-client: don't limit the valid password characters.
-- fix the lowercasing of password bug.
+
+### Fixed
+
+- The lowercasing of password bug.
 
 ## [1.1.3] - 2025-05-21
+
+### Changed
 
 - Make dirs a global dependency.
 - hnefatafl-client: add on_paste to a bunch of input_texts.
@@ -99,23 +153,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.1.2] - 2025-05-21 (Yanked)
 
+### Fixed
+
 - hnefatafl-client: limit the valid password characters.
 
 ## [1.1.1] - 2025-05-20
+
+### Fixed
 
 - When you change the password make it lowercase (to work around a bug).
 
 ## [1.1.0] - 2025-05-20 (Yanked)
 
-- Add `#[serde(default)]` to all of the fields that can be filled in automatically
+### Added
+
+- `#[serde(default)]` to all of the fields that can be filled in automatically
   and are serialized.
-- Add an email everyone feature.
-- hnefatafl-client: load the program if their is a ron file error, but show the error.
+- An email everyone feature.
 - Add reset your password email.
-- Cleanup ron file handling.
 - hnefatafl-client: save the username and theme.
 - hnefatafl-client: when `username` is empty, login as a default `user-u32`.
-- hnefatafl-server-full: add a timestamp to messages.
+- hnefatafl-server-full: a timestamp to messages.
+
+### Fixed
+
+- hnefatafl-client: load the program if their is a ron file error, but show the error.
+- Cleanup ron file handling.
 
 ## [1.0.0] - 2025-05-05
 
@@ -134,7 +197,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.13.4] - 2025-04-21
 
-- Fix the README.md file.
+### Fixed
+
+- The README.md file.
 
 ## [0.13.3] - 2025-04-21 (Yanked)
 
@@ -156,6 +221,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   packaging them separately.
 
 ## [0.13.1] - 2025-03-27
+
+### Fixed
 
 - hnefatafl-client: use Shaping::Advanced on the arrows.
 
@@ -211,12 +278,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.9.0] - 2025-03-17
 
+### Changed
+
 - hnefatafl-client: add the letter i to the board.
-- hnefatafl-client: fix the numbers spacing.
+
+### Fixed
+
+- hnefatafl-client: the numbers spacing.
 
 ## [0.8.3] - 2025-03-15
 
-- hnefatafl-client: change the symbols and their size.
+### Changed
+
+- hnefatafl-client: the symbols and their size.
 
 ## [0.8.2] - 2025-03-14
 
@@ -230,6 +304,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - hnefatafl-client: don't unwrap() on sound errors.
 
 ## [0.8.1] - 2025-03-12
+
+### Changed
 
 - Bump the VERSION_ID.
 - Make the light / dark buttons into a single button.
@@ -303,6 +379,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - hnefatafl-client: If AI resigns it doesn't crash the client.
 
 ## [0.5.3] - 2025-02-08
+
+### Changed
 
 - Don't set the window size to infinity, it crashes on MacOS.
 - Pass the VERSION_ID when you login.
