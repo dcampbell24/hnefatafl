@@ -7,12 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- hnefatafl-client: remove the arrows from replaying a game.
+### Added
+
 - hnefatafl-client: log when we get an unexpected message.
-- Add a ping command.
-- hnefatafl-client: get rid of "I'm rejoining" and "I'm leaving".
+- A ping command.
+- hnefatafl-client: days, hours, add hours, add minutes to the time setting.
+
+### Changed
+
 - hnefatafl-client: display messages in a column on the main page.
-- hnefatafl-client: add to the time setting.
+
+### Removed
+
+- hnefatafl-client: "I'm rejoining" and "I'm leaving".
+
+### Fixed
+
+- hnefatafl-client: remove the arrows from replaying a game.
 
 ## [4.0.0] - 2024-07-19
 
