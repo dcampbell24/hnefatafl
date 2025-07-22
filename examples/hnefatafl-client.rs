@@ -1024,10 +1024,10 @@ impl<'a> Client {
                             .parse()
                             .unwrap_or_default();
 
-                        let add_seconds: i64 =
+                        let mut add_seconds: i64 =
                             self.game_settings.time_add_seconds.parse().unwrap_or(10);
 
-                        let add_seconds = (add_hours * 60 * 60) + (add_minutes * 60) + add_seconds;
+                        add_seconds += (add_hours * 60 * 60) + (add_minutes * 60);
 
                         self.game_settings.timed = TimeSettings::Timed(Time {
                             add_seconds,
