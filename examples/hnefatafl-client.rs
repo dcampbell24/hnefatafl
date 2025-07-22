@@ -845,6 +845,14 @@ impl<'a> Client {
                 } else {
                     Message::FocusNext
                 }),
+                keyboard::Event::KeyPressed {
+                    key: Key::Named(Named::ArrowLeft),
+                    ..
+                } => Some(Message::ReviewGameBackward),
+                keyboard::Event::KeyPressed {
+                    key: Key::Named(Named::ArrowRight),
+                    ..
+                } => Some(Message::ReviewGameForward),
                 _ => None,
             },
             _ => None,
@@ -1137,7 +1145,9 @@ impl<'a> Client {
             }
             Message::ReviewGameBackward => {
                 if let Some(handle) = &mut self.archived_game_handle {
-                    handle.play -= 1;
+                    if handle.play > 0 {
+                        handle.play -= 1;
+                    }
                 }
             }
             Message::ReviewGameBackwardAll => {
@@ -1147,7 +1157,9 @@ impl<'a> Client {
             }
             Message::ReviewGameForward => {
                 if let Some(handle) = &mut self.archived_game_handle {
-                    handle.play += 1;
+                    if handle.play < handle.game.plays.len() - 1 {
+                        handle.play += 1;
+                    }
                 }
             }
             Message::ReviewGameForwardAll => {

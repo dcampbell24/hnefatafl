@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- hnefatafl-client: Use the arrow keys to control forward and backward in review
+  game.
 - hnefatafl-client: log when we get an unexpected message.
 - A ping command.
 - hnefatafl-client: days, hours, add hours, add minutes to the time setting.
