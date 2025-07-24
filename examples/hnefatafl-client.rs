@@ -400,7 +400,7 @@ impl<'a> Client {
     #[must_use]
     fn board(&self) -> Row<Message> {
         let board = if let Some(game_handle) = &self.archived_game_handle {
-            &game_handle.boards[game_handle.play]
+            &game_handle.boards.here().unwrap()
         } else {
             let Some(game) = &self.game else {
                 panic!("we should be in a game");
@@ -578,7 +578,7 @@ impl<'a> Client {
                         .game
                         .plays
                         .time_left(Role::Defender, game_handle.play),
-                    &game_handle.boards[game_handle.play],
+                    &game_handle.boards.here().unwrap(),
                     game_handle.play,
                     status,
                     &game_handle.game.texts,
@@ -1147,24 +1147,28 @@ impl<'a> Client {
                 if let Some(handle) = &mut self.archived_game_handle {
                     if handle.play > 0 {
                         handle.play -= 1;
+                        handle.boards.backward();
                     }
                 }
             }
             Message::ReviewGameBackwardAll => {
                 if let Some(handle) = &mut self.archived_game_handle {
                     handle.play = 0;
+                    handle.boards.backward_all();
                 }
             }
             Message::ReviewGameForward => {
                 if let Some(handle) = &mut self.archived_game_handle {
                     if handle.play < handle.game.plays.len() - 1 {
                         handle.play += 1;
+                        handle.boards.forward();
                     }
                 }
             }
             Message::ReviewGameForwardAll => {
                 if let Some(handle) = &mut self.archived_game_handle {
                     handle.play = handle.game.plays.len() - 1;
+                    handle.boards.forward_all();
                 }
             }
             Message::RoleSelected(role) => {
