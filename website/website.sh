@@ -2,9 +2,7 @@
 
 mdbook build --dest-dir /var/www/html/
 
-cd ..
 cargo build --bin replace_strings --no-default-features
-cd website
 ../target/debug/replace_strings
 
 cat << EOF > /var/www/html/robots.txt
