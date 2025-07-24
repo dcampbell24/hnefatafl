@@ -16,6 +16,7 @@ use crate::{
     role::Role,
     status::Status,
     time::{Time, TimeSettings},
+    tree::{Node, Tree},
 };
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -76,7 +77,7 @@ impl Eq for ArchivedGame {}
 #[derive(Clone, Debug)]
 pub struct ArchivedGameHandle {
     pub play: usize,
-    pub boards: Vec<Board>,
+    pub boards: Tree<Board>,
     pub game: ArchivedGame,
 }
 
@@ -84,13 +85,14 @@ impl ArchivedGameHandle {
     #[must_use]
     #[allow(clippy::missing_panics_doc)]
     pub fn new(game: &ArchivedGame) -> ArchivedGameHandle {
-        let mut boards = Vec::new();
-        let mut turn = Role::default();
-
         let mut board = match game.board_size {
             BoardSize::_11 => board::board_11x11(),
             BoardSize::_13 => board::board_13x13(),
         };
+
+        let mut boards = Tree::new(board.clone());
+        let mut boards_here = &mut boards.root;
+        let mut turn = Role::default();
 
         let plays = match &game.plays {
             Plays::PlayRecordsTimed(plays) => {
@@ -109,19 +111,17 @@ impl ArchivedGameHandle {
                         &mut PreviousBoards::default(),
                     )
                     .unwrap();
-                boards.push(board.clone());
+                boards_here.children = Some(vec![Node {
+                    node: board.clone(),
+                    children: None,
+                }]);
+                boards_here = &mut boards_here.children.as_mut().unwrap()[0];
 
                 turn = match turn {
                     Role::Attacker => Role::Defender,
                     Role::Roleless => Role::Roleless,
                     Role::Defender => Role::Attacker,
                 };
-            } else {
-                let board = match game.board_size {
-                    BoardSize::_11 => board::board_11x11(),
-                    BoardSize::_13 => board::board_13x13(),
-                };
-                boards.push(board);
             }
         }
 

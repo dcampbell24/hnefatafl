@@ -31,6 +31,7 @@ pub mod smtp;
 pub mod space;
 pub mod status;
 pub mod time;
+pub mod tree;
 
 pub static HOME: &str = "hnefatafl-copenhagen";
 pub static VERSION_ID: &str = "ad746a65";
