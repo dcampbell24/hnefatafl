@@ -663,12 +663,14 @@ impl<'a> Client {
 
         let mut watching = false;
 
+        let sub_second = self.now_diff % 1_000;
+        let seconds = self.now_diff / 1_000;
+
         let mut user_area = column![
             text!(
-                "#{game_id} {} {}: {:.2e} μs",
+                "#{game_id} {} {}: {seconds:01}.{sub_second:03} s",
                 &self.username,
                 t!("lag"),
-                self.now_diff
             )
             .shaping(text::Shaping::Advanced)
         ]
@@ -1464,7 +1466,7 @@ impl<'a> Client {
                                 }
                             }
                             Some("ping") => {
-                                let after = Utc::now().timestamp_micros();
+                                let after = Utc::now().timestamp_millis();
                                 self.now_diff = after - self.now;
                             }
                             Some("text") => self.texts.push_front(text_collect(text)),
@@ -1651,7 +1653,7 @@ impl<'a> Client {
             Message::Tick => {
                 self.counter = self.counter.wrapping_add(1);
                 if self.counter % 25 == 0 {
-                    self.now = Utc::now().timestamp_micros();
+                    self.now = Utc::now().timestamp_millis();
                     self.send("ping\n".to_string());
                 }
 
