@@ -1,9 +1,7 @@
 use std::fmt;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub enum Direction {
-    Up,
-    Left,
+enum Direction {
     Down,
     Right,
 }
@@ -32,7 +30,6 @@ impl<T: Clone + fmt::Debug> Tree<T> {
         let mut here = self.root.clone();
         for direction in &self.path {
             match direction {
-                Direction::Up | Direction::Left => {}
                 Direction::Down => {
                     let there = here.children?;
                     if index >= there.len() {
@@ -53,7 +50,6 @@ impl<T: Clone + fmt::Debug> Tree<T> {
         let mut here = self.root.clone();
         for direction in &self.path {
             match direction {
-                Direction::Up | Direction::Left => {}
                 Direction::Down => {
                     let there = here.children?;
                     if index >= there.len() {
