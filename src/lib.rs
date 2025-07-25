@@ -77,9 +77,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 "#;
 
-pub static LONG_VERSION: &str = r"2.1.0
+pub static LONG_VERSION: &str = concat!(
+    env!("CARGO_PKG_VERSION"),
+    "
 Copyright (c) 2025 David Lawrence Campbell
-Licensed under the MIT license or the Apache-2.0 license";
+Licensed under the MIT license or the Apache-2.0 license"
+);
 
 pub fn handle_error<T, E: fmt::Display>(result: Result<T, E>) -> T {
     match result {
