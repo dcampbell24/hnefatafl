@@ -8,7 +8,7 @@ use std::{
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    board::{self, Board, BoardSize},
+    board::{self, BoardSize},
     game::{Game, PreviousBoards},
     glicko::Rating,
     play::{PlayRecordTimed, Plays},
@@ -16,7 +16,7 @@ use crate::{
     role::Role,
     status::Status,
     time::{Time, TimeSettings},
-    tree::{Node, Tree},
+    tree::Tree,
 };
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -76,9 +76,9 @@ impl Eq for ArchivedGame {}
 
 #[derive(Clone, Debug)]
 pub struct ArchivedGameHandle {
-    pub play: usize,
-    pub boards: Tree<Board>,
+    pub boards: Tree,
     pub game: ArchivedGame,
+    pub play: usize,
 }
 
 impl ArchivedGameHandle {
@@ -90,8 +90,7 @@ impl ArchivedGameHandle {
             BoardSize::_13 => board::board_13x13(),
         };
 
-        let mut boards = Tree::new(board.clone());
-        let mut boards_here = &mut boards.root;
+        let mut boards = Tree::new(game.board_size);
         let mut turn = Role::default();
 
         let plays = match &game.plays {
@@ -111,12 +110,8 @@ impl ArchivedGameHandle {
                         &mut PreviousBoards::default(),
                     )
                     .unwrap();
-                boards_here.children = Some(vec![Node {
-                    node: board.clone(),
-                    children: None,
-                }]);
-                boards_here = &mut boards_here.children.as_mut().unwrap()[0];
 
+                boards.insert(&board);
                 turn = match turn {
                     Role::Attacker => Role::Defender,
                     Role::Roleless => Role::Roleless,
@@ -125,10 +120,12 @@ impl ArchivedGameHandle {
             }
         }
 
+        boards.backward_all();
+
         ArchivedGameHandle {
-            play: 0,
             boards,
             game: game.clone(),
+            play: 0,
         }
     }
 }

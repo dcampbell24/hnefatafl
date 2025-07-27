@@ -15,6 +15,7 @@ use crate::{
     space::Space,
     status::Status,
     time::TimeSettings,
+    tree::Node,
 };
 
 #[cfg(not(feature = "js"))]
@@ -536,6 +537,17 @@ impl Game {
         }
 
         utility
+    }
+}
+
+impl From<Node> for Game {
+    fn from(node: Node) -> Self {
+        Self {
+            board: node.board,
+            status: Status::Ongoing,
+            turn: node.turn,
+            ..Default::default()
+        }
     }
 }
 

@@ -400,7 +400,7 @@ impl<'a> Client {
     #[must_use]
     fn board(&self) -> Row<Message> {
         let board = if let Some(game_handle) = &self.archived_game_handle {
-            &game_handle.boards.here().unwrap()
+            &game_handle.boards.here().board
         } else {
             let Some(game) = &self.game else {
                 panic!("we should be in a game");
@@ -434,6 +434,10 @@ impl<'a> Client {
             if let Some(game) = self.game.as_ref() {
                 possible_moves = Some(game.all_legal_moves());
             }
+        } else if let Some(handle) = &self.archived_game_handle {
+            let node = handle.boards.here();
+            let game = Game::from(node);
+            possible_moves = Some(game.all_legal_moves());
         }
 
         let mut column = column![text(" ").size(letter_size)].spacing(spacing);
@@ -578,7 +582,7 @@ impl<'a> Client {
                         .game
                         .plays
                         .time_left(Role::Defender, game_handle.play),
-                    &game_handle.boards.here().unwrap(),
+                    &game_handle.boards.here().board,
                     game_handle.play,
                     status,
                     &game_handle.game.texts,
@@ -666,15 +670,9 @@ impl<'a> Client {
         let sub_second = self.now_diff % 1_000;
         let seconds = self.now_diff / 1_000;
 
-        let mut user_area = column![
-            text!(
-                "#{game_id} {} {}: {seconds:01}.{sub_second:03} s",
-                &self.username,
-                t!("lag"),
-            )
-            .shaping(text::Shaping::Advanced)
-        ]
-        .spacing(SPACING);
+        let mut user_area =
+            column![text!("#{game_id} {}", &self.username).shaping(text::Shaping::Advanced)]
+                .spacing(SPACING);
 
         let is_rated = match self.game_settings.rated {
             Rated::No => t!("no"),
@@ -776,8 +774,14 @@ impl<'a> Client {
             }
         }
 
-        let spectator =
-            column![text!("👥 ({})", self.spectators.len()).shaping(text::Shaping::Advanced)];
+        let spectator = column![
+            text!(
+                "👥 ({}) {}: {seconds:01}.{sub_second:03} s",
+                self.spectators.len(),
+                t!("lag"),
+            )
+            .shaping(text::Shaping::Advanced)
+        ];
 
         if self.spectators.is_empty() {
             user_area = user_area.push(spectator);
@@ -801,12 +805,18 @@ impl<'a> Client {
 
             let mut right = button(text("⏩").center().shaping(text::Shaping::Advanced));
             let mut right_all = button(text("⏭").center().shaping(text::Shaping::Advanced));
-            if handle.play < handle.game.plays.len() - 1 {
+            if handle.boards.has_children() {
                 right = right.on_press(Message::ReviewGameForward);
                 right_all = right_all.on_press(Message::ReviewGameForwardAll);
             }
 
-            user_area = user_area.push(row![left_all, left, right, right_all].spacing(SPACING));
+            let child_number = text(handle.boards.next_child);
+            let child_right = button(text("⏩").center().shaping(text::Shaping::Advanced))
+                .on_press(Message::ReviewGameChildNext);
+
+            user_area = user_area.push(
+                row![left_all, left, right, right_all, child_right, child_number].spacing(SPACING),
+            );
         }
 
         user_area = user_area.push(self.texting(texts));
@@ -1089,29 +1099,32 @@ impl<'a> Client {
 
                 self.handle_play(None, &from.to_string(), &to.to_string());
 
-                self.send(format!("game {} play {} {from} {to}\n", self.game_id, turn));
+                if self.archived_game_handle.is_none() {
+                    self.send(format!("game {} play {} {from} {to}\n", self.game_id, turn));
 
-                let game = self.game.as_ref().expect("you should have a game by now");
-                if game.status == Status::Ongoing {
-                    match game.turn {
-                        Role::Attacker => {
-                            if let TimeSettings::Timed(time) = &mut self.time_defender {
-                                time.milliseconds_left += time.add_seconds * 1_000;
+                    let game = self.game.as_ref().expect("you should have a game by now");
+                    if game.status == Status::Ongoing {
+                        match game.turn {
+                            Role::Attacker => {
+                                if let TimeSettings::Timed(time) = &mut self.time_defender {
+                                    time.milliseconds_left += time.add_seconds * 1_000;
+                                }
                             }
-                        }
-                        Role::Roleless => {}
-                        Role::Defender => {
-                            if let TimeSettings::Timed(time) = &mut self.time_attacker {
-                                time.milliseconds_left += time.add_seconds * 1_000;
+                            Role::Roleless => {}
+                            Role::Defender => {
+                                if let TimeSettings::Timed(time) = &mut self.time_attacker {
+                                    time.milliseconds_left += time.add_seconds * 1_000;
+                                }
                             }
                         }
                     }
+
+                    self.my_turn = false;
                 }
 
                 self.play_from_previous = self.play_from.clone();
                 self.play_to_previous = Some(to);
                 self.play_from = None;
-                self.my_turn = false;
             }
             Message::PlayMoveRevert => self.play_from = None,
             Message::PlayResign => {
@@ -1140,37 +1153,43 @@ impl<'a> Client {
                     self.screen = Screen::GameReview;
 
                     self.captures = HashSet::new();
-                    self.play_from = None;
-                    self.play_from_previous = None;
-                    self.play_to_previous = None;
+                    self.reset_markers();
                 }
             }
             Message::ReviewGameBackward => {
                 if let Some(handle) = &mut self.archived_game_handle {
-                    if handle.play > 0 {
-                        handle.play -= 1;
-                        handle.boards.backward();
-                    }
+                    handle.play -= 1;
+                    handle.boards.backward();
+                    self.reset_markers();
                 }
             }
             Message::ReviewGameBackwardAll => {
                 if let Some(handle) = &mut self.archived_game_handle {
                     handle.play = 0;
                     handle.boards.backward_all();
+                    self.reset_markers();
+                }
+            }
+            Message::ReviewGameChildNext => {
+                if let Some(handle) = &mut self.archived_game_handle {
+                    handle.boards.next_child();
+                    self.reset_markers();
                 }
             }
             Message::ReviewGameForward => {
                 if let Some(handle) = &mut self.archived_game_handle {
-                    if handle.play < handle.game.plays.len() - 1 {
+                    if handle.boards.has_children() {
                         handle.play += 1;
                         handle.boards.forward();
+                        self.reset_markers();
                     }
                 }
             }
             Message::ReviewGameForwardAll => {
                 if let Some(handle) = &mut self.archived_game_handle {
-                    handle.play = handle.game.plays.len() - 1;
-                    handle.boards.forward_all();
+                    let count = handle.boards.forward_all();
+                    handle.play += count;
+                    self.reset_markers();
                 }
             }
             Message::RoleSelected(role) => {
@@ -1428,7 +1447,7 @@ impl<'a> Client {
                                 if !texts.is_empty() {
                                     let texts = ron::from_str(&texts)
                                         .expect("we should be able to deserialize the text");
-                                    println!("{texts:?}");
+
                                     self.texts_game = texts;
                                 }
 
@@ -1870,7 +1889,12 @@ impl<'a> Client {
     fn handle_play(&mut self, role: Option<&str>, from: &str, to: &str) {
         self.captures = HashSet::new();
 
-        let game = self.game.as_mut().expect("you should have a game by now");
+        let game = if let Some(handle) = &mut self.archived_game_handle {
+            let node = handle.boards.here();
+            &mut Game::from(node)
+        } else {
+            self.game.as_mut().expect("you should have a game by now")
+        };
 
         match role {
             Some(role) => match game.read_line(&format!("play {role} {from} {to}\n")) {
@@ -1905,6 +1929,11 @@ impl<'a> Client {
                     exit(1)
                 }
             },
+        }
+
+        if let Some(handle) = &mut self.archived_game_handle {
+            handle.boards.insert(&game.board);
+            handle.play += 1;
         }
 
         if self.sound_muted {
@@ -2601,6 +2630,13 @@ impl<'a> Client {
         }
     }
 
+    fn reset_markers(&mut self) {
+        self.captures = HashSet::new();
+        self.play_from = None;
+        self.play_from_previous = None;
+        self.play_to_previous = None;
+    }
+
     fn save_client(&self) {
         if let Ok(string) = ron::ser::to_string_pretty(&self, ron::ser::PrettyConfig::default()) {
             if !string.trim().is_empty() {
@@ -2725,6 +2761,7 @@ enum Message {
     ReviewGame,
     ReviewGameBackward,
     ReviewGameBackwardAll,
+    ReviewGameChildNext,
     ReviewGameForward,
     ReviewGameForwardAll,
     RoleSelected(Role),

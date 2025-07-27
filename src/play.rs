@@ -119,8 +119,20 @@ impl Plays {
     pub fn time_left(&self, role: Role, index: usize) -> String {
         match self {
             Plays::PlayRecordsTimed(plays) => match role {
-                Role::Attacker => plays[index].attacker_time.to_string(),
-                Role::Defender => plays[index].defender_time.to_string(),
+                Role::Attacker => {
+                    if let Some(play) = plays.get(index) {
+                        play.attacker_time.to_string()
+                    } else {
+                        "-".to_string()
+                    }
+                }
+                Role::Defender => {
+                    if let Some(play) = plays.get(index) {
+                        play.defender_time.to_string()
+                    } else {
+                        "-".to_string()
+                    }
+                }
                 Role::Roleless => unreachable!(),
             },
             Plays::PlayRecords(_) => "-".to_string(),
