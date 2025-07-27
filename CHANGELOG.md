@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.1.0] - 2025-07-27
+
 ### Added
 
 - save some general texts.
@@ -14,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - hnefatafl-client: Use the arrow keys to control forward and backward in review
   game.
 - hnefatafl-client: log when we get an unexpected message.
-- A ping command.
+- A ping command and display lag.
 - hnefatafl-client: days, hours, add hours, add minutes to the time setting.
 
 ### Changed
@@ -29,7 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - hnefatafl-client: remove the arrows from replaying a game.
 
-## [4.0.0] - 2024-07-19
+## [4.0.0] - 2025-07-19
 
 ### Fixed
 
@@ -431,7 +433,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - hnefatafl-client: Make users and games scrollable.
 - Make all the features dependencies.
 
-[unreleased]: https://github.com/dcampbell24/hnefatafl/compare/v4.0.0...main
+[unreleased]: https://github.com/dcampbell24/hnefatafl/compare/v4.1.0...main
+[4.1.0]: https://github.com/dcampbell24/hnefatafl/compare/v4.0.0...v4.1.0
 [4.0.0]: https://github.com/dcampbell24/hnefatafl/compare/v3.0.1...v4.0.0
 [3.0.1]: https://github.com/dcampbell24/hnefatafl/compare/v3.0.0...v3.0.1
 [3.0.0]: https://github.com/dcampbell24/hnefatafl/compare/v2.1.0...v3.0.0
