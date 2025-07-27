@@ -1,7 +1,7 @@
 #![deny(clippy::indexing_slicing)]
 
 use std::{
-    collections::HashMap,
+    collections::{HashMap, VecDeque},
     env,
     fs::{self, File, OpenOptions},
     io::{BufRead, BufReader, ErrorKind, Write},
@@ -322,6 +322,7 @@ fn login(
     thread::spawn(move || receiving_and_writing(stream, &client_rx));
 
     tx.send((format!("{index} {username_proper} email_get"), None))?;
+    tx.send((format!("{index} {username_proper} texts"), None))?;
 
     'outer: for _ in 0..1_000_000 {
         if let Err(err) = reader.read_line(&mut buf) {
@@ -401,6 +402,8 @@ struct Server {
     games_light: ServerGamesLight,
     #[serde(skip)]
     skip_the_data_file: bool,
+    #[serde(default)]
+    texts: VecDeque<String>,
     #[serde(skip)]
     tx: Option<mpsc::Sender<(String, Option<mpsc::Sender<String>>)>>,
 }
@@ -1398,8 +1401,24 @@ impl Server {
                     let the_rest = the_rest.join(" ");
                     info!("{index_supplied} {timestamp} {username} text {the_rest}");
 
+                    let text = format!("= text {timestamp} {username}: {the_rest}");
+                    if self.texts.len() >= 16 {
+                        self.texts.pop_front();
+                    }
+
                     for tx in &mut self.clients.values() {
-                        let _ok = tx.send(format!("= text {timestamp} {username}: {the_rest}"));
+                        let _ok = tx.send(text.clone());
+                    }
+                    self.texts.push_back(text);
+                    self.save_server();
+
+                    None
+                }
+                "texts" => {
+                    if !self.texts.is_empty() {
+                        let string = Vec::from(self.texts.clone()).join("\n");
+
+                        self.clients.get(&index_supplied)?.send(string).ok()?;
                     }
 
                     None
