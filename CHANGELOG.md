@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- hnefatafl-client: make free play allowable when reviewing games.
 - hnefatafl-client: Use the arrow keys to control forward and backward in review
   game.
 - hnefatafl-client: log when we get an unexpected message.

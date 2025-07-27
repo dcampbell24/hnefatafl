@@ -1,135 +1,131 @@
-use std::fmt;
-
-#[derive(Clone, Debug, Eq, PartialEq)]
-enum Direction {
-    Down,
-    Right,
-}
+use crate::{
+    board::{Board, BoardSize, board_11x11, board_13x13},
+    role::Role,
+};
 
 #[derive(Clone, Debug)]
-pub struct Tree<T: Clone + fmt::Debug> {
-    pub root: Node<T>,
-    path: Vec<Direction>,
+pub struct Tree {
+    node: usize,
+    pub next_child: usize,
+    arena: Vec<Node>,
 }
 
-impl<T: Clone + fmt::Debug> Tree<T> {
-    pub fn flatten(&self) -> Vec<T> {
-        let mut vec = vec![self.root.node.clone()];
-        let mut node = &self.root;
+impl Tree {
+    pub fn next_child(&mut self) {
+        self.next_child += 1;
 
-        while let Some(children) = &node.children {
-            vec.push(children[0].node.clone());
-            node = &children[0];
-        }
-
-        vec
-    }
-
-    pub fn here(&self) -> Option<T> {
-        let mut index = 0;
-        let mut here = self.root.clone();
-        for direction in &self.path {
-            match direction {
-                Direction::Down => {
-                    let there = here.children?;
-                    if index >= there.len() {
-                        return None;
-                    }
-                    here = there[index].clone();
-                    index = 0;
-                }
-                Direction::Right => index += 1,
-            }
-        }
-
-        Some(here.node)
-    }
-
-    pub fn here_node(&self) -> Option<Node<T>> {
-        let mut index = 0;
-        let mut here = self.root.clone();
-        for direction in &self.path {
-            match direction {
-                Direction::Down => {
-                    let there = here.children?;
-                    if index >= there.len() {
-                        return None;
-                    }
-                    here = there[index].clone();
-                    index = 0;
-                }
-                Direction::Right => index += 1,
-            }
-        }
-
-        Some(here)
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.len() == 0
-    }
-
-    pub fn len(&self) -> usize {
-        let mut len = 1;
-        let mut node = &self.root;
-
-        while let Some(children) = &node.children {
-            node = &children[0];
-            len += 1;
-        }
-
-        len
-    }
-
-    pub fn new(value: T) -> Self {
-        Tree {
-            root: Node {
-                node: value,
-                children: None,
-            },
-            path: Vec::new(),
+        if self.next_child >= self.arena[self.node].children.len() {
+            self.next_child = 0;
         }
     }
 
     pub fn backward(&mut self) {
-        while self.path.ends_with(&[Direction::Right]) {
-            self.path.pop();
+        if let Some(node) = self.arena[self.node].parent {
+            self.node = node;
         }
-        if self.path.ends_with(&[Direction::Down]) {
-            self.path.pop();
-        }
+
+        self.next_child = 0;
     }
 
     pub fn backward_all(&mut self) {
-        self.path.clear();
-    }
+        let mut node = self.node;
 
-    pub fn left(&mut self) {
-        if self.path.ends_with(&[Direction::Right]) {
-            self.path.pop();
+        while let Some(node_index) = self.arena[node].parent {
+            node = node_index;
         }
-    }
 
-    pub fn right(&mut self) {
-        self.path.push(Direction::Right);
+        self.next_child = 0;
+        self.node = node;
     }
 
     pub fn forward(&mut self) {
-        self.path.push(Direction::Down);
+        if !self.arena[self.node].children.is_empty() {
+            self.node = self.arena[self.node].children[self.next_child];
+        }
+
+        self.next_child = 0;
     }
 
-    pub fn forward_all(&mut self) {
-        if let Some(mut node) = self.here_node() {
-            while let Some(children) = node.children {
-                self.forward();
-                node = children[0].clone();
-            }
+    #[must_use]
+    pub fn forward_all(&mut self) -> usize {
+        let mut node = self.node;
+        let mut count = 0;
+
+        while !self.arena[node].children.is_empty() {
+            node = self.arena[node].children[self.next_child];
+            count += 1;
+        }
+
+        self.next_child = 0;
+        self.node = node;
+        count
+    }
+
+    #[must_use]
+    pub fn has_children(&self) -> bool {
+        !self.arena[self.node].children.is_empty()
+    }
+
+    pub fn insert(&mut self, board: &Board) {
+        let index = self.arena.len();
+        let node = &mut self.arena[self.node];
+        self.node = index;
+
+        let old_index = node.index;
+        node.children.push(index);
+        let turn = node.turn.opposite();
+
+        self.arena.push(Node {
+            index,
+            board: board.clone(),
+            turn,
+            parent: Some(old_index),
+            children: Vec::new(),
+        });
+    }
+
+    #[must_use]
+    pub fn here(&self) -> Node {
+        self.arena[self.node].clone()
+    }
+
+    #[must_use]
+    pub fn here_board(&self) -> Board {
+        self.arena[self.node].board.clone()
+    }
+
+    #[must_use]
+    pub fn new(board_size: BoardSize) -> Self {
+        let board = match board_size {
+            BoardSize::_11 => board_11x11(),
+            BoardSize::_13 => board_13x13(),
+        };
+
+        Self {
+            node: 0,
+            next_child: 0,
+            arena: vec![Node {
+                index: 0,
+                board,
+                turn: Role::Attacker,
+                parent: None,
+                children: Vec::new(),
+            }],
         }
     }
 }
 
 #[derive(Clone, Debug)]
-pub struct Node<T: Clone + fmt::Debug> {
-    pub node: T,
-    pub children: Option<Vec<Node<T>>>,
+pub struct Node {
+    index: usize,
+    pub board: Board,
+    pub turn: Role,
+    parent: Option<usize>,
+    children: Vec<usize>,
+}
+
+#[derive(Clone, Debug)]
+pub struct Here {
+    pub node: Board,
+    pub turn: Role,
 }
