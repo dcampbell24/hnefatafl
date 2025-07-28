@@ -402,7 +402,7 @@ struct Server {
     games_light: ServerGamesLight,
     #[serde(skip)]
     skip_the_data_file: bool,
-    #[serde(default)]
+    #[serde(skip)]
     texts: VecDeque<String>,
     #[serde(skip)]
     tx: Option<mpsc::Sender<(String, Option<mpsc::Sender<String>>)>>,
@@ -1402,7 +1402,7 @@ impl Server {
                     info!("{index_supplied} {timestamp} {username} text {the_rest}");
 
                     let text = format!("= text {timestamp} {username}: {the_rest}");
-                    if self.texts.len() >= 16 {
+                    if self.texts.len() >= 32 {
                         self.texts.pop_front();
                     }
 
@@ -1410,7 +1410,6 @@ impl Server {
                         let _ok = tx.send(text.clone());
                     }
                     self.texts.push_back(text);
-                    self.save_server();
 
                     None
                 }
