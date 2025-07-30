@@ -2219,6 +2219,7 @@ mod tests {
     }
 
     // ulimit --file-descriptor-count 2000 --hard --soft
+    // RUST_LOG=warn cargo test many_clients -- --no-capture
     #[ignore = "too slow"]
     #[test]
     fn many_clients() -> anyhow::Result<()> {
