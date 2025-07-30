@@ -2067,7 +2067,7 @@ mod tests {
 
     use std::process::{Child, Stdio};
     use std::thread;
-    use std::time::Duration;
+    use std::time::{Duration, Instant};
 
     const ADDRESS: &str = "localhost:49152";
 
@@ -2129,8 +2129,6 @@ mod tests {
             .arg("build")
             .arg("--bin")
             .arg("hnefatafl-server-full")
-            .arg("--features")
-            .arg("server")
             .output()?;
 
         let _server = Server(
@@ -2216,6 +2214,61 @@ mod tests {
         reader_2.read_line(&mut buf)?;
         assert_eq!(buf, "= game_over 0 defender_wins\n");
         buf.clear();
+
+        Ok(())
+    }
+
+    // ulimit --file-descriptor-count 2000 --hard --soft
+    #[ignore = "too slow"]
+    #[test]
+    fn many_clients() -> anyhow::Result<()> {
+        std::process::Command::new("cargo")
+            .arg("build")
+            .arg("--release")
+            .arg("--bin")
+            .arg("hnefatafl-server-full")
+            .output()?;
+
+        let _server = Server(
+            std::process::Command::new("./target/release/hnefatafl-server-full")
+                .arg("--skip-the-data-file")
+                .arg("--skip-advertising-updates")
+                .spawn()?,
+        );
+
+        thread::sleep(Duration::from_millis(10));
+
+        let mut handles = Vec::new();
+        let t0 = Instant::now();
+
+        for i in 0..800 {
+            handles.push(thread::spawn(move || {
+                let mut buf = String::new();
+
+                let mut tcp = TcpStream::connect(ADDRESS).unwrap();
+                let mut reader = BufReader::new(tcp.try_clone().unwrap());
+
+                tcp.write_all(format!("{VERSION_ID} create_account player-{i}\n").as_bytes())
+                    .unwrap();
+                reader.read_line(&mut buf).unwrap();
+                // assert_eq!(buf, "= login\n");
+                buf.clear();
+
+                for _ in 0..1_000 {
+                    tcp.write_all(b"ping\n").unwrap();
+                    reader.read_line(&mut buf).unwrap();
+                    // assert_eq!(buf, "= ping\n");
+                    buf.clear();
+                }
+            }));
+        }
+
+        for handle in handles {
+            handle.join().unwrap();
+        }
+
+        let t1 = Instant::now();
+        println!("many clients: {:?}", t1 - t0);
 
         Ok(())
     }
