@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- hnefatafl-server-full: don't send messages from watchers to players during the
+  game.
+
 ## [4.1.0] - 2025-07-27
 
 ### Added

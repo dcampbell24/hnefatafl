@@ -1942,6 +1942,21 @@ impl Server {
         text = format!("= text_game {text}");
 
         if let Some(game) = self.games_light.0.get(&id) {
+            let mut watching = false;
+            for (spectator, index) in &game.spectators {
+                if spectator == username {
+                    watching = true;
+                }
+
+                if let Some(sender) = self.clients.get(index) {
+                    let _ok = sender.send(text.clone());
+                }
+            }
+
+            if watching {
+                return None;
+            }
+
             if let Some(attacker_channel) = game.attacker_channel {
                 if let Some(sender) = self.clients.get(&attacker_channel) {
                     let _ok = sender.send(text.clone());
@@ -1950,12 +1965,6 @@ impl Server {
 
             if let Some(defender_channel) = game.defender_channel {
                 if let Some(sender) = self.clients.get(&defender_channel) {
-                    let _ok = sender.send(text.clone());
-                }
-            }
-
-            for spectator in game.spectators.values() {
-                if let Some(sender) = self.clients.get(spectator) {
                     let _ok = sender.send(text.clone());
                 }
             }
