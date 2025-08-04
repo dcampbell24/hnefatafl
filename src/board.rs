@@ -338,7 +338,7 @@ impl Board {
     ) -> bool {
         let size = self.size();
         let board_size_usize: usize = size.into();
-        let mut possible_vertexes = Vec::new();
+        let mut possible_vertexes = Vec::with_capacity(32);
 
         for y in 0..board_size_usize {
             for x in 0..board_size_usize {
