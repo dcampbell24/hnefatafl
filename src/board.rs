@@ -832,7 +832,7 @@ impl Board {
                 );
 
                 already_checked.insert(kings_vertex.clone());
-                let mut stack = Vec::new();
+                let mut stack = Vec::with_capacity(board_size_usize * board_size_usize);
                 stack.push(kings_vertex);
 
                 while !stack.is_empty() {
