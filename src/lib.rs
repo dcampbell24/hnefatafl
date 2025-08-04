@@ -103,18 +103,15 @@ pub fn hnefatafl_rs() -> anyhow::Result<()> {
     let copenhagen_csv = Path::new("tests/copenhagen.csv");
     let mut count = 0;
     let records = game_records_from_path(copenhagen_csv)?;
+    let mut results: Vec<Result<(usize, Game), anyhow::Error>> = Vec::with_capacity(records.len());
 
-    let results: Vec<_> = records
-        .clone()
-        .into_iter()
-        .enumerate()
-        .map(|(i, record)| {
+    for (i, record) in records.iter().enumerate() {
             let mut game = Game::default();
 
-            for (play, captures_1) in record.plays {
+            for (play, captures_1) in &record.plays {
                 let mut captures_2_set = HashSet::new();
                 let mut captures_2 = Vec::new();
-                let message = Message::Play(Plae::Play(play));
+                let message = Message::Play(Plae::Play(play.clone()));
 
                 match game.update(message) {
                     Ok(Some(message)) => {
@@ -132,23 +129,22 @@ pub fn hnefatafl_rs() -> anyhow::Result<()> {
                         let captures_2 = Captures(captures_2);
 
                         if let Some(captures_1) = captures_1 {
-                            assert_eq!(captures_1, captures_2);
+                            assert_eq!(captures_1, &captures_2);
                         } else if !captures_2.0.is_empty() {
-                            return Err(anyhow::Error::msg(
-                                "The engine reports captures, but the record says there are none.",
-                            ));
+                            panic!("The engine reports captures, but the record says there are none.");
                         }
                     }
                     Ok(None) => {}
+
                     Err(error) => {
-                        return Err(error);
+                        results.push(Err(error));
+                        break;
                     }
                 }
             }
 
-            Ok((i, game))
-        })
-        .collect();
+            results.push(Ok((i, game)));
+        }
 
     // let mut already_played = 0;
     for result in &results {
