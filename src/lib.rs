@@ -106,45 +106,45 @@ pub fn hnefatafl_rs() -> anyhow::Result<()> {
     let mut results: Vec<Result<(usize, Game), anyhow::Error>> = Vec::with_capacity(records.len());
 
     for (i, record) in records.iter().enumerate() {
-            let mut game = Game::default();
+        let mut game = Game::default();
 
-            for (play, captures_1) in record.clone().plays {
-                let mut captures_2_set = HashSet::new();
-                let mut captures_2 = Vec::new();
-                let message = Message::Play(Plae::Play(play));
+        for (play, captures_1) in record.clone().plays {
+            let mut captures_2_set = HashSet::new();
+            let mut captures_2 = Vec::new();
+            let message = Message::Play(Plae::Play(play));
 
-                match game.update(message) {
-                    Ok(Some(message)) => {
-                        for vertex in message.split_ascii_whitespace() {
-                            let capture = Vertex::from_str(vertex)?;
-                            captures_2_set.insert(capture);
-                        }
-                        if let Some(king) = game.board.find_the_king()? {
-                            captures_2_set.remove(&king);
-                        }
-                        for vertex in captures_2_set {
-                            captures_2.push(vertex);
-                        }
-                        captures_2.sort();
-                        let captures_2 = Captures(captures_2);
-
-                        if let Some(captures_1) = captures_1 {
-                            assert_eq!(captures_1, captures_2);
-                        } else if !captures_2.0.is_empty() {
-                            panic!("The engine reports captures, but the record says there are none.");
-                        }
+            match game.update(message) {
+                Ok(Some(message)) => {
+                    for vertex in message.split_ascii_whitespace() {
+                        let capture = Vertex::from_str(vertex)?;
+                        captures_2_set.insert(capture);
                     }
-                    Ok(None) => {}
+                    if let Some(king) = game.board.find_the_king()? {
+                        captures_2_set.remove(&king);
+                    }
+                    for vertex in captures_2_set {
+                        captures_2.push(vertex);
+                    }
+                    captures_2.sort();
+                    let captures_2 = Captures(captures_2);
 
-                    Err(error) => {
-                        results.push(Err(error));
-                        break;
+                    if let Some(captures_1) = captures_1 {
+                        assert_eq!(captures_1, captures_2);
+                    } else if !captures_2.0.is_empty() {
+                        panic!("The engine reports captures, but the record says there are none.");
                     }
                 }
-            }
+                Ok(None) => {}
 
-            results.push(Ok((i, game)));
+                Err(error) => {
+                    results.push(Err(error));
+                    break;
+                }
+            }
         }
+
+        results.push(Ok((i, game)));
+    }
 
     // let mut already_played = 0;
     for result in &results {
