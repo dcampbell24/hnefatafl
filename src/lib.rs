@@ -108,10 +108,10 @@ pub fn hnefatafl_rs() -> anyhow::Result<()> {
     for (i, record) in records.iter().enumerate() {
             let mut game = Game::default();
 
-            for (play, captures_1) in &record.plays {
+            for (play, captures_1) in record.clone().plays {
                 let mut captures_2_set = HashSet::new();
                 let mut captures_2 = Vec::new();
-                let message = Message::Play(Plae::Play(play.clone()));
+                let message = Message::Play(Plae::Play(play));
 
                 match game.update(message) {
                     Ok(Some(message)) => {
@@ -129,7 +129,7 @@ pub fn hnefatafl_rs() -> anyhow::Result<()> {
                         let captures_2 = Captures(captures_2);
 
                         if let Some(captures_1) = captures_1 {
-                            assert_eq!(captures_1, &captures_2);
+                            assert_eq!(captures_1, captures_2);
                         } else if !captures_2.0.is_empty() {
                             panic!("The engine reports captures, but the record says there are none.");
                         }
