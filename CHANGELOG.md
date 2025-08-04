@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Improve performance (speed).
 - hnefatafl-server-full: don't send messages from watchers to players during the
   game.
 
