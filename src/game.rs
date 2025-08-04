@@ -1,7 +1,7 @@
 use std::{borrow::Cow, collections::HashMap, fmt, process::exit, str::FromStr};
 
 use chrono::Local;
-use rustc_hash::FxHashSet;
+use rustc_hash::{FxBuildHasher, FxHashSet};
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "js")]
 use wasm_bindgen::prelude::wasm_bindgen;
@@ -64,7 +64,8 @@ pub struct PreviousBoards(pub FxHashSet<Board>);
 
 impl Default for PreviousBoards {
     fn default() -> Self {
-        let mut boards = FxHashSet::default();
+        let hasher = FxBuildHasher;
+        let mut boards = FxHashSet::with_capacity_and_hasher(128, hasher);
 
         boards.insert(board_11x11());
         boards.insert(board_13x13());
