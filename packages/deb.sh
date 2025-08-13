@@ -9,12 +9,13 @@ gzip --no-name --best hnefatafl-client.1
 gzip --no-name --best hnefatafl-server-full.1
 
 PACKAGE=$(cargo deb)
-echo $PACKAGE
-lintian $PACKAGE
 
 rm hnefatafl-ai.1.gz
 rm hnefatafl-client.1.gz
 rm hnefatafl-server-full.1.gz
+
+echo $PACKAGE
+lintian $PACKAGE
 
 if [ -z $1 ]; then
     exit
