@@ -398,7 +398,7 @@ impl<'a> Client {
 
     #[allow(clippy::too_many_lines)]
     #[must_use]
-    fn board(&self) -> Row<Message> {
+    fn board(&self) -> Row<'_, Message> {
         let board = if let Some(game_handle) = &self.archived_game_handle {
             &game_handle.boards.here().board
         } else {
@@ -555,7 +555,7 @@ impl<'a> Client {
     }
 
     #[allow(clippy::too_many_lines)]
-    fn display_game(&self) -> Element<Message> {
+    fn display_game(&self) -> Element<'_, Message> {
         let mut attacker_rating = String::new();
         let mut defender_rating = String::new();
 
@@ -1774,7 +1774,7 @@ impl<'a> Client {
 
     #[allow(clippy::too_many_lines)]
     #[must_use]
-    fn games(&self) -> Scrollable<Message> {
+    fn games(&self) -> Scrollable<'_, Message> {
         let mut game_ids = Column::new().spacing(SPACING_B);
         let mut attackers = Column::new().spacing(SPACING_B);
         let mut defenders = Column::new().spacing(SPACING_B);
@@ -1961,7 +1961,7 @@ impl<'a> Client {
     }
 
     #[must_use]
-    fn users(&self, logged_in: bool) -> Scrollable<Message> {
+    fn users(&self, logged_in: bool) -> Scrollable<'_, Message> {
         let mut ratings = Column::new();
         let mut usernames = Column::new();
         let mut wins = Column::new();
@@ -2018,7 +2018,7 @@ impl<'a> Client {
     }
 
     #[must_use]
-    fn user_area(&self, in_game: bool) -> Container<Message> {
+    fn user_area(&self, in_game: bool) -> Container<'_, Message> {
         let texts = if in_game {
             &self.texts_game
         } else {
@@ -2037,7 +2037,7 @@ impl<'a> Client {
 
     #[must_use]
     #[allow(clippy::too_many_lines)]
-    pub fn view(&self) -> Element<Message> {
+    pub fn view(&self) -> Element<'_, Message> {
         match self.screen {
             Screen::AccountSettings => {
                 let mut rating = String::new();
