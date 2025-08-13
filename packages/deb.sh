@@ -1,8 +1,10 @@
 #! /bin/bash -e
 
-cargo run --bin hnefatafl-ai -- --man --username "" --password "" --role "attacker"
-cargo run --example hnefatafl-client -- --man
-cargo run -- --man
+export RUST_MIN_STACK=67108864
+
+cargo run --release --bin hnefatafl-ai -- --man --username "" --password "" --role "attacker"
+cargo run --release --example hnefatafl-client -- --man
+cargo run --release -- --man
 
 gzip --no-name --best hnefatafl-ai.1
 gzip --no-name --best hnefatafl-client.1
