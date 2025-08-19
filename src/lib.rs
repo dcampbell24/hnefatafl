@@ -102,8 +102,7 @@ pub fn hnefatafl_rs() -> anyhow::Result<()> {
     let copenhagen_csv = Path::new("tests/copenhagen.csv");
     let records = game_records_from_path(copenhagen_csv)?;
 
-    let mut results: Vec<_> = Vec::with_capacity(records.len());
-    results.extend(records.iter().map(|(i, record)| {
+    let results = records.iter().map(|(i, record)| {
         let mut game = Game::default();
 
         for (play, captures_1) in record.clone().plays {
@@ -142,14 +141,14 @@ pub fn hnefatafl_rs() -> anyhow::Result<()> {
         }
 
         Ok((i, game))
-    }));
+    });
 
     // let mut already_played = 0;
-    for result in &results {
+    for result in results {
         match result {
             Ok((i, game)) => {
                 if game.status != Status::Ongoing {
-                    assert_eq!(game.status, records[**i].1.status);
+                    assert_eq!(game.status, records[*i].1.status);
                 }
             }
             Err((_, error)) => {
