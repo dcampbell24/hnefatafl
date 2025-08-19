@@ -137,9 +137,7 @@ pub fn hnefatafl_rs() -> anyhow::Result<()> {
                     }
                 }
 
-                Err(error) => {
-                    return Err((i, error))
-                }
+                Err(error) => return Err((i, error)),
             }
         }
 
