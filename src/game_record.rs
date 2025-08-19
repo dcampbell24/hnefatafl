@@ -36,13 +36,13 @@ pub struct GameRecord {
 /// # Errors
 ///
 /// If the game records are invalid.
-pub fn game_records_from_path(path: &Path) -> anyhow::Result<Vec<GameRecord>> {
-    let mut game_records = Vec::new();
+pub fn game_records_from_path(path: &Path) -> anyhow::Result<Vec<(usize, GameRecord)>> {
+    let mut game_records = Vec::with_capacity(1_800);
     let mut rdr = csv::ReaderBuilder::new()
         .has_headers(false)
         .from_path(path)?;
 
-    for result in rdr.deserialize() {
+    for (i, result) in rdr.deserialize().enumerate() {
         let record: Record = result?;
         let mut role = Role::Defender;
         let mut plays = Vec::new();
@@ -83,7 +83,7 @@ pub fn game_records_from_path(path: &Path) -> anyhow::Result<Vec<GameRecord>> {
             status: Status::from_str(record.status.as_str())?,
         };
 
-        game_records.push(game_record);
+        game_records.push((i, game_record));
     }
 
     Ok(game_records)
