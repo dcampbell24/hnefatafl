@@ -13,6 +13,8 @@ use play::Plae;
 // use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use status::Status;
 
+use crate::game_record::GameRecord;
+
 pub mod accounts;
 pub mod ai;
 pub mod board;
@@ -102,53 +104,14 @@ pub fn hnefatafl_rs() -> anyhow::Result<()> {
     let copenhagen_csv = Path::new("tests/copenhagen.csv");
     let records = game_records_from_path(copenhagen_csv)?;
 
-    let results = records.iter().map(|(i, record)| {
-        let mut game = Game::default();
-
-        for (play, captures_1) in record.clone().plays {
-            let mut captures_2_set = HashSet::new();
-            let mut captures_2 = Vec::new();
-            let play = Plae::Play(play);
-
-            match game.play(&play) {
-                Ok(captures) => {
-                    for vertex in captures.0 {
-                        captures_2_set.insert(vertex);
-                    }
-
-                    if let Some(king) = match game.board.find_the_king() {
-                        Ok(king) => king,
-                        Err(error) => return Err(error),
-                    } {
-                        captures_2_set.remove(&king);
-                    }
-
-                    for vertex in captures_2_set {
-                        captures_2.push(vertex);
-                    }
-                    captures_2.sort();
-                    let captures_2 = Captures(captures_2);
-
-                    if let Some(captures_1) = captures_1 {
-                        assert_eq!(captures_1, captures_2);
-                    } else if !captures_2.0.is_empty() {
-                        panic!("The engine reports captures, but the record says there are none.");
-                    }
-                }
-
-                Err(error) => return Err(error),
-            }
-        }
-
-        Ok((i, game))
-    });
+    let results = records.iter().map(|(i, record)| play_game(*i, record));
 
     // let mut already_played = 0;
-    for result in results {
+    results.for_each(|result| {
         match result {
             Ok((i, game)) => {
                 if game.status != Status::Ongoing {
-                    assert_eq!(game.status, records[*i].1.status);
+                    assert_eq!(game.status, records[i].1.status);
                 }
             }
             Err(error) => {
@@ -157,15 +120,54 @@ pub fn hnefatafl_rs() -> anyhow::Result<()> {
                 {
                     // already_played += 1;
                 } else {
-                    return Err(anyhow::Error::msg(error.to_string()));
+                    panic!("{}", error.to_string());
                 }
             }
         }
-    }
+    });
 
-    // println!("already played error: {}", f64::from(already_played) / results.len() as f64);
+    // println!("already played error: {}", f64::from(already_played) / records.len() as f64);
 
     Ok(())
+}
+
+#[inline]
+fn play_game(i: usize, record: &GameRecord) -> Result<(usize, Game), anyhow::Error> {
+    let mut game = Game::default();
+
+    for (play, captures_1) in record.clone().plays {
+        let mut captures_2_set = HashSet::new();
+        let mut captures_2 = Vec::new();
+        let play = Plae::Play(play);
+
+        match game.play(&play) {
+            Ok(captures) => {
+                for vertex in captures.0 {
+                    captures_2_set.insert(vertex);
+                }
+
+                if let Some(king) = game.board.find_the_king()? {
+                    captures_2_set.remove(&king);
+                }
+
+                for vertex in captures_2_set {
+                    captures_2.push(vertex);
+                }
+                captures_2.sort();
+                let captures_2 = Captures(captures_2);
+
+                if let Some(captures_1) = captures_1 {
+                    assert_eq!(captures_1, captures_2);
+                } else if !captures_2.0.is_empty() {
+                    panic!("The engine reports captures, but the record says there are none.");
+                }
+            }
+
+            Err(error) => return Err(error),
+        }
+    }
+
+    Ok((i, game))
 }
 
 /// # Errors
