@@ -5,13 +5,12 @@ use std::{
     net::TcpStream,
     path::Path,
     process::exit,
-    str::FromStr,
 };
 
 use game::Game;
 use game_record::{Captures, game_records_from_path};
-use message::Message;
-use play::{Plae, Vertex};
+use play::Plae;
+// use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use status::Status;
 
 pub mod accounts;
@@ -101,27 +100,30 @@ pub fn handle_error<T, E: fmt::Display>(result: Result<T, E>) -> T {
 #[allow(clippy::missing_panics_doc)]
 pub fn hnefatafl_rs() -> anyhow::Result<()> {
     let copenhagen_csv = Path::new("tests/copenhagen.csv");
-    let mut count = 0;
     let records = game_records_from_path(copenhagen_csv)?;
-    let mut results: Vec<Result<(usize, Game), anyhow::Error>> = Vec::with_capacity(records.len());
 
-    for (i, record) in records.iter().enumerate() {
+    let mut results: Vec<_> = Vec::with_capacity(records.len());
+    results.extend(records.iter().map(|(i, record)| {
         let mut game = Game::default();
 
         for (play, captures_1) in record.clone().plays {
             let mut captures_2_set = HashSet::new();
             let mut captures_2 = Vec::new();
-            let message = Message::Play(Plae::Play(play));
+            let play = Plae::Play(play);
 
-            match game.update(message) {
-                Ok(Some(message)) => {
-                    for vertex in message.split_ascii_whitespace() {
-                        let capture = Vertex::from_str(vertex)?;
-                        captures_2_set.insert(capture);
+            match game.play(&play) {
+                Ok(captures) => {
+                    for vertex in captures.0 {
+                        captures_2_set.insert(vertex);
                     }
-                    if let Some(king) = game.board.find_the_king()? {
+
+                    if let Some(king) = match game.board.find_the_king() {
+                        Ok(king) => king,
+                        Err(error) => return Err((i, error)),
+                    } {
                         captures_2_set.remove(&king);
                     }
+
                     for vertex in captures_2_set {
                         captures_2.push(vertex);
                     }
@@ -134,30 +136,25 @@ pub fn hnefatafl_rs() -> anyhow::Result<()> {
                         panic!("The engine reports captures, but the record says there are none.");
                     }
                 }
-                Ok(None) => {}
 
                 Err(error) => {
-                    results.push(Err(error));
-                    break;
+                    return Err((i, error))
                 }
             }
         }
 
-        results.push(Ok((i, game)));
-    }
+        Ok((i, game))
+    }));
 
     // let mut already_played = 0;
     for result in &results {
         match result {
             Ok((i, game)) => {
                 if game.status != Status::Ongoing {
-                    assert_eq!(game.status, records[*i].status);
-                }
-                if i > &count {
-                    count = *i;
+                    assert_eq!(game.status, records[**i].1.status);
                 }
             }
-            Err(error) => {
+            Err((_, error)) => {
                 if error.to_string()
                     == anyhow::Error::msg("play: you already reached that position").to_string()
                 {
