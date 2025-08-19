@@ -118,7 +118,7 @@ pub fn hnefatafl_rs() -> anyhow::Result<()> {
 
                     if let Some(king) = match game.board.find_the_king() {
                         Ok(king) => king,
-                        Err(error) => return Err((i, error)),
+                        Err(error) => return Err(error),
                     } {
                         captures_2_set.remove(&king);
                     }
@@ -136,7 +136,7 @@ pub fn hnefatafl_rs() -> anyhow::Result<()> {
                     }
                 }
 
-                Err(error) => return Err((i, error)),
+                Err(error) => return Err(error),
             }
         }
 
@@ -151,7 +151,7 @@ pub fn hnefatafl_rs() -> anyhow::Result<()> {
                     assert_eq!(game.status, records[*i].1.status);
                 }
             }
-            Err((_, error)) => {
+            Err(error) => {
                 if error.to_string()
                     == anyhow::Error::msg("play: you already reached that position").to_string()
                 {
