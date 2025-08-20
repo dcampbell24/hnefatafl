@@ -19,7 +19,6 @@ pub mod accounts;
 pub mod ai;
 pub mod board;
 pub mod draw;
-pub mod futhorc;
 pub mod game;
 pub mod game_record;
 pub mod glicko;
