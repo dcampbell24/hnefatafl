@@ -11,7 +11,7 @@ homepage = "https://hnefatafl.org"
 repository = "https://github.com/dcampbell24/hnefatafl"
 license = "MIT OR Apache-2.0"
 keywords = ["board-game", "copenhagen", "hnefatafl", "tafl"]
-categories = ["game-engines", "games"]
+categories = ["game-engines", "games", "wasm"]
 default-run = "hnefatafl-server-full"
 
 [dev-dependencies.iced]
