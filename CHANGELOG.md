@@ -7,7 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Only allow sending password reset once a day.
+- hnefatafl-client: "My Games Only" limits the games being played too.
+- hnefatafl-server-full: only allow sending password reset once a day.
 - Improve performance (speed).
 - hnefatafl-server-full: don't send messages from watchers to players during the
   game.
