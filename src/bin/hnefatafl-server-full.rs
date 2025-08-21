@@ -276,7 +276,7 @@ fn login(
                 ))?;
 
                 stream.write_all(
-                    b"? login sent a password reset email if a verified email exists for this account\n",
+                    b"? login sent a password reset email if a verified email exists for this account and the last password reset happened more than a day ago\n",
                 )?;
 
                 buf.clear();
@@ -1391,7 +1391,9 @@ impl Server {
                                 }
                             }
                             {
-                                error!("an email was sent less than a day ago");
+                                error!(
+                                    "a password reset email was sent less than a day ago for {username}"
+                                );
                             }
                         } else {
                             error!("the email address for account {username} is unverified");
