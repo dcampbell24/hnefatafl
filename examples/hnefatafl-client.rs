@@ -1787,6 +1787,23 @@ impl<'a> Client {
         server_games.sort_by(|a, b| b.id.cmp(&a.id));
 
         for game in server_games {
+            if self.my_games_only {
+                let mut includes_username = false;
+                if let Some(attacker) = &game.attacker {
+                    if attacker == &self.username {
+                        includes_username = true;
+                    }
+                }
+                if let Some(defender) = &game.defender {
+                    if defender == &self.username {
+                        includes_username = true;
+                    }
+                }
+                if !includes_username {
+                    continue;
+                }
+            }
+
             let id = game.id;
             game_ids = game_ids.push(text(id));
 
