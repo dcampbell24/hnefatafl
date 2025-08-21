@@ -27,6 +27,8 @@ pub struct Account {
     #[serde(default)]
     pub email: Option<Email>,
     #[serde(default)]
+    pub email_sent: i64,
+    #[serde(default)]
     pub password: String,
     #[serde(default)]
     pub logged_in: Option<usize>,
