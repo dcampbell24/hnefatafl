@@ -1353,10 +1353,13 @@ impl Server {
                     let account = self.accounts.0.get_mut(*username)?;
                     if let Some(email) = &account.email {
                         if email.verified {
-                            let password = format!("{:x}", random::<u32>());
-                            account.password = hash_password(&password)?;
+                            let day = 60 * 60 * 24;
+                            let now = Utc::now().timestamp();
+                            if now - account.email_sent > day {
+                                let password = format!("{:x}", random::<u32>());
+                                account.password = hash_password(&password)?;
 
-                            let message = lettre::Message::builder()
+                                let message = lettre::Message::builder()
                                 .from("Hnefatafl Org <no-reply@hnefatafl.org>".parse().ok()?)
                                 .to(email.to_mailbox()?)
                                 .subject("Password Reset")
@@ -1366,24 +1369,29 @@ impl Server {
                                 ))
                                 .ok()?;
 
-                            let credentials = Credentials::new(
-                                self.smtp.username.clone(),
-                                self.smtp.password.clone(),
-                            );
+                                let credentials = Credentials::new(
+                                    self.smtp.username.clone(),
+                                    self.smtp.password.clone(),
+                                );
 
-                            let mailer = SmtpTransport::relay(&self.smtp.service)
-                                .ok()?
-                                .credentials(credentials)
-                                .build();
+                                let mailer = SmtpTransport::relay(&self.smtp.service)
+                                    .ok()?
+                                    .credentials(credentials)
+                                    .build();
 
-                            match mailer.send(&message) {
-                                Ok(_) => {
-                                    info!("email sent to {} successfully!", email.address);
-                                    self.save_server();
+                                match mailer.send(&message) {
+                                    Ok(_) => {
+                                        info!("email sent to {} successfully!", email.address);
+                                        account.email_sent = now;
+                                        self.save_server();
+                                    }
+                                    Err(err) => {
+                                        error!("could not send email to {}: {err}", email.address);
+                                    }
                                 }
-                                Err(err) => {
-                                    error!("could not send email to {}: {err}", email.address);
-                                }
+                            }
+                            {
+                                error!("an email was sent less than a day ago");
                             }
                         } else {
                             error!("the email address for account {username} is unverified");
@@ -2067,7 +2075,7 @@ fn init_logger(systemd: bool) {
 }
 
 fn timestamp() -> String {
-    Local::now().to_utc().format("[%F %T UTC]").to_string()
+    Utc::now().format("[%F %T UTC]").to_string()
 }
 
 #[cfg(test)]
