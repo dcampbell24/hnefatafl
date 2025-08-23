@@ -4,9 +4,10 @@ use std::{
     collections::{HashMap, VecDeque},
     env,
     fs::{self, File, OpenOptions},
-    io::{BufRead, BufReader, ErrorKind, Write},
+    io::{BufRead, BufReader, ErrorKind, Read, Write},
     net::{TcpListener, TcpStream},
     path::PathBuf,
+    process::exit,
     str::FromStr,
     sync::mpsc::{self, Receiver, Sender},
     thread,
@@ -30,7 +31,8 @@ use hnefatafl_copenhagen::{
     rating::Rated,
     role::Role,
     server_game::{
-        ArchivedGame, Challenger, ServerGame, ServerGameLight, ServerGames, ServerGamesLight,
+        ArchivedGame, Challenger, Messenger, ServerGame, ServerGameLight, ServerGameSerialized,
+        ServerGames, ServerGamesLight,
     },
     smtp::Smtp,
     status::Status,
@@ -76,6 +78,7 @@ struct Args {
     man: bool,
 }
 
+#[allow(clippy::too_many_lines)]
 fn main() -> anyhow::Result<()> {
     // println!("{:x}", rand::random::<u32>());
     // return Ok(());
@@ -98,6 +101,8 @@ fn main() -> anyhow::Result<()> {
     }
 
     let mut server = Server::default();
+    let (tx, rx) = mpsc::channel();
+    server.tx = Some(tx.clone());
 
     if !args.skip_the_data_file {
         let data_file = data_file();
@@ -141,6 +146,30 @@ fn main() -> anyhow::Result<()> {
                 error!("archived games file not found: {err}");
             }
         }
+
+        let active_games_file = active_games_file();
+        if fs::exists(&active_games_file)? {
+            let mut file = File::open(active_games_file)?;
+            let mut data = Vec::new();
+            file.read_to_end(&mut data)?;
+
+            let games: Vec<ServerGameSerialized> = postcard::from_bytes(data.as_slice())?;
+            for game in games {
+                let id = game.id;
+                let server_game = ServerGame::from(game);
+
+                server
+                    .games_light
+                    .0
+                    .insert(id, ServerGameLight::from(&server_game));
+                server.games.0.insert(id, server_game);
+            }
+        }
+
+        let tx_signals = tx.clone();
+        ctrlc::set_handler(move || {
+            handle_error(tx_signals.send(("0 server exit".to_string(), None)));
+        })?;
     }
 
     if args.skip_the_data_file {
@@ -151,9 +180,6 @@ fn main() -> anyhow::Result<()> {
     let address = args.host;
     let listener = TcpListener::bind(&address)?;
     info!("listening on {address} ...");
-
-    let (tx, rx) = mpsc::channel();
-    server.tx = Some(tx.clone());
 
     thread::spawn(move || server.handle_messages(&rx));
 
@@ -182,6 +208,17 @@ fn main() -> anyhow::Result<()> {
     }
 
     Ok(())
+}
+
+fn active_games_file() -> PathBuf {
+    let mut archived_games_file = if let Some(data_file) = dirs::data_dir() {
+        data_file
+    } else {
+        PathBuf::new()
+    };
+
+    archived_games_file.push("hnefatafl-games-active.postcard");
+    archived_games_file
 }
 
 fn archived_games_file() -> PathBuf {
@@ -744,8 +781,8 @@ impl Server {
         };
 
         let message = format!("= draw {draw}");
-        let _ok = game.attacker_tx.send(message.clone());
-        let _ok = game.defender_tx.send(message.clone());
+        game.attacker_tx.send(message.clone());
+        game.defender_tx.send(message.clone());
 
         if draw == Draw::Accept {
             let Some(game_light) = self.games_light.0.get(&id) else {
@@ -882,7 +919,7 @@ impl Server {
                         let _ok = client.send(message.clone());
                     }
                 }
-                let _ok = game.defender_tx.send(message);
+                game.defender_tx.send(message);
             } else {
                 return Some((
                     self.clients.get(&index_supplied)?.clone(),
@@ -905,7 +942,7 @@ impl Server {
                     let _ok = client.send(message.clone());
                 }
             }
-            let _ok = game.attacker_tx.send(message);
+            game.attacker_tx.send(message);
         } else {
             return Some((
                 self.clients.get(&index_supplied)?.clone(),
@@ -945,8 +982,8 @@ impl Server {
                 }
 
                 let message = format!("= game_over {index} attacker_wins");
-                let _ok = game.attacker_tx.send(message.clone());
-                let _ok = game.defender_tx.send(message.clone());
+                game.attacker_tx.send(message.clone());
+                game.defender_tx.send(message.clone());
 
                 for spectator in game_light.spectators.values() {
                     if let Some(sender) = self.clients.get(spectator) {
@@ -979,12 +1016,10 @@ impl Server {
             }
             Status::Ongoing => {
                 if attackers_turn_next {
-                    let _ok = game
-                        .attacker_tx
+                    game.attacker_tx
                         .send(format!("game {index} generate_move attacker"));
                 } else {
-                    let _ok = game
-                        .defender_tx
+                    game.defender_tx
                         .send(format!("game {index} generate_move defender"));
                 }
             }
@@ -1018,8 +1053,8 @@ impl Server {
                 }
 
                 let message = format!("= game_over {index} defender_wins");
-                let _ok = game.attacker_tx.send(message.clone());
-                let _ok = game.defender_tx.send(message.clone());
+                game.attacker_tx.send(message.clone());
+                game.defender_tx.send(message.clone());
 
                 for spectator in game_light.spectators.values() {
                     if let Some(sender) = self.clients.get(spectator) {
@@ -1316,6 +1351,22 @@ impl Server {
                     } else {
                         None
                     }
+                }
+                "exit" => {
+                    info!("saving active games...");
+                    let mut active_games = Vec::new();
+                    for game in self.games.0.values() {
+                        active_games.push(ServerGameSerialized::from(game));
+                    }
+
+                    let mut file = handle_error(File::create(active_games_file()));
+                    handle_error(
+                        file.write_all(
+                            handle_error(postcard::to_allocvec(&active_games)).as_slice(),
+                        ),
+                    );
+
+                    exit(0);
                 }
                 "join_game" => self.join_game(
                     username,
@@ -1810,12 +1861,14 @@ impl Server {
 
         if Some((*username).to_string()) == game_light.attacker {
             if let Some(server_game) = self.games.0.get_mut(&id) {
-                server_game.attacker_tx = self.clients.get(&index_supplied)?.clone();
+                server_game.attacker_tx =
+                    Messenger::new(self.clients.get(&index_supplied)?.clone());
             }
             game_light.attacker_channel = Some(index_supplied);
         } else if Some((*username).to_string()) == game_light.defender {
             if let Some(server_game) = self.games.0.get_mut(&id) {
-                server_game.defender_tx = self.clients.get(&index_supplied)?.clone();
+                server_game.defender_tx =
+                    Messenger::new(self.clients.get(&index_supplied)?.clone());
             }
             game_light.defender_channel = Some(index_supplied);
         }
@@ -1878,11 +1931,11 @@ impl Server {
         if let Some(game) = self.games.0.get(&id) {
             match role {
                 Role::Attacker => {
-                    let _ok = game.defender_tx.send(message);
+                    game.defender_tx.send(message);
                 }
                 Role::Roleless => {}
                 Role::Defender => {
-                    let _ok = game.attacker_tx.send(message);
+                    game.attacker_tx.send(message);
                 }
             }
         }
