@@ -2912,7 +2912,7 @@ fn pass_messages() -> impl Stream<Item = Message> {
                         buffer.clear();
                     } else {
                         info!("the TCP stream has closed");
-                        break;
+                        exit(0);
                     }
                 }
             });
