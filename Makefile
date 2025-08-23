@@ -9,7 +9,7 @@ profile:
 
 .PHONY: logs
 logs:
-	journalctl --unit=hnefatafl.service --reverse
+	sudo journalctl --unit=hnefatafl.service --reverse
 
 .PHONY: ssl
 ssl:

@@ -131,15 +131,46 @@ impl ArchivedGameHandle {
 }
 
 #[derive(Clone, Debug)]
+pub struct Messenger(Option<Sender<String>>);
+
+impl Messenger {
+    #[must_use]
+    pub fn new(sender: Sender<String>) -> Self {
+        Self(Some(sender))
+    }
+
+    pub fn send(&self, string: String) {
+        if let Some(sender) = &self.0 {
+            let _ok = sender.send(string);
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
 pub struct ServerGame {
     pub id: usize,
     pub attacker: String,
-    pub attacker_tx: Sender<String>,
+    pub attacker_tx: Messenger,
     pub defender: String,
-    pub defender_tx: Sender<String>,
+    pub defender_tx: Messenger,
     pub rated: Rated,
     pub game: Game,
     pub texts: VecDeque<String>,
+}
+
+impl From<ServerGameSerialized> for ServerGame {
+    fn from(game: ServerGameSerialized) -> Self {
+        Self {
+            id: game.id,
+            attacker: game.attacker,
+            attacker_tx: Messenger(None),
+            defender: game.defender,
+            defender_tx: Messenger(None),
+            rated: game.rated,
+            game: game.game,
+            texts: game.texts,
+        }
+    }
 }
 
 impl ServerGame {
@@ -179,9 +210,9 @@ impl ServerGame {
         Self {
             id: game.id,
             attacker,
-            attacker_tx,
+            attacker_tx: Messenger(Some(attacker_tx)),
             defender,
-            defender_tx,
+            defender_tx: Messenger(Some(defender_tx)),
             rated: game.rated,
             game: Game {
                 attacker_time: game.timed.clone(),
@@ -202,6 +233,29 @@ impl fmt::Display for ServerGame {
             "{}: {}, {}, {} ",
             self.id, self.attacker, self.defender, self.rated
         )
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct ServerGameSerialized {
+    pub id: usize,
+    pub attacker: String,
+    pub defender: String,
+    pub rated: Rated,
+    pub game: Game,
+    pub texts: VecDeque<String>,
+}
+
+impl From<&ServerGame> for ServerGameSerialized {
+    fn from(game: &ServerGame) -> Self {
+        Self {
+            id: game.id,
+            attacker: game.attacker.clone(),
+            defender: game.defender.clone(),
+            rated: game.rated,
+            game: game.game.clone(),
+            texts: game.texts.clone(),
+        }
     }
 }
 
@@ -264,7 +318,7 @@ impl ServerGameLight {
         role: Role,
     ) -> Self {
         if role == Role::Attacker {
-            ServerGameLight {
+            Self {
                 id: game_id,
                 attacker: Some(username),
                 defender: None,
@@ -279,7 +333,7 @@ impl ServerGameLight {
                 game_over: false,
             }
         } else {
-            ServerGameLight {
+            Self {
                 id: game_id,
                 attacker: None,
                 defender: Some(username),
@@ -293,6 +347,25 @@ impl ServerGameLight {
                 challenge_accepted: false,
                 game_over: false,
             }
+        }
+    }
+}
+
+impl From<&ServerGame> for ServerGameLight {
+    fn from(game: &ServerGame) -> Self {
+        Self {
+            id: game.id,
+            attacker: Some(game.attacker.clone()),
+            defender: Some(game.defender.clone()),
+            challenger: Challenger::default(),
+            rated: game.rated,
+            timed: TimeSettings::UnTimed,
+            board_size: game.game.board.size(),
+            attacker_channel: None,
+            defender_channel: None,
+            spectators: HashMap::new(),
+            challenge_accepted: true,
+            game_over: false,
         }
     }
 }
