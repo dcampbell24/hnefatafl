@@ -2819,7 +2819,11 @@ fn pass_messages() -> impl Stream<Item = Message> {
         100,
         move |mut sender: iced::futures::channel::mpsc::Sender<Message>| async move {
             let (tx, rx) = mpsc::channel();
-            let _ = sender.send(Message::StreamConnected(tx)).await;
+
+            if let Err(error) = sender.send(Message::StreamConnected(tx.clone())).await {
+                error!("failed to send channel: {error}");
+                exit(1);
+            }
 
             let mut args = Args::parse();
             args.host.push_str(PORT);
@@ -2830,12 +2834,10 @@ fn pass_messages() -> impl Stream<Item = Message> {
                     let message = handle_error(rx.recv());
                     let message_trim = message.trim();
 
-                    if message_trim == "quit" {
-                        exit(0)
-                    }
-
-                    if message_trim == "tcp_connect" {
-                        break;
+                    match message_trim {
+                        "quit" => exit(0),
+                        "tcp_connect" => break,
+                        _ => {}
                     }
                 }
 
