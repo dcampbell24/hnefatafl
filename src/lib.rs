@@ -105,27 +105,28 @@ pub fn hnefatafl_rs() -> anyhow::Result<()> {
     let copenhagen_csv = Path::new("tests/copenhagen.csv");
     let records = game_records_from_path(copenhagen_csv)?;
 
-    let results = records.iter().map(|(i, record)| play_game(*i, record));
-
     // let mut already_played = 0;
-    results.for_each(|result| {
-        match result {
-            Ok((i, game)) => {
-                if game.status != Status::Ongoing {
-                    assert_eq!(game.status, records[i].1.status);
+    records
+        .iter()
+        .map(|(i, record)| play_game(*i, record))
+        .for_each(|result| {
+            match result {
+                Ok((i, game)) => {
+                    if game.status != Status::Ongoing {
+                        assert_eq!(game.status, records[i].1.status);
+                    }
+                }
+                Err(error) => {
+                    if error.to_string()
+                        == anyhow::Error::msg("play: you already reached that position").to_string()
+                    {
+                        // already_played += 1;
+                    } else {
+                        panic!("{}", error.to_string());
+                    }
                 }
             }
-            Err(error) => {
-                if error.to_string()
-                    == anyhow::Error::msg("play: you already reached that position").to_string()
-                {
-                    // already_played += 1;
-                } else {
-                    panic!("{}", error.to_string());
-                }
-            }
-        }
-    });
+        });
 
     // println!("already played error: {}", f64::from(already_played) / records.len() as f64);
 
