@@ -8,6 +8,7 @@ use std::{
 use serde::{Deserialize, Serialize};
 
 use crate::{
+    Id,
     board::{self, BoardSize},
     game::{Game, PreviousBoards},
     glicko::Rating,
@@ -21,7 +22,7 @@ use crate::{
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct ArchivedGame {
-    pub id: usize,
+    pub id: Id,
     pub attacker: String,
     pub attacker_rating: Rating,
     pub defender: String,
@@ -148,7 +149,7 @@ impl Messenger {
 
 #[derive(Clone, Debug)]
 pub struct ServerGame {
-    pub id: usize,
+    pub id: Id,
     pub attacker: String,
     pub attacker_tx: Messenger,
     pub defender: String,
@@ -238,7 +239,7 @@ impl fmt::Display for ServerGame {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct ServerGameSerialized {
-    pub id: usize,
+    pub id: Id,
     pub attacker: String,
     pub defender: String,
     pub rated: Rated,
@@ -260,7 +261,7 @@ impl From<&ServerGame> for ServerGameSerialized {
 }
 
 #[derive(Clone, Debug, Default)]
-pub struct ServerGames(pub HashMap<usize, ServerGame>);
+pub struct ServerGames(pub HashMap<Id, ServerGame>);
 
 #[derive(Clone, Default)]
 pub struct Challenger(pub Option<String>);
@@ -292,7 +293,7 @@ impl fmt::Display for Challenger {
 
 #[derive(Clone)]
 pub struct ServerGameLight {
-    pub id: usize,
+    pub id: Id,
     pub attacker: Option<String>,
     pub defender: Option<String>,
     pub challenger: Challenger,
@@ -309,7 +310,7 @@ pub struct ServerGameLight {
 impl ServerGameLight {
     #[must_use]
     pub fn new(
-        game_id: usize,
+        game_id: Id,
         username: String,
         rated: Rated,
         timed: TimeSettings,
@@ -417,7 +418,7 @@ impl TryFrom<&[&str]> for ServerGameLight {
         let challenge_accepted = vector[10];
         let spectators = vector[11];
 
-        let id = id.parse::<usize>()?;
+        let id = id.parse::<Id>()?;
 
         let attacker = if attacker == "_" {
             None
@@ -473,7 +474,7 @@ impl TryFrom<&[&str]> for ServerGameLight {
 }
 
 #[derive(Clone, Default)]
-pub struct ServerGamesLight(pub HashMap<usize, ServerGameLight>);
+pub struct ServerGamesLight(pub HashMap<Id, ServerGameLight>);
 
 impl fmt::Debug for ServerGamesLight {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

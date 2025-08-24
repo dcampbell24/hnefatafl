@@ -21,7 +21,7 @@ use chrono::{Local, Utc};
 use clap::{CommandFactory, Parser, command};
 use env_logger::Builder;
 use hnefatafl_copenhagen::{
-    COPYRIGHT, LONG_VERSION, VERSION_ID,
+    COPYRIGHT, Id, LONG_VERSION, VERSION_ID,
     accounts::{Account, Accounts, Email},
     board::BoardSize,
     draw::Draw,
@@ -422,7 +422,7 @@ impl Default for UnixTimestamp {
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 struct Server {
     #[serde(default)]
-    game_id: usize,
+    game_id: Id,
     #[serde(default)]
     ran_update_rd: UnixTimestamp,
     #[serde(default)]
@@ -626,7 +626,7 @@ impl Server {
         let Some(id) = the_rest.first() else {
             return Some((channel.clone(), false, command));
         };
-        let Ok(id) = id.parse::<usize>() else {
+        let Ok(id) = id.parse::<Id>() else {
             return Some((channel.clone(), false, command));
         };
 
@@ -749,7 +749,7 @@ impl Server {
                 (*command).to_string(),
             ));
         };
-        let Ok(id) = id.parse::<usize>() else {
+        let Ok(id) = id.parse::<Id>() else {
             return Some((
                 self.clients.get(&index_supplied)?.clone(),
                 false,
@@ -1512,7 +1512,7 @@ impl Server {
         let Some(id) = the_rest.first() else {
             return Some((self.clients.get(&index_supplied)?.clone(), false, command));
         };
-        let Ok(id) = id.parse::<usize>() else {
+        let Ok(id) = id.parse::<Id>() else {
             return Some((self.clients.get(&index_supplied)?.clone(), false, command));
         };
 
@@ -1572,7 +1572,7 @@ impl Server {
         let Some(id) = the_rest.first() else {
             return Some((channel.clone(), false, command));
         };
-        let Ok(id) = id.parse::<usize>() else {
+        let Ok(id) = id.parse::<Id>() else {
             return Some((channel.clone(), false, command));
         };
 
@@ -1619,7 +1619,7 @@ impl Server {
         let Some(id) = the_rest.first() else {
             return Some((self.clients.get(&index_supplied)?.clone(), false, command));
         };
-        let Ok(id) = id.parse::<usize>() else {
+        let Ok(id) = id.parse::<Id>() else {
             return Some((self.clients.get(&index_supplied)?.clone(), false, command));
         };
         if let Some(account) = self.accounts.0.get_mut(username) {
@@ -1833,7 +1833,7 @@ impl Server {
                 (*command).to_string(),
             ));
         };
-        let Ok(id) = id.parse::<usize>() else {
+        let Ok(id) = id.parse::<Id>() else {
             return Some((
                 self.clients.get(&index_supplied)?.clone(),
                 false,
@@ -1902,7 +1902,7 @@ impl Server {
                 (*command).to_string(),
             ));
         };
-        let Ok(id) = id.parse::<usize>() else {
+        let Ok(id) = id.parse::<Id>() else {
             return Some((
                 self.clients.get(&index_supplied)?.clone(),
                 false,
@@ -1984,7 +1984,7 @@ impl Server {
                 (*command).to_string(),
             ));
         };
-        let Ok(id) = id.parse::<usize>() else {
+        let Ok(id) = id.parse::<Id>() else {
             return Some((
                 self.clients.get(&index_supplied)?.clone(),
                 false,
@@ -2047,7 +2047,7 @@ impl Server {
         let Some(id) = the_rest.first() else {
             return Some((self.clients.get(&index_supplied)?.clone(), false, command));
         };
-        let Ok(id) = id.parse::<usize>() else {
+        let Ok(id) = id.parse::<Id>() else {
             return Some((self.clients.get(&index_supplied)?.clone(), false, command));
         };
 
