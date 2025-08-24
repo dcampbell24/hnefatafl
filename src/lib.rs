@@ -33,7 +33,7 @@ pub mod status;
 pub mod time;
 pub mod tree;
 
-pub type Id = usize;
+pub type Id = u128;
 
 pub static HOME: &str = "hnefatafl-copenhagen";
 pub static VERSION_ID: &str = "ad746a65";

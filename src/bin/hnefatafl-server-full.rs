@@ -244,7 +244,7 @@ fn data_file() -> PathBuf {
 
 #[allow(clippy::too_many_lines)]
 fn login(
-    index: usize,
+    id: Id,
     mut stream: TcpStream,
     tx: &mpsc::Sender<(String, Option<mpsc::Sender<String>>)>,
 ) -> anyhow::Result<()> {
@@ -304,7 +304,7 @@ fn login(
                 continue;
             }
 
-            debug!("{index} {username} {create_account_login} {password}");
+            debug!("{id} {username} {create_account_login} {password}");
 
             if create_account_login == "reset_password" {
                 tx.send((
@@ -321,7 +321,7 @@ fn login(
             }
 
             tx.send((
-                format!("{index} {username} {create_account_login} {password}"),
+                format!("{id} {username} {create_account_login} {password}"),
                 Some(client_tx.clone()),
             ))?;
 
@@ -358,8 +358,8 @@ fn login(
     stream.write_all(b"= login\n")?;
     thread::spawn(move || receiving_and_writing(stream, &client_rx));
 
-    tx.send((format!("{index} {username_proper} email_get"), None))?;
-    tx.send((format!("{index} {username_proper} texts"), None))?;
+    tx.send((format!("{id} {username_proper} email_get"), None))?;
+    tx.send((format!("{id} {username_proper} texts"), None))?;
 
     'outer: for _ in 0..1_000_000 {
         if let Err(err) = reader.read_line(&mut buf) {
@@ -379,11 +379,11 @@ fn login(
             }
         }
 
-        tx.send((format!("{index} {username_proper} {buf_str}"), None))?;
+        tx.send((format!("{id} {username_proper} {buf_str}"), None))?;
         buf.clear();
     }
 
-    tx.send((format!("{index} {username_proper} logout"), None))?;
+    tx.send((format!("{id} {username_proper} logout"), None))?;
     Ok(())
 }
 
