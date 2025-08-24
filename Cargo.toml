@@ -42,7 +42,7 @@ log = "0.4"
 postcard = { version = "1", features = ["alloc"] }
 rand = "0.8"
 rayon = "1"
-ron = "0.10"
+ron = { version = "0.10", features = ["integer128"] }
 rustc-hash = "2"
 serde = { version = "1", features = ["derive"] }
 
