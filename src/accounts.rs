@@ -7,7 +7,7 @@ use std::{
 use lettre::message::Mailbox;
 use serde::{Deserialize, Serialize};
 
-use crate::glicko::Rating;
+use crate::{Id, glicko::Rating};
 
 impl fmt::Display for Accounts {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -43,7 +43,7 @@ pub struct Account {
     #[serde(default)]
     pub send_emails: bool,
     #[serde(skip)]
-    pub pending_games: HashSet<usize>,
+    pub pending_games: HashSet<Id>,
 }
 
 // Fixme: move logged in / out into different vectors.

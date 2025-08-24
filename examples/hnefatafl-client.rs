@@ -25,6 +25,7 @@ use chrono::{Local, Utc};
 use clap::{CommandFactory, Parser, command};
 use env_logger::Builder;
 use futures::{SinkExt, executor};
+use hnefatafl_copenhagen::Id;
 use hnefatafl_copenhagen::board::BoardSize;
 use hnefatafl_copenhagen::play::Plays;
 use hnefatafl_copenhagen::server_game::{ArchivedGame, ArchivedGameHandle};
@@ -291,7 +292,7 @@ struct Client {
     #[serde(skip)]
     game: Option<Game>,
     #[serde(skip)]
-    game_id: usize,
+    game_id: Id,
     #[serde(skip)]
     games_light: ServerGamesLight,
     #[serde(skip)]
@@ -1517,7 +1518,7 @@ impl<'a> Client {
                         let Some(id) = text.next() else {
                             panic!("there should be a game id");
                         };
-                        let Ok(id) = id.parse::<usize>() else {
+                        let Ok(id) = id.parse::<Id>() else {
                             panic!("the game_id should be a valid usize");
                         };
                         self.game_id = id;
@@ -1570,7 +1571,7 @@ impl<'a> Client {
                         let Some(id) = text.next() else {
                             panic!("there should be a game id");
                         };
-                        let Ok(id) = id.parse::<usize>() else {
+                        let Ok(id) = id.parse::<Id>() else {
                             panic!("the game_id should be a valid usize");
                         };
 
@@ -2753,13 +2754,13 @@ enum Message {
     EmailReset,
     FocusPrevious,
     FocusNext,
-    GameAccept(usize),
-    GameDecline(usize),
-    GameJoin(usize),
+    GameAccept(Id),
+    GameDecline(Id),
+    GameJoin(Id),
     GameNew,
-    GameResume(usize),
+    GameResume(Id),
     GameSubmit,
-    GameWatch(usize),
+    GameWatch(Id),
     Leave,
     LocaleSelected(Locale),
     MyGamesOnly(bool),
