@@ -4,12 +4,15 @@ use std::{
     collections::{HashMap, VecDeque},
     env,
     fs::{self, File, OpenOptions},
-    io::{BufRead, BufReader, ErrorKind, Read, Write},
+    io::{BufRead, ErrorKind, Read, Write},
     net::{TcpListener, TcpStream},
     path::PathBuf,
     process::exit,
     str::FromStr,
-    sync::mpsc::{self, Receiver, Sender},
+    sync::{
+        Arc, Mutex,
+        mpsc::{self, Receiver, Sender},
+    },
     thread,
     time::Duration,
 };
@@ -46,6 +49,10 @@ use lettre::{
 use log::{LevelFilter, debug, error, info};
 use password_hash::SaltString;
 use rand::{random, rngs::OsRng};
+use rustls::{
+    ServerConnection,
+    pki_types::{CertificateDer, PrivateKeyDer, pem::PemObject},
+};
 use serde::{Deserialize, Serialize};
 
 const PORT: &str = ":49152";
@@ -83,7 +90,7 @@ fn main() -> anyhow::Result<()> {
     // println!("{:x}", rand::random::<u32>());
     // return Ok(());
 
-    let mut args = Args::parse();
+    let args = Args::parse();
     init_logger(args.systemd);
 
     if args.man {
@@ -176,11 +183,6 @@ fn main() -> anyhow::Result<()> {
         server.skip_the_data_file = true;
     }
 
-    args.host.push_str(PORT);
-    let address = args.host;
-    let listener = TcpListener::bind(&address)?;
-    info!("listening on {address} ...");
-
     thread::spawn(move || server.handle_messages(&rx));
 
     if !args.skip_advertising_updates {
@@ -200,6 +202,11 @@ fn main() -> anyhow::Result<()> {
             thread::sleep(Duration::from_secs(60 * 60 * 24));
         }
     });
+
+    let mut address = args.host;
+    address.push_str(PORT);
+    let listener = TcpListener::bind(&address)?;
+    info!("listening on {address} ...");
 
     for (index, stream) in (1..).zip(listener.incoming()) {
         let stream = stream?;
@@ -248,14 +255,27 @@ fn login(
     mut stream: TcpStream,
     tx: &mpsc::Sender<(String, Option<mpsc::Sender<String>>)>,
 ) -> anyhow::Result<()> {
-    let mut reader = BufReader::new(stream.try_clone()?);
+    let certs = CertificateDer::pem_file_iter("ssl/localhost.crt")
+        .unwrap()
+        .map(|cert| cert.unwrap())
+        .collect();
+
+    let private_key = PrivateKeyDer::from_pem_file("ssl/localhost.key").unwrap();
+
+    let config = rustls::ServerConfig::builder()
+        .with_no_client_auth()
+        .with_single_cert(certs, private_key)?;
+
+    let mut conn = rustls::ServerConnection::new(Arc::new(config))?;
+    conn.complete_io(&mut stream)?;
+
     let mut buf = String::new();
     let (client_tx, client_rx) = mpsc::channel();
     let mut username_proper = "_".to_string();
     let mut login_successful = false;
 
     for _ in 0..100 {
-        reader.read_line(&mut buf)?;
+        conn.reader().read_line(&mut buf)?;
 
         for ch in buf.trim().chars() {
             if ch.is_control() || ch == '\0' {
@@ -356,13 +376,15 @@ fn login(
     }
 
     stream.write_all(b"= login\n")?;
-    thread::spawn(move || receiving_and_writing(stream, &client_rx));
+    let conn = Arc::new(Mutex::new(conn));
+    let conn_write = Arc::clone(&conn);
+    thread::spawn(move || receiving_and_writing(&conn_write, &client_rx));
 
     tx.send((format!("{id} {username_proper} email_get"), None))?;
     tx.send((format!("{id} {username_proper} texts"), None))?;
 
     'outer: for _ in 0..1_000_000 {
-        if let Err(err) = reader.read_line(&mut buf) {
+        if let Err(err) = conn.lock().unwrap().reader().read_line(&mut buf) {
             error!("{err}");
             break 'outer;
         }
@@ -388,7 +410,7 @@ fn login(
 }
 
 fn receiving_and_writing(
-    mut stream: TcpStream,
+    stream: &Arc<Mutex<ServerConnection>>,
     client_rx: &Receiver<String>,
 ) -> anyhow::Result<()> {
     loop {
@@ -400,11 +422,23 @@ fn receiving_and_writing(
             let postcard_archived_games = &postcard::to_allocvec(&archived_games)?;
 
             writeln!(message, " {}", postcard_archived_games.len())?;
-            stream.write_all(message.as_bytes())?;
-            stream.write_all(postcard_archived_games)?;
+            stream
+                .lock()
+                .unwrap()
+                .writer()
+                .write_all(message.as_bytes())?;
+            stream
+                .lock()
+                .unwrap()
+                .writer()
+                .write_all(postcard_archived_games)?;
         } else {
             message.push('\n');
-            stream.write_all(message.as_bytes())?;
+            stream
+                .lock()
+                .unwrap()
+                .writer()
+                .write_all(message.as_bytes())?;
         }
     }
 }
@@ -2137,6 +2171,7 @@ fn timestamp() -> String {
 mod tests {
     use super::*;
 
+    use std::io::BufReader;
     use std::process::{Child, Stdio};
     use std::thread;
     use std::time::{Duration, Instant};
