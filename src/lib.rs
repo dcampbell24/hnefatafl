@@ -35,10 +35,11 @@ pub mod tree;
 
 pub type Id = u128;
 
-pub static HOME: &str = "hnefatafl-copenhagen";
-pub static VERSION_ID: &str = "ad746a65";
+pub const HOME: &str = "hnefatafl-copenhagen";
+pub const SERVER_PORT: &str = ":49152";
+pub const VERSION_ID: &str = "ad746a65";
 
-pub static COPYRIGHT: &str = r#".SH COPYRIGHT
+pub const COPYRIGHT: &str = r#".SH COPYRIGHT
 Copyright (c) 2025 David Lawrence Campbell
 
 The MIT License:
@@ -79,7 +80,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 "#;
 
-pub static LONG_VERSION: &str = concat!(
+pub const LONG_VERSION: &str = concat!(
     env!("CARGO_PKG_VERSION"),
     "
 Copyright (c) 2025 David Lawrence Campbell

@@ -26,6 +26,7 @@ use clap::{CommandFactory, Parser, command};
 use env_logger::Builder;
 use futures::{SinkExt, executor};
 use hnefatafl_copenhagen::Id;
+use hnefatafl_copenhagen::SERVER_PORT;
 use hnefatafl_copenhagen::board::BoardSize;
 use hnefatafl_copenhagen::play::Plays;
 use hnefatafl_copenhagen::server_game::{ArchivedGame, ArchivedGameHandle};
@@ -67,7 +68,6 @@ use log::{LevelFilter, debug, error, info, trace};
 use rust_i18n::t;
 use serde::{Deserialize, Serialize};
 
-const PORT: &str = ":49152";
 const PADDING: u16 = 10;
 const SPACING: Pixels = Pixels(10.0);
 const SPACING_B: Pixels = Pixels(20.0);
@@ -2827,7 +2827,7 @@ fn pass_messages() -> impl Stream<Item = Message> {
             }
 
             let mut args = Args::parse();
-            args.host.push_str(PORT);
+            args.host.push_str(SERVER_PORT);
             let address = args.host;
 
             thread::spawn(move || {
