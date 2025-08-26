@@ -98,15 +98,20 @@ fn main() -> anyhow::Result<()> {
         return Ok(());
     }
 
-    let mut server = Server::default();
     let (tx, rx) = mpsc::channel();
-    server.tx = Some(tx.clone());
+    let mut server = Server {
+        tx: Some(tx.clone()),
+        ..Server::default()
+    };
 
     if !args.skip_the_data_file {
         let data_file = data_file();
         match &fs::read_to_string(&data_file) {
             Ok(string) => match ron::from_str(string.as_str()) {
-                Ok(server_ron) => server = server_ron,
+                Ok(server_ron) => {
+                    server = server_ron;
+                    server.tx = Some(tx.clone());
+                }
                 Err(err) => {
                     return Err(anyhow::Error::msg(format!(
                         "RON: {}: {err}",
