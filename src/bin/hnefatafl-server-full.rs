@@ -21,7 +21,7 @@ use chrono::{Local, Utc};
 use clap::{CommandFactory, Parser, command};
 use env_logger::Builder;
 use hnefatafl_copenhagen::{
-    COPYRIGHT, Id, LONG_VERSION, VERSION_ID,
+    COPYRIGHT, Id, LONG_VERSION, SERVER_PORT, VERSION_ID,
     accounts::{Account, Accounts, Email},
     board::BoardSize,
     draw::Draw,
@@ -47,8 +47,6 @@ use log::{LevelFilter, debug, error, info};
 use password_hash::SaltString;
 use rand::{random, rngs::OsRng};
 use serde::{Deserialize, Serialize};
-
-const PORT: &str = ":49152";
 
 /// Copenhagen Hnefatafl Server
 ///
@@ -176,7 +174,7 @@ fn main() -> anyhow::Result<()> {
         server.skip_the_data_file = true;
     }
 
-    args.host.push_str(PORT);
+    args.host.push_str(SERVER_PORT);
     let address = args.host;
     let listener = TcpListener::bind(&address)?;
     info!("listening on {address} ...");
