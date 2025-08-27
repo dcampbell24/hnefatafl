@@ -126,6 +126,7 @@ pub fn hnefatafl_rs() -> anyhow::Result<()> {
             }
         });
 
+    assert_eq!(already_played, 36);
     let already_played_error = f64::from(already_played) / records.len() as f64;
     assert!(already_played_error > 0.020_5 && already_played_error < 0.020_6);
 
