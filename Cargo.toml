@@ -94,7 +94,6 @@ complexity = "deny"
 correctness = "deny"
 pedantic = "deny"
 perf = "deny"
-# restriction = "warn"
 style = "deny"
 suspicious = "deny"
 
