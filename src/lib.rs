@@ -10,7 +10,6 @@ use std::{
 use game::Game;
 use game_record::{Captures, game_records_from_path};
 use play::Plae;
-// use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use status::Status;
 
 use crate::game_record::GameRecord;
@@ -101,35 +100,34 @@ pub fn handle_error<T, E: fmt::Display>(result: Result<T, E>) -> T {
 ///
 /// If the captures or game status don't match for an engine game and a record
 /// game.
-#[allow(clippy::missing_panics_doc)]
+#[allow(clippy::cast_precision_loss, clippy::missing_panics_doc)]
 pub fn hnefatafl_rs() -> anyhow::Result<()> {
     let copenhagen_csv = Path::new("tests/copenhagen.csv");
     let records = game_records_from_path(copenhagen_csv)?;
 
-    // let mut already_played = 0;
+    let mut already_played = 0;
     records
         .iter()
         .map(|(i, record)| play_game(*i, record))
-        .for_each(|result| {
-            match result {
-                Ok((i, game)) => {
-                    if game.status != Status::Ongoing {
-                        assert_eq!(game.status, records[i].1.status);
-                    }
+        .for_each(|result| match result {
+            Ok((i, game)) => {
+                if game.status != Status::Ongoing {
+                    assert_eq!(game.status, records[i].1.status);
                 }
-                Err(error) => {
-                    if error.to_string()
-                        == anyhow::Error::msg("play: you already reached that position").to_string()
-                    {
-                        // already_played += 1;
-                    } else {
-                        panic!("{}", error.to_string());
-                    }
+            }
+            Err(error) => {
+                if error.to_string()
+                    == anyhow::Error::msg("play: you already reached that position").to_string()
+                {
+                    already_played += 1;
+                } else {
+                    panic!("{}", error.to_string());
                 }
             }
         });
 
-    // println!("already played error: {}", f64::from(already_played) / records.len() as f64);
+    let already_played_error = f64::from(already_played) / records.len() as f64;
+    assert!(already_played_error > 0.020_5 && already_played_error < 0.020_6);
 
     Ok(())
 }
