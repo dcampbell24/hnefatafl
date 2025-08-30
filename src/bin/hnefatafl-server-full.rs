@@ -376,7 +376,7 @@ async fn login(
     tx.send((format!("{id} {username_proper} email_get"), None))?;
     tx.send((format!("{id} {username_proper} texts"), None))?;
 
-    'outer: for _ in 0..1_000_000_000 {
+    'outer: for _ in 0..1_000_000 {
         reader.read_line(&mut buf).await?;
         let buf_str = buf.trim();
 
