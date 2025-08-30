@@ -187,7 +187,7 @@ async fn main() -> anyhow::Result<()> {
 
     if !args.skip_advertising_updates {
         let tx_messages_1 = tx.clone();
-        thread::spawn(move || {
+        tokio::spawn(async move {
             loop {
                 handle_error(tx_messages_1.send(("0 server display_server".to_string(), None)));
                 thread::sleep(Duration::from_secs(1));
@@ -196,7 +196,7 @@ async fn main() -> anyhow::Result<()> {
     }
 
     let tx_messages_2 = tx.clone();
-    thread::spawn(move || {
+    tokio::spawn(async move {
         loop {
             handle_error(tx_messages_2.send(("0 server check_update_rd".to_string(), None)));
             thread::sleep(Duration::from_secs(60 * 60 * 24));
