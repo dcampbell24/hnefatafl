@@ -9,6 +9,7 @@ use std::{
 
 use game::Game;
 use game_record::{Captures, game_records_from_path};
+use log::error;
 use play::Plae;
 use status::Status;
 
@@ -90,9 +91,15 @@ pub fn handle_error<T, E: fmt::Display>(result: Result<T, E>) -> T {
     match result {
         Ok(value) => value,
         Err(error) => {
-            eprintln!("error: {error}");
+            error!("{error}");
             exit(1)
         }
+    }
+}
+
+pub fn let_error_go<T, E: fmt::Display>(result: Result<T, E>) {
+    if let Err(error) = result {
+        error!("{error}");
     }
 }
 

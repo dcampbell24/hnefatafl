@@ -26,7 +26,7 @@ use hnefatafl_copenhagen::{
     draw::Draw,
     game::TimeUnix,
     glicko::Outcome,
-    handle_error,
+    handle_error, let_error_go,
     rating::Rated,
     role::Role,
     server_game::{
@@ -183,7 +183,7 @@ async fn main() -> anyhow::Result<()> {
         server.skip_the_data_file = true;
     }
 
-    thread::spawn(move || server.handle_messages(&rx));
+    thread::spawn(move || handle_error(server.handle_messages(&rx)));
 
     if !args.skip_advertising_updates {
         let tx_messages_1 = tx.clone();
@@ -213,7 +213,7 @@ async fn main() -> anyhow::Result<()> {
     loop {
         let (stream, _) = listener.accept().await?;
         let tx = tx.clone();
-        tokio::spawn(async move { login(index, stream, tx).await.unwrap() });
+        tokio::spawn(async move { handle_error(login(index, stream, tx).await) });
         index += 1;
     }
 }
@@ -371,7 +371,7 @@ async fn login(
     }
 
     writer.write_all(b"= login\n").await?;
-    tokio::spawn(async move { receiving_and_writing(writer, client_rx).await });
+    tokio::spawn(async move { let_error_go(receiving_and_writing(writer, client_rx).await) });
 
     tx.send((format!("{id} {username_proper} email_get"), None))?;
     tx.send((format!("{id} {username_proper} texts"), None))?;
