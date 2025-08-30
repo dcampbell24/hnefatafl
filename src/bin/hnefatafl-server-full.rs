@@ -81,7 +81,7 @@ fn main() -> anyhow::Result<()> {
     // println!("{:x}", rand::random::<u32>());
     // return Ok(());
 
-    let mut args = Args::parse();
+    let args = Args::parse();
     init_logger(args.systemd);
 
     if args.man {
@@ -179,11 +179,6 @@ fn main() -> anyhow::Result<()> {
         server.skip_the_data_file = true;
     }
 
-    args.host.push_str(SERVER_PORT);
-    let address = args.host;
-    let listener = TcpListener::bind(&address)?;
-    info!("listening on {address} ...");
-
     thread::spawn(move || server.handle_messages(&rx));
 
     if !args.skip_advertising_updates {
@@ -203,6 +198,12 @@ fn main() -> anyhow::Result<()> {
             thread::sleep(Duration::from_secs(60 * 60 * 24));
         }
     });
+
+    let mut address = args.host;
+    address.push_str(SERVER_PORT);
+
+    let listener = TcpListener::bind(&address)?;
+    info!("listening on {address} ...");
 
     for (index, stream) in (1..).zip(listener.incoming()) {
         let stream = stream?;
