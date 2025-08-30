@@ -2040,7 +2040,6 @@ impl Server {
         None
     }
 
-    ////
     fn watch_game(
         &mut self,
         username: &str,
