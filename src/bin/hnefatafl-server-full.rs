@@ -4,8 +4,7 @@ use std::{
     collections::{HashMap, VecDeque},
     env,
     fs::{self, File, OpenOptions},
-    io::{BufRead, BufReader, ErrorKind, Read, Write},
-    net::{TcpListener, TcpStream},
+    io::{ErrorKind, Read, Write},
     path::PathBuf,
     process::exit,
     str::FromStr,
@@ -47,6 +46,10 @@ use log::{LevelFilter, debug, error, info};
 use password_hash::SaltString;
 use rand::{random, rngs::OsRng};
 use serde::{Deserialize, Serialize};
+use tokio::{
+    io::{AsyncBufReadExt, AsyncWriteExt, BufReader},
+    net::{TcpListener, TcpStream, tcp::OwnedWriteHalf},
+};
 
 /// Copenhagen Hnefatafl Server
 ///
@@ -77,7 +80,8 @@ struct Args {
 }
 
 #[allow(clippy::too_many_lines)]
-fn main() -> anyhow::Result<()> {
+#[tokio::main]
+async fn main() -> anyhow::Result<()> {
     // println!("{:x}", rand::random::<u32>());
     // return Ok(());
 
@@ -202,16 +206,16 @@ fn main() -> anyhow::Result<()> {
     let mut address = args.host;
     address.push_str(SERVER_PORT);
 
-    let listener = TcpListener::bind(&address)?;
+    let listener = TcpListener::bind(&address).await?;
     info!("listening on {address} ...");
 
-    for (index, stream) in (1..).zip(listener.incoming()) {
-        let stream = stream?;
+    let mut index = 1;
+    loop {
+        let (stream, _) = listener.accept().await?;
         let tx = tx.clone();
-        thread::spawn(move || login(index, stream, &tx));
+        tokio::spawn(async move { login(index, stream, tx).await.unwrap() });
+        index += 1;
     }
-
-    Ok(())
 }
 
 fn active_games_file() -> PathBuf {
@@ -247,19 +251,20 @@ fn data_file() -> PathBuf {
 }
 
 #[allow(clippy::too_many_lines)]
-fn login(
+async fn login(
     id: Id,
-    mut stream: TcpStream,
-    tx: &mpsc::Sender<(String, Option<mpsc::Sender<String>>)>,
+    stream: TcpStream,
+    tx: mpsc::Sender<(String, Option<mpsc::Sender<String>>)>,
 ) -> anyhow::Result<()> {
-    let mut reader = BufReader::new(stream.try_clone()?);
-    let mut buf = String::new();
     let (client_tx, client_rx) = mpsc::channel();
+    let mut buf = String::new();
+    let (reader, mut writer) = stream.into_split();
+    let mut reader = BufReader::new(reader);
     let mut username_proper = "_".to_string();
     let mut login_successful = false;
 
     for _ in 0..100 {
-        reader.read_line(&mut buf)?;
+        reader.read_line(&mut buf).await?;
 
         for ch in buf.trim().chars() {
             if ch.is_control() || ch == '\0' {
@@ -287,9 +292,9 @@ fn login(
         {
             username_proper = username.to_string();
             if version_id != VERSION_ID {
-                stream.write_all(
-                    b"? login wrong version, update your hnefatafl-copenhagen package\n",
-                )?;
+                writer
+                    .write_all(b"? login wrong version, update your hnefatafl-copenhagen package\n")
+                    .await?;
                 buf.clear();
                 continue;
             }
@@ -298,12 +303,16 @@ fn login(
             let password = password.join(" ");
 
             if username.len() > 16 {
-                stream.write_all(b"? login username is more than 16 characters\n")?;
+                writer
+                    .write_all(b"? login username is more than 16 characters\n")
+                    .await?;
                 buf.clear();
                 continue;
             }
             if password.len() > 32 {
-                stream.write_all(b"? login password is more than 32 characters\n")?;
+                writer
+                    .write_all(b"? login password is more than 32 characters\n")
+                    .await?;
                 buf.clear();
                 continue;
             }
@@ -316,9 +325,9 @@ fn login(
                     Some(client_tx.clone()),
                 ))?;
 
-                stream.write_all(
+                writer.write_all(
                     b"? login sent a password reset email if a verified email exists for this account and the last password reset happened more than a day ago\n",
-                )?;
+                ).await?;
 
                 buf.clear();
                 continue;
@@ -337,7 +346,7 @@ fn login(
                     break;
                 }
 
-                stream.write_all(b"? login password is wrong (try lowercase), account doesn't exist, or your already logged in\n")?;
+                writer.write_all(b"? login password is wrong (try lowercase), account doesn't exist, or your already logged in\n").await?;
                 continue;
             } else if create_account_login == "create_account" {
                 if "= create_account" == message.as_str() {
@@ -345,11 +354,13 @@ fn login(
                     break;
                 }
 
-                stream.write_all(b"? create_account account already exists\n")?;
+                writer
+                    .write_all(b"? create_account account already exists\n")
+                    .await?;
                 continue;
             }
 
-            stream.write_all(b"? login\n")?;
+            writer.write_all(b"? login\n").await?;
         }
 
         buf.clear();
@@ -359,18 +370,14 @@ fn login(
         return Err(anyhow::Error::msg("the user failed to login"));
     }
 
-    stream.write_all(b"= login\n")?;
-    thread::spawn(move || receiving_and_writing(stream, &client_rx));
+    writer.write_all(b"= login\n").await?;
+    tokio::spawn(async move { receiving_and_writing(writer, client_rx).await });
 
     tx.send((format!("{id} {username_proper} email_get"), None))?;
     tx.send((format!("{id} {username_proper} texts"), None))?;
 
-    'outer: for _ in 0..1_000_000 {
-        if let Err(err) = reader.read_line(&mut buf) {
-            error!("{err}");
-            break 'outer;
-        }
-
+    'outer: for _ in 0..1_000_000_000 {
+        reader.read_line(&mut buf).await?;
         let buf_str = buf.trim();
 
         if buf_str.is_empty() {
@@ -391,9 +398,9 @@ fn login(
     Ok(())
 }
 
-fn receiving_and_writing(
-    mut stream: TcpStream,
-    client_rx: &Receiver<String>,
+async fn receiving_and_writing(
+    mut writer: OwnedWriteHalf,
+    client_rx: Receiver<String>,
 ) -> anyhow::Result<()> {
     loop {
         let mut message = client_rx.recv()?;
@@ -404,11 +411,11 @@ fn receiving_and_writing(
             let postcard_archived_games = &postcard::to_allocvec(&archived_games)?;
 
             writeln!(message, " {}", postcard_archived_games.len())?;
-            stream.write_all(message.as_bytes())?;
-            stream.write_all(postcard_archived_games)?;
+            writer.write_all(message.as_bytes()).await?;
+            writer.write_all(postcard_archived_games).await?;
         } else {
             message.push('\n');
-            stream.write_all(message.as_bytes())?;
+            writer.write_all(message.as_bytes()).await?;
         }
     }
 }
@@ -2141,6 +2148,7 @@ fn timestamp() -> String {
 mod tests {
     use super::*;
 
+    use std::io::{BufRead, BufReader};
     use std::process::{Child, Stdio};
     use std::thread;
     use std::time::{Duration, Instant};
@@ -2220,7 +2228,7 @@ mod tests {
 
         let mut buf = String::new();
 
-        let mut tcp_1 = TcpStream::connect(ADDRESS)?;
+        let mut tcp_1 = std::net::TcpStream::connect(ADDRESS)?;
         let mut reader_1 = BufReader::new(tcp_1.try_clone()?);
 
         tcp_1.write_all(format!("{VERSION_ID} create_account player-1\n").as_bytes())?;
@@ -2241,7 +2249,7 @@ mod tests {
         );
         buf.clear();
 
-        let mut tcp_2 = TcpStream::connect(ADDRESS)?;
+        let mut tcp_2 = std::net::TcpStream::connect(ADDRESS)?;
         let mut reader_2 = BufReader::new(tcp_2.try_clone()?);
 
         tcp_2.write_all(format!("{VERSION_ID} create_account player-2\n").as_bytes())?;
@@ -2322,7 +2330,7 @@ mod tests {
             handles.push(thread::spawn(move || {
                 let mut buf = String::new();
 
-                let mut tcp = TcpStream::connect(ADDRESS).unwrap();
+                let mut tcp = std::net::TcpStream::connect(ADDRESS).unwrap();
                 let mut reader = BufReader::new(tcp.try_clone().unwrap());
 
                 tcp.write_all(format!("{VERSION_ID} create_account player-{i}\n").as_bytes())

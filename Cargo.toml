@@ -45,6 +45,7 @@ rand = "0.8"
 ron = { version = "0.10", features = ["integer128"] }
 rustc-hash = "2"
 serde = { version = "1", features = ["derive"] }
+tokio = { version = "1", features = ["full"] }
 
 # js engine only
 wasm-bindgen = { version = "0.2", optional = true }
