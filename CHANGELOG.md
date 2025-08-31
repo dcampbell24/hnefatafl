@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Update dependencies.
 - Use u128 for client and game ids.
 - hnefatafl-client: logout when the TCP stream is closed.
 - hnefatafl-client: "My Games Only" limits the games being played too.
