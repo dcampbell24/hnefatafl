@@ -478,16 +478,15 @@ impl Server {
     fn bcc_mailboxes(&self, username: &str) -> Vec<Mailbox> {
         let mut emails = Vec::new();
 
-        if let Some(account) = self.accounts.0.get(username) {
-            if account.send_emails {
-                for account in self.accounts.0.values() {
-                    if let Some(email) = &account.email {
-                        if email.verified {
-                            if let Some(email) = email.to_mailbox() {
-                                emails.push(email);
-                            }
-                        }
-                    }
+        if let Some(account) = self.accounts.0.get(username)
+            && account.send_emails
+        {
+            for account in self.accounts.0.values() {
+                if let Some(email) = &account.email
+                    && email.verified
+                    && let Some(email) = email.to_mailbox()
+                {
+                    emails.push(email);
                 }
             }
         }
@@ -498,14 +497,14 @@ impl Server {
     fn bcc_send(&self, username: &str) -> String {
         let mut emails = Vec::new();
 
-        if let Some(account) = self.accounts.0.get(username) {
-            if account.send_emails {
-                for account in self.accounts.0.values() {
-                    if let Some(email) = &account.email {
-                        if email.verified {
-                            emails.push(email.tx());
-                        }
-                    }
+        if let Some(account) = self.accounts.0.get(username)
+            && account.send_emails
+        {
+            for account in self.accounts.0.values() {
+                if let Some(email) = &account.email
+                    && email.verified
+                {
+                    emails.push(email.tx());
                 }
             }
         }
@@ -692,45 +691,43 @@ impl Server {
         for game in self.games.0.values_mut() {
             match game.game.turn {
                 Role::Attacker => {
-                    if game.game.status == Status::Ongoing {
-                        if let (TimeUnix::Time(game_time), TimeSettings::Timed(attacker_time)) =
+                    if game.game.status == Status::Ongoing
+                        && let (TimeUnix::Time(game_time), TimeSettings::Timed(attacker_time)) =
                             (&mut game.game.time, &mut game.game.attacker_time)
-                        {
-                            if attacker_time.milliseconds_left > 0 {
-                                let now = Local::now().to_utc().timestamp_millis();
-                                attacker_time.milliseconds_left -= now - *game_time;
-                                *game_time = now;
-                            } else if let Some(tx) = &mut self.tx {
-                                let _ok = tx.send((
-                                    format!(
-                                        "0 {} game {} play attacker resigns _",
-                                        game.attacker, game.id
-                                    ),
-                                    None,
-                                ));
-                            }
+                    {
+                        if attacker_time.milliseconds_left > 0 {
+                            let now = Local::now().to_utc().timestamp_millis();
+                            attacker_time.milliseconds_left -= now - *game_time;
+                            *game_time = now;
+                        } else if let Some(tx) = &mut self.tx {
+                            let _ok = tx.send((
+                                format!(
+                                    "0 {} game {} play attacker resigns _",
+                                    game.attacker, game.id
+                                ),
+                                None,
+                            ));
                         }
                     }
                 }
                 Role::Roleless => {}
                 Role::Defender => {
-                    if game.game.status == Status::Ongoing {
-                        if let (TimeUnix::Time(game_time), TimeSettings::Timed(defender_time)) =
+                    if game.game.status == Status::Ongoing
+                        && let (TimeUnix::Time(game_time), TimeSettings::Timed(defender_time)) =
                             (&mut game.game.time, &mut game.game.defender_time)
-                        {
-                            if defender_time.milliseconds_left > 0 {
-                                let now = Local::now().to_utc().timestamp_millis();
-                                defender_time.milliseconds_left -= now - *game_time;
-                                *game_time = now;
-                            } else if let Some(tx) = &mut self.tx {
-                                let _ok = tx.send((
-                                    format!(
-                                        "0 {} game {} play defender resigns _",
-                                        game.defender, game.id
-                                    ),
-                                    None,
-                                ));
-                            }
+                    {
+                        if defender_time.milliseconds_left > 0 {
+                            let now = Local::now().to_utc().timestamp_millis();
+                            defender_time.milliseconds_left -= now - *game_time;
+                            *game_time = now;
+                        } else if let Some(tx) = &mut self.tx {
+                            let _ok = tx.send((
+                                format!(
+                                    "0 {} game {} play defender resigns _",
+                                    game.defender, game.id
+                                ),
+                                None,
+                            ));
                         }
                     }
                 }
@@ -1304,40 +1301,39 @@ impl Server {
                     None
                 }
                 "email_code" => {
-                    if let Some(account) = self.accounts.0.get_mut(*username) {
-                        if let Some(email) = &mut account.email {
-                            if let (Some(code_1), Some(code_2)) = (email.code, the_rest.first()) {
-                                if format!("{code_1:x}") == *code_2 {
-                                    email.verified = true;
+                    if let Some(account) = self.accounts.0.get_mut(*username)
+                        && let Some(email) = &mut account.email
+                        && let (Some(code_1), Some(code_2)) = (email.code, the_rest.first())
+                    {
+                        if format!("{code_1:x}") == *code_2 {
+                            email.verified = true;
 
-                                    self.clients
-                                        .get(&index_supplied)?
-                                        .send("= email_code".to_string())
-                                        .ok()?;
-                                } else {
-                                    email.verified = false;
+                            self.clients
+                                .get(&index_supplied)?
+                                .send("= email_code".to_string())
+                                .ok()?;
+                        } else {
+                            email.verified = false;
 
-                                    self.clients
-                                        .get(&index_supplied)?
-                                        .send("? email_code".to_string())
-                                        .ok()?;
-                                }
-
-                                self.save_server();
-                            }
+                            self.clients
+                                .get(&index_supplied)?
+                                .send("? email_code".to_string())
+                                .ok()?;
                         }
+
+                        self.save_server();
                     }
 
                     None
                 }
                 "email_get" => {
-                    if let Some(account) = self.accounts.0.get(*username) {
-                        if let Some(email) = &account.email {
-                            self.clients
-                                .get(&index_supplied)?
-                                .send(format!("= email {} {}", email.address, email.verified))
-                                .ok()?;
-                        }
+                    if let Some(account) = self.accounts.0.get(*username)
+                        && let Some(email) = &account.email
+                    {
+                        self.clients
+                            .get(&index_supplied)?
+                            .send(format!("= email {} {}", email.address, email.verified))
+                            .ok()?;
                     }
 
                     None
@@ -1590,19 +1586,19 @@ impl Server {
             game.attacker = Some(username.clone());
             game.attacker_channel = Some(index_supplied);
 
-            if let Some(channel) = game.defender_channel {
-                if let Some(channel) = self.clients.get(&channel) {
-                    let _ok = channel.send(format!("= challenge_requested {id}"));
-                }
+            if let Some(channel) = game.defender_channel
+                && let Some(channel) = self.clients.get(&channel)
+            {
+                let _ok = channel.send(format!("= challenge_requested {id}"));
             }
         } else if game.defender.is_none() {
             game.defender = Some(username.clone());
             game.defender_channel = Some(index_supplied);
 
-            if let Some(channel) = game.attacker_channel {
-                if let Some(channel) = self.clients.get(&channel) {
-                    let _ok = channel.send(format!("= challenge_requested {id}"));
-                }
+            if let Some(channel) = game.attacker_channel
+                && let Some(channel) = self.clients.get(&channel)
+            {
+                let _ok = channel.send(format!("= challenge_requested {id}"));
             }
         }
         game.challenger.0 = Some(username);
@@ -1635,20 +1631,20 @@ impl Server {
         let mut remove = false;
         match self.games_light.0.get_mut(&id) {
             Some(game) => {
-                if let Some(attacker) = &game.attacker {
-                    if username == attacker {
-                        game.attacker = None;
-                    }
+                if let Some(attacker) = &game.attacker
+                    && username == attacker
+                {
+                    game.attacker = None;
                 }
-                if let Some(defender) = &game.defender {
-                    if username == defender {
-                        game.defender = None;
-                    }
+                if let Some(defender) = &game.defender
+                    && username == defender
+                {
+                    game.defender = None;
                 }
-                if let Some(challenger) = &game.challenger.0 {
-                    if username == challenger {
-                        game.challenger.0 = None;
-                    }
+                if let Some(challenger) = &game.challenger.0
+                    && username == challenger
+                {
+                    game.challenger.0 = None;
                 }
 
                 game.spectators.remove(username);
@@ -1729,14 +1725,14 @@ impl Server {
                 }
             }
 
-            if let Some(index_database) = account.logged_in {
-                if index_database == index_supplied {
-                    info!("{index_supplied} {username} logged out");
-                    account.logged_in = None;
-                    self.clients.remove(&index_database);
+            if let Some(index_database) = account.logged_in
+                && index_database == index_supplied
+            {
+                info!("{index_supplied} {username} logged out");
+                account.logged_in = None;
+                self.clients.remove(&index_database);
 
-                    return None;
-                }
+                return None;
             }
         }
 
@@ -1957,19 +1953,17 @@ impl Server {
             account.logged_in = None;
         }
 
-        if !self.skip_the_data_file {
-            if let Ok(string) =
+        if !self.skip_the_data_file
+            && let Ok(string) =
                 ron::ser::to_string_pretty(&server, ron::ser::PrettyConfig::default())
-            {
-                if !string.trim().is_empty() {
-                    let data_file = data_file();
+            && !string.trim().is_empty()
+        {
+            let data_file = data_file();
 
-                    if let Ok(mut file) = File::create(&data_file) {
-                        if let Err(error) = file.write_all(string.as_bytes()) {
-                            error!("{error}");
-                        }
-                    }
-                }
+            if let Ok(mut file) = File::create(&data_file)
+                && let Err(error) = file.write_all(string.as_bytes())
+            {
+                error!("{error}");
             }
         }
     }
@@ -2024,16 +2018,16 @@ impl Server {
                 return None;
             }
 
-            if let Some(attacker_channel) = game.attacker_channel {
-                if let Some(sender) = self.clients.get(&attacker_channel) {
-                    let _ok = sender.send(text.clone());
-                }
+            if let Some(attacker_channel) = game.attacker_channel
+                && let Some(sender) = self.clients.get(&attacker_channel)
+            {
+                let _ok = sender.send(text.clone());
             }
 
-            if let Some(defender_channel) = game.defender_channel {
-                if let Some(sender) = self.clients.get(&defender_channel) {
-                    let _ok = sender.send(text.clone());
-                }
+            if let Some(defender_channel) = game.defender_channel
+                && let Some(sender) = self.clients.get(&defender_channel)
+            {
+                let _ok = sender.send(text.clone());
             }
         }
 

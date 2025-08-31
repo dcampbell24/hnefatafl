@@ -302,28 +302,28 @@ impl TryFrom<[&str; 13]> for Board {
 
 impl Board {
     fn able_to_move(&self, play_from: &Vertex) -> bool {
-        if let Some(vertex) = play_from.up() {
-            if self.get(&vertex) == Space::Empty {
-                return true;
-            }
+        if let Some(vertex) = play_from.up()
+            && self.get(&vertex) == Space::Empty
+        {
+            return true;
         }
 
-        if let Some(vertex) = play_from.left() {
-            if self.get(&vertex) == Space::Empty {
-                return true;
-            }
+        if let Some(vertex) = play_from.left()
+            && self.get(&vertex) == Space::Empty
+        {
+            return true;
         }
 
-        if let Some(vertex) = play_from.down() {
-            if self.get(&vertex) == Space::Empty {
-                return true;
-            }
+        if let Some(vertex) = play_from.down()
+            && self.get(&vertex) == Space::Empty
+        {
+            return true;
         }
 
-        if let Some(vertex) = play_from.right() {
-            if self.get(&vertex) == Space::Empty {
-                return true;
-            }
+        if let Some(vertex) = play_from.right()
+            && self.get(&vertex) == Space::Empty
+        {
+            return true;
         }
 
         false
@@ -424,16 +424,15 @@ impl Board {
     ) {
         if let Some(right_1) = over(play_to) {
             let space = self.get(&right_1);
-            if space != Space::King && space.role() == role_from.opposite() {
-                if let Some(right_2) = over(&right_1) {
-                    if ((on_restricted_square(&self.spaces, &right_2)
-                        && self.get(&right_2) != Space::King)
-                        || self.get(&right_2).role() == role_from)
-                        && self.set_if_not_king(&right_1, Space::Empty)
-                    {
-                        captures.push(right_1);
-                    }
-                }
+            if space != Space::King
+                && space.role() == role_from.opposite()
+                && let Some(right_2) = over(&right_1)
+                && ((on_restricted_square(&self.spaces, &right_2)
+                    && self.get(&right_2) != Space::King)
+                    || self.get(&right_2).role() == role_from)
+                && self.set_if_not_king(&right_1, Space::Empty)
+            {
+                captures.push(right_1);
             }
         }
     }
@@ -917,29 +916,29 @@ impl Board {
             if let Some((vertex, direction)) = stack.pop() {
                 let space = self.get(&vertex);
                 if space == Space::Empty {
-                    if let Some(vertex) = vertex.up() {
-                        if !already_checked.contains(&vertex) {
-                            stack.push((vertex.clone(), Direction::LeftRight));
-                            already_checked.insert(vertex);
-                        }
+                    if let Some(vertex) = vertex.up()
+                        && !already_checked.contains(&vertex)
+                    {
+                        stack.push((vertex.clone(), Direction::LeftRight));
+                        already_checked.insert(vertex);
                     }
-                    if let Some(vertex) = vertex.left() {
-                        if !already_checked.contains(&vertex) {
-                            stack.push((vertex.clone(), Direction::UpDown));
-                            already_checked.insert(vertex);
-                        }
+                    if let Some(vertex) = vertex.left()
+                        && !already_checked.contains(&vertex)
+                    {
+                        stack.push((vertex.clone(), Direction::UpDown));
+                        already_checked.insert(vertex);
                     }
-                    if let Some(vertex) = vertex.down() {
-                        if !already_checked.contains(&vertex) {
-                            stack.push((vertex.clone(), Direction::LeftRight));
-                            already_checked.insert(vertex);
-                        }
+                    if let Some(vertex) = vertex.down()
+                        && !already_checked.contains(&vertex)
+                    {
+                        stack.push((vertex.clone(), Direction::LeftRight));
+                        already_checked.insert(vertex);
                     }
-                    if let Some(vertex) = vertex.right() {
-                        if !already_checked.contains(&vertex) {
-                            stack.push((vertex.clone(), Direction::UpDown));
-                            already_checked.insert(vertex);
-                        }
+                    if let Some(vertex) = vertex.right()
+                        && !already_checked.contains(&vertex)
+                    {
+                        stack.push((vertex.clone(), Direction::UpDown));
+                        already_checked.insert(vertex);
                     }
                 } else if space.role() == Role::Attacker {
                     return Ok(false);

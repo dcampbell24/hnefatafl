@@ -1178,12 +1178,12 @@ impl<'a> Client {
                 }
             }
             Message::ReviewGameForward => {
-                if let Some(handle) = &mut self.archived_game_handle {
-                    if handle.boards.has_children() {
-                        handle.play += 1;
-                        handle.boards.forward();
-                        self.reset_markers();
-                    }
+                if let Some(handle) = &mut self.archived_game_handle
+                    && handle.boards.has_children()
+                {
+                    handle.play += 1;
+                    handle.boards.forward();
+                    self.reset_markers();
                 }
             }
             Message::ReviewGameForwardAll => {
@@ -1705,17 +1705,17 @@ impl<'a> Client {
                 }
             }
             Message::TimeAddMinutes(string) => {
-                if let Ok(minutes) = string.parse::<u8>() {
-                    if minutes < 60 {
-                        self.game_settings.time_add_minutes = string;
-                    }
+                if let Ok(minutes) = string.parse::<u8>()
+                    && minutes < 60
+                {
+                    self.game_settings.time_add_minutes = string;
                 }
             }
             Message::TimeAddSeconds(string) => {
-                if let Ok(seconds) = string.parse::<u8>() {
-                    if seconds < 60 {
-                        self.game_settings.time_add_seconds = string;
-                    }
+                if let Ok(seconds) = string.parse::<u8>()
+                    && seconds < 60
+                {
+                    self.game_settings.time_add_seconds = string;
                 }
             }
             Message::TimeCheckbox(time_selected) => {
@@ -1731,17 +1731,17 @@ impl<'a> Client {
                 }
             }
             Message::TimeHours(string) => {
-                if let Ok(hours) = string.parse::<u8>() {
-                    if hours < 24 {
-                        self.game_settings.time_hours = string;
-                    }
+                if let Ok(hours) = string.parse::<u8>()
+                    && hours < 24
+                {
+                    self.game_settings.time_hours = string;
                 }
             }
             Message::TimeMinutes(string) => {
-                if let Ok(minutes) = string.parse::<u8>() {
-                    if minutes < 60 {
-                        self.game_settings.time_minutes = string;
-                    }
+                if let Ok(minutes) = string.parse::<u8>()
+                    && minutes < 60
+                {
+                    self.game_settings.time_minutes = string;
                 }
             }
             Message::Users => self.screen = Screen::Users,
@@ -1790,16 +1790,18 @@ impl<'a> Client {
         for game in server_games {
             if self.my_games_only {
                 let mut includes_username = false;
-                if let Some(attacker) = &game.attacker {
-                    if attacker == &self.username {
-                        includes_username = true;
-                    }
+                if let Some(attacker) = &game.attacker
+                    && attacker == &self.username
+                {
+                    includes_username = true;
                 }
-                if let Some(defender) = &game.defender {
-                    if defender == &self.username {
-                        includes_username = true;
-                    }
+
+                if let Some(defender) = &game.defender
+                    && defender == &self.username
+                {
+                    includes_username = true;
                 }
+
                 if !includes_username {
                     continue;
                 }
@@ -2656,15 +2658,15 @@ impl<'a> Client {
     }
 
     fn save_client(&self) {
-        if let Ok(string) = ron::ser::to_string_pretty(&self, ron::ser::PrettyConfig::default()) {
-            if !string.trim().is_empty() {
-                let data_file = data_file();
+        if let Ok(string) = ron::ser::to_string_pretty(&self, ron::ser::PrettyConfig::default())
+            && !string.trim().is_empty()
+        {
+            let data_file = data_file();
 
-                if let Ok(mut file) = File::create(&data_file) {
-                    if let Err(error) = file.write_all(string.as_bytes()) {
-                        error!("{error}");
-                    }
-                }
+            if let Ok(mut file) = File::create(&data_file)
+                && let Err(error) = file.write_all(string.as_bytes())
+            {
+                error!("{error}");
             }
         }
     }
