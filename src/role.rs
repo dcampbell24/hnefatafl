@@ -4,7 +4,9 @@ use serde::{Deserialize, Serialize};
 
 // use crate::role::Role;
 
-#[derive(Clone, Copy, Debug, Default, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
+#[derive(
+    Clone, Copy, Debug, Default, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize,
+)]
 pub enum Role {
     #[default]
     Attacker,

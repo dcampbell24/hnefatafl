@@ -18,7 +18,7 @@ pub struct PlayRecordTimed {
     pub defender_time: TimeLeft,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
+#[derive(Clone, Debug, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize)]
 pub enum Plae {
     Play(Play),
     AttackerResigns,
@@ -177,7 +177,7 @@ impl fmt::Display for Plays {
     }
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
+#[derive(Clone, Debug, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize)]
 pub struct Play {
     pub role: Role,
     pub from: Vertex,
@@ -190,7 +190,7 @@ impl fmt::Display for Play {
     }
 }
 
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct Captures(pub Vec<Vertex>);
 
 impl fmt::Display for Captures {

@@ -22,6 +22,7 @@ pub mod draw;
 pub mod game;
 pub mod game_record;
 pub mod glicko;
+pub mod mcts;
 pub mod message;
 pub mod play;
 pub mod rating;

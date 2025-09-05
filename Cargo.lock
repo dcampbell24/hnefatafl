@@ -1850,6 +1850,7 @@ dependencies = [
  "password-hash",
  "postcard",
  "rand",
+ "rayon",
  "reqwest",
  "rodio",
  "ron",
