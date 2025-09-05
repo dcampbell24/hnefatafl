@@ -10,6 +10,7 @@ use clap::{self, Parser};
 use hnefatafl_copenhagen::{
     ai::{AI, AiBanal},
     game::Game,
+    mcts::monte_carlo_tree_search,
     read_response,
     status::Status,
     write_command,
@@ -21,8 +22,12 @@ use hnefatafl_copenhagen::{
 #[derive(Parser, Debug)]
 #[command(version, about)]
 struct Args {
+    /// Play the game with AI
+    #[arg(long)]
+    ai: bool,
+
     /// Displays the game
-    #[arg(default_value_t = false, long)]
+    #[arg(long)]
     display_game: bool,
 
     /// Listen for HTP drivers on host and port
@@ -83,19 +88,26 @@ fn main() -> anyhow::Result<()> {
     let mut game = Game::default();
 
     if args.display_game {
-        #[cfg(any(target_family = "unix", target_family = "windows"))]
         clear_screen()?;
         println!("{game}\n");
         println!("Enter 'list_commands' for a list of commands.");
     }
 
     loop {
-        if let Err(error) = stdin.read_line(&mut buffer) {
-            println!("? {error}\n");
-            buffer.clear();
-            continue;
-        }
-        let result = game.read_line(&buffer);
+        let result = if args.ai {
+            let play = monte_carlo_tree_search(&game).expect("There should be a valid play.");
+            let captures = game.play(&play);
+            println!("{captures:?}");
+            Ok(Some(String::new()))
+        } else {
+            if let Err(error) = stdin.read_line(&mut buffer) {
+                println!("? {error}\n");
+                buffer.clear();
+                continue;
+            }
+
+            game.read_line(&buffer)
+        };
 
         if args.display_game {
             #[cfg(any(target_family = "unix", target_family = "windows"))]
@@ -117,6 +129,9 @@ fn main() -> anyhow::Result<()> {
 }
 
 fn clear_screen() -> anyhow::Result<ExitStatus> {
+    #[cfg(not(any(target_family = "unix", target_family = "windows")))]
+    return Ok(1);
+
     #[cfg(target_family = "unix")]
     let exit_status = Command::new("clear").status()?;
 
