@@ -10,7 +10,7 @@ use clap::{self, Parser};
 use hnefatafl_copenhagen::{
     ai::{AI, AiBanal},
     game::Game,
-    mcts::monte_carlo_tree_search,
+    game_tree::Tree,
     read_response,
     status::Status,
     write_command,
@@ -86,6 +86,7 @@ fn main() -> anyhow::Result<()> {
     let stdin = io::stdin();
 
     let mut game = Game::default();
+    let mut tree = Tree::new(game.board.size());
 
     if args.display_game {
         clear_screen()?;
@@ -95,9 +96,12 @@ fn main() -> anyhow::Result<()> {
 
     loop {
         let result = if args.ai {
-            let play = monte_carlo_tree_search(&game).expect("There should be a valid play.");
-            let captures = game.play(&play);
-            println!("{captures:?}");
+            if let Some(play) = tree.monte_carlo_tree_search(1) {
+                let captures = game.play(&play);
+                println!("{captures:?}");
+            } else {
+                println!("Error!");
+            }
             Ok(Some(String::new()))
         } else {
             if let Err(error) = stdin.read_line(&mut buffer) {
