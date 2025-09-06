@@ -85,7 +85,6 @@ fn main() -> anyhow::Result<()> {
 
     let mut buffer = String::new();
     let stdin = io::stdin();
-
     let mut game = Game::default();
     let mut tree = Tree::new(game.board.size());
 
@@ -97,8 +96,8 @@ fn main() -> anyhow::Result<()> {
 
     loop {
         let result = if args.ai {
-            if let Some(play) = tree.monte_carlo_tree_search(1) {
-                println!("= {play}");
+            if let (Some(play), score) = tree.monte_carlo_tree_search(1_000) {
+                println!("= {play}score: {score}");
                 let _captures = game.play(&play);
             } else {
                 error!("failure to monte_carlo_tree_search!");

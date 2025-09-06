@@ -40,7 +40,7 @@ impl Tree {
     }
 
     #[must_use]
-    pub fn monte_carlo_tree_search(&mut self, loops: u32) -> Option<Plae> {
+    pub fn monte_carlo_tree_search(&mut self, loops: u32) -> (Option<Plae>, i32) {
         let game = self.here_game();
 
         for _ in 0..loops {
@@ -67,6 +67,7 @@ impl Tree {
                         while let Some(node) = self.arena[here].parent {
                             here = node;
                         }
+
                         break;
                     }
                     Status::DefenderWins => {
@@ -74,6 +75,7 @@ impl Tree {
                         while let Some(node) = self.arena[here].parent {
                             here = node;
                         }
+
                         break;
                     }
                     Status::Draw => {
@@ -93,20 +95,21 @@ impl Tree {
                 .iter()
                 .map(|child| &self.arena[*child])
                 .max_by(|a, b| a.score.cmp(&b.score))
-                .map(|node| node.index),
+                .map(|node| (node.index, node.score)),
             Role::Defender => children
                 .iter()
                 .map(|child| &self.arena[*child])
                 .min_by(|a, b| a.score.cmp(&b.score))
-                .map(|node| node.index),
+                .map(|node| (node.index, node.score)),
             Role::Roleless => None,
         };
 
         if let Some(here) = here {
+            let (here, score) = here;
             self.here = here;
-            self.arena[self.here].play.clone()
+            (self.arena[self.here].play.clone(), score)
         } else {
-            None
+            (None, 0)
         }
     }
 
