@@ -104,7 +104,6 @@ impl Tree {
 
         if let Some(here) = here {
             self.here = here;
-            println!("{}", self.arena[self.here].score);
             self.arena[self.here].play.clone()
         } else {
             None
