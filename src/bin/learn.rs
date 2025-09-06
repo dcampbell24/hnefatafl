@@ -1,7 +1,6 @@
-use hnefatafl_copenhagen::{game::Game, mcts::monte_carlo_tree_search};
+use hnefatafl_copenhagen::{board::BoardSize, game_tree::Tree};
 
 fn main() {
-    let game = Game::default();
-
-    let _ = monte_carlo_tree_search(&game);
+    let mut tree = Tree::new(BoardSize::_11);
+    let _ = tree.monte_carlo_tree_search(10);
 }
