@@ -15,6 +15,7 @@ use hnefatafl_copenhagen::{
     status::Status,
     write_command,
 };
+use log::error;
 
 /// Hnefatafl Copenhagen
 ///
@@ -97,12 +98,12 @@ fn main() -> anyhow::Result<()> {
     loop {
         let result = if args.ai {
             if let Some(play) = tree.monte_carlo_tree_search(1) {
-                let captures = game.play(&play);
-                println!("{captures:?}");
+                println!("= {play}");
+                let _captures = game.play(&play);
             } else {
-                println!("Error!");
+                error!("failure to monte_carlo_tree_search!");
             }
-            Ok(Some(String::new()))
+            Ok(None)
         } else {
             if let Err(error) = stdin.read_line(&mut buffer) {
                 println!("? {error}\n");
@@ -114,7 +115,6 @@ fn main() -> anyhow::Result<()> {
         };
 
         if args.display_game {
-            #[cfg(any(target_family = "unix", target_family = "windows"))]
             clear_screen()?;
             println!("{game}\n");
         }
