@@ -5,15 +5,13 @@
 extern crate rust_i18n;
 
 use std::io::Cursor;
-use std::io::Read;
 
 use std::{
     collections::{HashMap, HashSet, VecDeque},
     env, f64,
     fmt::{self, Write as fmt_write},
     fs::{self, File},
-    io::{BufRead, BufReader, ErrorKind, Write},
-    net::{Shutdown, TcpStream},
+    io::{ErrorKind, Write},
     path::PathBuf,
     process::exit,
     str::{FromStr, SplitAsciiWhitespace},
@@ -67,6 +65,12 @@ use iced::{Task, keyboard};
 use log::{LevelFilter, debug, error, info, trace};
 use rust_i18n::t;
 use serde::{Deserialize, Serialize};
+use tokio::io::AsyncBufReadExt;
+use tokio::io::AsyncReadExt;
+use tokio::io::AsyncWriteExt;
+use tokio::io::BufReader;
+use tokio::net::TcpStream;
+use tokio::runtime::Runtime;
 
 const PADDING: u16 = 10;
 const SPACING: Pixels = Pixels(10.0);
@@ -2844,11 +2848,14 @@ fn pass_messages() -> impl Stream<Item = Message> {
                     }
                 }
 
-                let mut tcp_stream = handle_error(TcpStream::connect(&address));
-                let mut reader = BufReader::new(handle_error(tcp_stream.try_clone()));
+                let runtime = handle_error(Runtime::new());
+                let tcp_stream = handle_error(runtime.block_on(TcpStream::connect(&address)));
+                let (reader, mut writer) = tcp_stream.into_split();
+                let mut reader = BufReader::new(reader);
                 info!("connected to {address} ...");
 
                 thread::spawn(move || {
+                    let runtime = handle_error(Runtime::new());
                     loop {
                         let message = handle_error(rx.recv());
                         let message_trim = message.trim();
@@ -2860,7 +2867,7 @@ fn pass_messages() -> impl Stream<Item = Message> {
                         }
 
                         if message_trim != "quit" {
-                            handle_error(tcp_stream.write_all(message.as_bytes()));
+                            handle_error(runtime.block_on(writer.write_all(message.as_bytes())));
                         }
 
                         if message_trim == "delete_account"
@@ -2868,10 +2875,7 @@ fn pass_messages() -> impl Stream<Item = Message> {
                             || message_trim == "quit"
                         {
                             #[cfg(not(target_os = "redox"))]
-                            tcp_stream
-                                .shutdown(Shutdown::Both)
-                                .expect("shutdown call failed");
-
+                            handle_error(runtime.block_on(writer.shutdown()));
                             exit(0);
                         }
                     }
@@ -2883,7 +2887,7 @@ fn pass_messages() -> impl Stream<Item = Message> {
                 ));
 
                 loop {
-                    let bytes = handle_error(reader.read_line(&mut buffer));
+                    let bytes = handle_error(runtime.block_on(reader.read_line(&mut buffer)));
                     if bytes > 0 {
                         let buffer_trim = buffer.trim();
                         let buffer_trim_vec: Vec<_> =
@@ -2905,7 +2909,7 @@ fn pass_messages() -> impl Stream<Item = Message> {
                         if buffer_trim_vec[1] == "archived_games" {
                             let length = handle_error(buffer_trim_vec[2].parse::<usize>());
                             let mut buf = vec![0; length];
-                            handle_error(reader.read_exact(&mut buf));
+                            handle_error(runtime.block_on(reader.read_exact(&mut buf)));
                             let archived_games: Vec<ArchivedGame> =
                                 handle_error(postcard::from_bytes(&buf));
 
