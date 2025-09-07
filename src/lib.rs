@@ -98,6 +98,12 @@ pub fn handle_error<T, E: fmt::Display>(result: Result<T, E>) -> T {
     }
 }
 
+pub fn log_error<T, E: fmt::Display>(result: Result<T, E>) {
+    if let Err(error) = result {
+        error!("{error}");
+    }
+}
+
 /// # Errors
 ///
 /// If the captures or game status don't match for an engine game and a record

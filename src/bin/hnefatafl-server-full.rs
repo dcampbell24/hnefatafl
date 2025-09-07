@@ -4,8 +4,7 @@ use std::{
     collections::{HashMap, VecDeque},
     env,
     fs::{self, File, OpenOptions},
-    io::{BufRead, BufReader, ErrorKind, Read, Write},
-    net::{TcpListener, TcpStream},
+    io::{ErrorKind, Read, Write},
     path::PathBuf,
     process::exit,
     str::FromStr,
@@ -27,7 +26,7 @@ use hnefatafl_copenhagen::{
     draw::Draw,
     game::TimeUnix,
     glicko::Outcome,
-    handle_error,
+    handle_error, log_error,
     rating::Rated,
     role::Role,
     server_game::{
@@ -47,6 +46,11 @@ use log::{LevelFilter, debug, error, info};
 use password_hash::SaltString;
 use rand::{random, rngs::OsRng};
 use serde::{Deserialize, Serialize};
+use tokio::{
+    io::{AsyncBufReadExt, AsyncWriteExt, BufReader},
+    net::{TcpListener, TcpStream, tcp::OwnedWriteHalf},
+    runtime::Runtime,
+};
 
 /// Copenhagen Hnefatafl Server
 ///
@@ -201,17 +205,18 @@ fn main() -> anyhow::Result<()> {
 
     let mut address = args.host;
     address.push_str(SERVER_PORT);
+    let runtime = Runtime::new()?;
 
-    let listener = TcpListener::bind(&address)?;
+    let listener = runtime.block_on(TcpListener::bind(&address))?;
     info!("listening on {address} ...");
 
-    for (index, stream) in (1..).zip(listener.incoming()) {
-        let stream = stream?;
+    let mut index = 1;
+    loop {
+        let (stream, _) = runtime.block_on(listener.accept())?;
         let tx = tx.clone();
-        thread::spawn(move || login(index, stream, &tx));
+        thread::spawn(move || log_error(login(index, stream, &tx)));
+        index += 1;
     }
-
-    Ok(())
 }
 
 fn active_games_file() -> PathBuf {
@@ -249,17 +254,19 @@ fn data_file() -> PathBuf {
 #[allow(clippy::too_many_lines)]
 fn login(
     id: Id,
-    mut stream: TcpStream,
+    stream: TcpStream,
     tx: &mpsc::Sender<(String, Option<mpsc::Sender<String>>)>,
 ) -> anyhow::Result<()> {
-    let mut reader = BufReader::new(stream.try_clone()?);
+    let runtime = Runtime::new()?;
+    let (reader, mut writer) = stream.into_split();
+    let mut reader = BufReader::new(reader);
     let mut buf = String::new();
     let (client_tx, client_rx) = mpsc::channel();
     let mut username_proper = "_".to_string();
     let mut login_successful = false;
 
     for _ in 0..100 {
-        reader.read_line(&mut buf)?;
+        runtime.block_on(reader.read_line(&mut buf))?;
 
         for ch in buf.trim().chars() {
             if ch.is_control() || ch == '\0' {
@@ -287,9 +294,9 @@ fn login(
         {
             username_proper = username.to_string();
             if version_id != VERSION_ID {
-                stream.write_all(
+                runtime.block_on(writer.write_all(
                     b"? login wrong version, update your hnefatafl-copenhagen package\n",
-                )?;
+                ))?;
                 buf.clear();
                 continue;
             }
@@ -298,12 +305,14 @@ fn login(
             let password = password.join(" ");
 
             if username.len() > 16 {
-                stream.write_all(b"? login username is more than 16 characters\n")?;
+                runtime
+                    .block_on(writer.write_all(b"? login username is more than 16 characters\n"))?;
                 buf.clear();
                 continue;
             }
             if password.len() > 32 {
-                stream.write_all(b"? login password is more than 32 characters\n")?;
+                runtime
+                    .block_on(writer.write_all(b"? login password is more than 32 characters\n"))?;
                 buf.clear();
                 continue;
             }
@@ -316,9 +325,9 @@ fn login(
                     Some(client_tx.clone()),
                 ))?;
 
-                stream.write_all(
+                runtime.block_on(writer.write_all(
                     b"? login sent a password reset email if a verified email exists for this account and the last password reset happened more than a day ago\n",
-                )?;
+                ))?;
 
                 buf.clear();
                 continue;
@@ -337,7 +346,7 @@ fn login(
                     break;
                 }
 
-                stream.write_all(b"? login password is wrong (try lowercase), account doesn't exist, or your already logged in\n")?;
+                runtime.block_on(writer.write_all(b"? login password is wrong (try lowercase), account doesn't exist, or your already logged in\n"))?;
                 continue;
             } else if create_account_login == "create_account" {
                 if "= create_account" == message.as_str() {
@@ -345,11 +354,11 @@ fn login(
                     break;
                 }
 
-                stream.write_all(b"? create_account account already exists\n")?;
+                runtime.block_on(writer.write_all(b"? create_account account already exists\n"))?;
                 continue;
             }
 
-            stream.write_all(b"? login\n")?;
+            runtime.block_on(writer.write_all(b"? login\n"))?;
         }
 
         buf.clear();
@@ -359,17 +368,14 @@ fn login(
         return Err(anyhow::Error::msg("the user failed to login"));
     }
 
-    stream.write_all(b"= login\n")?;
-    thread::spawn(move || receiving_and_writing(stream, &client_rx));
+    runtime.block_on(writer.write_all(b"= login\n"))?;
+    thread::spawn(move || receiving_and_writing(writer, &client_rx));
 
     tx.send((format!("{id} {username_proper} email_get"), None))?;
     tx.send((format!("{id} {username_proper} texts"), None))?;
 
     'outer: for _ in 0..1_000_000 {
-        if let Err(err) = reader.read_line(&mut buf) {
-            error!("{err}");
-            break 'outer;
-        }
+        runtime.block_on(reader.read_line(&mut buf))?;
 
         let buf_str = buf.trim();
 
@@ -392,9 +398,11 @@ fn login(
 }
 
 fn receiving_and_writing(
-    mut stream: TcpStream,
+    mut writer: OwnedWriteHalf,
     client_rx: &Receiver<String>,
 ) -> anyhow::Result<()> {
+    let runtime = Runtime::new()?;
+
     loop {
         let mut message = client_rx.recv()?;
 
@@ -404,11 +412,11 @@ fn receiving_and_writing(
             let postcard_archived_games = &postcard::to_allocvec(&archived_games)?;
 
             writeln!(message, " {}", postcard_archived_games.len())?;
-            stream.write_all(message.as_bytes())?;
-            stream.write_all(postcard_archived_games)?;
+            runtime.block_on(writer.write_all(message.as_bytes()))?;
+            runtime.block_on(writer.write_all(postcard_archived_games))?;
         } else {
             message.push('\n');
-            stream.write_all(message.as_bytes())?;
+            runtime.block_on(writer.write_all(message.as_bytes()))?;
         }
     }
 }
@@ -2132,6 +2140,8 @@ fn timestamp() -> String {
 
 #[cfg(test)]
 mod tests {
+    use tokio::runtime::Runtime;
+
     use super::*;
 
     use std::process::{Child, Stdio};
@@ -2212,75 +2222,81 @@ mod tests {
         thread::sleep(Duration::from_millis(10));
 
         let mut buf = String::new();
+        let runtime = Runtime::new().unwrap();
+        let tcp_1 = runtime.block_on(TcpStream::connect(ADDRESS))?;
+        let (reader_1, mut writer_1) = tcp_1.into_split();
+        let mut reader_1 = BufReader::new(reader_1);
 
-        let mut tcp_1 = TcpStream::connect(ADDRESS)?;
-        let mut reader_1 = BufReader::new(tcp_1.try_clone()?);
-
-        tcp_1.write_all(format!("{VERSION_ID} create_account player-1\n").as_bytes())?;
-        reader_1.read_line(&mut buf)?;
+        runtime.block_on(
+            writer_1.write_all(format!("{VERSION_ID} create_account player-1\n").as_bytes()),
+        )?;
+        runtime.block_on(reader_1.read_line(&mut buf))?;
         assert_eq!(buf, "= login\n");
         buf.clear();
 
-        tcp_1.write_all(b"change_password\n")?;
-        reader_1.read_line(&mut buf)?;
+        runtime.block_on(writer_1.write_all(b"change_password\n"))?;
+        runtime.block_on(reader_1.read_line(&mut buf))?;
         assert_eq!(buf, "= change_password\n");
         buf.clear();
 
-        tcp_1.write_all(b"new_game attacker rated fischer 900000 10 11\n")?;
-        reader_1.read_line(&mut buf)?;
+        runtime.block_on(writer_1.write_all(b"new_game attacker rated fischer 900000 10 11\n"))?;
+        runtime.block_on(reader_1.read_line(&mut buf))?;
         assert_eq!(
             buf,
             "= new_game game 0 player-1 _ rated fischer 900000 10 11 _ false {}\n"
         );
         buf.clear();
 
-        let mut tcp_2 = TcpStream::connect(ADDRESS)?;
-        let mut reader_2 = BufReader::new(tcp_2.try_clone()?);
+        let tcp_2 = runtime.block_on(TcpStream::connect(ADDRESS))?;
+        let (reader_2, mut writer_2) = tcp_2.into_split();
+        let mut reader_2 = BufReader::new(reader_2);
 
-        tcp_2.write_all(format!("{VERSION_ID} create_account player-2\n").as_bytes())?;
-        reader_2.read_line(&mut buf)?;
+        runtime.block_on(
+            writer_2.write_all(format!("{VERSION_ID} create_account player-2\n").as_bytes()),
+        )?;
+        runtime.block_on(reader_2.read_line(&mut buf))?;
         assert_eq!(buf, "= login\n");
         buf.clear();
 
-        tcp_2.write_all(b"join_game_pending 0\n")?;
-        reader_2.read_line(&mut buf)?;
+        runtime.block_on(writer_2.write_all(b"join_game_pending 0\n"))?;
+        runtime.block_on(reader_2.read_line(&mut buf))?;
         assert_eq!(buf, "= join_game_pending 0\n");
         buf.clear();
 
-        reader_1.read_line(&mut buf)?;
+        runtime.block_on(reader_1.read_line(&mut buf))?;
         assert_eq!(buf, "= challenge_requested 0\n");
         buf.clear();
 
         // Todo: "join_game_pending 0\n" should not be allowed!
-        tcp_1.write_all(b"join_game 0\n")?;
-        reader_1.read_line(&mut buf)?;
+        runtime.block_on(writer_1.write_all(b"join_game 0\n"))?;
+        runtime.block_on(reader_1.read_line(&mut buf))?;
         assert_eq!(
             buf,
             "= join_game player-1 player-2 rated fischer 900000 10 11\n"
         );
         buf.clear();
 
-        reader_2.read_line(&mut buf)?;
+        runtime.block_on(reader_2.read_line(&mut buf))?;
         assert_eq!(
             buf,
             "= join_game player-1 player-2 rated fischer 900000 10 11\n"
         );
         buf.clear();
 
-        reader_1.read_line(&mut buf)?;
+        runtime.block_on(reader_1.read_line(&mut buf))?;
         assert_eq!(buf, "game 0 generate_move attacker\n");
         buf.clear();
 
-        tcp_1.write_all(b"game 0 play attacker resigns _\n")?;
-        reader_1.read_line(&mut buf)?;
+        runtime.block_on(writer_1.write_all(b"game 0 play attacker resigns _\n"))?;
+        runtime.block_on(reader_1.read_line(&mut buf))?;
         assert_eq!(buf, "= game_over 0 defender_wins\n");
         buf.clear();
 
-        reader_2.read_line(&mut buf)?;
+        runtime.block_on(reader_2.read_line(&mut buf))?;
         assert_eq!(buf, "game 0 play attacker resigns \n");
         buf.clear();
 
-        reader_2.read_line(&mut buf)?;
+        runtime.block_on(reader_2.read_line(&mut buf))?;
         assert_eq!(buf, "= game_over 0 defender_wins\n");
         buf.clear();
 
@@ -2314,19 +2330,25 @@ mod tests {
         for i in 0..800 {
             handles.push(thread::spawn(move || {
                 let mut buf = String::new();
+                let runtime = Runtime::new().unwrap();
+                let tcp = runtime.block_on(TcpStream::connect(ADDRESS)).unwrap();
+                let (reader, mut writer) = tcp.into_split();
+                let mut reader = BufReader::new(reader);
 
-                let mut tcp = TcpStream::connect(ADDRESS).unwrap();
-                let mut reader = BufReader::new(tcp.try_clone().unwrap());
-
-                tcp.write_all(format!("{VERSION_ID} create_account player-{i}\n").as_bytes())
+                runtime
+                    .block_on(
+                        writer.write_all(
+                            format!("{VERSION_ID} create_account player-{i}\n").as_bytes(),
+                        ),
+                    )
                     .unwrap();
-                reader.read_line(&mut buf).unwrap();
+                runtime.block_on(reader.read_line(&mut buf)).unwrap();
                 // assert_eq!(buf, "= login\n");
                 buf.clear();
 
                 for _ in 0..1_000 {
-                    tcp.write_all(b"ping\n").unwrap();
-                    reader.read_line(&mut buf).unwrap();
+                    runtime.block_on(writer.write_all(b"ping\n")).unwrap();
+                    runtime.block_on(reader.read_line(&mut buf)).unwrap();
                     // assert_eq!(buf, "= ping\n");
                     buf.clear();
                 }
