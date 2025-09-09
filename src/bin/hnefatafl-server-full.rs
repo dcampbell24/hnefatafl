@@ -183,7 +183,7 @@ fn main() -> anyhow::Result<()> {
         server.skip_the_data_file = true;
     }
 
-    thread::spawn(move || server.handle_messages(&rx));
+    thread::spawn(move || handle_error(server.handle_messages(&rx)));
 
     if !args.skip_advertising_updates {
         let tx_messages_1 = tx.clone();
@@ -369,7 +369,7 @@ fn login(
     }
 
     runtime.block_on(writer.write_all(b"= login\n"))?;
-    thread::spawn(move || receiving_and_writing(writer, &client_rx));
+    thread::spawn(move || log_error(receiving_and_writing(writer, &client_rx)));
 
     tx.send((format!("{id} {username_proper} email_get"), None))?;
     tx.send((format!("{id} {username_proper} texts"), None))?;
@@ -404,19 +404,25 @@ fn receiving_and_writing(
     let runtime = Runtime::new()?;
 
     loop {
-        let mut message = client_rx.recv()?;
+        match client_rx.recv() {
+            Ok(mut message) => {
+                if message == "= archived_games" {
+                    let ron_archived_games = client_rx.recv()?;
+                    let archived_games: Vec<ArchivedGame> = ron::from_str(&ron_archived_games)?;
+                    let postcard_archived_games = &postcard::to_allocvec(&archived_games)?;
 
-        if message == "= archived_games" {
-            let ron_archived_games = client_rx.recv()?;
-            let archived_games: Vec<ArchivedGame> = ron::from_str(&ron_archived_games)?;
-            let postcard_archived_games = &postcard::to_allocvec(&archived_games)?;
-
-            writeln!(message, " {}", postcard_archived_games.len())?;
-            runtime.block_on(writer.write_all(message.as_bytes()))?;
-            runtime.block_on(writer.write_all(postcard_archived_games))?;
-        } else {
-            message.push('\n');
-            runtime.block_on(writer.write_all(message.as_bytes()))?;
+                    writeln!(message, " {}", postcard_archived_games.len())?;
+                    runtime.block_on(writer.write_all(message.as_bytes()))?;
+                    runtime.block_on(writer.write_all(postcard_archived_games))?;
+                } else {
+                    message.push('\n');
+                    runtime.block_on(writer.write_all(message.as_bytes()))?;
+                }
+            }
+            Err(_) => {
+                // The channel must be closed.
+                return Ok(());
+            }
         }
     }
 }
