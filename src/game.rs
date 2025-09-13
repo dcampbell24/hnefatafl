@@ -1,4 +1,11 @@
-use std::{borrow::Cow, collections::HashMap, fmt, process::exit, str::FromStr};
+use std::{
+    borrow::Cow,
+    collections::HashMap,
+    fmt,
+    hash::{DefaultHasher, Hash, Hasher},
+    process::exit,
+    str::FromStr,
+};
 
 use chrono::Local;
 use rustc_hash::{FxBuildHasher, FxHashSet};
@@ -212,6 +219,14 @@ impl Game {
 
         plays.sort();
         plays
+    }
+
+    #[must_use]
+    pub fn calculate_hash(&self) -> u64 {
+        let mut s = DefaultHasher::new();
+        let plays = format!("{}", self.plays);
+        plays.hash(&mut s);
+        s.finish()
     }
 
     #[must_use]
