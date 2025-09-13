@@ -1,7 +1,4 @@
-use std::{
-    collections::HashMap,
-    hash::{DefaultHasher, Hash, Hasher},
-};
+use std::collections::HashMap;
 
 use rand::Rng;
 
@@ -15,30 +12,41 @@ use crate::{
 
 #[derive(Clone, Debug)]
 pub struct Tree {
-    here: usize,
-    arena: Vec<Node>,
-    already_played: HashMap<u64, usize>,
+    here: u128,
+    arena: HashMap<u128, Node>,
+    already_played: HashMap<u64, u128>,
+    next_index: u128,
 }
 
 impl Tree {
-    fn insert_child(&mut self, index_parent: usize, play: Plae, game: &Game) -> usize {
-        let index = self.arena.len();
-        self.arena[index_parent].children.push(index);
-        self.already_played
-            .insert(calculate_hash(&game.board), index);
+    fn insert_child(&mut self, index_parent: u128, play: Plae, game: &Game) -> u128 {
+        let index = self.next_index;
+        self.next_index += 1;
 
-        self.arena.push(Node {
+        let node = self
+            .arena
+            .get_mut(&index_parent)
+            .unwrap_or_else(|| panic!("The hashmap should have the node {index_parent}."));
+
+        node.children.push(index);
+        self.already_played.insert(game.calculate_hash(), index);
+
+        self.arena.insert(
             index,
-            game: game.clone(),
-            play: Some(play),
-            score: 0,
-            parent: Some(index_parent),
-            children: Vec::new(),
-        });
+            Node {
+                index,
+                game: game.clone(),
+                play: Some(play),
+                score: 0,
+                parent: Some(index_parent),
+                children: Vec::new(),
+            },
+        );
 
         index
     }
 
+    #[allow(clippy::missing_panics_doc)]
     #[must_use]
     pub fn monte_carlo_tree_search(&mut self, loops: u32) -> (Option<Plae>, i32) {
         let game = self.here_game();
@@ -47,32 +55,42 @@ impl Tree {
             let mut game = game.clone();
             let mut here = self.here;
 
-            for _depth in 0..100 {
+            for _depth in 0..80 {
                 let plays = game.all_legal_plays();
                 let index = rand::thread_rng().gen_range(0..plays.len());
                 let play = plays[index].clone();
                 let _captures = game.play(&play);
 
-                here = if let Some(index) = self.already_played.get(&calculate_hash(&game.board)) {
+                here = if let Some(index) = self.already_played.get(&game.calculate_hash()) {
                     *index
                 } else {
                     self.insert_child(here, play, &game)
                 };
 
-                let status = &self.arena[self.here].game.status;
+                let status = &self.arena[&self.here].game.status;
 
                 match status {
                     Status::AttackerWins => {
-                        self.arena[here].score += 1;
-                        while let Some(node) = self.arena[here].parent {
+                        let node = self
+                            .arena
+                            .get_mut(&here)
+                            .expect("The hashmap should have the node.");
+                        node.score += 1;
+
+                        while let Some(node) = self.arena[&here].parent {
                             here = node;
                         }
 
                         break;
                     }
                     Status::DefenderWins => {
-                        self.arena[here].score -= 1;
-                        while let Some(node) = self.arena[here].parent {
+                        let node = self
+                            .arena
+                            .get_mut(&here)
+                            .expect("The hashmap should have the node.");
+                        node.score -= 1;
+
+                        while let Some(node) = self.arena[&here].parent {
                             here = node;
                         }
 
@@ -89,16 +107,16 @@ impl Tree {
             }
         }
 
-        let children = &self.arena[self.here].children;
+        let children = &self.arena[&self.here].children;
         let here = match game.turn {
             Role::Attacker => children
                 .iter()
-                .map(|child| &self.arena[*child])
+                .map(|child| &self.arena[child])
                 .max_by(|a, b| a.score.cmp(&b.score))
                 .map(|node| (node.index, node.score)),
             Role::Defender => children
                 .iter()
-                .map(|child| &self.arena[*child])
+                .map(|child| &self.arena[child])
                 .min_by(|a, b| a.score.cmp(&b.score))
                 .map(|node| (node.index, node.score)),
             Role::Roleless => None,
@@ -106,8 +124,29 @@ impl Tree {
 
         if let Some(here) = here {
             let (here, score) = here;
+
+            let mut children = Vec::new();
+            for child in &self
+                .arena
+                .get(&self.here)
+                .expect("The here node should exist")
+                .children
+            {
+                if *child != here {
+                    children.push(*child);
+                }
+            }
+
+            while let Some(child) = children.pop() {
+                if let Some(node) = self.arena.remove(&child) {
+                    for child in node.children {
+                        children.push(child);
+                    }
+                }
+            }
+
             self.here = here;
-            (self.arena[self.here].play.clone(), score)
+            (self.arena[&self.here].play.clone(), score)
         } else {
             (None, 0)
         }
@@ -115,7 +154,7 @@ impl Tree {
 
     #[must_use]
     fn here_game(&self) -> Game {
-        self.arena[self.here].game.clone()
+        self.arena[&self.here].game.clone()
     }
 
     #[must_use]
@@ -130,33 +169,34 @@ impl Tree {
             ..Game::default()
         };
 
-        Self {
-            here: 0,
-            arena: vec![Node {
+        let mut arena = HashMap::new();
+        arena.insert(
+            0,
+            Node {
                 index: 0,
                 game,
                 play: None,
                 score: 0,
                 parent: None,
                 children: Vec::new(),
-            }],
+            },
+        );
+
+        Self {
+            here: 0,
+            arena,
             already_played: HashMap::new(),
+            next_index: 1,
         }
     }
 }
 
 #[derive(Clone, Debug)]
 pub struct Node {
-    index: usize,
+    index: u128,
     game: Game,
     play: Option<Plae>,
     score: i32,
-    parent: Option<usize>,
-    children: Vec<usize>,
-}
-
-fn calculate_hash<T: Hash>(t: &T) -> u64 {
-    let mut s = DefaultHasher::new();
-    t.hash(&mut s);
-    s.finish()
+    parent: Option<u128>,
+    children: Vec<u128>,
 }
