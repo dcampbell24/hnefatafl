@@ -67,7 +67,11 @@ impl Tree {
                     self.insert_child(here, play, &game)
                 };
 
-                let status = &self.arena[&self.here].game.status;
+                let game = &self.arena[&self.here].game;
+                let mut status = game.status.clone();
+                if status == Status::Ongoing {
+                    status = game.obvious_play();
+                }
 
                 match status {
                     Status::AttackerWins => {

@@ -41,7 +41,7 @@ pub const STARTING_POSITION_13X13: [&str; 13] = [
     "...XXXXXXX...",
 ];
 
-const EXIT_SQUARES_11X11: [Vertex; 4] = [
+pub const EXIT_SQUARES_11X11: [Vertex; 4] = [
     Vertex {
         size: BoardSize::_11,
         x: 0,
@@ -94,7 +94,7 @@ const RESTRICTED_SQUARES_11X11: [Vertex; 5] = [
     THRONE_11X11,
 ];
 
-const EXIT_SQUARES_13X13: [Vertex; 4] = [
+pub const EXIT_SQUARES_13X13: [Vertex; 4] = [
     Vertex {
         size: BoardSize::_13,
         x: 0,
