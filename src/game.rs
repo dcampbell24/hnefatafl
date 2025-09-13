@@ -15,7 +15,7 @@ use wasm_bindgen::prelude::wasm_bindgen;
 
 use crate::{
     ai::{AI, AiBanal},
-    board::{Board, BoardSize, board_11x11, board_13x13},
+    board::{Board, BoardSize, EXIT_SQUARES_11X11, EXIT_SQUARES_13X13, board_11x11, board_13x13},
     message::{COMMANDS, Message},
     play::{Captures, Plae, Play, PlayRecordTimed, Plays, Vertex},
     role::Role,
@@ -273,6 +273,37 @@ impl Game {
     #[must_use]
     pub fn generate_move(&self, ai: &mut Box<dyn AI>) -> Option<Plae> {
         ai.generate_move(self)
+    }
+
+    #[allow(clippy::missing_panics_doc)]
+    #[must_use]
+    pub fn obvious_play(&self) -> Status {
+        match self.turn {
+            Role::Attacker | Role::Roleless => {}
+            Role::Defender => {
+                let plays = self.all_legal_moves();
+                let kings_position = self
+                    .board
+                    .find_the_king()
+                    .expect("The king must still be on the board.")
+                    .expect("The king must have a valid position.");
+
+                if let Some(plays) = plays.moves.get(&kings_position) {
+                    let exit_squares = match self.board.size() {
+                        BoardSize::_11 => EXIT_SQUARES_11X11,
+                        BoardSize::_13 => EXIT_SQUARES_13X13,
+                    };
+
+                    for play in plays {
+                        if exit_squares.contains(play) {
+                            return Status::DefenderWins;
+                        }
+                    }
+                }
+            }
+        }
+
+        Status::Ongoing
     }
 
     /// # Errors
