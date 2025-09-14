@@ -277,7 +277,7 @@ impl Game {
 
     #[allow(clippy::missing_panics_doc)]
     #[must_use]
-    pub fn obvious_play(&self) -> Status {
+    pub fn obvious_play(&self) -> Option<Plae> {
         match self.turn {
             Role::Attacker | Role::Roleless => {}
             Role::Defender => {
@@ -291,14 +291,18 @@ impl Game {
                 if let Some(plays) = plays.moves.get(&kings_position) {
                     for play in plays {
                         if self.board.on_exit_square(play) {
-                            return Status::DefenderWins;
+                            return Some(Plae::Play(Play {
+                                role: Role::Defender,
+                                from: kings_position,
+                                to: play.clone(),
+                            }));
                         }
                     }
                 }
             }
         }
 
-        Status::Ongoing
+        None
     }
 
     /// # Errors
