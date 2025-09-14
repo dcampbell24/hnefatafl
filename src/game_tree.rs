@@ -56,10 +56,16 @@ impl Tree {
             let mut here = self.here;
 
             for _depth in 0..80 {
-                let plays = game.all_legal_plays();
-                let index = rand::thread_rng().gen_range(0..plays.len());
-                let play = plays[index].clone();
-                let _captures = game.play(&play);
+                let play = if let Some(play) = game.obvious_play() {
+                    let _captures = game.play(&play);
+                    play
+                } else {
+                    let plays = game.all_legal_plays();
+                    let index = rand::thread_rng().gen_range(0..plays.len());
+                    let play = plays[index].clone();
+                    let _captures = game.play(&play);
+                    play
+                };
 
                 here = if let Some(index) = self.already_played.get(&game.calculate_hash()) {
                     *index
@@ -67,13 +73,7 @@ impl Tree {
                     self.insert_child(here, play, &game)
                 };
 
-                let game = &self.arena[&self.here].game;
-                let mut status = game.status.clone();
-                if status == Status::Ongoing {
-                    status = game.obvious_play();
-                }
-
-                match status {
+                match game.status {
                     Status::AttackerWins => {
                         let node = self
                             .arena
