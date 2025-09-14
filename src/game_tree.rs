@@ -79,9 +79,13 @@ impl Tree {
                             .arena
                             .get_mut(&here)
                             .expect("The hashmap should have the node.");
+
                         node.score += 1;
 
                         while let Some(node) = self.arena[&here].parent {
+                            let real_node =
+                                self.arena.get_mut(&node).expect("The node should exist!");
+                            real_node.score += 1;
                             here = node;
                         }
 
@@ -92,9 +96,13 @@ impl Tree {
                             .arena
                             .get_mut(&here)
                             .expect("The hashmap should have the node.");
+
                         node.score -= 1;
 
                         while let Some(node) = self.arena[&here].parent {
+                            let real_node =
+                                self.arena.get_mut(&node).expect("The node should exist!");
+                            real_node.score -= 1;
                             here = node;
                         }
 
