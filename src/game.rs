@@ -15,7 +15,7 @@ use wasm_bindgen::prelude::wasm_bindgen;
 
 use crate::{
     ai::{AI, AiBanal},
-    board::{Board, BoardSize, EXIT_SQUARES_11X11, EXIT_SQUARES_13X13, board_11x11, board_13x13},
+    board::{Board, BoardSize, board_11x11, board_13x13},
     message::{COMMANDS, Message},
     play::{Captures, Plae, Play, PlayRecordTimed, Plays, Vertex},
     role::Role,
@@ -289,13 +289,8 @@ impl Game {
                     .expect("The king must have a valid position.");
 
                 if let Some(plays) = plays.moves.get(&kings_position) {
-                    let exit_squares = match self.board.size() {
-                        BoardSize::_11 => EXIT_SQUARES_11X11,
-                        BoardSize::_13 => EXIT_SQUARES_13X13,
-                    };
-
                     for play in plays {
-                        if exit_squares.contains(play) {
+                        if self.board.on_exit_square(play) {
                             return Status::DefenderWins;
                         }
                     }

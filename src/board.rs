@@ -41,7 +41,7 @@ pub const STARTING_POSITION_13X13: [&str; 13] = [
     "...XXXXXXX...",
 ];
 
-pub const EXIT_SQUARES_11X11: [Vertex; 4] = [
+const EXIT_SQUARES_11X11: [Vertex; 4] = [
     Vertex {
         size: BoardSize::_11,
         x: 0,
@@ -94,7 +94,7 @@ const RESTRICTED_SQUARES_11X11: [Vertex; 5] = [
     THRONE_11X11,
 ];
 
-pub const EXIT_SQUARES_13X13: [Vertex; 4] = [
+const EXIT_SQUARES_13X13: [Vertex; 4] = [
     Vertex {
         size: BoardSize::_13,
         x: 0,
@@ -1029,6 +1029,14 @@ impl Board {
         true
     }
 
+    #[inline]
+    #[must_use]
+    pub fn on_exit_square(&self, vertex: &Vertex) -> bool {
+        (self.spaces.len() == 11 * 11 && EXIT_SQUARES_11X11.contains(vertex))
+            || (self.spaces.len() == 13 * 13 && EXIT_SQUARES_13X13.contains(vertex))
+    }
+
+    #[inline]
     #[must_use]
     fn on_throne(&self, vertex: &Vertex) -> bool {
         let board_size: usize = self.size().into();
@@ -1161,9 +1169,7 @@ impl Board {
         board.captures(&play.to, role_from, &mut captures);
         board.captures_shield_wall(role_from, &play.to, &mut captures);
 
-        if (self.spaces.len() == 11 * 11 && EXIT_SQUARES_11X11.contains(&play.to))
-            || (self.spaces.len() == 13 * 13 && EXIT_SQUARES_13X13.contains(&play.to))
-        {
+        if self.on_exit_square(&play.to) {
             return Ok((board, captures, Status::DefenderWins));
         }
 
