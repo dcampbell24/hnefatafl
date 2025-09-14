@@ -116,6 +116,10 @@ fn main() -> anyhow::Result<()> {
         if args.display_game {
             clear_screen()?;
             println!("{game}\n");
+
+            if args.ai && game.status != Status::Ongoing {
+                return Ok(());
+            }
         }
 
         match result {
