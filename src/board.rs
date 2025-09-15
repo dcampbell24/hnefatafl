@@ -730,69 +730,79 @@ impl Board {
 
     fn capture_the_king(
         &self,
+        role_from: Role,
         play_to: &Vertex,
         captures: &mut Vec<Vertex>,
-    ) -> anyhow::Result<bool> {
-        let mut played_to_capture = false;
+    ) -> anyhow::Result<(bool, u8)> {
+        let mut spaces_left = 4;
+        let mut attacker_moved = false;
 
-        match self.find_the_king()? {
-            Some(kings_vertex) => {
-                if let Some(vertex) = kings_vertex.up() {
-                    if play_to == &vertex {
-                        played_to_capture = true;
-                    }
+        if let Some(kings_vertex) = self.find_the_king()? {
+            let (move_to_capture, surrounded) =
+                self.capture_the_king_space(role_from, play_to, kings_vertex.up());
 
-                    if !self.on_throne(&vertex) && self.get(&vertex) != Space::Attacker {
-                        return Ok(false);
-                    }
-                } else {
-                    return Ok(false);
-                }
-
-                if let Some(vertex) = kings_vertex.left() {
-                    if play_to == &vertex {
-                        played_to_capture = true;
-                    }
-
-                    if !self.on_throne(&vertex) && self.get(&vertex) != Space::Attacker {
-                        return Ok(false);
-                    }
-                } else {
-                    return Ok(false);
-                }
-
-                if let Some(vertex) = kings_vertex.down() {
-                    if play_to == &vertex {
-                        played_to_capture = true;
-                    }
-
-                    if !self.on_throne(&vertex) && self.get(&vertex) != Space::Attacker {
-                        return Ok(false);
-                    }
-                } else {
-                    return Ok(false);
-                }
-
-                if let Some(vertex) = kings_vertex.right() {
-                    if play_to == &vertex {
-                        played_to_capture = true;
-                    }
-
-                    if !self.on_throne(&vertex) && self.get(&vertex) != Space::Attacker {
-                        return Ok(false);
-                    }
-                } else {
-                    return Ok(false);
-                }
-
-                if played_to_capture {
-                    captures.push(kings_vertex);
-                    return Ok(true);
-                }
-
-                Ok(false)
+            if move_to_capture {
+                attacker_moved = true;
             }
-            _ => Ok(false),
+            if surrounded {
+                spaces_left -= 1;
+            }
+
+            let (move_to_capture, surrounded) =
+                self.capture_the_king_space(role_from, play_to, kings_vertex.left());
+
+            if move_to_capture {
+                attacker_moved = true;
+            }
+            if surrounded {
+                spaces_left -= 1;
+            }
+
+            let (move_to_capture, surrounded) =
+                self.capture_the_king_space(role_from, play_to, kings_vertex.down());
+
+            if move_to_capture {
+                attacker_moved = true;
+            }
+            if surrounded {
+                spaces_left -= 1;
+            }
+
+            let (move_to_capture, surrounded) =
+                self.capture_the_king_space(role_from, play_to, kings_vertex.right());
+
+            if move_to_capture {
+                attacker_moved = true;
+            }
+            if surrounded {
+                spaces_left -= 1;
+            }
+
+            if move_to_capture && spaces_left == 0 {
+                captures.push(kings_vertex);
+            }
+        }
+
+        Ok((attacker_moved, spaces_left))
+    }
+
+    #[inline]
+    fn capture_the_king_space(
+        &self,
+        role: Role,
+        play_to: &Vertex,
+        direction: Option<Vertex>,
+    ) -> (bool, bool) {
+        if let Some(surround_king) = direction {
+            let move_to_capture = *play_to == surround_king && role == Role::Attacker;
+
+            let surrounded = move_to_capture
+                || self.on_throne(&surround_king)
+                || self.get(&surround_king) == Space::Attacker;
+
+            (move_to_capture, surrounded)
+        } else {
+            (false, false)
         }
     }
 
@@ -1173,7 +1183,7 @@ impl Board {
             return Ok((board, captures, Status::DefenderWins));
         }
 
-        if board.capture_the_king(&play.to, &mut captures)? {
+        if board.capture_the_king(role_from, &play.to, &mut captures)? == (true, 0) {
             return Ok((board, captures, Status::AttackerWins));
         }
 

@@ -114,6 +114,8 @@ pub fn hnefatafl_rs() -> anyhow::Result<()> {
     let records = game_records_from_path(copenhagen_csv)?;
 
     let mut already_played = 0;
+    let mut already_over = 0;
+
     records
         .iter()
         .map(|(i, record)| play_game(*i, record))
@@ -124,17 +126,19 @@ pub fn hnefatafl_rs() -> anyhow::Result<()> {
                 }
             }
             Err(error) => {
-                if error.to_string()
-                    == anyhow::Error::msg("play: you already reached that position").to_string()
-                {
+                if &error.to_string() == "play: you already reached that position" {
                     already_played += 1;
+                } else if &error.to_string() == "play: the game is already over" {
+                    already_over += 1;
                 } else {
                     panic!("{}", error.to_string());
                 }
             }
         });
 
+    assert_eq!(already_over, 0);
     assert_eq!(already_played, 36);
+
     let already_played_error = f64::from(already_played) / records.len() as f64;
     assert!(already_played_error > 0.020_5 && already_played_error < 0.020_6);
 
@@ -1995,6 +1999,61 @@ mod tests {
 
         game.read_line("play attacker e1 e2")?;
         assert_eq!(game.status, Status::AttackerWins);
+
+        Ok(())
+    }
+
+    #[test]
+    fn kings_captured_4() -> anyhow::Result<()> {
+        let board = [
+            "...........",
+            ".O.........",
+            "...........",
+            "...........",
+            "...........",
+            "...........",
+            "...........",
+            "X..........",
+            "K.X........",
+            "X..........",
+            "...........",
+        ];
+
+        let mut game = game::Game {
+            board: board.try_into()?,
+            ..Default::default()
+        };
+
+        game.read_line("play attacker c3 b3")?;
+        println!("{}", game.board);
+        assert_eq!(game.status, Status::Ongoing);
+
+        Ok(())
+    }
+
+    #[test]
+    fn kings_captured_5() -> anyhow::Result<()> {
+        let board = [
+            "...........",
+            "...........",
+            "...........",
+            "...........",
+            "...........",
+            "...........",
+            "...........",
+            "...........",
+            "X..........",
+            "K.X........",
+            "...........",
+        ];
+
+        let mut game = game::Game {
+            board: board.try_into()?,
+            ..Default::default()
+        };
+
+        game.read_line("play attacker c2 b2")?;
+        assert_eq!(game.status, Status::Ongoing);
 
         Ok(())
     }
