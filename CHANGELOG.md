@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Fix error in game logic for capturing the king.
 - Update dependencies.
 - Use u128 for client and game ids.
 - hnefatafl-client: logout when the TCP stream is closed.
