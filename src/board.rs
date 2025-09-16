@@ -786,6 +786,48 @@ impl Board {
         attacker_moved && spaces_left == 0
     }
 
+    #[must_use]
+    pub fn capture_the_king_one_move(&self) -> Option<Vertex> {
+        let mut spaces_left = 4;
+        let mut capture = None;
+
+        if let Some(kings_vertex) = self.find_the_king() {
+            if let Some(vertex) = kings_vertex.up() {
+                if self.on_throne(&vertex) || self.get(&vertex) == Space::Attacker {
+                    spaces_left -= 1;
+                } else {
+                    capture = Some(vertex);
+                }
+            }
+
+            if let Some(vertex) = kings_vertex.left() {
+                if self.on_throne(&vertex) || self.get(&vertex) == Space::Attacker {
+                    spaces_left -= 1;
+                } else {
+                    capture = Some(vertex);
+                }
+            }
+
+            if let Some(vertex) = kings_vertex.down() {
+                if self.on_throne(&vertex) || self.get(&vertex) == Space::Attacker {
+                    spaces_left -= 1;
+                } else {
+                    capture = Some(vertex);
+                }
+            }
+
+            if let Some(vertex) = kings_vertex.right() {
+                if self.on_throne(&vertex) || self.get(&vertex) == Space::Attacker {
+                    spaces_left -= 1;
+                } else {
+                    capture = Some(vertex);
+                }
+            }
+        }
+
+        if spaces_left == 1 { capture } else { None }
+    }
+
     #[inline]
     fn capture_the_king_space(&self, play_to: &Vertex, direction: Option<Vertex>) -> (bool, bool) {
         if let Some(surround_king) = direction {
@@ -1049,7 +1091,7 @@ impl Board {
 
     /// # Errors
     ///
-    /// If the game is already over.
+    /// If the move is illegal.
     pub fn play(
         &mut self,
         play: &Plae,
@@ -1066,7 +1108,7 @@ impl Board {
 
     /// # Errors
     ///
-    /// If the game is already over.
+    /// If the move is illegal.
     #[allow(
         clippy::cast_possible_truncation,
         clippy::cast_possible_wrap,
