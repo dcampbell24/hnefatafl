@@ -709,10 +709,8 @@ impl Board {
         }
     }
 
-    /// # Errors
-    ///
-    /// If the vertex is out of bounds.
-    pub fn find_the_king(&self) -> anyhow::Result<Option<Vertex>> {
+    #[must_use]
+    pub fn find_the_king(&self) -> Option<Vertex> {
         let size = self.size();
         let board_size_usize: usize = size.into();
 
@@ -720,12 +718,12 @@ impl Board {
             for x in 0..board_size_usize {
                 let v = Vertex { size, x, y };
                 if self.get(&v) == Space::King {
-                    return Ok(Some(v));
+                    return Some(v);
                 }
             }
         }
 
-        Ok(None)
+        None
     }
 
     fn capture_the_king(
@@ -733,13 +731,15 @@ impl Board {
         role_from: Role,
         play_to: &Vertex,
         captures: &mut Vec<Vertex>,
-    ) -> anyhow::Result<(bool, u8)> {
+    ) -> bool {
         let mut spaces_left = 4;
         let mut attacker_moved = false;
 
-        if let Some(kings_vertex) = self.find_the_king()? {
+        if let Some(kings_vertex) = self.find_the_king()
+            && role_from == Role::Attacker
+        {
             let (move_to_capture, surrounded) =
-                self.capture_the_king_space(role_from, play_to, kings_vertex.up());
+                self.capture_the_king_space(play_to, kings_vertex.up());
 
             if move_to_capture {
                 attacker_moved = true;
@@ -749,7 +749,7 @@ impl Board {
             }
 
             let (move_to_capture, surrounded) =
-                self.capture_the_king_space(role_from, play_to, kings_vertex.left());
+                self.capture_the_king_space(play_to, kings_vertex.left());
 
             if move_to_capture {
                 attacker_moved = true;
@@ -759,7 +759,7 @@ impl Board {
             }
 
             let (move_to_capture, surrounded) =
-                self.capture_the_king_space(role_from, play_to, kings_vertex.down());
+                self.capture_the_king_space(play_to, kings_vertex.down());
 
             if move_to_capture {
                 attacker_moved = true;
@@ -769,7 +769,7 @@ impl Board {
             }
 
             let (move_to_capture, surrounded) =
-                self.capture_the_king_space(role_from, play_to, kings_vertex.right());
+                self.capture_the_king_space(play_to, kings_vertex.right());
 
             if move_to_capture {
                 attacker_moved = true;
@@ -783,18 +783,13 @@ impl Board {
             }
         }
 
-        Ok((attacker_moved, spaces_left))
+        attacker_moved && spaces_left == 0
     }
 
     #[inline]
-    fn capture_the_king_space(
-        &self,
-        role: Role,
-        play_to: &Vertex,
-        direction: Option<Vertex>,
-    ) -> (bool, bool) {
+    fn capture_the_king_space(&self, play_to: &Vertex, direction: Option<Vertex>) -> (bool, bool) {
         if let Some(surround_king) = direction {
-            let move_to_capture = *play_to == surround_king && role == Role::Attacker;
+            let move_to_capture = *play_to == surround_king;
 
             let surrounded = move_to_capture
                 || self.on_throne(&surround_king)
@@ -806,33 +801,27 @@ impl Board {
         }
     }
 
-    /// # Errors
-    ///
-    /// If the vertex is out of bounds.
-    fn exit_forts(&self) -> anyhow::Result<bool> {
-        match self.find_the_king()? {
+    fn exit_forts(&self) -> bool {
+        match self.find_the_king() {
             Some(kings_vertex) => {
                 if !kings_vertex.touches_wall()
                     || !self.able_to_move(&kings_vertex)
-                    || !self.flood_fill_defender_wins(&kings_vertex)?
+                    || !self.flood_fill_defender_wins(&kings_vertex)
                 {
-                    return Ok(false);
+                    return false;
                 }
 
-                Ok(true)
+                true
             }
-            _ => Ok(false),
+            _ => false,
         }
     }
 
-    /// # Errors
-    ///
-    /// If the vertex is out of bounds.
-    fn flood_fill_attacker_wins(&self) -> anyhow::Result<bool> {
+    fn flood_fill_attacker_wins(&self) -> bool {
         let size = self.size();
         let board_size_usize: usize = size.into();
 
-        match self.find_the_king()? {
+        match self.find_the_king() {
             Some(kings_vertex) => {
                 let hasher = FxBuildHasher;
                 let mut already_checked = FxHashSet::with_capacity_and_hasher(
@@ -849,17 +838,17 @@ impl Board {
                         let space = self.get(&vertex);
                         if space == Space::Empty || space.role() == Role::Defender {
                             if !expand_flood_fill(vertex.up(), &mut already_checked, &mut stack) {
-                                return Ok(false);
+                                return false;
                             }
                             if !expand_flood_fill(vertex.left(), &mut already_checked, &mut stack) {
-                                return Ok(false);
+                                return false;
                             }
                             if !expand_flood_fill(vertex.down(), &mut already_checked, &mut stack) {
-                                return Ok(false);
+                                return false;
                             }
                             if !expand_flood_fill(vertex.right(), &mut already_checked, &mut stack)
                             {
-                                return Ok(false);
+                                return false;
                             }
                         }
                     }
@@ -871,22 +860,20 @@ impl Board {
                         if self.get(&vertex).role() == Role::Defender
                             && !already_checked.contains(&vertex)
                         {
-                            return Ok(false);
+                            return false;
                         }
                     }
                 }
 
-                Ok(true)
+                true
             }
-            _ => Ok(false),
+            _ => false,
         }
     }
 
-    /// # Errors
-    ///
-    /// If the vertex is out of bounds.
+    #[must_use]
     #[allow(clippy::too_many_lines)]
-    pub fn flood_fill_defender_wins(&self, vertex: &Vertex) -> anyhow::Result<bool> {
+    pub fn flood_fill_defender_wins(&self, vertex: &Vertex) -> bool {
         let size = self.size();
         let board_size_usize = size.into();
 
@@ -951,7 +938,7 @@ impl Board {
                         already_checked.insert(vertex);
                     }
                 } else if space.role() == Role::Attacker {
-                    return Ok(false);
+                    return false;
                 } else if direction == Direction::UpDown {
                     let mut vertex_1 = false;
                     let mut vertex_2 = false;
@@ -972,7 +959,7 @@ impl Board {
                     }
 
                     if !vertex_1 && !vertex_2 && attacker_has_enough_pieces {
-                        return Ok(false);
+                        return false;
                     }
                 } else {
                     let mut vertex_1 = false;
@@ -994,13 +981,13 @@ impl Board {
                     }
 
                     if !vertex_1 && !vertex_2 && attacker_has_enough_pieces {
-                        return Ok(false);
+                        return false;
                     }
                 }
             }
         }
 
-        Ok(true)
+        true
     }
 
     #[must_use]
@@ -1062,7 +1049,7 @@ impl Board {
 
     /// # Errors
     ///
-    /// If the vertex is out of bounds.
+    /// If the game is already over.
     pub fn play(
         &mut self,
         play: &Plae,
@@ -1077,11 +1064,13 @@ impl Board {
         Ok((captures, status))
     }
 
+    /// # Errors
+    ///
+    /// If the game is already over.
     #[allow(
         clippy::cast_possible_truncation,
         clippy::cast_possible_wrap,
-        clippy::cast_sign_loss,
-        clippy::missing_errors_doc
+        clippy::cast_sign_loss
     )]
     pub fn play_internal(
         &self,
@@ -1183,14 +1172,14 @@ impl Board {
             return Ok((board, captures, Status::DefenderWins));
         }
 
-        if board.capture_the_king(role_from, &play.to, &mut captures)? == (true, 0) {
+        if board.capture_the_king(role_from, &play.to, &mut captures) {
             return Ok((board, captures, Status::AttackerWins));
         }
 
-        if board.exit_forts()? {
+        if board.exit_forts() {
             return Ok((board, captures, Status::DefenderWins));
         }
-        if board.flood_fill_attacker_wins()? {
+        if board.flood_fill_attacker_wins() {
             return Ok((board, captures, Status::AttackerWins));
         }
 
