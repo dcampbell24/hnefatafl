@@ -153,31 +153,26 @@ fn play_game(i: usize, record: &GameRecord) -> Result<(usize, Game), anyhow::Err
         let mut captures_2_set = HashSet::new();
         let mut captures_2 = Vec::new();
         let play = Plae::Play(play);
+        let captures = game.play(&play)?;
 
-        match game.play(&play) {
-            Ok(captures) => {
-                for vertex in captures.0 {
-                    captures_2_set.insert(vertex);
-                }
+        for vertex in captures.0 {
+            captures_2_set.insert(vertex);
+        }
 
-                if let Some(king) = game.board.find_the_king()? {
-                    captures_2_set.remove(&king);
-                }
+        if let Some(king) = game.board.find_the_king() {
+            captures_2_set.remove(&king);
+        }
 
-                for vertex in captures_2_set {
-                    captures_2.push(vertex);
-                }
-                captures_2.sort();
-                let captures_2 = Captures(captures_2);
+        for vertex in captures_2_set {
+            captures_2.push(vertex);
+        }
+        captures_2.sort();
+        let captures_2 = Captures(captures_2);
 
-                if let Some(captures_1) = captures_1 {
-                    assert_eq!(captures_1, captures_2);
-                } else if !captures_2.0.is_empty() {
-                    panic!("The engine reports captures, but the record says there are none.");
-                }
-            }
-
-            Err(error) => return Err(error),
+        if let Some(captures_1) = captures_1 {
+            assert_eq!(captures_1, captures_2);
+        } else if !captures_2.0.is_empty() {
+            panic!("The engine reports captures, but the record says there are none.");
         }
     }
 
@@ -245,7 +240,7 @@ mod tests {
         };
 
         let vertex = Vertex::from_str("f1")?;
-        assert!(game.board.flood_fill_defender_wins(&vertex)?);
+        assert!(game.board.flood_fill_defender_wins(&vertex));
 
         Ok(())
     }
@@ -273,7 +268,7 @@ mod tests {
         };
 
         let vertex = Vertex::from_str("f1")?;
-        assert!(!game.board.flood_fill_defender_wins(&vertex)?);
+        assert!(!game.board.flood_fill_defender_wins(&vertex));
 
         Ok(())
     }

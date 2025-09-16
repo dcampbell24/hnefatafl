@@ -252,7 +252,7 @@ impl Game {
         };
 
         let mut game = self.clone();
-        if let Ok(Some(king)) = self.board.find_the_king() {
+        if let Some(king) = self.board.find_the_king() {
             for exit in [exit_1, exit_2, exit_3, exit_4] {
                 if game
                     .play(&Plae::Play(Play {
@@ -278,15 +278,15 @@ impl Game {
     #[allow(clippy::missing_panics_doc)]
     #[must_use]
     pub fn obvious_play(&self) -> Option<Plae> {
+        let kings_position = self
+            .board
+            .find_the_king()
+            .expect("The king must still be on the board.");
+
         match self.turn {
             Role::Attacker | Role::Roleless => {}
             Role::Defender => {
                 let plays = self.all_legal_moves();
-                let kings_position = self
-                    .board
-                    .find_the_king()
-                    .expect("The king must still be on the board.")
-                    .expect("The king must have a valid position.");
 
                 if let Some(plays) = plays.moves.get(&kings_position) {
                     for play in plays {
