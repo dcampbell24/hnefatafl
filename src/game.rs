@@ -278,11 +278,6 @@ impl Game {
     #[allow(clippy::missing_panics_doc)]
     #[must_use]
     pub fn obvious_play(&self) -> Option<Plae> {
-        let kings_position = self
-            .board
-            .find_the_king()
-            .expect("The king must still be on the board.");
-
         match self.turn {
             Role::Attacker => {
                 /*
@@ -298,6 +293,11 @@ impl Game {
                 */
             }
             Role::Defender => {
+                let kings_position = self
+                    .board
+                    .find_the_king()
+                    .expect("The king must still be on the board.");
+
                 let plays = self.all_legal_moves();
 
                 if let Some(plays) = plays.moves.get(&kings_position) {
