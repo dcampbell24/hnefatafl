@@ -298,9 +298,7 @@ impl Game {
                     .find_the_king()
                     .expect("The king must still be on the board.");
 
-                let plays = self.all_legal_moves();
-
-                if let Some(plays) = plays.moves.get(&kings_position) {
+                if let Some(plays) = self.all_legal_moves().moves.get(&kings_position) {
                     for play in plays {
                         if self.board.on_exit_square(play) {
                             return Some(Plae::Play(Play {
