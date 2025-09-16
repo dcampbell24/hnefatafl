@@ -284,7 +284,19 @@ impl Game {
             .expect("The king must still be on the board.");
 
         match self.turn {
-            Role::Attacker | Role::Roleless => {}
+            Role::Attacker => {
+                /*
+                if let Some(vertex) = self.board.capture_the_king_one_move() {
+                    for plae in self.all_legal_plays() {
+                        if let Plae::Play(ref play) = plae {
+                            if play.to == vertex {
+                                return Some(plae)
+                            }
+                        }
+                    }
+                }
+                */
+            }
             Role::Defender => {
                 let plays = self.all_legal_moves();
 
@@ -300,6 +312,7 @@ impl Game {
                     }
                 }
             }
+            Role::Roleless => unreachable!(),
         }
 
         None
