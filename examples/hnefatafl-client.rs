@@ -1672,7 +1672,7 @@ impl<'a> Client {
             }
             Message::Tick => {
                 self.counter = self.counter.wrapping_add(1);
-                if self.counter % 25 == 0 {
+                if self.counter.is_multiple_of(25) {
                     self.now = Utc::now().timestamp_millis();
                     self.send("ping\n".to_string());
                 }
