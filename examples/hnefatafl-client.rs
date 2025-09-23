@@ -239,7 +239,7 @@ fn main() -> anyhow::Result<()> {
     // For screenshots.
     if args.tiny_window {
         application = application.window_size(iced::Size {
-            width: 870.0,
+            width: 868.0,
             height: 541.0,
         });
     }
