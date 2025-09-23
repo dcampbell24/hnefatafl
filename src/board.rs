@@ -732,58 +732,58 @@ impl Board {
         play_to: &Vertex,
         captures: &mut Vec<Vertex>,
     ) -> bool {
-        let mut spaces_left = 4;
-        let mut attacker_moved = false;
-
         if let Some(kings_vertex) = self.find_the_king()
             && role_from == Role::Attacker
         {
+            let mut attacker_moved = false;
+
             let (move_to_capture, surrounded) =
                 self.capture_the_king_space(play_to, kings_vertex.up());
 
+            if !surrounded {
+                return false;
+            }
             if move_to_capture {
                 attacker_moved = true;
-            }
-            if surrounded {
-                spaces_left -= 1;
             }
 
             let (move_to_capture, surrounded) =
                 self.capture_the_king_space(play_to, kings_vertex.left());
 
+            if !surrounded {
+                return false;
+            }
             if move_to_capture {
                 attacker_moved = true;
-            }
-            if surrounded {
-                spaces_left -= 1;
             }
 
             let (move_to_capture, surrounded) =
                 self.capture_the_king_space(play_to, kings_vertex.down());
 
+            if !surrounded {
+                return false;
+            }
             if move_to_capture {
                 attacker_moved = true;
-            }
-            if surrounded {
-                spaces_left -= 1;
             }
 
             let (move_to_capture, surrounded) =
                 self.capture_the_king_space(play_to, kings_vertex.right());
 
+            if !surrounded {
+                return false;
+            }
             if move_to_capture {
                 attacker_moved = true;
             }
-            if surrounded {
-                spaces_left -= 1;
-            }
 
-            if move_to_capture && spaces_left == 0 {
+            if attacker_moved {
                 captures.push(kings_vertex);
+                return true;
             }
         }
 
-        attacker_moved && spaces_left == 0
+        false
     }
 
     #[must_use]
