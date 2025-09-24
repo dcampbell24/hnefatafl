@@ -71,6 +71,13 @@
   </screenshots>
 
   <releases>
+    <release version="4.1.1" date="2025-09-23">
+      <url type="details">https://github.com/dcampbell24/hnefatafl/blob/main/CHANGELOG.md#411---2025-09-23</url>
+      <description>
+        <p>See the CHANGELOG.md file.</p>
+      </description>
+    </release>
+
     <release version="4.1.0" date="2025-07-27">
       <url type="details">https://github.com/dcampbell24/hnefatafl/blob/main/CHANGELOG.md#410---2025-07-27</url>
       <description>
