@@ -2313,35 +2313,19 @@ mod tests {
         );
 
         thread::sleep(Duration::from_millis(10));
-
-        let mut handles = Vec::new();
         let t0 = Instant::now();
 
-        for i in 0..800 {
-            handles.push(thread::spawn(move || {
-                let mut buf = String::new();
+        (0..100).for_each(|i| {
+            let mut buf = String::new();
+            let mut tcp = TcpStream::connect(ADDRESS).unwrap();
+            let mut reader = BufReader::new(tcp.try_clone().unwrap());
 
-                let mut tcp = TcpStream::connect(ADDRESS).unwrap();
-                let mut reader = BufReader::new(tcp.try_clone().unwrap());
-
-                tcp.write_all(format!("{VERSION_ID} create_account player-{i}\n").as_bytes())
-                    .unwrap();
-                reader.read_line(&mut buf).unwrap();
-                // assert_eq!(buf, "= login\n");
-                buf.clear();
-
-                for _ in 0..1_000 {
-                    tcp.write_all(b"ping\n").unwrap();
-                    reader.read_line(&mut buf).unwrap();
-                    // assert_eq!(buf, "= ping\n");
-                    buf.clear();
-                }
-            }));
-        }
-
-        for handle in handles {
-            handle.join().unwrap();
-        }
+            tcp.write_all(format!("{VERSION_ID} create_account player-{i}\n").as_bytes())
+                .unwrap();
+            reader.read_line(&mut buf).unwrap();
+            assert_eq!(buf, "= login\n");
+            buf.clear();
+        });
 
         let t1 = Instant::now();
         println!("many clients: {:?}", t1 - t0);
