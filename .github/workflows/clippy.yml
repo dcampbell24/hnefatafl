@@ -21,4 +21,5 @@ jobs:
       - name: Run clippy
         run: |
           sudo apt-get install libasound2-dev mold
+          rustup component add clippy
           cargo clippy --all-targets --features js
