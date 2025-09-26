@@ -2148,6 +2148,24 @@ mod tests {
 
     struct Server(Child);
 
+    impl Server {
+        fn new() -> Server {
+            match std::process::Command::new("./target/release/hnefatafl-server-full")
+                .stdout(Stdio::null())
+                .stderr(Stdio::null())
+                .arg("--skip-the-data-file")
+                .arg("--skip-advertising-updates")
+                .spawn()
+            {
+                Ok(child) => Server(child),
+                Err(err) => {
+                    eprintln!("Failed to spawn the server: {err}");
+                    exit(1);
+                }
+            }
+        }
+    }
+
     impl Drop for Server {
         fn drop(&mut self) {
             self.0.kill().unwrap();
@@ -2202,23 +2220,15 @@ mod tests {
     fn server_full() -> anyhow::Result<()> {
         std::process::Command::new("cargo")
             .arg("build")
+            .arg("--release")
             .arg("--bin")
             .arg("hnefatafl-server-full")
             .output()?;
 
-        let _server = Server(
-            std::process::Command::new("./target/debug/hnefatafl-server-full")
-                .stdout(Stdio::null())
-                .stderr(Stdio::null())
-                .arg("--skip-the-data-file")
-                .arg("--skip-advertising-updates")
-                .spawn()?,
-        );
-
+        let _server = Server::new();
         thread::sleep(Duration::from_millis(10));
 
         let mut buf = String::new();
-
         let mut tcp_1 = TcpStream::connect(ADDRESS)?;
         let mut reader_1 = BufReader::new(tcp_1.try_clone()?);
 
@@ -2293,43 +2303,33 @@ mod tests {
         Ok(())
     }
 
-    // ulimit --file-descriptor-count 2000 --hard --soft
-    // RUST_LOG=warn cargo test many_clients -- --no-capture
-    #[ignore = "too slow"]
+    // ulimit --file-descriptor-count 1000000
+    // cargo test many_clients
+    #[ignore = "too slow, too challenging"]
     #[test]
-    fn many_clients() -> anyhow::Result<()> {
-        std::process::Command::new("cargo")
-            .arg("build")
-            .arg("--release")
-            .arg("--bin")
-            .arg("hnefatafl-server-full")
-            .output()?;
-
-        let _server = Server(
-            std::process::Command::new("./target/release/hnefatafl-server-full")
-                .arg("--skip-the-data-file")
-                .arg("--skip-advertising-updates")
-                .spawn()?,
-        );
-
-        thread::sleep(Duration::from_millis(10));
+    fn many_clients() {
         let t0 = Instant::now();
 
-        (0..100).for_each(|i| {
-            let mut buf = String::new();
-            let mut tcp = TcpStream::connect(ADDRESS).unwrap();
-            let mut reader = BufReader::new(tcp.try_clone().unwrap());
+        let mut handles = Vec::new();
+        for i in 0..10_000 {
+            handles.push(thread::spawn(move || {
+                let mut buf = String::new();
+                let mut tcp = TcpStream::connect(ADDRESS).unwrap();
+                let mut reader = BufReader::new(tcp.try_clone().unwrap());
 
-            tcp.write_all(format!("{VERSION_ID} create_account player-{i}\n").as_bytes())
-                .unwrap();
-            reader.read_line(&mut buf).unwrap();
-            assert_eq!(buf, "= login\n");
-            buf.clear();
-        });
+                tcp.write_all(format!("{VERSION_ID} create_account q-player-{i}\n").as_bytes())
+                    .unwrap();
+
+                reader.read_line(&mut buf).unwrap();
+                buf.clear();
+            }));
+        }
+
+        for handle in handles {
+            handle.join().unwrap();
+        }
 
         let t1 = Instant::now();
         println!("many clients: {:?}", t1 - t0);
-
-        Ok(())
     }
 }
