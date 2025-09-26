@@ -15,4 +15,6 @@ jobs:
             persist-credentials: false
 
       - name: Run cargo fmt
-        run: cargo fmt --all --check
+        run: |
+          rustup component add rustfmt
+          cargo fmt --all --check
