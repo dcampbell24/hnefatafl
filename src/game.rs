@@ -280,17 +280,15 @@ impl Game {
     pub fn obvious_play(&self) -> Option<Plae> {
         match self.turn {
             Role::Attacker => {
-                /*
                 if let Some(vertex) = self.board.capture_the_king_one_move() {
                     for plae in self.all_legal_plays() {
-                        if let Plae::Play(ref play) = plae {
-                            if play.to == vertex {
-                                return Some(plae)
-                            }
+                        if let Plae::Play(ref play) = plae
+                            && play.to == vertex
+                        {
+                            return Some(plae);
                         }
                     }
                 }
-                */
             }
             Role::Defender => {
                 let kings_position = self
