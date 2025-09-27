@@ -2,6 +2,7 @@ use std::{
     io::{self, BufReader},
     net::TcpStream,
     process::{Command, ExitStatus},
+    sync::mpsc::channel,
 };
 
 use clap::command;
@@ -16,6 +17,7 @@ use hnefatafl_copenhagen::{
     status::Status,
     write_command,
 };
+use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
 
 /// Hnefatafl Copenhagen
 ///
@@ -40,6 +42,7 @@ struct Args {
     tcp: Option<String>,
 }
 
+#[allow(clippy::too_many_lines)]
 fn main() -> anyhow::Result<()> {
     let args = Args::parse();
     let mut ai: Box<dyn AI + 'static> = Box::new(AiBanal);
@@ -90,7 +93,12 @@ fn main() -> anyhow::Result<()> {
     let mut buffer = String::new();
     let stdin = io::stdin();
     let mut game = Game::default();
-    let mut tree = Tree::new(game.board.size());
+
+    let count = std::thread::available_parallelism()?.get();
+    let mut trees = Vec::with_capacity(count);
+    for _ in 0..count {
+        trees.push(Tree::new(game.board.size()));
+    }
 
     if args.display_game {
         clear_screen()?;
@@ -99,16 +107,43 @@ fn main() -> anyhow::Result<()> {
     }
 
     loop {
+        let (tx, rx) = channel();
         if args.ai {
-            let nodes = tree.monte_carlo_tree_search(args.loops);
-            let node = match game.turn {
+            trees.par_iter_mut().for_each_with(tx, |tx, tree| {
+                let nodes = tree.monte_carlo_tree_search(args.loops);
+                tx.send(nodes).unwrap();
+            });
+            let mut nodes: Vec<_> = rx.iter().flatten().collect();
+            nodes.sort_by(|a, b| a.score.total_cmp(&b.score));
+
+            let turn = game.turn;
+            let node = match turn {
                 Role::Attacker => nodes.last().unwrap(),
                 Role::Defender => nodes.first().unwrap(),
                 Role::Roleless => unreachable!(),
             };
 
             let play = node.play.as_ref().unwrap();
-            let _captures = game.play(play);
+            match game.play(play) {
+                Ok(_captures) => {}
+                Err(err) => {
+                    println!("invalid play: {play}");
+                    return Err(err);
+                }
+            }
+
+            let hash = game.calculate_hash();
+            let mut here_tree = Tree::new(game.board.size());
+            for tree in &trees {
+                if hash == tree.here_game().calculate_hash() {
+                    here_tree = tree.clone();
+                }
+            }
+            for tree in &mut trees {
+                if hash != tree.here_game().calculate_hash() {
+                    *tree = here_tree.clone();
+                }
+            }
 
             if args.display_game {
                 clear_screen()?;
@@ -121,7 +156,7 @@ fn main() -> anyhow::Result<()> {
                 return Ok(());
             }
 
-            match game.turn.opposite() {
+            match turn {
                 Role::Attacker => {
                     for node in nodes.iter().rev().take(10) {
                         println!("{node}");
