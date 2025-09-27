@@ -96,7 +96,7 @@ fn main() -> anyhow::Result<()> {
 
     loop {
         let result = if args.ai {
-            if let (Some(play), score) = tree.monte_carlo_tree_search(10_000) {
+            if let (Some(play), score) = tree.monte_carlo_tree_search(1_000) {
                 println!("= {play}score: {score}");
                 let _captures = game.play(&play);
             } else {
