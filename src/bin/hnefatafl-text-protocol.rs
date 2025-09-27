@@ -31,6 +31,10 @@ struct Args {
     #[arg(long)]
     display_game: bool,
 
+    /// The number of Monte Carlo iterations
+    #[arg(default_value_t = 1_000, long)]
+    loops: u32,
+
     /// Listen for HTP drivers on host and port
     #[arg(long, value_name = "host:port")]
     tcp: Option<String>,
@@ -96,7 +100,7 @@ fn main() -> anyhow::Result<()> {
 
     loop {
         if args.ai {
-            let nodes = tree.monte_carlo_tree_search(1_000);
+            let nodes = tree.monte_carlo_tree_search(args.loops);
             let node = match game.turn {
                 Role::Attacker => nodes.last().unwrap(),
                 Role::Defender => nodes.first().unwrap(),
