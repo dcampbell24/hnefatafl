@@ -28,9 +28,9 @@ pub enum Plae {
 impl fmt::Display for Plae {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Play(play) => writeln!(f, "play {} {} {}", play.role, play.from, play.to),
-            Self::AttackerResigns => writeln!(f, "play attacker resigns _"),
-            Self::DefenderResigns => writeln!(f, "play defender resigns _"),
+            Self::Play(play) => write!(f, "play {} {} {}", play.role, play.from, play.to),
+            Self::AttackerResigns => write!(f, "play attacker resigns _"),
+            Self::DefenderResigns => write!(f, "play defender resigns _"),
         }
     }
 }
@@ -150,25 +150,25 @@ impl fmt::Display for Plays {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Plays::PlayRecordsTimed(plays) => {
-                if !plays.is_empty() {
-                    writeln!(f)?;
-                }
-
                 for play in plays {
                     if let Some(play) = &play.play {
-                        write!(f, "    {play}")?;
+                        write!(f, "{play}, ")?;
                     }
+                }
+
+                if !plays.is_empty() {
+                    writeln!(f)?;
                 }
             }
             Plays::PlayRecords(plays) => {
-                if !plays.is_empty() {
-                    writeln!(f)?;
-                }
-
                 for play in plays {
                     if let Some(play) = &play {
-                        write!(f, "    {play}")?;
+                        write!(f, "{play}, ")?;
                     }
+                }
+
+                if !plays.is_empty() {
+                    writeln!(f)?;
                 }
             }
         }

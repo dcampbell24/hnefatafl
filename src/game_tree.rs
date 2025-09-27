@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt};
 
 use rand::Rng;
 
@@ -50,7 +50,7 @@ impl Tree {
     #[allow(clippy::too_many_lines)]
     #[allow(clippy::missing_panics_doc)]
     #[must_use]
-    pub fn monte_carlo_tree_search(&mut self, loops: u32) -> (Option<Plae>, f64) {
+    pub fn monte_carlo_tree_search(&mut self, loops: u32) -> Vec<Node> {
         let game = self.here_game();
 
         for _ in 0..loops {
@@ -140,23 +140,20 @@ impl Tree {
         }
 
         let children = &self.arena[&self.here].children;
+        let mut child_nodes = children
+            .iter()
+            .map(|child| self.arena[child].clone())
+            .collect::<Vec<_>>();
+
+        child_nodes.sort_by(|a, b| a.score.total_cmp(&b.score));
+
         let here = match game.turn {
-            Role::Attacker => children
-                .iter()
-                .map(|child| &self.arena[child])
-                .max_by(|a, b| a.score.total_cmp(&b.score))
-                .map(|node| (node.index, node.score)),
-            Role::Defender => children
-                .iter()
-                .map(|child| &self.arena[child])
-                .min_by(|a, b| a.score.total_cmp(&b.score))
-                .map(|node| (node.index, node.score)),
+            Role::Attacker => child_nodes.last().map(|node| node.index),
+            Role::Defender => child_nodes.first().map(|node| node.index),
             Role::Roleless => None,
         };
 
         if let Some(here) = here {
-            let (here, score) = here;
-
             let mut children = Vec::new();
             for child in &self
                 .arena
@@ -178,9 +175,9 @@ impl Tree {
             }
 
             self.here = here;
-            (self.arena[&self.here].play.clone(), score)
+            child_nodes
         } else {
-            (None, 0.0)
+            Vec::new()
         }
     }
 
@@ -228,9 +225,23 @@ impl Tree {
 pub struct Node {
     index: u128,
     game: Game,
-    play: Option<Plae>,
-    score: f64,
+    pub play: Option<Plae>,
+    pub score: f64,
     count: f64,
     parent: Option<u128>,
     children: Vec<u128>,
+}
+
+impl fmt::Display for Node {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if let Some(play) = &self.play {
+            write!(
+                f,
+                "play: {play}, score: {}, count: {}",
+                self.score, self.count
+            )
+        } else {
+            write!(f, "play: None")
+        }
+    }
 }

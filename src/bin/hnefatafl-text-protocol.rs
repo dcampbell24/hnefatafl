@@ -12,10 +12,10 @@ use hnefatafl_copenhagen::{
     game::Game,
     game_tree::Tree,
     read_response,
+    role::Role,
     status::Status,
     write_command,
 };
-use log::error;
 
 /// Hnefatafl Copenhagen
 ///
@@ -95,14 +95,41 @@ fn main() -> anyhow::Result<()> {
     }
 
     loop {
-        let result = if args.ai {
-            if let (Some(play), score) = tree.monte_carlo_tree_search(1_000) {
-                println!("= {play}score: {score}");
-                let _captures = game.play(&play);
-            } else {
-                error!("failure to monte_carlo_tree_search!");
+        if args.ai {
+            let nodes = tree.monte_carlo_tree_search(1_000);
+            let node = match game.turn {
+                Role::Attacker => nodes.last().unwrap(),
+                Role::Defender => nodes.first().unwrap(),
+                Role::Roleless => unreachable!(),
+            };
+
+            let play = node.play.as_ref().unwrap();
+            let _captures = game.play(play);
+
+            if args.display_game {
+                clear_screen()?;
+                println!("{game}\n");
             }
-            Ok(None)
+
+            println!("= {play}, score: {}", node.score);
+
+            if game.status != Status::Ongoing {
+                return Ok(());
+            }
+
+            match game.turn.opposite() {
+                Role::Attacker => {
+                    for node in nodes.iter().rev().take(3) {
+                        println!("{node}");
+                    }
+                }
+                Role::Defender => {
+                    for node in &nodes[..3] {
+                        println!("{node}");
+                    }
+                }
+                Role::Roleless => unreachable!(),
+            }
         } else {
             if let Err(error) = stdin.read_line(&mut buffer) {
                 println!("? {error}\n");
@@ -110,23 +137,19 @@ fn main() -> anyhow::Result<()> {
                 continue;
             }
 
-            game.read_line(&buffer)
-        };
+            let result = game.read_line(&buffer);
 
-        if args.display_game {
-            clear_screen()?;
-            println!("{game}\n");
-
-            if args.ai && game.status != Status::Ongoing {
-                return Ok(());
+            if args.display_game {
+                clear_screen()?;
+                println!("{game}\n");
             }
-        }
 
-        match result {
-            Err(error) => println!("? {error}\n"),
-            Ok(message) => {
-                if let Some(message) = message {
-                    println!("= {message}\n");
+            match result {
+                Err(error) => println!("? {error}\n"),
+                Ok(message) => {
+                    if let Some(message) = message {
+                        println!("= {message}\n");
+                    }
                 }
             }
         }
