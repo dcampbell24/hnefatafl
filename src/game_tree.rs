@@ -182,7 +182,7 @@ impl Tree {
     }
 
     #[must_use]
-    fn here_game(&self) -> Game {
+    pub fn here_game(&self) -> Game {
         self.arena[&self.here].game.clone()
     }
 
