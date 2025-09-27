@@ -119,12 +119,12 @@ fn main() -> anyhow::Result<()> {
 
             match game.turn.opposite() {
                 Role::Attacker => {
-                    for node in nodes.iter().rev().take(3) {
+                    for node in nodes.iter().rev().take(10) {
                         println!("{node}");
                     }
                 }
                 Role::Defender => {
-                    for node in &nodes[..3] {
+                    for node in &nodes[..10] {
                         println!("{node}");
                     }
                 }
