@@ -37,7 +37,8 @@ impl Tree {
                 index,
                 game: game.clone(),
                 play: Some(play),
-                score: 0,
+                score: 0.0,
+                count: 1.0,
                 parent: Some(index_parent),
                 children: Vec::new(),
             },
@@ -46,9 +47,10 @@ impl Tree {
         index
     }
 
+    #[allow(clippy::too_many_lines)]
     #[allow(clippy::missing_panics_doc)]
     #[must_use]
-    pub fn monte_carlo_tree_search(&mut self, loops: u32) -> (Option<Plae>, i32) {
+    pub fn monte_carlo_tree_search(&mut self, loops: u32) -> (Option<Plae>, f64) {
         let game = self.here_game();
 
         for _ in 0..loops {
@@ -68,10 +70,17 @@ impl Tree {
                 };
 
                 here = if let Some(index) = self.already_played.get(&game.calculate_hash()) {
+                    let node = self
+                        .arena
+                        .get_mut(index)
+                        .expect("The hashmap should have the node.");
+                    node.count += 1.0;
                     *index
                 } else {
                     self.insert_child(here, play, &game)
                 };
+
+                let gamma = 0.95;
 
                 match game.status {
                     Status::AttackerWins => {
@@ -80,12 +89,15 @@ impl Tree {
                             .get_mut(&here)
                             .expect("The hashmap should have the node.");
 
-                        node.score += 1;
+                        node.score += 1.0;
+                        let mut g = 1.0;
 
                         while let Some(node) = self.arena[&here].parent {
                             let real_node =
                                 self.arena.get_mut(&node).expect("The node should exist!");
-                            real_node.score += 1;
+
+                            g *= gamma;
+                            real_node.score += g;
                             here = node;
                         }
 
@@ -97,12 +109,15 @@ impl Tree {
                             .get_mut(&here)
                             .expect("The hashmap should have the node.");
 
-                        node.score -= 1;
+                        node.score -= 1.0;
+                        let mut g = -1.0;
 
                         while let Some(node) = self.arena[&here].parent {
                             let real_node =
                                 self.arena.get_mut(&node).expect("The node should exist!");
-                            real_node.score -= 1;
+
+                            g *= gamma;
+                            real_node.score += g;
                             here = node;
                         }
 
@@ -119,17 +134,22 @@ impl Tree {
             }
         }
 
+        for node in self.arena.values_mut() {
+            node.score /= node.count;
+            node.count = 1.0;
+        }
+
         let children = &self.arena[&self.here].children;
         let here = match game.turn {
             Role::Attacker => children
                 .iter()
                 .map(|child| &self.arena[child])
-                .max_by(|a, b| a.score.cmp(&b.score))
+                .max_by(|a, b| a.score.total_cmp(&b.score))
                 .map(|node| (node.index, node.score)),
             Role::Defender => children
                 .iter()
                 .map(|child| &self.arena[child])
-                .min_by(|a, b| a.score.cmp(&b.score))
+                .min_by(|a, b| a.score.total_cmp(&b.score))
                 .map(|node| (node.index, node.score)),
             Role::Roleless => None,
         };
@@ -160,7 +180,7 @@ impl Tree {
             self.here = here;
             (self.arena[&self.here].play.clone(), score)
         } else {
-            (None, 0)
+            (None, 0.0)
         }
     }
 
@@ -188,7 +208,8 @@ impl Tree {
                 index: 0,
                 game,
                 play: None,
-                score: 0,
+                score: 0.0,
+                count: 0.0,
                 parent: None,
                 children: Vec::new(),
             },
@@ -208,7 +229,8 @@ pub struct Node {
     index: u128,
     game: Game,
     play: Option<Plae>,
-    score: i32,
+    score: f64,
+    count: f64,
     parent: Option<u128>,
     children: Vec<u128>,
 }
