@@ -46,7 +46,7 @@ fn main() -> anyhow::Result<()> {
     let args = Args::parse();
 
     if let Some(address) = args.tcp {
-        tcp_connect(&address)?;
+        play_tcp(&address)?;
     } else if args.ai {
         play_ai(&args)?;
     } else {
@@ -54,6 +54,19 @@ fn main() -> anyhow::Result<()> {
     }
 
     Ok(())
+}
+
+fn clear_screen() -> anyhow::Result<ExitStatus> {
+    #[cfg(not(any(target_family = "unix", target_family = "windows")))]
+    return Ok(1);
+
+    #[cfg(target_family = "unix")]
+    let exit_status = Command::new("clear").status()?;
+
+    #[cfg(target_family = "windows")]
+    let exit_status = Command::new("cls").status()?;
+
+    Ok(exit_status)
 }
 
 fn play(args: &Args) -> anyhow::Result<()> {
@@ -175,7 +188,7 @@ fn play_ai(args: &Args) -> anyhow::Result<()> {
     }
 }
 
-fn tcp_connect(address: &str) -> anyhow::Result<()> {
+fn play_tcp(address: &str) -> anyhow::Result<()> {
     let mut ai: Box<dyn AI + 'static> = Box::new(AiBanal);
     let mut stream = TcpStream::connect(address)?;
     println!("connected to {address} ...");
@@ -216,17 +229,4 @@ fn tcp_connect(address: &str) -> anyhow::Result<()> {
     }
 
     Ok(())
-}
-
-fn clear_screen() -> anyhow::Result<ExitStatus> {
-    #[cfg(not(any(target_family = "unix", target_family = "windows")))]
-    return Ok(1);
-
-    #[cfg(target_family = "unix")]
-    let exit_status = Command::new("clear").status()?;
-
-    #[cfg(target_family = "windows")]
-    let exit_status = Command::new("cls").status()?;
-
-    Ok(exit_status)
 }
