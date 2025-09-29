@@ -1,10 +1,13 @@
 {
     "cSpell.words": [
         "alsa",
+        "bindgen",
         "devel",
+        "cdylib",
         "clippy",
         "choco",
         "chrono",
+        "getrandom",
         "glicko",
         "lettre",
         "lintian",
@@ -19,6 +22,7 @@
         "pkgver",
         "pkgversion",
         "reqwest",
+        "rlib",
         "rngs",
         "rodio",
         "rustc",
