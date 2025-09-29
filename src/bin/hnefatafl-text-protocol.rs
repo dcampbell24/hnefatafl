@@ -42,52 +42,11 @@ struct Args {
     tcp: Option<String>,
 }
 
-#[allow(clippy::too_many_lines)]
 fn main() -> anyhow::Result<()> {
     let args = Args::parse();
-    let mut ai: Box<dyn AI + 'static> = Box::new(AiBanal);
 
-    if let Some(tcp) = args.tcp {
-        let address = tcp.as_str();
-        let mut stream = TcpStream::connect(address)?;
-        println!("connected to {address} ...");
-
-        let mut reader = BufReader::new(stream.try_clone()?);
-        let mut game = Game::default();
-
-        for i in 1..10_000 {
-            println!("\n*** turn {i} ***");
-
-            let message = read_response(&mut reader)?;
-
-            if let Some(word) = message
-                .as_str()
-                .split_ascii_whitespace()
-                .collect::<Vec<_>>()
-                .first()
-            {
-                match *word {
-                    "play" => {
-                        game.read_line(&message)?;
-                    }
-                    "generate_move" => {
-                        let play = game
-                            .generate_move(&mut ai)
-                            .expect("the game must be in progress");
-
-                        game.play(&play)?;
-                        write_command(&play.to_string(), &mut stream)?;
-                    }
-                    _ => unreachable!("You can't get here!"),
-                }
-            }
-
-            if game.status != Status::Ongoing {
-                break;
-            }
-        }
-
-        return Ok(());
+    if let Some(address) = args.tcp {
+        return tcp_connect(&address);
     }
 
     let mut buffer = String::new();
@@ -195,6 +154,49 @@ fn main() -> anyhow::Result<()> {
 
         buffer.clear();
     }
+}
+
+fn tcp_connect(address: &str) -> anyhow::Result<()> {
+    let mut ai: Box<dyn AI + 'static> = Box::new(AiBanal);
+    let mut stream = TcpStream::connect(address)?;
+    println!("connected to {address} ...");
+
+    let mut reader = BufReader::new(stream.try_clone()?);
+    let mut game = Game::default();
+
+    for i in 1..10_000 {
+        println!("\n*** turn {i} ***");
+
+        let message = read_response(&mut reader)?;
+
+        if let Some(word) = message
+            .as_str()
+            .split_ascii_whitespace()
+            .collect::<Vec<_>>()
+            .first()
+        {
+            match *word {
+                "play" => {
+                    game.read_line(&message)?;
+                }
+                "generate_move" => {
+                    let play = game
+                        .generate_move(&mut ai)
+                        .expect("the game must be in progress");
+
+                    game.play(&play)?;
+                    write_command(&play.to_string(), &mut stream)?;
+                }
+                _ => unreachable!("You can't get here!"),
+            }
+        }
+
+        if game.status != Status::Ongoing {
+            break;
+        }
+    }
+
+    Ok(())
 }
 
 fn clear_screen() -> anyhow::Result<ExitStatus> {
