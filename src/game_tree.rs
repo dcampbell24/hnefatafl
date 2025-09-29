@@ -59,13 +59,13 @@ impl Tree {
 
             for _depth in 0..80 {
                 let play = if let Some(play) = game.obvious_play() {
-                    let _captures = game.play(&play).expect("The play should be legal!");
+                    game.play(&play).expect("The play should be legal!");
                     play
                 } else {
                     let plays = game.all_legal_plays();
                     let index = rand::thread_rng().gen_range(0..plays.len());
                     let play = plays[index].clone();
-                    let _captures = game.play(&play).expect("The play should be legal!");
+                    game.play(&play).expect("The play should be legal!");
                     play
                 };
 
