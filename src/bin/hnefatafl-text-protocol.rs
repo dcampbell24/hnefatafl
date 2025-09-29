@@ -1,5 +1,5 @@
 use std::{
-    io::{self, BufReader},
+    io::{self, BufReader, Stdin},
     net::TcpStream,
     process::{Command, ExitStatus},
     sync::mpsc::channel,
@@ -66,94 +66,106 @@ fn main() -> anyhow::Result<()> {
     }
 
     loop {
-        let (tx, rx) = channel();
         if args.ai {
-            trees.par_iter_mut().for_each_with(tx, |tx, tree| {
-                let nodes = tree.monte_carlo_tree_search(args.loops);
-                tx.send(nodes).unwrap();
-            });
-            let mut nodes: Vec<_> = rx.iter().flatten().collect();
-            nodes.sort_by(|a, b| a.score.total_cmp(&b.score));
-
-            let turn = game.turn;
-            let node = match turn {
-                Role::Attacker => nodes.last().unwrap(),
-                Role::Defender => nodes.first().unwrap(),
-                Role::Roleless => unreachable!(),
-            };
-
-            let play = node.play.as_ref().unwrap();
-            match game.play(play) {
-                Ok(_captures) => {}
-                Err(err) => {
-                    println!("invalid play: {play}");
-                    return Err(err);
-                }
-            }
-
-            let hash = game.calculate_hash();
-            let mut here_tree = Tree::new(game.board.size());
-            for tree in &trees {
-                if hash == tree.here_game().calculate_hash() {
-                    here_tree = tree.clone();
-                }
-            }
-            for tree in &mut trees {
-                if hash != tree.here_game().calculate_hash() {
-                    *tree = here_tree.clone();
-                }
-            }
-
-            if args.display_game {
-                clear_screen()?;
-                println!("{game}\n");
-            }
-
-            println!("= {play}, score: {}", node.score);
-
-            if game.status != Status::Ongoing {
-                return Ok(());
-            }
-
-            match turn {
-                Role::Attacker => {
-                    for node in nodes.iter().rev().take(10) {
-                        println!("{node}");
-                    }
-                }
-                Role::Defender => {
-                    for node in &nodes[..10] {
-                        println!("{node}");
-                    }
-                }
-                Role::Roleless => unreachable!(),
-            }
+            play_ai(&args, &mut game, &mut trees)?;
         } else {
-            if let Err(error) = stdin.read_line(&mut buffer) {
-                println!("? {error}\n");
-                buffer.clear();
-                continue;
-            }
-
-            let result = game.read_line(&buffer);
-
-            if args.display_game {
-                clear_screen()?;
-                println!("{game}\n");
-            }
-
-            match result {
-                Err(error) => println!("? {error}\n"),
-                Ok(message) => {
-                    if let Some(message) = message {
-                        println!("= {message}\n");
-                    }
-                }
-            }
+            play(&mut buffer, &stdin, &args, &mut game)?;
         }
 
         buffer.clear();
     }
+}
+
+fn play(buffer: &mut String, stdin: &Stdin, args: &Args, game: &mut Game) -> anyhow::Result<()> {
+    if let Err(error) = stdin.read_line(buffer) {
+        println!("? {error}\n");
+        buffer.clear();
+        return Ok(());
+    }
+
+    let result = game.read_line(buffer);
+
+    if args.display_game {
+        clear_screen()?;
+        println!("{game}\n");
+    }
+
+    match result {
+        Err(error) => println!("? {error}\n"),
+        Ok(message) => {
+            if let Some(message) = message {
+                println!("= {message}\n");
+            }
+        }
+    }
+
+    Ok(())
+}
+
+fn play_ai(args: &Args, game: &mut Game, trees: &mut Vec<Tree>) -> anyhow::Result<()> {
+    let (tx, rx) = channel();
+    trees.par_iter_mut().for_each_with(tx, |tx, tree| {
+        let nodes = tree.monte_carlo_tree_search(args.loops);
+        tx.send(nodes).unwrap();
+    });
+    let mut nodes: Vec<_> = rx.iter().flatten().collect();
+    nodes.sort_by(|a, b| a.score.total_cmp(&b.score));
+
+    let turn = game.turn;
+    let node = match turn {
+        Role::Attacker => nodes.last().unwrap(),
+        Role::Defender => nodes.first().unwrap(),
+        Role::Roleless => unreachable!(),
+    };
+
+    let play = node.play.as_ref().unwrap();
+    match game.play(play) {
+        Ok(_captures) => {}
+        Err(err) => {
+            println!("invalid play: {play}");
+            return Err(err);
+        }
+    }
+
+    let hash = game.calculate_hash();
+    let mut here_tree = Tree::new(game.board.size());
+    for tree in trees.iter() {
+        if hash == tree.here_game().calculate_hash() {
+            here_tree = tree.clone();
+        }
+    }
+    for tree in trees {
+        if hash != tree.here_game().calculate_hash() {
+            *tree = here_tree.clone();
+        }
+    }
+
+    if args.display_game {
+        clear_screen()?;
+        println!("{game}\n");
+    }
+
+    println!("= {play}, score: {}", node.score);
+
+    if game.status != Status::Ongoing {
+        return Ok(());
+    }
+
+    match turn {
+        Role::Attacker => {
+            for node in nodes.iter().rev().take(10) {
+                println!("{node}");
+            }
+        }
+        Role::Defender => {
+            for node in &nodes[..10] {
+                println!("{node}");
+            }
+        }
+        Role::Roleless => unreachable!(),
+    }
+
+    Ok(())
 }
 
 fn tcp_connect(address: &str) -> anyhow::Result<()> {
