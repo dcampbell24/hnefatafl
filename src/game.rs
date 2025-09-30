@@ -7,7 +7,7 @@ use std::{
     str::FromStr,
 };
 
-use chrono::Local;
+use chrono::Utc;
 use rustc_hash::{FxBuildHasher, FxHashSet};
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "js")]
@@ -335,7 +335,7 @@ impl Game {
                     &mut self.time,
                 ),
             } {
-                let now = Local::now().to_utc().timestamp_millis();
+                let now = Utc::now().timestamp_millis();
                 timer.milliseconds_left -= now - *time;
                 *time = now;
 
@@ -620,6 +620,6 @@ pub enum TimeUnix {
 
 impl Default for TimeUnix {
     fn default() -> Self {
-        Self::Time(Local::now().to_utc().timestamp_millis())
+        Self::Time(Utc::now().timestamp_millis())
     }
 }
