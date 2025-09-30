@@ -14,14 +14,10 @@ keywords = ["board-game", "copenhagen", "hnefatafl", "tafl"]
 categories = ["game-engines", "games", "wasm"]
 default-run = "hnefatafl-server-full"
 
-[dev-dependencies.iced]
-git = "https://github.com/iced-rs/iced"
-default-features = false
-features = ["wgpu", "tiny-skia", "web-colors", "thread-pool", "smol"]
-
 [dev-dependencies]
 criterion = { version = "0.7", features = ["html_reports"] }
 futures = "0.3"
+iced = { git = "https://github.com/iced-rs/iced", features = ["smol"] }
 rodio = "0.21"
 rust-i18n = "3"
 webbrowser = { version = "1", features = ["hardened"] }

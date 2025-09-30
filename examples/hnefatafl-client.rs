@@ -47,7 +47,7 @@ use hnefatafl_copenhagen::{
 use hnefatafl_copenhagen::{LONG_VERSION, board};
 use iced::keyboard::Key;
 use iced::keyboard::key::Named;
-use iced::widget::{focus_next, focus_previous};
+use iced::widget::operation::{focus_next, focus_previous};
 #[cfg(target_os = "linux")]
 use iced::window::settings::PlatformSpecific;
 use iced::{
