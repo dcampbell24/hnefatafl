@@ -337,6 +337,7 @@ impl Game {
             } {
                 let now = Local::now().to_utc().timestamp_millis();
                 timer.milliseconds_left -= now - *time;
+                *time = now;
 
                 if timer.milliseconds_left <= 0 {
                     self.status = status;
@@ -344,7 +345,6 @@ impl Game {
                 }
 
                 timer.milliseconds_left += timer.add_seconds * 1_000;
-                *time = Local::now().to_utc().timestamp_millis();
             }
 
             match play {

@@ -35,6 +35,7 @@ impl fmt::Display for Time {
         let days = self.milliseconds_left / DAY;
         let hours = (self.milliseconds_left % DAY) / HOUR;
         let minutes = (self.milliseconds_left % HOUR) / MINUTE;
+        let seconds = (self.milliseconds_left % MINUTE) / SECOND;
 
         let add_hours = self.add_seconds / (60 * 60);
         let add_minutes = (self.add_seconds % (60 * 60)) / 60;
@@ -43,12 +44,12 @@ impl fmt::Display for Time {
         if days == 0 {
             write!(
                 f,
-                "{hours:02}:{minutes:02} | {add_hours:02}:{add_minutes:02}:{add_seconds:02}"
+                "{hours:02}:{minutes:02}:{seconds:02} | {add_hours:02}:{add_minutes:02}:{add_seconds:02}"
             )
         } else {
             write!(
                 f,
-                "{days} {hours:02}:{minutes:02} | {add_hours:02}:{add_minutes:02}:{add_seconds:02}"
+                "{days} {hours:02}:{minutes:02}:{seconds:02} | {add_hours:02}:{add_minutes:02}:{add_seconds:02}"
             )
         }
     }
