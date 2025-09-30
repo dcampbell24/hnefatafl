@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - hnefatafl-text-protocol: display seconds left.
 
+### Changed
+
+- Make the engine faster.
+
 ## [4.1.1] - 2025-09-23
 
 ### Added
