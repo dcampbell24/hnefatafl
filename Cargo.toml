@@ -95,6 +95,7 @@ suspicious = "deny"
 multiple_crate_versions = { level = "allow", priority = 1 }
 
 [profile.bench]
+inherits = "release"
 panic = "unwind"
 
 [profile.profiling]
