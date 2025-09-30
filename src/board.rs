@@ -357,6 +357,11 @@ impl Board {
             for y in 0..board_size_usize {
                 for x in 0..board_size_usize {
                     let vertex_to = Vertex { size, x, y };
+
+                    if vertex_to.x != vertex_from.x && vertex_to.y != vertex_from.y {
+                        continue;
+                    }
+
                     let play = Play {
                         role: *turn,
                         from: vertex_from.clone(),
