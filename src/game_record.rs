@@ -1,4 +1,4 @@
-use std::{collections::HashSet, fmt, path::Path, str::FromStr};
+use std::{collections::HashSet, fmt, io::Cursor, str::FromStr};
 
 use crate::{
     play::{Play, Vertex},
@@ -36,12 +36,13 @@ pub struct GameRecord {
 /// # Errors
 ///
 /// If the game records are invalid.
-pub fn game_records_from_path(path: &Path) -> anyhow::Result<Vec<(usize, GameRecord)>> {
-    let mut game_records = Vec::with_capacity(1_800);
+pub fn game_records_from_path(string: &str) -> anyhow::Result<Vec<(usize, GameRecord)>> {
+    let cursor = Cursor::new(string);
     let mut rdr = csv::ReaderBuilder::new()
         .has_headers(false)
-        .from_path(path)?;
+        .from_reader(cursor);
 
+    let mut game_records = Vec::with_capacity(1_800);
     for (i, result) in rdr.deserialize().enumerate() {
         let record: Record = result?;
         let mut role = Role::Defender;

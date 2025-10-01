@@ -3,7 +3,6 @@ use std::{
     fmt,
     io::{BufRead, BufReader, Write},
     net::TcpStream,
-    path::Path,
     process::exit,
 };
 
@@ -110,7 +109,7 @@ pub fn log_error<T, E: fmt::Display>(result: Result<T, E>) {
 /// game.
 #[allow(clippy::cast_precision_loss, clippy::missing_panics_doc)]
 pub fn hnefatafl_rs() -> anyhow::Result<()> {
-    let copenhagen_csv = Path::new("copenhagen.csv");
+    let copenhagen_csv = include_str!("copenhagen.csv");
     let records = game_records_from_path(copenhagen_csv)?;
 
     let mut already_played = 0;
