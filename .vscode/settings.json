@@ -7,6 +7,7 @@
         "clippy",
         "choco",
         "chrono",
+        "doctest",
         "getrandom",
         "glicko",
         "lettre",

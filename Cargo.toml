@@ -67,17 +67,47 @@ urls = ["dep:reqwest"]
 
 [lib]
 crate-type = ["cdylib", "rlib"]
+bench = false
+doctest = false
+
+[[bin]]
+name = "hnefatafl-ai"
+bench = false
+test = false
 
 [[example]]
 name = "hnefatafl-client"
 
 [[bin]]
+name = "hnefatafl-server"
+bench = false
+test = false
+
+[[bin]]
+name = "hnefatafl-text-protocol"
+bench = false
+test = false
+
+[[bin]]
 name = "hnefatafl-server-full"
 required-features = ["server"]
+bench = false
+
+[[bin]]
+name = "icelandic-runic"
+bench = false
+test = false
 
 [[bin]]
 name = "send-website-urls"
 required-features = ["urls"]
+bench = false
+test = false
+
+[[bin]]
+name = "replace_strings"
+bench = false
+test = false
 
 [[bench]]
 name = "hnefatafl_rs"
