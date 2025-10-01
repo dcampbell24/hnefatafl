@@ -338,38 +338,31 @@ impl Board {
     ) -> bool {
         let size = self.size();
         let board_size_usize: usize = size.into();
-        let mut possible_vertexes = Vec::with_capacity(32);
 
         for y in 0..board_size_usize {
             for x in 0..board_size_usize {
-                let vertex = Vertex { size, x, y };
-                if self.get(&vertex).role() == *turn {
-                    possible_vertexes.push(vertex);
+                let vertex_from = Vertex { size, x, y };
+                if self.get(&vertex_from).role() != *turn {
+                    continue;
                 }
-            }
-        }
 
-        if possible_vertexes.is_empty() {
-            return false;
-        }
+                for y in 0..board_size_usize {
+                    for x in 0..board_size_usize {
+                        let vertex_to = Vertex { size, x, y };
 
-        for vertex_from in possible_vertexes {
-            for y in 0..board_size_usize {
-                for x in 0..board_size_usize {
-                    let vertex_to = Vertex { size, x, y };
+                        if vertex_to.x != vertex_from.x && vertex_to.y != vertex_from.y {
+                            continue;
+                        }
 
-                    if vertex_to.x != vertex_from.x && vertex_to.y != vertex_from.y {
-                        continue;
-                    }
+                        let play = Play {
+                            role: *turn,
+                            from: vertex_from.clone(),
+                            to: vertex_to,
+                        };
 
-                    let play = Play {
-                        role: *turn,
-                        from: vertex_from.clone(),
-                        to: vertex_to,
-                    };
-
-                    if let Ok(_board) = self.legal_move(&play, status, turn, previous_boards) {
-                        return true;
+                        if let Ok(_board) = self.legal_move(&play, status, turn, previous_boards) {
+                            return true;
+                        }
                     }
                 }
             }
