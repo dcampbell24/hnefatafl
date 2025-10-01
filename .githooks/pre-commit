@@ -4,4 +4,4 @@ export RUSTFLAGS='-D warnings'
 
 cargo fmt --all --check
 cargo clippy --all-targets --features js
-cargo test --all-targets --features js
+cargo test --features js
