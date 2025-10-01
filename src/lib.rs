@@ -150,23 +150,18 @@ fn play_game(i: usize, record: &GameRecord) -> Result<(usize, Game), anyhow::Err
     let mut game = Game::default();
 
     for (play, captures_1) in record.clone().plays {
-        let mut captures_2_set = HashSet::new();
-        let mut captures_2 = Vec::new();
+        let mut captures_2 = HashSet::new();
         let play = Plae::Play(play);
         let captures = game.play(&play)?;
 
         for vertex in captures.0 {
-            captures_2_set.insert(vertex);
+            captures_2.insert(vertex);
         }
 
         if let Some(king) = game.board.find_the_king() {
-            captures_2_set.remove(&king);
+            captures_2.remove(&king);
         }
 
-        for vertex in captures_2_set {
-            captures_2.push(vertex);
-        }
-        captures_2.sort();
         let captures_2 = Captures(captures_2);
 
         if let Some(captures_1) = captures_1 {
