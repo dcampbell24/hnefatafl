@@ -5,7 +5,7 @@ enable-git-hooks:
 .PHONY: profile
 profile:
 	echo '1' | sudo tee /proc/sys/kernel/perf_event_paranoid
-	samply record cargo test hnefatafl_rs --profile profiling
+	samply record cargo test hnefatafl_games --profile profiling
 
 .PHONY: logs
 logs:
