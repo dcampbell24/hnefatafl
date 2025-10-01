@@ -1135,7 +1135,7 @@ impl Board {
         board.set(&play.from, Space::Empty);
         board.set(&play.to, space_from);
 
-        if previous_boards.0.contains(&board) && turn != &Role::Attacker {
+        if turn == &Role::Defender && previous_boards.0.contains(&board) {
             return Err(anyhow::Error::msg(
                 "play: you already reached that position",
             ));
