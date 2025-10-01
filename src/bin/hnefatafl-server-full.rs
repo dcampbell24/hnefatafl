@@ -2150,7 +2150,7 @@ mod tests {
 
     impl Server {
         fn new() -> Server {
-            match std::process::Command::new("./target/release/hnefatafl-server-full")
+            match std::process::Command::new("./target/debug/hnefatafl-server-full")
                 .stdout(Stdio::null())
                 .stderr(Stdio::null())
                 .arg("--skip-the-data-file")
@@ -2220,7 +2220,6 @@ mod tests {
     fn server_full() -> anyhow::Result<()> {
         std::process::Command::new("cargo")
             .arg("build")
-            .arg("--release")
             .arg("--bin")
             .arg("hnefatafl-server-full")
             .output()?;

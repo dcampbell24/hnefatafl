@@ -110,7 +110,7 @@ pub fn log_error<T, E: fmt::Display>(result: Result<T, E>) {
 /// game.
 #[allow(clippy::cast_precision_loss, clippy::missing_panics_doc)]
 pub fn hnefatafl_rs() -> anyhow::Result<()> {
-    let copenhagen_csv = Path::new("tests/copenhagen.csv");
+    let copenhagen_csv = Path::new("copenhagen.csv");
     let records = game_records_from_path(copenhagen_csv)?;
 
     let mut already_played = 0;
@@ -215,6 +215,11 @@ mod tests {
         if let Err(error) = result {
             assert_eq!(error.to_string(), string);
         }
+    }
+
+    #[test]
+    fn hnefatafl_games() -> anyhow::Result<()> {
+        hnefatafl_rs()
     }
 
     #[test]
