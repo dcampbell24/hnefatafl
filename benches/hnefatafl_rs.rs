@@ -2,10 +2,13 @@ use std::time::Duration;
 
 use criterion::{Criterion, criterion_group, criterion_main};
 
-use hnefatafl_copenhagen::{board::BoardSize, game_tree::Tree, hnefatafl_rs};
+use hnefatafl_copenhagen::{board::BoardSize, game_tree::Tree, hnefatafl_rs, setup_hnefatafl_rs};
 
 fn game_play_outs(c: &mut Criterion) {
-    c.bench_function("game_play_outs", move |b| b.iter(hnefatafl_rs));
+    let game_records = setup_hnefatafl_rs().unwrap();
+    c.bench_function("game_play_outs", move |b| {
+        b.iter(|| hnefatafl_rs(&game_records));
+    });
 }
 
 fn monte_carlo(c: &mut Criterion) {

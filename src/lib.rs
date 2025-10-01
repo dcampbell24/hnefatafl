@@ -105,13 +105,18 @@ pub fn log_error<T, E: fmt::Display>(result: Result<T, E>) {
 
 /// # Errors
 ///
+/// If the game records are invalid.
+pub fn setup_hnefatafl_rs() -> anyhow::Result<Vec<(usize, GameRecord)>> {
+    let copenhagen_csv = include_str!("copenhagen.csv");
+    game_records_from_path(copenhagen_csv)
+}
+
+/// # Errors
+///
 /// If the captures or game status don't match for an engine game and a record
 /// game.
 #[allow(clippy::cast_precision_loss, clippy::missing_panics_doc)]
-pub fn hnefatafl_rs() -> anyhow::Result<()> {
-    let copenhagen_csv = include_str!("copenhagen.csv");
-    let records = game_records_from_path(copenhagen_csv)?;
-
+pub fn hnefatafl_rs(records: &[(usize, GameRecord)]) -> anyhow::Result<()> {
     let mut already_played = 0;
     let mut already_over = 0;
 
@@ -213,7 +218,7 @@ mod tests {
 
     #[test]
     fn hnefatafl_games() -> anyhow::Result<()> {
-        hnefatafl_rs()
+        hnefatafl_rs(&setup_hnefatafl_rs()?)
     }
 
     #[test]
