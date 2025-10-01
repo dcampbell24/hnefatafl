@@ -1,4 +1,4 @@
-use std::{fmt, path::Path, str::FromStr};
+use std::{collections::HashSet, fmt, path::Path, str::FromStr};
 
 use crate::{
     play::{Play, Vertex},
@@ -15,7 +15,7 @@ struct Record {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct Captures(pub Vec<Vertex>);
+pub struct Captures(pub HashSet<Vertex>);
 
 impl fmt::Display for Captures {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -61,15 +61,14 @@ pub fn game_records_from_path(path: &Path) -> anyhow::Result<Vec<(usize, GameRec
                     let play = Play { role, from, to };
 
                     if vertex_1_captures.get(1).is_some() {
-                        let mut captures = Vec::new();
+                        let mut captures = HashSet::new();
                         for capture in vertex_1_captures.into_iter().skip(1) {
                             let vertex = Vertex::from_str(capture)?;
                             if !captures.contains(&vertex) {
-                                captures.push(vertex);
+                                captures.insert(vertex);
                             }
                         }
 
-                        captures.sort();
                         plays.push((play, Some(Captures(captures))));
                     } else {
                         plays.push((play, None));
