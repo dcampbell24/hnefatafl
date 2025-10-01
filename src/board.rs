@@ -368,9 +368,7 @@ impl Board {
                         to: vertex_to,
                     };
 
-                    if let Ok(_board_captures_status) =
-                        self.play_internal(&Plae::Play(play), status, turn, previous_boards)
-                    {
+                    if let Ok(_board) = self.legal_move(&play, status, turn, previous_boards) {
                         return true;
                     }
                 }
@@ -1056,61 +1054,6 @@ impl Board {
         }
     }
 
-    #[must_use]
-    fn no_attacker_pieces_left(&self) -> bool {
-        let size = self.size();
-        let board_size_usize: usize = size.into();
-
-        for y in 0..board_size_usize {
-            for x in 0..board_size_usize {
-                let v = Vertex { size, x, y };
-                if self.get(&v).role() == Role::Attacker {
-                    return false;
-                }
-            }
-        }
-
-        true
-    }
-
-    #[inline]
-    #[must_use]
-    pub fn on_exit_square(&self, vertex: &Vertex) -> bool {
-        (self.spaces.len() == 11 * 11 && EXIT_SQUARES_11X11.contains(vertex))
-            || (self.spaces.len() == 13 * 13 && EXIT_SQUARES_13X13.contains(vertex))
-    }
-
-    #[inline]
-    #[must_use]
-    fn on_throne(&self, vertex: &Vertex) -> bool {
-        let board_size: usize = self.size().into();
-
-        if board_size == 11 {
-            THRONE_11X11 == *vertex
-        } else if board_size == 13 {
-            THRONE_13X13 == *vertex
-        } else {
-            panic!("The board size is {board_size}!");
-        }
-    }
-
-    /// # Errors
-    ///
-    /// If the move is illegal.
-    pub fn play(
-        &mut self,
-        play: &Plae,
-        status: &Status,
-        turn: &Role,
-        previous_boards: &mut PreviousBoards,
-    ) -> anyhow::Result<(Vec<Vertex>, Status)> {
-        let (board, captures, status) = self.play_internal(play, status, turn, previous_boards)?;
-        previous_boards.0.insert(board.clone());
-        *self = board;
-
-        Ok((captures, status))
-    }
-
     /// # Errors
     ///
     /// If the move is illegal.
@@ -1119,13 +1062,13 @@ impl Board {
         clippy::cast_possible_wrap,
         clippy::cast_sign_loss
     )]
-    pub fn play_internal(
+    pub fn legal_move(
         &self,
-        play: &Plae,
+        play: &Play,
         status: &Status,
         turn: &Role,
         previous_boards: &PreviousBoards,
-    ) -> anyhow::Result<(Board, Vec<Vertex>, Status)> {
+    ) -> anyhow::Result<Board> {
         let size = self.size();
 
         if *status != Status::Ongoing {
@@ -1133,12 +1076,6 @@ impl Board {
                 "play: the game has to be ongoing to play",
             ));
         }
-
-        let play = match play {
-            Plae::AttackerResigns => return Ok((self.clone(), Vec::new(), Status::DefenderWins)),
-            Plae::DefenderResigns => return Ok((self.clone(), Vec::new(), Status::AttackerWins)),
-            Plae::Play(play) => play,
-        };
 
         let space_from = self.get(&play.from);
         let role_from = space_from.role();
@@ -1211,6 +1148,89 @@ impl Board {
             ));
         }
 
+        Ok(board)
+    }
+
+    #[must_use]
+    fn no_attacker_pieces_left(&self) -> bool {
+        let size = self.size();
+        let board_size_usize: usize = size.into();
+
+        for y in 0..board_size_usize {
+            for x in 0..board_size_usize {
+                let v = Vertex { size, x, y };
+                if self.get(&v).role() == Role::Attacker {
+                    return false;
+                }
+            }
+        }
+
+        true
+    }
+
+    #[inline]
+    #[must_use]
+    pub fn on_exit_square(&self, vertex: &Vertex) -> bool {
+        (self.spaces.len() == 11 * 11 && EXIT_SQUARES_11X11.contains(vertex))
+            || (self.spaces.len() == 13 * 13 && EXIT_SQUARES_13X13.contains(vertex))
+    }
+
+    #[inline]
+    #[must_use]
+    fn on_throne(&self, vertex: &Vertex) -> bool {
+        let board_size: usize = self.size().into();
+
+        if board_size == 11 {
+            THRONE_11X11 == *vertex
+        } else if board_size == 13 {
+            THRONE_13X13 == *vertex
+        } else {
+            panic!("The board size is {board_size}!");
+        }
+    }
+
+    /// # Errors
+    ///
+    /// If the move is illegal.
+    pub fn play(
+        &mut self,
+        play: &Plae,
+        status: &Status,
+        turn: &Role,
+        previous_boards: &mut PreviousBoards,
+    ) -> anyhow::Result<(Vec<Vertex>, Status)> {
+        let (board, captures, status) = self.play_internal(play, status, turn, previous_boards)?;
+        previous_boards.0.insert(board.clone());
+        *self = board;
+
+        Ok((captures, status))
+    }
+
+    /// # Errors
+    ///
+    /// If the move is illegal.
+    pub fn play_internal(
+        &self,
+        play: &Plae,
+        status: &Status,
+        turn: &Role,
+        previous_boards: &PreviousBoards,
+    ) -> anyhow::Result<(Board, Vec<Vertex>, Status)> {
+        if *status != Status::Ongoing {
+            return Err(anyhow::Error::msg(
+                "play: the game has to be ongoing to play",
+            ));
+        }
+
+        let play = match play {
+            Plae::AttackerResigns => return Ok((self.clone(), Vec::new(), Status::DefenderWins)),
+            Plae::DefenderResigns => return Ok((self.clone(), Vec::new(), Status::AttackerWins)),
+            Plae::Play(play) => play,
+        };
+
+        let mut board = self.legal_move(play, status, turn, previous_boards)?;
+        let space_from = self.get(&play.from);
+        let role_from = space_from.role();
         let mut captures = Vec::new();
         board.captures(&play.to, role_from, &mut captures);
         board.captures_shield_wall(role_from, &play.to, &mut captures);
