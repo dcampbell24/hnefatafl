@@ -219,7 +219,6 @@ impl Game {
             }
         }
 
-        plays.sort();
         plays
     }
 
