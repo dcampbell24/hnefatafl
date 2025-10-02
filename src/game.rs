@@ -176,8 +176,8 @@ impl Game {
                         to: vertex_to.clone(),
                     };
 
-                    if let Ok(_board_captures_status) = self.board.play_internal(
-                        &Plae::Play(play),
+                    if let Ok(_board_captures_status) = self.board.legal_move(
+                        &play,
                         &self.status,
                         &self.turn,
                         &self.previous_boards,
