@@ -13,6 +13,7 @@ use crate::{
 #[derive(Clone, Debug)]
 pub struct Tree {
     here: u128,
+    pub game: Game,
     arena: HashMap<u128, Node>,
     already_played: HashMap<u64, u128>,
     next_index: u128,
@@ -35,7 +36,6 @@ impl Tree {
             index,
             Node {
                 index,
-                game: game.clone(),
                 play: Some(play),
                 score: 0.0,
                 count: 1.0,
@@ -51,10 +51,8 @@ impl Tree {
     #[allow(clippy::missing_panics_doc)]
     #[must_use]
     pub fn monte_carlo_tree_search(&mut self, loops: u32) -> Vec<Node> {
-        let game = self.here_game();
-
         for _ in 0..loops {
-            let mut game = game.clone();
+            let mut game = self.game.clone();
             let mut here = self.here;
 
             for _depth in 0..80 {
@@ -147,7 +145,7 @@ impl Tree {
 
         child_nodes.sort_by(|a, b| a.score.total_cmp(&b.score));
 
-        let here = match game.turn {
+        let here = match self.game.turn {
             Role::Attacker => child_nodes.last().map(|node| node.index),
             Role::Defender => child_nodes.first().map(|node| node.index),
             Role::Roleless => None,
@@ -174,16 +172,14 @@ impl Tree {
                 }
             }
 
+            self.game
+                .play(self.arena.get(&here).unwrap().play.as_ref().unwrap())
+                .unwrap();
             self.here = here;
             child_nodes
         } else {
             Vec::new()
         }
-    }
-
-    #[must_use]
-    pub fn here_game(&self) -> Game {
-        self.arena[&self.here].game.clone()
     }
 
     #[must_use]
@@ -203,7 +199,6 @@ impl Tree {
             0,
             Node {
                 index: 0,
-                game,
                 play: None,
                 score: 0.0,
                 count: 0.0,
@@ -214,6 +209,7 @@ impl Tree {
 
         Self {
             here: 0,
+            game,
             arena,
             already_played: HashMap::new(),
             next_index: 1,
@@ -224,7 +220,6 @@ impl Tree {
 #[derive(Clone, Debug)]
 pub struct Node {
     index: u128,
-    game: Game,
     pub play: Option<Plae>,
     pub score: f64,
     count: f64,

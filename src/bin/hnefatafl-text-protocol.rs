@@ -150,12 +150,12 @@ fn play_ai(args: &Args) -> anyhow::Result<()> {
         let hash = game.calculate_hash();
         let mut here_tree = Tree::new(game.board.size());
         for tree in &trees {
-            if hash == tree.here_game().calculate_hash() {
+            if hash == tree.game.calculate_hash() {
                 here_tree = tree.clone();
             }
         }
         for tree in &mut trees {
-            if hash != tree.here_game().calculate_hash() {
+            if hash != tree.game.calculate_hash() {
                 *tree = here_tree.clone();
             }
         }
