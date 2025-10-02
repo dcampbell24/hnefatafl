@@ -2,10 +2,15 @@
 enable-git-hooks:
 	git config --local core.hooksPath .githooks/
 
-.PHONY: profile
-profile:
+.PHONY: profile-games
+profile-games:
 	echo '1' | sudo tee /proc/sys/kernel/perf_event_paranoid
 	samply record cargo test hnefatafl_games --profile profiling
+
+.PHONY: profile-monte-carlo
+profile-monte-carlo:
+	echo '1' | sudo tee /proc/sys/kernel/perf_event_paranoid
+	samply record cargo test monte_carlo --profile profiling -- --ignored
 
 .PHONY: logs
 logs:
