@@ -2,6 +2,7 @@ use std::{collections::HashMap, fmt, str::FromStr};
 
 use rustc_hash::{FxBuildHasher, FxHashSet};
 use serde::{Deserialize, Serialize};
+use thiserror::Error;
 
 use crate::{
     game::PreviousBoards,
@@ -1047,6 +1048,7 @@ impl Board {
         }
     }
 
+    //
     /// # Errors
     ///
     /// If the move is illegal.
@@ -1061,35 +1063,31 @@ impl Board {
         status: &Status,
         turn: &Role,
         previous_boards: &PreviousBoards,
-    ) -> anyhow::Result<Board> {
+    ) -> Result<Board, InvalidMove> {
         let size = self.size();
 
         if *status != Status::Ongoing {
-            return Err(anyhow::Error::msg(
-                "play: the game has to be ongoing to play",
-            ));
+            return Err(InvalidMove::Ongoing);
         }
 
         let space_from = self.get(&play.from);
         let role_from = space_from.role();
 
         if role_from == Role::Roleless {
-            return Err(anyhow::Error::msg("play: you didn't select a role"));
+            return Err(InvalidMove::Role);
         } else if *turn != role_from {
-            return Err(anyhow::Error::msg("play: it isn't your turn"));
+            return Err(InvalidMove::Turn);
         }
 
         let x_diff = play.from.x as i32 - play.to.x as i32;
         let y_diff = play.from.y as i32 - play.to.y as i32;
 
         if x_diff != 0 && y_diff != 0 {
-            return Err(anyhow::Error::msg(
-                "play: you can only play in a straight line",
-            ));
+            return Err(InvalidMove::StraightLine);
         }
 
         if x_diff == 0 && y_diff == 0 {
-            return Err(anyhow::Error::msg("play: you have to change location"));
+            return Err(InvalidMove::Location);
         }
 
         if x_diff != 0 {
@@ -1103,9 +1101,7 @@ impl Board {
 
                 let space = self.get(&vertex);
                 if space != Space::Empty {
-                    return Err(anyhow::Error::msg(
-                        "play: you have to play through empty locations",
-                    ));
+                    return Err(InvalidMove::Empty);
                 }
             }
         } else {
@@ -1118,17 +1114,13 @@ impl Board {
                 };
                 let space = self.get(&vertex);
                 if space != Space::Empty {
-                    return Err(anyhow::Error::msg(
-                        "play: you have to play through empty locations",
-                    ));
+                    return Err(InvalidMove::Empty);
                 }
             }
         }
 
         if space_from != Space::King && on_restricted_square(&self.spaces, &play.to) {
-            return Err(anyhow::Error::msg(
-                "play: only the king may move to a restricted square",
-            ));
+            return Err(InvalidMove::Restricted);
         }
 
         let mut board = self.clone();
@@ -1136,9 +1128,7 @@ impl Board {
         board.set(&play.to, space_from);
 
         if turn == &Role::Defender && previous_boards.0.contains(&board) {
-            return Err(anyhow::Error::msg(
-                "play: you already reached that position",
-            ));
+            return Err(InvalidMove::RepeatMove);
         }
 
         Ok(board)
@@ -1369,6 +1359,26 @@ impl Captured {
 enum Direction {
     LeftRight,
     UpDown,
+}
+
+#[derive(Error, Debug)]
+pub enum InvalidMove {
+    #[error("play: you have to play through empty locations")]
+    Empty,
+    #[error("play: you have to change location")]
+    Location,
+    #[error("play: the game has to be ongoing to play")]
+    Ongoing,
+    #[error("play: you already reached that position")]
+    RepeatMove,
+    #[error("play: only the king may move to a restricted square")]
+    Restricted,
+    #[error("play: you didn't select a role")]
+    Role,
+    #[error("play: you can only play in a straight line")]
+    StraightLine,
+    #[error("play: it isn't your turn")]
+    Turn,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
