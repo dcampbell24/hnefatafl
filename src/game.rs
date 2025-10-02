@@ -176,12 +176,11 @@ impl Game {
                         to: vertex_to.clone(),
                     };
 
-                    if let Ok(_board_captures_status) = self.board.legal_move(
-                        &play,
-                        &self.status,
-                        &self.turn,
-                        &self.previous_boards,
-                    ) {
+                    if self
+                        .board
+                        .legal_move(&play, &self.status, &self.turn, &self.previous_boards)
+                        .is_ok()
+                    {
                         vertexes_to.push(vertex_to);
                     }
                 }
