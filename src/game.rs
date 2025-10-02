@@ -82,27 +82,29 @@ impl Default for PreviousBoards {
 
 impl fmt::Display for Game {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let captured = self.board.captured();
+
         writeln!(f, "{}\n", self.board)?;
-
-        if self.plays.is_empty() {
-            writeln!(f, "plays: {}", self.plays)?;
-        } else {
-            write!(f, "plays: {}", self.plays)?;
-        }
-
+        writeln!(f, "move: {}", self.plays.len() + 1)?;
+        writeln!(
+            f,
+            "captures: {} {}",
+            &captured.attacker(),
+            &captured.defender()
+        )?;
         writeln!(f, "status: {}", self.status)?;
+        writeln!(f, "turn: {}", self.turn)?;
 
         match &self.attacker_time {
-            TimeSettings::Timed(time) => writeln!(f, "attacker_time: {time}")?,
-            TimeSettings::UnTimed => writeln!(f, "attacker_time: infinite")?,
+            TimeSettings::Timed(time) => writeln!(f, "attacker time: {time}")?,
+            TimeSettings::UnTimed => writeln!(f, "attacker time: infinite")?,
         }
-
         match &self.defender_time {
-            TimeSettings::Timed(time) => writeln!(f, "defender_time: {time}")?,
-            TimeSettings::UnTimed => writeln!(f, "defender_time: infinite")?,
+            TimeSettings::Timed(time) => writeln!(f, "defender time: {time}")?,
+            TimeSettings::UnTimed => writeln!(f, "defender time: infinite")?,
         }
 
-        write!(f, "turn: {}", self.turn)
+        write!(f, "plays: {}", self.plays)
     }
 }
 
