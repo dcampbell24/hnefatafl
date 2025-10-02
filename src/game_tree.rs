@@ -175,6 +175,7 @@ impl Tree {
             self.game
                 .play(self.arena.get(&here).unwrap().play.as_ref().unwrap())
                 .unwrap();
+
             self.here = here;
             child_nodes
         } else {
