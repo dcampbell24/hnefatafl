@@ -201,7 +201,11 @@ pub fn write_command(command: &str, stream: &mut TcpStream) -> anyhow::Result<()
 mod tests {
     use std::{fmt, str::FromStr};
 
-    use crate::ai::{AI, AiBanal};
+    use crate::{
+        ai::{AI, AiBanal},
+        board::BoardSize,
+        game_tree::Tree,
+    };
 
     use super::*;
     use board::{Board, STARTING_POSITION_11X11};
@@ -219,6 +223,13 @@ mod tests {
     #[test]
     fn hnefatafl_games() -> anyhow::Result<()> {
         hnefatafl_rs(&setup_hnefatafl_rs()?)
+    }
+
+    #[ignore = "takes too long"]
+    #[test]
+    fn monte_carlo() {
+        let mut tree = Tree::new(BoardSize::_11);
+        let _plays = tree.monte_carlo_tree_search(100);
     }
 
     #[test]
