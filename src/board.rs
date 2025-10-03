@@ -843,16 +843,11 @@ impl Board {
     fn exit_forts(&self) -> bool {
         match self.find_the_king() {
             Some(kings_vertex) => {
-                if !kings_vertex.touches_wall()
+                !(!kings_vertex.touches_wall()
                     || !self.able_to_move(&kings_vertex)
-                    || !self.flood_fill_defender_wins(&kings_vertex)
-                {
-                    return false;
-                }
-
-                true
+                    || !self.flood_fill_defender_wins(&kings_vertex))
             }
-            _ => false,
+            None => false,
         }
     }
 
@@ -906,7 +901,7 @@ impl Board {
 
                 true
             }
-            _ => false,
+            None => false,
         }
     }
 
