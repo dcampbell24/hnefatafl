@@ -71,7 +71,7 @@ impl TimeSettings {
     }
 }
 
-#[derive(Clone, Copy, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
+#[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize)]
 pub struct TimeLeft {
     pub milliseconds_left: i64,
 }

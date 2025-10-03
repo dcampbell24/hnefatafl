@@ -224,8 +224,7 @@ impl Game {
     #[must_use]
     pub fn calculate_hash(&self) -> u64 {
         let mut s = DefaultHasher::new();
-        let plays = format!("{}", self.plays);
-        plays.hash(&mut s);
+        self.plays.hash(&mut s);
         s.finish()
     }
 
