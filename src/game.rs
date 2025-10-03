@@ -538,12 +538,12 @@ impl Game {
             Message::Quit => exit(0),
             Message::ShowBoard => Ok(Some(self.board.to_string())),
             Message::TimeSettings(time_settings) => {
-                self.plays = Plays::new(&time_settings);
                 self.board = match self.board.size() {
                     BoardSize::_11 => board_11x11(),
                     BoardSize::_13 => board_13x13(),
                 };
 
+                self.plays = Plays::new(&time_settings);
                 match time_settings {
                     TimeSettings::Timed(time) => {
                         self.attacker_time = TimeSettings::Timed(time);

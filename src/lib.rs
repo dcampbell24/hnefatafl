@@ -12,7 +12,7 @@ use log::error;
 use play::Plae;
 use status::Status;
 
-use crate::game_record::GameRecord;
+use crate::{game_record::GameRecord, play::Plays};
 
 pub mod accounts;
 pub mod ai;
@@ -151,7 +151,13 @@ pub fn hnefatafl_rs(records: &[(usize, GameRecord)]) -> anyhow::Result<()> {
 
 #[inline]
 fn play_game(i: usize, record: &GameRecord) -> Result<(usize, Game), anyhow::Error> {
-    let mut game = Game::default();
+    let mut game = Game {
+        plays: Plays::new(&time::TimeSettings::UnTimed),
+        time: game::TimeUnix::UnTimed,
+        attacker_time: time::TimeSettings::UnTimed,
+        defender_time: time::TimeSettings::UnTimed,
+        ..Game::default()
+    };
 
     for (play, captures_1) in record.clone().plays {
         let mut captures_2 = HashSet::new();
