@@ -176,6 +176,10 @@ impl Game {
                         to: vertex_to.clone(),
                     };
 
+                    if play.from.x != play.to.x && play.from.y != play.to.y {
+                        continue;
+                    }
+
                     if self
                         .board
                         .legal_move(&play, &self.status, &self.turn, &self.previous_boards)

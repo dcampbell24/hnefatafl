@@ -1048,7 +1048,6 @@ impl Board {
         }
     }
 
-    //
     /// # Errors
     ///
     /// If the move is illegal.
