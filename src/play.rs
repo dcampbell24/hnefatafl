@@ -1,4 +1,8 @@
-use std::{fmt, str::FromStr};
+use std::{
+    fmt,
+    hash::{Hash, Hasher},
+    str::FromStr,
+};
 
 use anyhow::Context;
 use serde::{Deserialize, Serialize};
@@ -11,11 +15,23 @@ use crate::{
 
 pub const BOARD_LETTERS: &str = "ABCDEFGHIJKLM";
 
-#[derive(Clone, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
+#[derive(Clone, Debug, Deserialize, Eq, Ord, PartialOrd, Serialize)]
 pub struct PlayRecordTimed {
     pub play: Option<Plae>,
     pub attacker_time: TimeLeft,
     pub defender_time: TimeLeft,
+}
+
+impl Hash for PlayRecordTimed {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.play.hash(state);
+    }
+}
+
+impl PartialEq for PlayRecordTimed {
+    fn eq(&self, other: &Self) -> bool {
+        self.play == other.play
+    }
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize)]
@@ -84,7 +100,7 @@ impl TryFrom<Vec<&str>> for Plae {
     }
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
+#[derive(Clone, Debug, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize)]
 pub enum Plays {
     PlayRecordsTimed(Vec<PlayRecordTimed>),
     PlayRecords(Vec<Option<Plae>>),
