@@ -22,7 +22,7 @@ fn monte_carlo(c: &mut Criterion) {
 
 criterion_group! {
     name = benches;
-    config = Criterion::default().measurement_time(Duration::from_secs(15));
+    config = Criterion::default().measurement_time(Duration::from_secs(10));
     targets = game_play_outs, monte_carlo
 }
 
