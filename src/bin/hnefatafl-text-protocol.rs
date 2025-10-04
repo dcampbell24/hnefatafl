@@ -98,7 +98,7 @@ fn play(args: &Args) -> anyhow::Result<()> {
             Err(error) => println!("? {error}\n"),
             Ok(message) => {
                 if let Some(message) = message {
-                    println!("= {message}\n");
+                    println!("= {message}");
                 }
             }
         }
