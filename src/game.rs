@@ -203,7 +203,7 @@ impl Game {
     pub fn all_legal_plays(&self) -> Vec<Plae> {
         let moves = self.all_legal_moves();
 
-        if moves.moves.is_empty() {
+        if moves.moves.is_empty() && self.status == Status::Ongoing {
             match &moves.role {
                 Role::Attacker => return vec![Plae::AttackerResigns],
                 Role::Defender => return vec![Plae::DefenderResigns],
