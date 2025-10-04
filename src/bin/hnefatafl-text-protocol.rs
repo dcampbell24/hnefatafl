@@ -2,22 +2,18 @@ use std::{
     io::{self, BufReader},
     net::TcpStream,
     process::{Command, ExitStatus},
-    sync::mpsc::channel,
 };
 
 use clap::command;
 use clap::{self, Parser};
 
 use hnefatafl_copenhagen::{
-    ai::{AI, AiBanal},
+    ai::{AI, AiBanal, AiMonteCarlo},
     game::Game,
-    game_tree::Tree,
     read_response,
-    role::Role,
     status::Status,
     write_command,
 };
-use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
 
 /// Hnefatafl Copenhagen
 ///
@@ -110,12 +106,7 @@ fn play(args: &Args) -> anyhow::Result<()> {
 fn play_ai(args: &Args) -> anyhow::Result<()> {
     let mut buffer = String::new();
     let mut game = Game::default();
-
-    let count = std::thread::available_parallelism()?.get();
-    let mut trees = Vec::with_capacity(count);
-    for _ in 0..count {
-        trees.push(Tree::new(game.board.size()));
-    }
+    let mut ai = AiMonteCarlo::new(game.board.size())?;
 
     if args.display_game {
         clear_screen()?;
@@ -123,79 +114,31 @@ fn play_ai(args: &Args) -> anyhow::Result<()> {
     }
 
     loop {
-        let (tx, rx) = channel();
-        trees.par_iter_mut().for_each_with(tx, |tx, tree| {
-            let nodes = tree.monte_carlo_tree_search(args.loops);
-            tx.send(nodes).unwrap();
-        });
-        let mut nodes: Vec<_> = rx.iter().flatten().collect();
-        nodes.sort_by(|a, b| a.score.total_cmp(&b.score));
-
-        let turn = game.turn;
-        let node = match turn {
-            Role::Attacker => nodes.last().unwrap(),
-            Role::Defender => nodes.first().unwrap(),
-            Role::Roleless => unreachable!(),
-        };
-
-        let play = node.play.as_ref().unwrap();
-        match game.play(play) {
-            Ok(_captures) => {}
-            Err(err) => {
-                println!("invalid play: {play}");
-                return Err(err);
-            }
-        }
-
-        let hash = game.calculate_hash();
-        let mut here_tree = Tree::new(game.board.size());
-        for tree in &trees {
-            if hash == tree.game.calculate_hash() {
-                here_tree = tree.clone();
-            }
-        }
-        for tree in &mut trees {
-            if hash != tree.game.calculate_hash() {
-                *tree = here_tree.clone();
-            }
-        }
+        let (play, score) = ai.generate_move(&mut game, args.loops);
+        let play = play.ok_or(anyhow::Error::msg("The game is already over."))?;
 
         if args.display_game {
             clear_screen()?;
             println!("{game}\n");
         }
 
-        println!("= {play}, score: {}", node.score);
+        println!("= {play}, score: {score}");
 
         if game.status != Status::Ongoing {
             return Ok(());
         }
 
-        match turn {
-            Role::Attacker => {
-                for node in nodes.iter().rev().take(10) {
-                    println!("{node}");
-                }
-            }
-            Role::Defender => {
-                for node in &nodes[..10] {
-                    println!("{node}");
-                }
-            }
-            Role::Roleless => unreachable!(),
-        }
         buffer.clear();
     }
 }
 
 fn play_tcp(address: &str) -> anyhow::Result<()> {
+    let mut game = Game::default();
     let mut ai: Box<dyn AI + 'static> = Box::new(AiBanal);
     let mut stream = TcpStream::connect(address)?;
     println!("connected to {address} ...");
 
     let mut reader = BufReader::new(stream.try_clone()?);
-    let mut game = Game::default();
-
     for i in 1..10_000 {
         println!("\n*** turn {i} ***");
 
@@ -212,12 +155,10 @@ fn play_tcp(address: &str) -> anyhow::Result<()> {
                     game.read_line(&message)?;
                 }
                 "generate_move" => {
-                    let play = game
-                        .generate_move(&mut ai)
-                        .expect("the game must be in progress");
+                    let (play, _score) = game.generate_move(&mut ai);
+                    let play = play.expect("the game must be in progress");
 
-                    game.play(&play)?;
-                    write_command(&play.to_string(), &mut stream)?;
+                    write_command(&format!("{play}\n"), &mut stream)?;
                 }
                 _ => unreachable!("You can't get here!"),
             }

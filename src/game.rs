@@ -274,13 +274,20 @@ impl Game {
     }
 
     #[must_use]
-    pub fn generate_move(&mut self, ai: &mut Box<dyn AI>) -> Option<Plae> {
-        let play = ai.generate_move(self);
-        if let Some(play) = &play {
-            self.play(play).ok()?;
-        }
+    pub fn generate_move(&mut self, ai: &mut Box<dyn AI>) -> (Option<Plae>, f64) {
+        // Fixme: match on the AI used and use loops.
+        let (play, score) = ai.generate_move(self, 1_000);
 
-        play
+        match play {
+            Some(play) => {
+                if self.play(&play).is_err() {
+                    (None, 0.0)
+                } else {
+                    (Some(play), score)
+                }
+            }
+            None => (None, 0.0),
+        }
     }
 
     #[allow(clippy::missing_panics_doc)]
@@ -486,7 +493,10 @@ impl Game {
             },
             Message::Empty => Ok(None),
             Message::FinalStatus => Ok(Some(format!("{}", self.status))),
-            Message::GenerateMove => Ok(self.generate_move(&mut ai).map(|play| play.to_string())),
+            Message::GenerateMove => match self.generate_move(&mut ai) {
+                (Some(play), score) => Ok(Some(format!("{play}, score: {score}"))),
+                (None, _score) => Err(anyhow::Error::msg("failed to generate move")),
+            },
             Message::KnownCommand(command) => {
                 if COMMANDS.contains(&command.as_str()) {
                     Ok(Some("true".to_string()))

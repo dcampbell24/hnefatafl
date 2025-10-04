@@ -9,7 +9,7 @@ use anyhow::Error;
 use clap::{CommandFactory, Parser, command};
 use hnefatafl_copenhagen::{
     COPYRIGHT, LONG_VERSION, VERSION_ID,
-    ai::{AI, AiBanal, AiBasic},
+    ai::{AI, AiBanal, AiMonteCarlo},
     game::Game,
     play::Vertex,
     role::Role,
@@ -222,11 +222,8 @@ fn handle_messages(
         let message: Vec<_> = buf.split_ascii_whitespace().collect();
 
         if Some("generate_move") == message.get(2).copied() {
-            let play = game
-                .generate_move(&mut ai)
-                .expect("the game must be in progress");
-
-            game.play(&play)?;
+            let (play, _score) = game.generate_move(&mut ai);
+            let play = play.expect("the game must be in progress");
 
             tcp.write_all(format!("game {game_id} {play}").as_bytes())?;
 
@@ -285,7 +282,7 @@ fn handle_messages(
 fn choose_ai(ai: &str) -> anyhow::Result<Box<dyn AI>> {
     match ai {
         "banal" => Ok(Box::new(AiBanal)),
-        "basic" => Ok(Box::new(AiBasic::default())),
+        "monte-carlo" => Ok(Box::new(AiMonteCarlo::default())),
         _ => Err(anyhow::Error::msg("you didn't choose a valid AI")),
     }
 }
