@@ -2350,7 +2350,7 @@ mod tests {
         let mut game = Game::default();
         let mut ai: Box<dyn AI> = Box::new(AiBanal);
 
-        while game.generate_move(&mut ai).is_some() {
+        while let (Some(_play), _score) = game.generate_move(&mut ai) {
             // Do nothing but play.
         }
 

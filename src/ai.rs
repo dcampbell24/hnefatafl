@@ -1,177 +1,111 @@
-use std::cmp::{max, min};
+use std::sync::mpsc::channel;
 
-use chrono::Utc;
-use rand::{RngCore, rngs::OsRng};
+use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
 
-use crate::{board::Board, game::Game, play::Plae, role::Role, space::Space, status::Status};
+use crate::{
+    board::BoardSize, game::Game, game_tree::Tree, play::Plae, role::Role, status::Status,
+};
 
 pub trait AI {
-    fn generate_move(&mut self, game: &Game) -> Option<Plae>;
+    fn generate_move(&mut self, game: &mut Game, loops: u32) -> (Option<Plae>, f64);
 }
 
 #[derive(Clone, Debug, Default)]
 pub struct AiBanal;
 
 impl AI for AiBanal {
-    fn generate_move(&mut self, game: &Game) -> Option<Plae> {
+    fn generate_move(&mut self, game: &mut Game, _loops: u32) -> (Option<Plae>, f64) {
         if game.status != Status::Ongoing {
-            return None;
+            return (None, 0.0);
         }
 
-        Some(game.all_legal_plays()[0].clone())
+        (Some(game.all_legal_plays()[0].clone()), 0.0)
     }
 }
 
 #[derive(Clone, Debug)]
-pub struct AiBasic {
-    pub depth: u64,
+pub struct AiMonteCarlo {
     pub seconds_to_move: i64,
+    pub size: BoardSize,
+    pub trees: Vec<Tree>,
 }
 
-impl Default for AiBasic {
+impl Default for AiMonteCarlo {
     fn default() -> Self {
+        let size = BoardSize::default();
+
         Self {
-            depth: 4,
-            seconds_to_move: 15,
+            seconds_to_move: 1,
+            size,
+            trees: Self::make_trees(size).unwrap(),
         }
     }
 }
 
-impl AI for AiBasic {
-    fn generate_move(&mut self, game: &Game) -> Option<Plae> {
+impl AI for AiMonteCarlo {
+    fn generate_move(&mut self, game: &mut Game, loops: u32) -> (Option<Plae>, f64) {
         if game.status != Status::Ongoing {
-            return None;
+            return (None, 0.0);
         }
 
-        self.minimax_search(game)
-    }
-}
+        let (tx, rx) = channel();
+        self.trees.par_iter_mut().for_each_with(tx, |tx, tree| {
+            let nodes = tree.monte_carlo_tree_search(loops);
+            tx.send(nodes).unwrap();
+        });
+        let mut nodes: Vec<_> = rx.iter().flatten().collect();
+        nodes.sort_by(|a, b| a.score.total_cmp(&b.score));
 
-impl AiBasic {
-    fn minimax_search(&mut self, game: &Game) -> Option<Plae> {
-        let cutoff_time = Utc::now().timestamp() + self.seconds_to_move;
-        let alpha = i32::MIN;
-        let beta = i32::MAX;
-
-        let (value, play) = match game.turn {
-            Role::Attacker => self.min_value(game, alpha, beta, cutoff_time, 0),
-            Role::Defender => self.max_value(game, alpha, beta, cutoff_time, 0),
-            Role::Roleless => panic!("It is no ones turn!"),
+        let turn = game.turn;
+        let node = match turn {
+            Role::Attacker => nodes.last().unwrap(),
+            Role::Defender => nodes.first().unwrap(),
+            Role::Roleless => unreachable!(),
         };
 
-        println!("value: {value}");
-        play
-    }
-
-    fn max_value(
-        &mut self,
-        game: &Game,
-        mut alpha: i32,
-        beta: i32,
-        cutoff_time: i64,
-        depth: u64,
-    ) -> (i32, Option<Plae>) {
-        if Utc::now().timestamp() > cutoff_time
-            || depth > self.depth
-            || game.status != Status::Ongoing
-        {
-            return (game.utility(), None);
-        }
-
-        let (mut value, mut play_1) = (i32::MIN, None);
-        for play_2 in game.all_legal_plays() {
-            let mut game = game.clone();
-            game.play(&play_2).unwrap();
-            let (value_new, _play) = self.min_value(&game, alpha, beta, cutoff_time, depth + 1);
-
-            if value_new > value {
-                (value, play_1) = (value_new, Some(play_2));
-                alpha = max(alpha, value);
-            }
-
-            if value >= beta {
-                return (value, play_1);
+        let play = node.play.as_ref().unwrap();
+        match game.play(play) {
+            Ok(_captures) => {}
+            Err(_) => {
+                return (None, 0.0);
             }
         }
 
-        (value, play_1)
-    }
-
-    fn min_value(
-        &mut self,
-        game: &Game,
-        alpha: i32,
-        mut beta: i32,
-        cutoff_time: i64,
-        depth: u64,
-    ) -> (i32, Option<Plae>) {
-        if Utc::now().timestamp() > cutoff_time
-            || depth > self.depth
-            || game.status != Status::Ongoing
-        {
-            return (game.utility(), None);
-        }
-
-        let (mut value, mut play_1) = (i32::MAX, None);
-        for play_2 in game.all_legal_plays() {
-            let mut game = game.clone();
-            game.play(&play_2).unwrap();
-            let (value_new, _play) = self.max_value(&game, alpha, beta, cutoff_time, depth + 1);
-
-            if value_new < value {
-                (value, play_1) = (value_new, Some(play_2));
-                beta = min(beta, value);
+        let hash = game.calculate_hash();
+        let mut here_tree = Tree::new(game.board.size());
+        for tree in &self.trees {
+            if hash == tree.game.calculate_hash() {
+                here_tree = tree.clone();
             }
-            if value <= alpha {
-                return (value, play_1);
+        }
+        for tree in &mut self.trees {
+            if hash != tree.game.calculate_hash() {
+                *tree = here_tree.clone();
             }
         }
 
-        (value, play_1)
+        (node.play.clone(), node.score)
     }
 }
 
-// Fixme!
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct ZobristTable {
-    /// Bitstrings representing piece placement
-    piece_bits: [[u64; 3]; 11 * 11],
-    /// Bitstring to use used when it's the defender's move.
-    defender_to_move_bits: u64,
-}
+impl AiMonteCarlo {
+    fn make_trees(size: BoardSize) -> anyhow::Result<Vec<Tree>> {
+        let count = std::thread::available_parallelism()?.get();
+        let mut trees = Vec::with_capacity(count);
 
-impl Default for ZobristTable {
-    fn default() -> Self {
-        let mut rng = OsRng;
-
-        let mut hashes = [[0; 3]; 121];
-        for hash in &mut hashes {
-            *hash = [rng.next_u64(), rng.next_u64(), rng.next_u64()];
+        for _ in 0..count {
+            trees.push(Tree::new(size));
         }
 
-        Self {
-            piece_bits: hashes,
-            defender_to_move_bits: rng.next_u64(),
-        }
+        Ok(trees)
     }
-}
 
-impl ZobristTable {
-    #[must_use]
-    pub fn hash(&self, board: &Board, side_to_play: Role) -> u64 {
-        let mut hash = 0u64;
-
-        if side_to_play == Role::Defender {
-            hash ^= self.defender_to_move_bits;
-        }
-
-        for (i, space) in board.spaces.iter().enumerate() {
-            if space != &Space::Empty {
-                let j = space.index();
-                hash ^= self.piece_bits[i][j];
-            }
-        }
-
-        hash
+    #[allow(clippy::missing_errors_doc)]
+    pub fn new(size: BoardSize) -> anyhow::Result<Self> {
+        Ok(Self {
+            seconds_to_move: 1,
+            size,
+            trees: Self::make_trees(size)?,
+        })
     }
 }

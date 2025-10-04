@@ -42,9 +42,10 @@ impl Htp {
             println!("\n*** turn {} ***", 2 * i - 1);
             write_command("generate_move attacker\n", &mut self.attacker_connection)?;
             let attacker_move = read_response(&mut attacker_reader)?;
-
             game.read_line(&attacker_move)?;
             write_command(&attacker_move, &mut self.defender_connection)?;
+
+            println!("{game}");
             if game.status != Status::Ongoing {
                 break;
             }
@@ -52,9 +53,10 @@ impl Htp {
             println!("\n*** turn {} ***", 2 * i);
             write_command("generate_move defender\n", &mut self.defender_connection)?;
             let defender_move = read_response(&mut defender_reader)?;
-
             game.read_line(&defender_move)?;
             write_command(&defender_move, &mut self.attacker_connection)?;
+
+            println!("{game}");
             if game.status != Status::Ongoing {
                 break;
             }
