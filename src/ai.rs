@@ -25,15 +25,14 @@ impl AI for AiBanal {
 #[derive(Clone, Debug)]
 pub struct AiBasic {
     pub depth: u64,
-    // seconds
-    pub time_to_move: i64,
+    pub seconds_to_move: i64,
 }
 
 impl Default for AiBasic {
     fn default() -> Self {
         Self {
             depth: 4,
-            time_to_move: 15,
+            seconds_to_move: 15,
         }
     }
 }
@@ -50,7 +49,7 @@ impl AI for AiBasic {
 
 impl AiBasic {
     fn minimax_search(&mut self, game: &Game) -> Option<Plae> {
-        let cutoff_time = Utc::now().timestamp() + self.time_to_move;
+        let cutoff_time = Utc::now().timestamp() + self.seconds_to_move;
         let alpha = i32::MIN;
         let beta = i32::MAX;
 
