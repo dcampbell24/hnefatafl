@@ -2346,14 +2346,14 @@ mod tests {
     }
 
     #[test]
-    fn someone_wins() -> anyhow::Result<()> {
+    fn someone_wins() {
         let mut game = Game::default();
         let mut ai: Box<dyn AI> = Box::new(AiBanal);
 
-        while let Some(play) = game.generate_move(&mut ai) {
-            game.play(&play)?;
+        while game.generate_move(&mut ai).is_some() {
+            // Do nothing but play.
         }
 
-        Ok(())
+        assert!(game.status == Status::AttackerWins || game.status == Status::DefenderWins);
     }
 }
