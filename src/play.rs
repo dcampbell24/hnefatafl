@@ -171,20 +171,12 @@ impl fmt::Display for Plays {
                         write!(f, "{play}, ")?;
                     }
                 }
-
-                if !plays.is_empty() {
-                    writeln!(f)?;
-                }
             }
             Plays::PlayRecords(plays) => {
                 for play in plays {
                     if let Some(play) = &play {
                         write!(f, "{play}, ")?;
                     }
-                }
-
-                if !plays.is_empty() {
-                    writeln!(f)?;
                 }
             }
         }
