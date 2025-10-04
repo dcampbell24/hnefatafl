@@ -274,8 +274,13 @@ impl Game {
     }
 
     #[must_use]
-    pub fn generate_move(&self, ai: &mut Box<dyn AI>) -> Option<Plae> {
-        ai.generate_move(self)
+    pub fn generate_move(&mut self, ai: &mut Box<dyn AI>) -> Option<Plae> {
+        let play = ai.generate_move(self);
+        if let Some(play) = &play {
+            self.play(play).ok()?;
+        }
+
+        play
     }
 
     #[allow(clippy::missing_panics_doc)]
