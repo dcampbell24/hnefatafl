@@ -3,14 +3,7 @@ use std::cmp::{max, min};
 use chrono::Utc;
 use rand::{RngCore, rngs::OsRng};
 
-use crate::{
-    board::Board,
-    game::Game,
-    play::{Plae, Play, Vertex},
-    role::Role,
-    space::Space,
-    status::Status,
-};
+use crate::{board::Board, game::Game, play::Plae, role::Role, space::Space, status::Status};
 
 pub trait AI {
     fn generate_move(&mut self, game: &Game) -> Option<Plae>;
@@ -21,45 +14,11 @@ pub struct AiBanal;
 
 impl AI for AiBanal {
     fn generate_move(&mut self, game: &Game) -> Option<Plae> {
-        let size = game.board.size();
-        let board_size_usize = size.into();
-
         if game.status != Status::Ongoing {
             return None;
         }
-        let mut game_clone = game.clone();
 
-        for x_from in 0..board_size_usize {
-            for y_from in 0..board_size_usize {
-                for x_to in 0..board_size_usize {
-                    for y_to in 0..board_size_usize {
-                        let play = Plae::Play(Play {
-                            role: game.turn,
-                            from: Vertex {
-                                size,
-                                x: x_from,
-                                y: y_from,
-                            },
-                            to: Vertex {
-                                size,
-                                x: x_to,
-                                y: y_to,
-                            },
-                        });
-
-                        if game_clone.play(&play).is_ok() {
-                            return Some(play);
-                        }
-                    }
-                }
-            }
-        }
-
-        match game.turn {
-            Role::Attacker => Some(Plae::AttackerResigns),
-            Role::Roleless => None,
-            Role::Defender => Some(Plae::DefenderResigns),
-        }
+        Some(game.all_legal_plays()[0].clone())
     }
 }
 
