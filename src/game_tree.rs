@@ -5,7 +5,7 @@ use rand::Rng;
 use crate::{
     board::{BoardSize, board_11x11, board_13x13},
     game::Game,
-    play::Plae,
+    play::{Plae, Plays},
     role::Role,
     status::Status,
 };
@@ -201,6 +201,36 @@ impl Tree {
             Node {
                 index: 0,
                 play: None,
+                score: 0.0,
+                count: 0.0,
+                parent: None,
+                children: Vec::new(),
+            },
+        );
+
+        Self {
+            here: 0,
+            game,
+            arena,
+            already_played: HashMap::new(),
+            next_index: 1,
+        }
+    }
+}
+
+impl From<Game> for Tree {
+    fn from(game: Game) -> Self {
+        let mut arena = HashMap::new();
+        let play = match &game.plays {
+            Plays::PlayRecords(plays) => plays.last().unwrap(),
+            Plays::PlayRecordsTimed(plays) => &plays.last().unwrap().play,
+        };
+
+        arena.insert(
+            0,
+            Node {
+                index: 0,
+                play: play.clone(),
                 score: 0.0,
                 count: 0.0,
                 parent: None,

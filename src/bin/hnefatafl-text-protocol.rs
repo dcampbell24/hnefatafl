@@ -10,6 +10,7 @@ use clap::{self, Parser};
 use hnefatafl_copenhagen::{
     ai::{AI, AiBanal, AiMonteCarlo},
     game::Game,
+    play::Plae,
     read_response,
     status::Status,
     write_command,
@@ -42,7 +43,7 @@ fn main() -> anyhow::Result<()> {
     let args = Args::parse();
 
     if let Some(address) = args.tcp {
-        play_tcp(&address)?;
+        play_tcp(&address, args.loops)?;
     } else if args.ai {
         play_ai(&args)?;
     } else {
@@ -132,7 +133,7 @@ fn play_ai(args: &Args) -> anyhow::Result<()> {
     }
 }
 
-fn play_tcp(address: &str) -> anyhow::Result<()> {
+fn play_tcp(address: &str, loops: u32) -> anyhow::Result<()> {
     let mut game = Game::default();
     let mut ai: Box<dyn AI + 'static> = Box::new(AiBanal);
     let mut stream = TcpStream::connect(address)?;
@@ -144,19 +145,17 @@ fn play_tcp(address: &str) -> anyhow::Result<()> {
 
         let message = read_response(&mut reader)?;
 
-        if let Some(word) = message
-            .as_str()
-            .split_ascii_whitespace()
-            .collect::<Vec<_>>()
-            .first()
-        {
+        let words: Vec<_> = message.as_str().split_ascii_whitespace().collect();
+
+        if let Some(word) = words.first() {
             match *word {
                 "play" => {
-                    game.read_line(&message)?;
+                    let play = Plae::try_from(words)?;
+                    ai.play(&mut game, &play)?;
                 }
                 "generate_move" => {
-                    let (play, _score) = game.generate_move(&mut ai);
-                    let play = play.expect("the game must be in progress");
+                    let (play, _score) = ai.generate_move(&mut game, loops);
+                    let play = play.ok_or(anyhow::Error::msg("The game is already over."))?;
 
                     write_command(&format!("{play}\n"), &mut stream)?;
                 }

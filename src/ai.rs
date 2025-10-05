@@ -8,6 +8,8 @@ use crate::{
 
 pub trait AI {
     fn generate_move(&mut self, game: &mut Game, loops: u32) -> (Option<Plae>, f64);
+    #[allow(clippy::missing_errors_doc)]
+    fn play(&mut self, game: &mut Game, play: &Plae) -> anyhow::Result<()>;
 }
 
 #[derive(Clone, Debug, Default)]
@@ -19,7 +21,20 @@ impl AI for AiBanal {
             return (None, 0.0);
         }
 
-        (Some(game.all_legal_plays()[0].clone()), 0.0)
+        let play = game.all_legal_plays()[0].clone();
+        match game.play(&play) {
+            Ok(_captures) => {}
+            Err(_) => {
+                return (None, 0.0);
+            }
+        }
+
+        (Some(play), 0.0)
+    }
+
+    fn play(&mut self, game: &mut Game, play: &Plae) -> anyhow::Result<()> {
+        game.play(play)?;
+        Ok(())
     }
 }
 
@@ -85,6 +100,16 @@ impl AI for AiMonteCarlo {
         }
 
         (node.play.clone(), node.score)
+    }
+
+    fn play(&mut self, game: &mut Game, play: &Plae) -> anyhow::Result<()> {
+        game.play(play)?;
+        let tree_game = Tree::from(game.clone());
+        for tree in &mut self.trees {
+            *tree = tree_game.clone();
+        }
+
+        Ok(())
     }
 }
 

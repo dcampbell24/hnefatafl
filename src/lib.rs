@@ -2350,10 +2350,11 @@ mod tests {
         let mut game = Game::default();
         let mut ai: Box<dyn AI> = Box::new(AiBanal);
 
-        while let (Some(_play), _score) = game.generate_move(&mut ai) {
+        while let (Some(_play), _score) = ai.generate_move(&mut game, 100) {
             // Do nothing but play.
         }
 
+        println!("{}", game.status);
         assert!(game.status == Status::AttackerWins || game.status == Status::DefenderWins);
     }
 }
