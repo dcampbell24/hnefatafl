@@ -1,7 +1,6 @@
 use std::{
     io::{self, BufRead, BufReader, Write},
     net::TcpStream,
-    str::FromStr,
     thread,
 };
 
@@ -11,7 +10,7 @@ use hnefatafl_copenhagen::{
     COPYRIGHT, LONG_VERSION, VERSION_ID,
     ai::{AI, AiBanal, AiMonteCarlo},
     game::Game,
-    play::Vertex,
+    play::Plae,
     role::Role,
     status::Status,
 };
@@ -41,7 +40,7 @@ struct Args {
     host: String,
 
     /// Choose an AI to play as
-    #[arg(default_value = "banal", long)]
+    #[arg(default_value = "monte-carlo", long)]
     ai: String,
 
     /// Challenge the AI with AI CHALLENGER
@@ -118,6 +117,7 @@ fn main() -> anyhow::Result<()> {
             new_game(&mut tcp, args.role, &mut reader, &mut buf)?;
 
             let message: Vec<_> = buf.split_ascii_whitespace().collect();
+            println!("{message:?}");
             let game_id = message[3].to_string();
             buf.clear();
 
@@ -143,17 +143,15 @@ fn accept_challenger(
     Ok(())
 }
 
-// "= new_game game GAME_ID ai-00 _ rated fischer 900000 10 _ false {}\n"
 fn new_game(
     tcp: &mut TcpStream,
     role: Role,
     reader: &mut BufReader<TcpStream>,
     buf: &mut String,
 ) -> anyhow::Result<()> {
-    tcp.write_all(format!("new_game {role} rated fischer 900000 10\n").as_bytes())?;
+    tcp.write_all(format!("new_game {role} rated fischer 900000 10 11\n").as_bytes())?;
 
     loop {
-        // "= new_game game GAME_ID ai-00 _ rated fischer 900000 10 _ false {}\n"
         reader.read_line(buf)?;
 
         if buf.trim().is_empty() {
@@ -222,10 +220,11 @@ fn handle_messages(
         let message: Vec<_> = buf.split_ascii_whitespace().collect();
 
         if Some("generate_move") == message.get(2).copied() {
-            let (play, _score) = game.generate_move(&mut ai);
+            // Fixme: pass the number of loops or better set a time.
+            let (play, _score) = ai.generate_move(&mut game, 1_000);
             let play = play.expect("the game must be in progress");
 
-            tcp.write_all(format!("game {game_id} {play}").as_bytes())?;
+            tcp.write_all(format!("game {game_id} {play}\n").as_bytes())?;
 
             if io_on {
                 print!("{play}");
@@ -236,32 +235,9 @@ fn handle_messages(
                 return Ok(());
             }
         } else if Some("play") == message.get(2).copied() {
-            let Some(role) = message.get(3).copied() else {
-                panic!("expected role");
-            };
-            let Ok(role) = Role::from_str(role) else {
-                panic!("expected role to be a role");
-            };
-
-            let Some(from) = message.get(4).copied() else {
-                panic!("expected from");
-            };
-            if from == "resigns" {
-                return Ok(());
-            }
-            let Ok(from) = Vertex::from_str(from) else {
-                panic!("expected from to be a vertex");
-            };
-
-            let Some(to) = message.get(5).copied() else {
-                panic!("expected to");
-            };
-            let Ok(to) = Vertex::from_str(to) else {
-                panic!("expected to to be a vertex");
-            };
-
-            let play = format!("play {role} {from} {to}\n");
-            game.read_line(&play)?;
+            let words = &message[2..];
+            let play = Plae::try_from(words.to_vec())?;
+            ai.play(&mut game, &play)?;
 
             if io_on {
                 print!("{play}");
