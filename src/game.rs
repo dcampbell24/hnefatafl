@@ -168,25 +168,44 @@ impl Game {
             let mut vertexes_to = Vec::new();
 
             for y in 0..board_size_usize {
-                for x in 0..board_size_usize {
-                    let vertex_to = Vertex { size, x, y };
-                    let play = Play {
-                        role: self.turn,
-                        from: vertex_from.clone(),
-                        to: vertex_to.clone(),
-                    };
+                let vertex_to = Vertex {
+                    size,
+                    x: vertex_from.x,
+                    y,
+                };
+                let play = Play {
+                    role: self.turn,
+                    from: vertex_from.clone(),
+                    to: vertex_to.clone(),
+                };
 
-                    if play.from.x != play.to.x && play.from.y != play.to.y {
-                        continue;
-                    }
+                if self
+                    .board
+                    .legal_move(&play, &self.status, &self.turn, &self.previous_boards)
+                    .is_ok()
+                {
+                    vertexes_to.push(vertex_to);
+                }
+            }
 
-                    if self
-                        .board
-                        .legal_move(&play, &self.status, &self.turn, &self.previous_boards)
-                        .is_ok()
-                    {
-                        vertexes_to.push(vertex_to);
-                    }
+            for x in 0..board_size_usize {
+                let vertex_to = Vertex {
+                    size,
+                    x,
+                    y: vertex_from.y,
+                };
+                let play = Play {
+                    role: self.turn,
+                    from: vertex_from.clone(),
+                    to: vertex_to.clone(),
+                };
+
+                if self
+                    .board
+                    .legal_move(&play, &self.status, &self.turn, &self.previous_boards)
+                    .is_ok()
+                {
+                    vertexes_to.push(vertex_to);
                 }
             }
 
