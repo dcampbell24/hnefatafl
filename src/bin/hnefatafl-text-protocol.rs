@@ -32,7 +32,7 @@ struct Args {
 
     /// The number of Monte Carlo iterations
     #[arg(default_value_t = 1_000, long)]
-    loops: u32,
+    loops: i64,
 
     /// Listen for HTP drivers on host and port
     #[arg(long, value_name = "host:port")]
@@ -107,7 +107,7 @@ fn play(args: &Args) -> anyhow::Result<()> {
 fn play_ai(args: &Args) -> anyhow::Result<()> {
     let mut buffer = String::new();
     let mut game = Game::default();
-    let mut ai = AiMonteCarlo::new(game.board.size())?;
+    let mut ai = AiMonteCarlo::new(game.board.size(), args.loops)?;
 
     if args.display_game {
         clear_screen()?;
@@ -133,9 +133,9 @@ fn play_ai(args: &Args) -> anyhow::Result<()> {
     }
 }
 
-fn play_tcp(address: &str, display_game: bool, _loops: u32) -> anyhow::Result<()> {
+fn play_tcp(address: &str, display_game: bool, loops: i64) -> anyhow::Result<()> {
     let mut game = Game::default();
-    let mut ai: Box<dyn AI + 'static> = Box::new(AiMonteCarlo::new(game.board.size())?);
+    let mut ai: Box<dyn AI + 'static> = Box::new(AiMonteCarlo::new(game.board.size(), loops)?);
     let mut stream = TcpStream::connect(address)?;
     println!("connected to {address} ...");
 
