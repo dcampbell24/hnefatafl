@@ -43,7 +43,7 @@ fn main() -> anyhow::Result<()> {
     let args = Args::parse();
 
     if let Some(address) = args.tcp {
-        play_tcp(&address, args.loops)?;
+        play_tcp(&address, args.display_game, args.loops)?;
     } else if args.ai {
         play_ai(&args)?;
     } else {
@@ -133,7 +133,7 @@ fn play_ai(args: &Args) -> anyhow::Result<()> {
     }
 }
 
-fn play_tcp(address: &str, loops: u32) -> anyhow::Result<()> {
+fn play_tcp(address: &str, display_game: bool, loops: u32) -> anyhow::Result<()> {
     let mut game = Game::default();
     let mut ai: Box<dyn AI + 'static> = Box::new(AiBanal);
     let mut stream = TcpStream::connect(address)?;
@@ -161,6 +161,10 @@ fn play_tcp(address: &str, loops: u32) -> anyhow::Result<()> {
                 }
                 _ => unreachable!("You can't get here!"),
             }
+        }
+
+        if display_game {
+            println!("{game}");
         }
 
         if game.status != Status::Ongoing {
