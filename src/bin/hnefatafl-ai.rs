@@ -220,15 +220,13 @@ fn handle_messages(
         let message: Vec<_> = buf.split_ascii_whitespace().collect();
 
         if Some("generate_move") == message.get(2).copied() {
-            // Fixme: pass the number of loops or better set a time.
-            let (play, _score) = ai.generate_move(&mut game, 1_000);
+            let (play, score, delay_milliseconds) = ai.generate_move(&mut game);
             let play = play.expect("the game must be in progress");
 
             tcp.write_all(format!("game {game_id} {play}\n").as_bytes())?;
 
             if io_on {
-                print!("{play}");
-                println!("{}\n", game.board);
+                println!("{game}\nscore: {score}\ndelay milliseconds: {delay_milliseconds}");
             }
 
             if game.status != Status::Ongoing {
@@ -240,8 +238,7 @@ fn handle_messages(
             ai.play(&mut game, &play)?;
 
             if io_on {
-                print!("{play}");
-                println!("{}\n", game.board);
+                println!("{game}\n");
             }
 
             if game.status != Status::Ongoing {

@@ -273,10 +273,10 @@ impl Game {
         false
     }
 
+    // Fixme: Use Monte Carlo?
     #[must_use]
     pub fn generate_move(&mut self, ai: &mut Box<dyn AI>) -> (Option<Plae>, f64) {
-        // Fixme: match on the AI used and use loops.
-        let (play, score) = ai.generate_move(self, 1_000);
+        let (play, score, _delay_milliseconds) = ai.generate_move(self);
 
         match play {
             Some(play) => {
