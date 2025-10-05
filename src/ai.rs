@@ -133,12 +133,12 @@ impl AiMonteCarlo {
     }
 
     #[allow(clippy::missing_errors_doc)]
-    pub fn new(size: BoardSize) -> anyhow::Result<Self> {
+    pub fn new(size: BoardSize, loops: i64) -> anyhow::Result<Self> {
         Ok(Self {
             seconds_to_move: 1,
             size,
             trees: Self::make_trees(size)?,
-            loops: 1,
+            loops,
         })
     }
 }
