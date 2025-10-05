@@ -8,7 +8,7 @@ use clap::command;
 use clap::{self, Parser};
 
 use hnefatafl_copenhagen::{
-    ai::{AI, AiBanal, AiMonteCarlo},
+    ai::{AI, AiMonteCarlo},
     game::Game,
     play::Plae,
     read_response,
@@ -115,7 +115,7 @@ fn play_ai(args: &Args) -> anyhow::Result<()> {
     }
 
     loop {
-        let (play, score) = ai.generate_move(&mut game, args.loops);
+        let (play, score, delay_milliseconds) = ai.generate_move(&mut game);
         let play = play.ok_or(anyhow::Error::msg("The game is already over."))?;
 
         if args.display_game {
@@ -123,7 +123,7 @@ fn play_ai(args: &Args) -> anyhow::Result<()> {
             println!("{game}\n");
         }
 
-        println!("= {play}, score: {score}");
+        println!("= {play}, score: {score}, delay milliseconds: {delay_milliseconds}");
 
         if game.status != Status::Ongoing {
             return Ok(());
@@ -133,9 +133,9 @@ fn play_ai(args: &Args) -> anyhow::Result<()> {
     }
 }
 
-fn play_tcp(address: &str, display_game: bool, loops: u32) -> anyhow::Result<()> {
+fn play_tcp(address: &str, display_game: bool, _loops: u32) -> anyhow::Result<()> {
     let mut game = Game::default();
-    let mut ai: Box<dyn AI + 'static> = Box::new(AiBanal);
+    let mut ai: Box<dyn AI + 'static> = Box::new(AiMonteCarlo::new(game.board.size())?);
     let mut stream = TcpStream::connect(address)?;
     println!("connected to {address} ...");
 
@@ -152,19 +152,23 @@ fn play_tcp(address: &str, display_game: bool, loops: u32) -> anyhow::Result<()>
                 "play" => {
                     let play = Plae::try_from(words)?;
                     ai.play(&mut game, &play)?;
+
+                    if display_game {
+                        println!("{game}");
+                    }
                 }
                 "generate_move" => {
-                    let (play, _score) = ai.generate_move(&mut game, loops);
+                    let (play, score, delay_milliseconds) = ai.generate_move(&mut game);
                     let play = play.ok_or(anyhow::Error::msg("The game is already over."))?;
 
                     write_command(&format!("{play}\n"), &mut stream)?;
+
+                    if display_game {
+                        println!("{game}\nscore: {score} delay milliseconds: {delay_milliseconds}");
+                    }
                 }
                 _ => unreachable!("You can't get here!"),
             }
-        }
-
-        if display_game {
-            println!("{game}");
         }
 
         if game.status != Status::Ongoing {

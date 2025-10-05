@@ -1,5 +1,6 @@
 use std::sync::mpsc::channel;
 
+use chrono::Utc;
 use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
 
 use crate::{
@@ -7,7 +8,7 @@ use crate::{
 };
 
 pub trait AI {
-    fn generate_move(&mut self, game: &mut Game, loops: u32) -> (Option<Plae>, f64);
+    fn generate_move(&mut self, game: &mut Game) -> (Option<Plae>, f64, i64);
     #[allow(clippy::missing_errors_doc)]
     fn play(&mut self, game: &mut Game, play: &Plae) -> anyhow::Result<()>;
 }
@@ -16,20 +17,20 @@ pub trait AI {
 pub struct AiBanal;
 
 impl AI for AiBanal {
-    fn generate_move(&mut self, game: &mut Game, _loops: u32) -> (Option<Plae>, f64) {
+    fn generate_move(&mut self, game: &mut Game) -> (Option<Plae>, f64, i64) {
         if game.status != Status::Ongoing {
-            return (None, 0.0);
+            return (None, 0.0, 0);
         }
 
         let play = game.all_legal_plays()[0].clone();
         match game.play(&play) {
             Ok(_captures) => {}
             Err(_) => {
-                return (None, 0.0);
+                return (None, 0.0, 0);
             }
         }
 
-        (Some(play), 0.0)
+        (Some(play), 0.0, 0)
     }
 
     fn play(&mut self, game: &mut Game, play: &Plae) -> anyhow::Result<()> {
@@ -43,6 +44,7 @@ pub struct AiMonteCarlo {
     pub seconds_to_move: i64,
     pub size: BoardSize,
     pub trees: Vec<Tree>,
+    loops: i64,
 }
 
 impl Default for AiMonteCarlo {
@@ -53,19 +55,22 @@ impl Default for AiMonteCarlo {
             seconds_to_move: 1,
             size,
             trees: Self::make_trees(size).unwrap(),
+            loops: 1_000,
         }
     }
 }
 
 impl AI for AiMonteCarlo {
-    fn generate_move(&mut self, game: &mut Game, loops: u32) -> (Option<Plae>, f64) {
+    fn generate_move(&mut self, game: &mut Game) -> (Option<Plae>, f64, i64) {
         if game.status != Status::Ongoing {
-            return (None, 0.0);
+            return (None, 0.0, 0);
         }
+
+        let t0 = Utc::now().timestamp_millis();
 
         let (tx, rx) = channel();
         self.trees.par_iter_mut().for_each_with(tx, |tx, tree| {
-            let nodes = tree.monte_carlo_tree_search(loops);
+            let nodes = tree.monte_carlo_tree_search(self.loops);
             tx.send(nodes).unwrap();
         });
         let mut nodes: Vec<_> = rx.iter().flatten().collect();
@@ -82,7 +87,7 @@ impl AI for AiMonteCarlo {
         match game.play(play) {
             Ok(_captures) => {}
             Err(_) => {
-                return (None, 0.0);
+                return (None, 0.0, 0);
             }
         }
 
@@ -99,7 +104,9 @@ impl AI for AiMonteCarlo {
             }
         }
 
-        (node.play.clone(), node.score)
+        let t1 = Utc::now().timestamp_millis();
+        let delay = t1 - t0;
+        (node.play.clone(), node.score, delay)
     }
 
     fn play(&mut self, game: &mut Game, play: &Plae) -> anyhow::Result<()> {
@@ -131,6 +138,7 @@ impl AiMonteCarlo {
             seconds_to_move: 1,
             size,
             trees: Self::make_trees(size)?,
+            loops: 1,
         })
     }
 }

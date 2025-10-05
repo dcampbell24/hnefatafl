@@ -50,7 +50,7 @@ impl Tree {
     #[allow(clippy::too_many_lines)]
     #[allow(clippy::missing_panics_doc)]
     #[must_use]
-    pub fn monte_carlo_tree_search(&mut self, loops: u32) -> Vec<Node> {
+    pub fn monte_carlo_tree_search(&mut self, loops: i64) -> Vec<Node> {
         for _ in 0..loops {
             let mut game = self.game.clone();
             let mut here = self.here;
