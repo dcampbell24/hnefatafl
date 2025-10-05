@@ -16,6 +16,10 @@ use hnefatafl_copenhagen::{read_response, write_command};
 #[derive(Parser, Debug)]
 #[command(version, about)]
 struct Args {
+    /// Displays the game
+    #[arg(long)]
+    display_game: bool,
+
     /// Listen for HTP drivers on host and port
     #[arg(default_value = "localhost:8000", index = 1, value_name = "host:port")]
     host_port: String,
@@ -23,7 +27,7 @@ struct Args {
 
 fn main() -> anyhow::Result<()> {
     let args = Args::parse();
-    start(&args.host_port)
+    start(&args.host_port, args.display_game)
 }
 
 struct Htp {
@@ -32,7 +36,7 @@ struct Htp {
 }
 
 impl Htp {
-    fn start(&mut self) -> anyhow::Result<()> {
+    fn start(&mut self, display_game: bool) -> anyhow::Result<()> {
         let mut attacker_reader = BufReader::new(self.attacker_connection.try_clone()?);
         let mut defender_reader = BufReader::new(self.defender_connection.try_clone()?);
 
@@ -56,7 +60,10 @@ impl Htp {
             game.read_line(&defender_move)?;
             write_command(&defender_move, &mut self.attacker_connection)?;
 
-            println!("{game}");
+            if display_game {
+                println!("{game}");
+            }
+
             if game.status != Status::Ongoing {
                 break;
             }
@@ -69,7 +76,7 @@ impl Htp {
     }
 }
 
-fn start(address: &str) -> anyhow::Result<()> {
+fn start(address: &str, display_game: bool) -> anyhow::Result<()> {
     let listener = TcpListener::bind(address)?;
     println!("listening on {address} ...");
 
@@ -86,7 +93,7 @@ fn start(address: &str) -> anyhow::Result<()> {
                 defender_connection: stream,
             };
 
-            thread::spawn(move || game.start());
+            thread::spawn(move || game.start(display_game));
         }
     }
 
