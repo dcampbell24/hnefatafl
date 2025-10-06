@@ -1,4 +1,4 @@
-use std::sync::mpsc::channel;
+use std::{collections::HashMap, sync::mpsc::channel};
 
 use chrono::Utc;
 use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
@@ -6,7 +6,8 @@ use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
 use crate::{
     board::BoardSize,
     game::Game,
-    game_tree::{HeatMap, Tree},
+    game_tree::{Node, Tree},
+    heat_map::HeatMap,
     play::Plae,
     role::Role,
     status::Status,
@@ -78,10 +79,23 @@ impl AI for AiMonteCarlo {
             let nodes = tree.monte_carlo_tree_search(self.loops);
             tx.send(nodes).unwrap();
         });
-        let mut nodes: Vec<_> = rx.iter().flatten().collect();
-        nodes.sort_by(|a, b| a.score.total_cmp(&b.score));
 
-        let heat_map = HeatMap::from(&nodes);
+        let mut nodes_master = HashMap::new();
+        while let Ok(nodes) = rx.recv() {
+            for node_2 in nodes {
+                if let Some(Plae::Play(play)) = node_2.clone().play {
+                    nodes_master
+                        .entry(play)
+                        .and_modify(|node_1: &mut Node| {
+                            node_1.score = f64::midpoint(node_1.score, node_2.score);
+                        })
+                        .or_insert(node_2);
+                }
+            }
+        }
+
+        let mut nodes: Vec<_> = nodes_master.values().collect();
+        nodes.sort_by(|a, b| a.score.total_cmp(&b.score));
 
         let turn = game.turn;
         let node = match turn {
@@ -98,21 +112,15 @@ impl AI for AiMonteCarlo {
             }
         }
 
-        let hash = game.calculate_hash();
-        let mut here_tree = Tree::new(game.board.size());
-        for tree in &self.trees {
-            if hash == tree.game.calculate_hash() {
-                here_tree = tree.clone();
-            }
-        }
+        let here_tree = Tree::from(game.clone());
         for tree in &mut self.trees {
-            if hash != tree.game.calculate_hash() {
-                *tree = here_tree.clone();
-            }
+            *tree = here_tree.clone();
         }
 
         let t1 = Utc::now().timestamp_millis();
         let delay = t1 - t0;
+        let heat_map = HeatMap::from(&nodes);
+
         (node.play.clone(), node.score, delay, heat_map)
     }
 
