@@ -158,7 +158,7 @@ impl Game {
         for y in 0..board_size_usize {
             for x in 0..board_size_usize {
                 let vertex = Vertex { size, x, y };
-                if self.board.get(&vertex).role() == self.turn {
+                if self.board.get(&vertex).role() == legal_moves.role {
                     possible_vertexes.push(vertex);
                 }
             }
@@ -290,23 +290,6 @@ impl Game {
         }
 
         false
-    }
-
-    // Fixme: Use Monte Carlo?
-    #[must_use]
-    pub fn generate_move(&mut self, ai: &mut Box<dyn AI>) -> (Option<Plae>, f64) {
-        let (play, score, _delay_milliseconds) = ai.generate_move(self);
-
-        match play {
-            Some(play) => {
-                if self.play(&play).is_err() {
-                    (None, 0.0)
-                } else {
-                    (Some(play), score)
-                }
-            }
-            None => (None, 0.0),
-        }
     }
 
     #[allow(clippy::missing_panics_doc)]
@@ -494,6 +477,7 @@ impl Game {
     #[allow(clippy::missing_panics_doc)]
     #[allow(clippy::too_many_lines)]
     pub fn update(&mut self, message: Message) -> anyhow::Result<Option<String>> {
+        // Fixme: use monte carlo?
         let mut ai: Box<dyn AI> = Box::new(AiBanal);
 
         match message {
@@ -512,9 +496,13 @@ impl Game {
             },
             Message::Empty => Ok(None),
             Message::FinalStatus => Ok(Some(format!("{}", self.status))),
-            Message::GenerateMove => match self.generate_move(&mut ai) {
-                (Some(play), score) => Ok(Some(format!("{play}, score: {score}"))),
-                (None, _score) => Err(anyhow::Error::msg("failed to generate move")),
+            Message::GenerateMove => match ai.generate_move(self) {
+                (Some(play), score, delay_milliseconds, _heat_map) => Ok(Some(format!(
+                    "{play}, score: {score}, delay milliseconds: {delay_milliseconds}"
+                ))),
+                (None, _score, _delay_milliseconds, _heat_map) => {
+                    Err(anyhow::Error::msg("failed to generate move"))
+                }
             },
             Message::KnownCommand(command) => {
                 if COMMANDS.contains(&command.as_str()) {
