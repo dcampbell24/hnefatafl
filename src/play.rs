@@ -329,3 +329,11 @@ impl Vertex {
         self.x == 0 || self.x == board_size - 1 || self.y == 0 || self.y == board_size - 1
     }
 }
+
+impl From<&Vertex> for usize {
+    #[inline]
+    fn from(vertex: &Vertex) -> Self {
+        let board_size: usize = vertex.size.into();
+        vertex.y * board_size + vertex.x
+    }
+}

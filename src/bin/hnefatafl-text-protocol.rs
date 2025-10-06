@@ -115,7 +115,7 @@ fn play_ai(args: &Args) -> anyhow::Result<()> {
     }
 
     loop {
-        let (play, score, delay_milliseconds) = ai.generate_move(&mut game);
+        let (play, score, delay_milliseconds, heat_map) = ai.generate_move(&mut game);
         let play = play.ok_or(anyhow::Error::msg("The game is already over."))?;
 
         if args.display_game {
@@ -124,6 +124,7 @@ fn play_ai(args: &Args) -> anyhow::Result<()> {
         }
 
         println!("= {play}, score: {score}, delay milliseconds: {delay_milliseconds}");
+        println!("{heat_map}");
 
         if game.status != Status::Ongoing {
             return Ok(());
@@ -158,14 +159,19 @@ fn play_tcp(address: &str, display_game: bool, loops: i64) -> anyhow::Result<()>
                     }
                 }
                 "generate_move" => {
-                    let (play, score, delay_milliseconds) = ai.generate_move(&mut game);
+                    let (play, score, delay_milliseconds, heat_map) = ai.generate_move(&mut game);
                     let play = play.ok_or(anyhow::Error::msg("The game is already over."))?;
 
                     write_command(&format!("{play}\n"), &mut stream)?;
 
                     if display_game {
-                        println!("{game}\nscore: {score} delay milliseconds: {delay_milliseconds}");
+                        println!("{game}");
                     }
+
+                    println!(
+                        "play: {play} score: {score} delay milliseconds: {delay_milliseconds}"
+                    );
+                    println!("{heat_map}");
                 }
                 _ => unreachable!("You can't get here!"),
             }

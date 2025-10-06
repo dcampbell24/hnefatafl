@@ -5,10 +5,77 @@ use rand::Rng;
 use crate::{
     board::{BoardSize, board_11x11, board_13x13},
     game::Game,
-    play::{Plae, Plays},
+    play::{Plae, Plays, Vertex},
     role::Role,
     status::Status,
 };
+
+#[derive(Clone, Debug, Default)]
+pub struct HeatMap(HashMap<Vertex, Vec<f64>>);
+
+impl From<&Vec<Node>> for HeatMap {
+    fn from(nodes: &Vec<Node>) -> Self {
+        let mut heat_map = HeatMap::default();
+
+        for child in nodes {
+            if let Some(play) = &child.play {
+                match play {
+                    Plae::AttackerResigns | Plae::DefenderResigns => {}
+                    Plae::Play(play) => {
+                        let board_index: usize = (&play.to).into();
+
+                        heat_map
+                            .0
+                            .entry(play.from.clone())
+                            .and_modify(|board| {
+                                let node = board
+                                    .get_mut(board_index)
+                                    .expect("The board should contain this space.");
+
+                                *node = f64::midpoint(child.score, *node);
+                            })
+                            .or_insert({
+                                let size: usize = 11;
+                                let mut board = vec![0.0; size * size];
+
+                                let node = board
+                                    .get_mut(board_index)
+                                    .expect("The board should contain this space.");
+
+                                *node = child.score;
+                                board
+                            });
+                    }
+                }
+            }
+        }
+
+        heat_map
+    }
+}
+
+impl fmt::Display for HeatMap {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        for board in self.0.values() {
+            let board_size = if board.len() == 11 * 11 { 11 } else { 13 };
+
+            for y in 0..board_size {
+                for x in 0..board_size {
+                    let space = board[y * board_size + x];
+                    if space == 0.0 {
+                        write!(f, "------ ")?;
+                    } else {
+                        write!(f, "{space:+.3} ")?;
+                    }
+                }
+                writeln!(f)?;
+            }
+            writeln!(f)?;
+        }
+
+        Ok(())
+    }
+}
 
 #[derive(Clone, Debug)]
 pub struct Tree {

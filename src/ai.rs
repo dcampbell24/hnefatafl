@@ -4,11 +4,16 @@ use chrono::Utc;
 use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
 
 use crate::{
-    board::BoardSize, game::Game, game_tree::Tree, play::Plae, role::Role, status::Status,
+    board::BoardSize,
+    game::Game,
+    game_tree::{HeatMap, Tree},
+    play::Plae,
+    role::Role,
+    status::Status,
 };
 
 pub trait AI {
-    fn generate_move(&mut self, game: &mut Game) -> (Option<Plae>, f64, i64);
+    fn generate_move(&mut self, game: &mut Game) -> (Option<Plae>, f64, i64, HeatMap);
     #[allow(clippy::missing_errors_doc)]
     fn play(&mut self, game: &mut Game, play: &Plae) -> anyhow::Result<()>;
 }
@@ -17,20 +22,20 @@ pub trait AI {
 pub struct AiBanal;
 
 impl AI for AiBanal {
-    fn generate_move(&mut self, game: &mut Game) -> (Option<Plae>, f64, i64) {
+    fn generate_move(&mut self, game: &mut Game) -> (Option<Plae>, f64, i64, HeatMap) {
         if game.status != Status::Ongoing {
-            return (None, 0.0, 0);
+            return (None, 0.0, 0, HeatMap::default());
         }
 
         let play = game.all_legal_plays()[0].clone();
         match game.play(&play) {
             Ok(_captures) => {}
             Err(_) => {
-                return (None, 0.0, 0);
+                return (None, 0.0, 0, HeatMap::default());
             }
         }
 
-        (Some(play), 0.0, 0)
+        (Some(play), 0.0, 0, HeatMap::default())
     }
 
     fn play(&mut self, game: &mut Game, play: &Plae) -> anyhow::Result<()> {
@@ -61,9 +66,9 @@ impl Default for AiMonteCarlo {
 }
 
 impl AI for AiMonteCarlo {
-    fn generate_move(&mut self, game: &mut Game) -> (Option<Plae>, f64, i64) {
+    fn generate_move(&mut self, game: &mut Game) -> (Option<Plae>, f64, i64, HeatMap) {
         if game.status != Status::Ongoing {
-            return (None, 0.0, 0);
+            return (None, 0.0, 0, HeatMap::default());
         }
 
         let t0 = Utc::now().timestamp_millis();
@@ -76,6 +81,8 @@ impl AI for AiMonteCarlo {
         let mut nodes: Vec<_> = rx.iter().flatten().collect();
         nodes.sort_by(|a, b| a.score.total_cmp(&b.score));
 
+        let heat_map = HeatMap::from(&nodes);
+
         let turn = game.turn;
         let node = match turn {
             Role::Attacker => nodes.last().unwrap(),
@@ -87,7 +94,7 @@ impl AI for AiMonteCarlo {
         match game.play(play) {
             Ok(_captures) => {}
             Err(_) => {
-                return (None, 0.0, 0);
+                return (None, 0.0, 0, HeatMap::default());
             }
         }
 
@@ -106,7 +113,7 @@ impl AI for AiMonteCarlo {
 
         let t1 = Utc::now().timestamp_millis();
         let delay = t1 - t0;
-        (node.play.clone(), node.score, delay)
+        (node.play.clone(), node.score, delay, heat_map)
     }
 
     fn play(&mut self, game: &mut Game, play: &Plae) -> anyhow::Result<()> {
