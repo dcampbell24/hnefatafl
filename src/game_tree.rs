@@ -137,13 +137,10 @@ impl Tree {
         }
 
         let children = &self.arena[&self.here].children;
-        let mut child_nodes = children
+        children
             .iter()
             .map(|child| self.arena[child].clone())
-            .collect::<Vec<_>>();
-
-        child_nodes.sort_by(|a, b| a.score.total_cmp(&b.score));
-        child_nodes
+            .collect::<Vec<_>>()
     }
 
     #[must_use]
