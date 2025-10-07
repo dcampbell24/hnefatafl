@@ -2120,9 +2120,8 @@ impl<'a> Client {
                         columns = columns.push(row);
 
                         let mut row = Row::new();
-                        row = row.push(
-                            text!("{}: ", t!("email code)")).shaping(text::Shaping::Advanced),
-                        );
+                        row = row
+                            .push(text!("{}: ", t!("email code")).shaping(text::Shaping::Advanced));
                         row = row.push(
                             text_input("", &self.text_input)
                                 .on_input(Message::TextChanged)
