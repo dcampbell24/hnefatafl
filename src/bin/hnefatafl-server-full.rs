@@ -2,7 +2,6 @@
 
 use std::{
     collections::{HashMap, VecDeque},
-    env,
     fs::{self, File, OpenOptions},
     io::{BufRead, BufReader, ErrorKind, Read, Write},
     net::{TcpListener, TcpStream},
@@ -19,7 +18,6 @@ use std::fmt::Write as _;
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use chrono::{Local, Utc};
 use clap::{CommandFactory, Parser, command};
-use env_logger::Builder;
 use hnefatafl_copenhagen::{
     COPYRIGHT, Id, LONG_VERSION, SERVER_PORT, VERSION_ID,
     accounts::{Account, Accounts, Email},
@@ -37,13 +35,14 @@ use hnefatafl_copenhagen::{
     smtp::Smtp,
     status::Status,
     time::TimeSettings,
+    utils,
 };
 use lettre::{
     SmtpTransport, Transport,
     message::{Mailbox, header::ContentType},
     transport::smtp::authentication::Credentials,
 };
-use log::{LevelFilter, debug, error, info};
+use log::{debug, error, info};
 use password_hash::SaltString;
 use rand::{random, rngs::OsRng};
 use serde::{Deserialize, Serialize};
@@ -82,7 +81,7 @@ fn main() -> anyhow::Result<()> {
     // return Ok(());
 
     let args = Args::parse();
-    init_logger(args.systemd);
+    utils::init_logger(args.systemd);
 
     if args.man {
         let mut buffer: Vec<u8> = Vec::default();
@@ -2100,36 +2099,6 @@ fn hash_password(password: &str) -> Option<String> {
             .ok()?
             .to_string(),
     )
-}
-
-fn init_logger(systemd: bool) {
-    let mut builder = Builder::new();
-
-    if systemd {
-        builder.format(|formatter, record| {
-            writeln!(formatter, "[{}]: {}", record.level(), record.args())
-        });
-    } else {
-        builder.format(|formatter, record| {
-            writeln!(
-                formatter,
-                "{} [{}] ({}): {}",
-                Utc::now().format("%Y-%m-%d %H:%M:%S %z"),
-                record.level(),
-                record.target(),
-                record.args()
-            )
-        });
-    }
-
-    if let Ok(var) = env::var("RUST_LOG") {
-        builder.parse_filters(&var);
-    } else {
-        // if no RUST_LOG provided, default to logging at the Info level
-        builder.filter(None, LevelFilter::Info);
-    }
-
-    builder.init();
 }
 
 fn timestamp() -> String {

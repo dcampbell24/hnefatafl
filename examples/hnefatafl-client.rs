@@ -9,7 +9,7 @@ use std::io::Read;
 
 use std::{
     collections::{HashMap, HashSet, VecDeque},
-    env, f64,
+    f64,
     fmt::{self, Write as fmt_write},
     fs::{self, File},
     io::{BufRead, BufReader, ErrorKind, Write},
@@ -23,13 +23,13 @@ use std::{
 
 use chrono::{Local, Utc};
 use clap::{CommandFactory, Parser, command};
-use env_logger::Builder;
 use futures::{SinkExt, executor};
 use hnefatafl_copenhagen::Id;
 use hnefatafl_copenhagen::SERVER_PORT;
 use hnefatafl_copenhagen::board::BoardSize;
 use hnefatafl_copenhagen::play::Plays;
 use hnefatafl_copenhagen::server_game::{ArchivedGame, ArchivedGameHandle};
+use hnefatafl_copenhagen::utils;
 use hnefatafl_copenhagen::{
     COPYRIGHT, VERSION_ID,
     accounts::Email,
@@ -64,7 +64,7 @@ use iced::{
     window::{self, icon},
 };
 use iced::{Task, keyboard};
-use log::{LevelFilter, debug, error, info, trace};
+use log::{debug, error, info, trace};
 use rust_i18n::t;
 use serde::{Deserialize, Serialize};
 
@@ -197,7 +197,7 @@ fn init_client() -> Client {
 }
 
 fn main() -> anyhow::Result<()> {
-    init_logger();
+    utils::init_logger(false);
     let args = Args::parse();
 
     if args.man {
@@ -2933,30 +2933,6 @@ fn handle_error<T, E: fmt::Display>(result: Result<T, E>) -> T {
             exit(1)
         }
     }
-}
-
-fn init_logger() {
-    let mut builder = Builder::new();
-
-    builder.format(|formatter, record| {
-        writeln!(
-            formatter,
-            "{} [{}] ({}): {}",
-            Utc::now().format("%Y-%m-%d %H:%M:%S %z"),
-            record.level(),
-            record.target(),
-            record.args()
-        )
-    });
-
-    if let Ok(var) = env::var("RUST_LOG") {
-        builder.parse_filters(&var);
-    } else {
-        // if no RUST_LOG provided, default to logging at the Info level
-        builder.filter(None, LevelFilter::Info);
-    }
-
-    builder.init();
 }
 
 fn open_url(url: &str) {

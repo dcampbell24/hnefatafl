@@ -33,6 +33,7 @@ pub mod space;
 pub mod status;
 pub mod time;
 pub mod tree;
+pub mod utils;
 
 pub type Id = u128;
 
