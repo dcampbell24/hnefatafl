@@ -851,6 +851,7 @@ impl Board {
         }
     }
 
+    #[inline]
     fn flood_fill_attacker_wins(&self) -> bool {
         let size = self.size();
         let board_size_usize: usize = size.into();
