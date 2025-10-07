@@ -82,20 +82,31 @@ impl AI for AiMonteCarlo {
 
         let mut nodes_master = HashMap::new();
         while let Ok(nodes) = rx.recv() {
-            for node_2 in nodes {
-                if let Some(Plae::Play(play)) = node_2.clone().play {
+            for mut node in nodes {
+                if let Some(Plae::Play(play)) = node.clone().play {
                     nodes_master
                         .entry(play)
-                        .and_modify(|node_1: &mut Node| {
-                            if node_1.score == 0.0 {
-                                node_1.score = node_2.score;
+                        .and_modify(|node_master: &mut Node| {
+                            if node_master.count == 0 {
+                                node_master.count = 1;
+                                node_master.score = node.score;
                             } else {
-                                node_1.score = f64::midpoint(node_1.score, node_2.score);
+                                node_master.count += 1;
+                                node_master.score += node.score;
                             }
                         })
-                        .or_insert(node_2);
+                        .or_insert({
+                            node.count = 1;
+                            node
+                        });
                 }
             }
+        }
+
+        for node in nodes_master.values_mut() {
+            let count: f64 = node.count.into();
+            node.score /= count;
+            node.count = 1;
         }
 
         let mut nodes: Vec<_> = nodes_master.values().collect();

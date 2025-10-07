@@ -7,7 +7,7 @@ use crate::{
 };
 
 #[derive(Clone, Debug, Default)]
-pub struct HeatMap(HashMap<(Role, Vertex), Vec<f64>>);
+pub struct HeatMap(HashMap<(Role, Vertex), Vec<(u32, f64)>>);
 
 impl From<&Vec<&Node>> for HeatMap {
     fn from(nodes: &Vec<&Node>) -> Self {
@@ -24,25 +24,24 @@ impl From<&Vec<&Node>> for HeatMap {
                             .0
                             .entry((play.role, play.from.clone()))
                             .and_modify(|board| {
-                                let score = board
+                                let (count, score) = board
                                     .get_mut(board_index)
                                     .expect("The board should contain this space.");
 
-                                if *score == 0.0 {
-                                    *score = node.score;
-                                } else {
-                                    *score = f64::midpoint(*score, node.score);
-                                }
+                                *count += 1;
+                                *score += node.score;
                             })
                             .or_insert({
                                 let size: usize = play.from.size.into();
-                                let mut board = vec![0.0; size * size];
+                                let mut board = vec![(0, 0.0); size * size];
 
-                                let score = board
+                                let (count, score) = board
                                     .get_mut(board_index)
                                     .expect("The board should contain this space.");
 
+                                *count = 1;
                                 *score = node.score;
+
                                 board
                             });
                     }
@@ -66,11 +65,12 @@ impl fmt::Display for HeatMap {
             )?;
             for y in 0..board_size {
                 for x in 0..board_size {
-                    let space = board[y * board_size + x];
-                    if space == 0.0 {
+                    let (count, score) = board[y * board_size + x];
+                    if count == 0 {
                         write!(f, "------- ")?;
                     } else {
-                        write!(f, "{space:+.4} ")?;
+                        let count: f64 = count.into();
+                        write!(f, "{:+.4} ", score / count)?;
                     }
                 }
                 writeln!(f)?;
