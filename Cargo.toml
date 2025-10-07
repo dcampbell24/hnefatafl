@@ -19,7 +19,7 @@ criterion = { version = "0.7", features = ["html_reports"] }
 futures = "0.3"
 iced = { git = "https://github.com/iced-rs/iced", features = ["smol"] }
 rodio = "0.21"
-rust-i18n = "3"
+# rust-i18n = "3"
 webbrowser = { version = "1", features = ["hardened"] }
 
 [dependencies]
@@ -39,6 +39,7 @@ rand = "0.8"
 rayon = "1"
 ron = { version = "0.11", features = ["integer128"] }
 rustc-hash = "2"
+rust-i18n = "3"
 serde = { version = "1", features = ["derive"] }
 thiserror = "2"
 
