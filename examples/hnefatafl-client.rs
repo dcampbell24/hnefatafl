@@ -1219,7 +1219,12 @@ impl<'a> Client {
                     Some("=") => {
                         let text_next = text.next();
                         match text_next {
-                            Some("archived_games" | "challenge_requested" | "game") => {}
+                            Some(
+                                "archived_games"
+                                | "challenge_requested"
+                                | "change_password"
+                                | "game",
+                            ) => {}
                             Some("display_games") => {
                                 self.games_light.0.clear();
                                 let games: Vec<&str> = text.collect();
