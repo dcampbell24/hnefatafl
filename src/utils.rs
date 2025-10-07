@@ -33,3 +33,24 @@ pub fn init_logger(systemd: bool) {
 
     builder.init();
 }
+
+#[must_use]
+pub fn split_password_whitespace(string: &str) -> (String, bool) {
+    let mut ends_with_whitespace = false;
+
+    if string.ends_with(|ch: char| ch.is_whitespace()) {
+        ends_with_whitespace = true;
+    }
+
+    let mut string: String = string.split_whitespace().collect();
+
+    if string.is_empty() {
+        ends_with_whitespace = false;
+    }
+
+    if ends_with_whitespace {
+        string.push(' ');
+    }
+
+    (string, ends_with_whitespace)
+}

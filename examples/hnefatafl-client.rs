@@ -1071,7 +1071,7 @@ impl<'a> Client {
                 }
             }
             Message::PasswordChanged(password) => {
-                let (password, ends_with_whitespace) = split_whitespace(&password);
+                let (password, ends_with_whitespace) = utils::split_password_whitespace(&password);
                 self.password_no_save = ends_with_whitespace;
                 if password.len() <= 32 {
                     self.password = password;
@@ -2944,26 +2944,6 @@ fn open_url(url: &str) {
     if let Err(error) = webbrowser::open(url) {
         error!("{error}");
     }
-}
-
-fn split_whitespace(string: &str) -> (String, bool) {
-    let mut ends_with_whitespace = false;
-
-    if string.ends_with(|ch: char| ch.is_whitespace()) {
-        ends_with_whitespace = true;
-    }
-
-    let mut string: String = string.split_whitespace().collect();
-
-    if string.is_empty() {
-        ends_with_whitespace = false;
-    }
-
-    if ends_with_whitespace {
-        string.push(' ');
-    }
-
-    (string, ends_with_whitespace)
 }
 
 fn text_collect(text: SplitAsciiWhitespace<'_>) -> String {
