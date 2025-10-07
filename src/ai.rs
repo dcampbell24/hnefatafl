@@ -87,16 +87,16 @@ impl AI for AiMonteCarlo {
                     nodes_master
                         .entry(play)
                         .and_modify(|node_master: &mut Node| {
-                            if node_master.count == 0 {
-                                node_master.count = 1;
+                            if node_master.count == 0.0 {
+                                node_master.count = 1.0;
                                 node_master.score = node.score;
                             } else {
-                                node_master.count += 1;
+                                node_master.count += 1.0;
                                 node_master.score += node.score;
                             }
                         })
                         .or_insert({
-                            node.count = 1;
+                            node.count = 1.0;
                             node
                         });
                 }
@@ -104,9 +104,8 @@ impl AI for AiMonteCarlo {
         }
 
         for node in nodes_master.values_mut() {
-            let count: f64 = node.count.into();
-            node.score /= count;
-            node.count = 1;
+            node.score /= node.count;
+            node.count = 1.0;
         }
 
         let mut nodes: Vec<_> = nodes_master.values().collect();

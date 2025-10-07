@@ -7,9 +7,10 @@ use crate::{
 };
 
 #[derive(Clone, Debug, Default)]
-pub struct HeatMap(HashMap<(Role, Vertex), Vec<(u32, f64)>>);
+pub struct HeatMap(HashMap<(Role, Vertex), Vec<f64>>);
 
 impl From<&Vec<&Node>> for HeatMap {
+    #[allow(clippy::float_cmp)]
     fn from(nodes: &Vec<&Node>) -> Self {
         let mut heat_map = HeatMap::default();
 
@@ -24,22 +25,21 @@ impl From<&Vec<&Node>> for HeatMap {
                             .0
                             .entry((play.role, play.from.clone()))
                             .and_modify(|board| {
-                                let (count, score) = board
+                                let score = board
                                     .get_mut(board_index)
                                     .expect("The board should contain this space.");
 
-                                *count += 1;
-                                *score += node.score;
+                                debug_assert_eq!(*score, 0.0);
+                                *score = node.score;
                             })
                             .or_insert({
                                 let size: usize = play.from.size.into();
-                                let mut board = vec![(0, 0.0); size * size];
+                                let mut board = vec![0.0; size * size];
 
-                                let (count, score) = board
+                                let score = board
                                     .get_mut(board_index)
                                     .expect("The board should contain this space.");
 
-                                *count = 1;
                                 *score = node.score;
 
                                 board
@@ -65,12 +65,11 @@ impl fmt::Display for HeatMap {
             )?;
             for y in 0..board_size {
                 for x in 0..board_size {
-                    let (count, score) = board[y * board_size + x];
-                    if count == 0 {
+                    let score = board[y * board_size + x];
+                    if score == 0.0 {
                         write!(f, "------- ")?;
                     } else {
-                        let count: f64 = count.into();
-                        write!(f, "{:+.4} ", score / count)?;
+                        write!(f, "{score:+.4} ")?;
                     }
                 }
                 writeln!(f)?;
