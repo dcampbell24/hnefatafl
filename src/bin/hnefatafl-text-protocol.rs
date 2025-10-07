@@ -120,13 +120,11 @@ fn play_ai(args: &Args) -> anyhow::Result<()> {
 
         if args.display_game {
             clear_screen()?;
-        }
-
-        println!("{heat_map}");
-
-        if args.display_game {
             println!("{game}\n");
+        } else {
+            println!("{heat_map}");
         }
+
         println!("= {play}, score: {score}, delay milliseconds: {delay_milliseconds}");
 
         if game.status != Status::Ongoing {
