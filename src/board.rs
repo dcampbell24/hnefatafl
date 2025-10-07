@@ -1223,6 +1223,7 @@ impl Board {
         if board.exit_forts() {
             return Ok((board, captures, Status::DefenderWins));
         }
+
         if board.flood_fill_attacker_wins() {
             return Ok((board, captures, Status::AttackerWins));
         }
