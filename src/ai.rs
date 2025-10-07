@@ -87,7 +87,11 @@ impl AI for AiMonteCarlo {
                     nodes_master
                         .entry(play)
                         .and_modify(|node_1: &mut Node| {
-                            node_1.score = f64::midpoint(node_1.score, node_2.score);
+                            if node_1.score == 0.0 {
+                                node_1.score = node_2.score;
+                            } else {
+                                node_1.score = f64::midpoint(node_1.score, node_2.score);
+                            }
                         })
                         .or_insert(node_2);
                 }

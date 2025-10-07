@@ -28,7 +28,11 @@ impl From<&Vec<&Node>> for HeatMap {
                                     .get_mut(board_index)
                                     .expect("The board should contain this space.");
 
-                                *score = node.score;
+                                if *score == 0.0 {
+                                    *score = node.score;
+                                } else {
+                                    *score = f64::midpoint(*score, node.score);
+                                }
                             })
                             .or_insert({
                                 let size: usize = play.from.size.into();
