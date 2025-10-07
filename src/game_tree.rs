@@ -37,7 +37,7 @@ impl Tree {
                 index,
                 play: Some(play),
                 score: 0.0,
-                count: 1.0,
+                count: 1,
                 parent: Some(index_parent),
                 children: Vec::new(),
             },
@@ -71,7 +71,7 @@ impl Tree {
                         .arena
                         .get_mut(index)
                         .expect("The hashmap should have the node.");
-                    node.count += 1.0;
+                    node.count += 1;
                     *index
                 } else {
                     self.insert_child(here, play, &game)
@@ -132,8 +132,9 @@ impl Tree {
         }
 
         for node in self.arena.values_mut() {
-            node.score /= node.count;
-            node.count = 1.0;
+            let count: f64 = node.count.into();
+            node.score /= count;
+            node.count = 1;
         }
 
         let children = &self.arena[&self.here].children;
@@ -162,7 +163,7 @@ impl Tree {
                 index: 0,
                 play: None,
                 score: 0.0,
-                count: 0.0,
+                count: 0,
                 parent: None,
                 children: Vec::new(),
             },
@@ -192,7 +193,7 @@ impl From<Game> for Tree {
                 index: 0,
                 play: play.clone(),
                 score: 0.0,
-                count: 0.0,
+                count: 0,
                 parent: None,
                 children: Vec::new(),
             },
@@ -213,7 +214,7 @@ pub struct Node {
     pub index: u128,
     pub play: Option<Plae>,
     pub score: f64,
-    count: f64,
+    pub count: u32,
     parent: Option<u128>,
     children: Vec<u128>,
 }
