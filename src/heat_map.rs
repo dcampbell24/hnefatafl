@@ -28,7 +28,6 @@ impl From<&Vec<&Node>> for HeatMap {
                                     .get_mut(board_index)
                                     .expect("The board should contain this space.");
 
-                                println!("score: {score}, score_add {}", node.score);
                                 *score = node.score;
                             })
                             .or_insert({
@@ -39,7 +38,6 @@ impl From<&Vec<&Node>> for HeatMap {
                                     .get_mut(board_index)
                                     .expect("The board should contain this space.");
 
-                                println!("score: {}", node.score);
                                 *score = node.score;
                                 board
                             });
