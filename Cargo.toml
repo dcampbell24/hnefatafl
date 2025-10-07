@@ -167,3 +167,7 @@ assets = [
 ]
 changelog = "packages/changelog"
 section = "games"
+
+[package.metadata.i18n]
+default-locale = "en-US"
+available-locales = ["en-US", "zh-CN", "es", "ar", "id", "pt-BR", "pt-PT", "fr", "ja", "ru", "de", "is-IS", "is-RU", "sv-SE"]

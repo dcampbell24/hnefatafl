@@ -225,7 +225,7 @@ Create Account:
   sv-SE: Skapa konto
 
 Reset Password:
-  en-uS: Reset Password
+  en-US: Reset Password
   zh-CN: 重置密码
   es: Restablecer contraseña
   ar: إعادة تعيين كلمة المرور
@@ -353,7 +353,7 @@ Light:
   sv-SE: Ljus
 
 Create Game:
-  en: Create Game
+  en-US: Create Game
   zh-CN: 创建游戏
   es: Crear juego
   ar: إنشاء لعبة
