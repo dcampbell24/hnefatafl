@@ -14,6 +14,8 @@ use status::Status;
 
 use crate::{game_record::GameRecord, play::Plays};
 
+rust_i18n::i18n!();
+
 pub mod accounts;
 pub mod ai;
 pub mod board;

@@ -5,6 +5,7 @@ use std::{
     sync::mpsc::Sender,
 };
 
+use rust_i18n::t;
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -54,6 +55,7 @@ impl ArchivedGame {
 
 impl fmt::Display for ArchivedGame {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        t!("blah");
         writeln!(
             f,
             "ID: {}, Attacker: {} {}, Defender: {} {}, Size: {}",
@@ -398,6 +400,37 @@ impl fmt::Debug for ServerGameLight {
             self.board_size,
             self.challenger,
             self.challenge_accepted,
+        )
+    }
+}
+
+impl fmt::Display for ServerGameLight {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let attacker = t!("attacker");
+        let defender = t!("defender");
+        let rated = t!(self.rated.to_string());
+        let none = t!("none");
+
+        let attacker = if let Some(name) = &self.attacker {
+            &format!("{attacker}: {name}")
+        } else {
+            &format!("{attacker}: {none}")
+        };
+
+        let defender = if let Some(name) = &self.defender {
+            &format!("{defender}: {name}")
+        } else {
+            &format!("{defender}: {none}")
+        };
+
+        write!(
+            f,
+            "# {}\n{attacker}, {defender}, {rated}\n{}: {}, {}: {}",
+            self.id,
+            t!("time"),
+            self.timed,
+            t!("board size"),
+            self.board_size,
         )
     }
 }
