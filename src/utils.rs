@@ -46,7 +46,7 @@ pub fn init_logger(systemd: bool) {
 }
 
 #[must_use]
-pub fn split_password_whitespace(string: &str) -> (String, bool) {
+pub fn split_whitespace_password(string: &str) -> (String, bool) {
     let mut ends_with_whitespace = false;
 
     if string.ends_with(|ch: char| ch.is_whitespace()) {

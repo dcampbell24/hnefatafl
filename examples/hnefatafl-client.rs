@@ -1072,7 +1072,7 @@ impl<'a> Client {
                 }
             }
             Message::PasswordChanged(password) => {
-                let (password, ends_with_whitespace) = utils::split_password_whitespace(&password);
+                let (password, ends_with_whitespace) = utils::split_whitespace_password(&password);
                 self.password_no_save = ends_with_whitespace;
                 if password.len() <= 32 {
                     self.password = password;
