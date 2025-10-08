@@ -11,39 +11,30 @@ use crate::{
 
 #[derive(Clone, Debug)]
 pub struct Tree {
-    here: u128,
+    here: u64,
     pub game: Game,
-    arena: HashMap<u128, Node>,
-    already_played: HashMap<u64, u128>,
-    next_index: u128,
+    arena: HashMap<u64, Node>,
 }
 
 impl Tree {
-    fn insert_child(&mut self, index_parent: u128, play: Plae, game: &Game) -> u128 {
-        let index = self.next_index;
-        self.next_index += 1;
-
+    fn insert_child(&mut self, child_index: u64, parent_index: u64, play: Plae) {
         let node = self
             .arena
-            .get_mut(&index_parent)
-            .unwrap_or_else(|| panic!("The hashmap should have the node {index_parent}."));
+            .get_mut(&parent_index)
+            .unwrap_or_else(|| panic!("The hashmap should have the node {parent_index}."));
 
-        node.children.push(index);
-        self.already_played.insert(game.calculate_hash(), index);
+        node.children.push(child_index);
 
         self.arena.insert(
-            index,
+            child_index,
             Node {
-                index,
                 play: Some(play),
                 score: 0.0,
                 count: 1.0,
-                parent: Some(index_parent),
+                parent: Some(parent_index),
                 children: Vec::new(),
             },
         );
-
-        index
     }
 
     #[allow(clippy::too_many_lines)]
@@ -66,16 +57,13 @@ impl Tree {
                     play
                 };
 
-                here = if let Some(index) = self.already_played.get(&game.calculate_hash()) {
-                    let node = self
-                        .arena
-                        .get_mut(index)
-                        .expect("The hashmap should have the node.");
+                let child_index = game.calculate_hash();
+                if let Some(node) = self.arena.get_mut(&child_index) {
                     node.count += 1.0;
-                    *index
                 } else {
-                    self.insert_child(here, play, &game)
-                };
+                    self.insert_child(child_index, here, play);
+                }
+                here = child_index;
 
                 let gamma = 0.95;
 
@@ -155,11 +143,11 @@ impl Tree {
             ..Game::default()
         };
 
+        let hash = game.calculate_hash();
         let mut arena = HashMap::new();
         arena.insert(
-            0,
+            hash,
             Node {
-                index: 0,
                 play: None,
                 score: 0.0,
                 count: 0.0,
@@ -169,11 +157,9 @@ impl Tree {
         );
 
         Self {
-            here: 0,
+            here: hash,
             game,
             arena,
-            already_played: HashMap::new(),
-            next_index: 1,
         }
     }
 }
@@ -186,10 +172,10 @@ impl From<Game> for Tree {
             Plays::PlayRecordsTimed(plays) => &plays.last().unwrap().play,
         };
 
+        let hash = game.calculate_hash();
         arena.insert(
-            0,
+            hash,
             Node {
-                index: 0,
                 play: play.clone(),
                 score: 0.0,
                 count: 0.0,
@@ -199,23 +185,20 @@ impl From<Game> for Tree {
         );
 
         Self {
-            here: 0,
+            here: hash,
             game,
             arena,
-            already_played: HashMap::new(),
-            next_index: 1,
         }
     }
 }
 
 #[derive(Clone, Debug)]
 pub struct Node {
-    pub index: u128,
     pub play: Option<Plae>,
     pub score: f64,
     pub count: f64,
-    parent: Option<u128>,
-    children: Vec<u128>,
+    parent: Option<u64>,
+    children: Vec<u64>,
 }
 
 impl fmt::Display for Node {
