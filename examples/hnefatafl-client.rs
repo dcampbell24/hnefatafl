@@ -11,7 +11,6 @@ use std::{
     fs::{self, File},
     io::{BufRead, BufReader, ErrorKind, Write},
     net::{Shutdown, TcpStream},
-    path::PathBuf,
     process::exit,
     str::{FromStr, SplitAsciiWhitespace},
     sync::mpsc,
@@ -24,10 +23,14 @@ use futures::{SinkExt, executor};
 use hnefatafl_copenhagen::Id;
 use hnefatafl_copenhagen::SERVER_PORT;
 use hnefatafl_copenhagen::board::BoardSize;
+use hnefatafl_copenhagen::client::Size;
+use hnefatafl_copenhagen::client::Theme;
+use hnefatafl_copenhagen::client::User;
 use hnefatafl_copenhagen::locale::Locale;
 use hnefatafl_copenhagen::play::Plays;
 use hnefatafl_copenhagen::server_game::{ArchivedGame, ArchivedGameHandle};
 use hnefatafl_copenhagen::utils;
+use hnefatafl_copenhagen::utils::data_file;
 use hnefatafl_copenhagen::{
     COPYRIGHT, VERSION_ID,
     accounts::Email,
@@ -156,7 +159,7 @@ fn i18n_buttons() -> HashMap<String, String> {
 }
 
 fn init_client() -> Client {
-    let data_file = data_file();
+    let data_file = data_file("hnefatafl.ron");
     let mut error = None;
     let mut client: Client = match &fs::read_to_string(&data_file) {
         Ok(string) => match ron::from_str(string.as_str()) {
@@ -2663,7 +2666,7 @@ impl<'a> Client {
         if let Ok(string) = ron::ser::to_string_pretty(&self, ron::ser::PrettyConfig::default())
             && !string.trim().is_empty()
         {
-            let data_file = data_file();
+            let data_file = data_file("hnefatafl.ron");
 
             if let Ok(mut file) = File::create(&data_file)
                 && let Err(error) = file.write_all(string.as_bytes())
@@ -2745,17 +2748,6 @@ enum Message {
     TimeMinutes(String),
     Users,
     WindowResized((f32, f32)),
-}
-
-fn data_file() -> PathBuf {
-    let mut data_file = if let Some(data_file) = dirs::data_dir() {
-        data_file
-    } else {
-        PathBuf::new()
-    };
-
-    data_file.push("hnefatafl.ron");
-    data_file
 }
 
 fn pass_messages() -> impl Stream<Item = Message> {
@@ -2885,31 +2877,4 @@ fn open_url(url: &str) {
 fn text_collect(text: SplitAsciiWhitespace<'_>) -> String {
     let text: Vec<&str> = text.collect();
     text.join(" ")
-}
-
-#[derive(Clone, Debug, Default, Eq, PartialEq)]
-enum Size {
-    Tiny,
-    #[default]
-    Small,
-    Medium,
-    Large,
-    Giant,
-}
-
-#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
-enum Theme {
-    #[default]
-    Dark,
-    Light,
-}
-
-#[derive(Clone, Debug)]
-struct User {
-    name: String,
-    wins: String,
-    losses: String,
-    draws: String,
-    rating: Rating,
-    logged_in: bool,
 }

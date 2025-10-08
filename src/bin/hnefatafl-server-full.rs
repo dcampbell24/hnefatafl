@@ -35,7 +35,7 @@ use hnefatafl_copenhagen::{
     smtp::Smtp,
     status::Status,
     time::TimeSettings,
-    utils,
+    utils::{self, data_file},
 };
 use lettre::{
     SmtpTransport, Transport,
@@ -104,7 +104,7 @@ fn main() -> anyhow::Result<()> {
     };
 
     if !args.skip_the_data_file {
-        let data_file = data_file();
+        let data_file = data_file("hnefatafl-copenhagen.ron");
         match &fs::read_to_string(&data_file) {
             Ok(string) => match ron::from_str(string.as_str()) {
                 Ok(server_ron) => {
@@ -233,16 +233,6 @@ fn archived_games_file() -> PathBuf {
 
     archived_games_file.push("hnefatafl-games.ron");
     archived_games_file
-}
-
-fn data_file() -> PathBuf {
-    let mut data_file = if let Some(data_file) = dirs::data_dir() {
-        data_file
-    } else {
-        PathBuf::new()
-    };
-    data_file.push("hnefatafl-copenhagen.ron");
-    data_file
 }
 
 #[allow(clippy::too_many_lines)]
@@ -1963,7 +1953,7 @@ impl Server {
                 ron::ser::to_string_pretty(&server, ron::ser::PrettyConfig::default())
             && !string.trim().is_empty()
         {
-            let data_file = data_file();
+            let data_file = data_file("hnefatafl-copenhagen.ron");
 
             if let Ok(mut file) = File::create(&data_file)
                 && let Err(error) = file.write_all(string.as_bytes())
