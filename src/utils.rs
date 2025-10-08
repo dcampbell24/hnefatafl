@@ -1,8 +1,19 @@
-use std::{env, io::Write};
+use std::{env, io::Write, path::PathBuf};
 
 use chrono::Utc;
 use env_logger::Builder;
 use log::LevelFilter;
+
+#[must_use]
+pub fn data_file(file: &str) -> PathBuf {
+    let mut data_file = if let Some(data_file) = dirs::data_dir() {
+        data_file
+    } else {
+        PathBuf::new()
+    };
+    data_file.push(file);
+    data_file
+}
 
 pub fn init_logger(systemd: bool) {
     let mut builder = Builder::new();
