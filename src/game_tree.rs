@@ -37,7 +37,6 @@ impl Tree {
         );
     }
 
-    #[allow(clippy::too_many_lines)]
     #[allow(clippy::missing_panics_doc)]
     #[must_use]
     pub fn monte_carlo_tree_search(&mut self, loops: i64) -> Vec<Node> {
