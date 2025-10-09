@@ -2865,7 +2865,7 @@ fn pass_messages() -> impl Stream<Item = Message> {
                         ));
 
                         if buffer_trim_vec[1] == "archived_games" {
-                            let length = handle_error(buffer_trim_vec[2].parse::<usize>());
+                            let length = handle_error(buffer_trim_vec[2].parse());
                             let mut buf = vec![0; length];
                             handle_error(reader.read_exact(&mut buf));
                             let archived_games: Vec<ArchivedGame> =
