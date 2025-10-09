@@ -936,16 +936,25 @@ impl<'a> Client {
             Message::EstimateScore(selected) => {
                 if !self.estimate_score && selected {
                     println!("Start running score estimator...");
-                    let mut game = self.game.clone().expect("you should have a game by now");
+
+                    let handle = self
+                        .archived_game_handle
+                        .as_ref()
+                        .expect("we should have a game handle now");
+
+                    let node = handle.boards.here();
+                    let mut game = Game::from(node);
 
                     let mut ai = Box::new(
-                        AiMonteCarlo::new(game.board.size(), 10_000)
+                        AiMonteCarlo::new(game.board.size(), 1_000)
                             .expect("you should be able to create an AI"),
                     );
 
-                    let generate_move = ai.generate_move(&mut game);
-                    println!("{generate_move}");
-                    println!("{}", generate_move.heat_map);
+                    thread::spawn(move || {
+                        let generate_move = ai.generate_move(&mut game);
+                        println!("{generate_move}");
+                        println!("{}", generate_move.heat_map);
+                    });
                 } else if self.estimate_score && !selected {
                     println!("Stop running score estimator...");
                 }

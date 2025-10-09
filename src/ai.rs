@@ -19,6 +19,7 @@ pub trait AI {
     fn play(&mut self, game: &mut Game, play: &Plae) -> anyhow::Result<()>;
 }
 
+#[derive(Clone, Debug)]
 pub struct GenerateMove {
     pub play: Option<Plae>,
     pub score: f64,
