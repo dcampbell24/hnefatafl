@@ -1,212 +1,84 @@
 _version: 2
 
-username:
-  en-US: username
-  zh-CN: 用户名
-  es: nombre de usuario
-  ar: اسم المستخدم
-  id: nama belakang
-  pt-BR: nome de usuário
-  pt-PT: nome de utilizador
-  fr: nom d'utilisateur
-  ja: ユーザー名
-  ru: имя пользователя
-  de: Benutzername
-  is-IS: notandanafn
-  is-RU: ᚿᚮᛐᛆᚿᛑᛆᚿᛆᚠᚿ
-  sv-SE: användarnamn
+Accept:
+  en-US: Accept
+  zh-CN: 接受
+  es: Aceptar
+  ar: يقبل
+  id: Menerima
+  pt-BR: Aceitar
+  pt-PT: Aceitar
+  fr: Accepter
+  ja: 受け入れる
+  ru: Принимать
+  de: Akzeptieren
+  is-IS: Samþykkja
+  is-RU: ᛋᛆᛘᚦᛣᚴᚴᛃᛆ
+  sv-SE: Acceptera
 
-password:
-  en-US: password
-  zh-CN: 密码
-  es: contraseña
-  ar: كلمة المرور
-  id: kata sandi
-  pt-BR: senha
-  pt-PT: palavra-passe
-  fr: mot de passe
-  ja: パスワード
-  ru: пароль
-  de: Passwort
-  is-IS: lykilorð
-  is-RU: ᛚᛣᚴᛁᛚᚮᚱᚧ
-  sv-SE: lösenord
+Accept Draw:
+  en-US: Accept Draw
+  zh-CN: 接受抽签
+  es: Aceptar sorteo
+  ar: قبول السحب
+  id: Terima Undian
+  pt-BR: Aceitar sorteio
+  pt-PT: Aceitar sorteio
+  fr: Accepter Dessin
+  ja: 引き分けを受け入れる
+  ru: Принять ничью
+  de: Unentschieden akzeptieren
+  is-IS: amþykkja jafntefli
+  is-RU: ᛆᛘᚦᛣᚴᚴᛃᛆ ᛃᛆᚠᚿᛐᛂᚠᛚᛁ
+  sv-SE: Acceptera oavgjort
 
-ID:
-  en-US: ID
-  zh-CN: ID
-  es: IDENTIFICACIÓN
-  ar: بطاقة تعريف
-  id: PENGENAL
-  pt-BR: EU IA
-  pt-PT: EU IA
-  fr: IDENTIFIANT
-  ja: ID
-  ru: ИДЕНТИФИКАТОР
-  de: AUSWEIS
-  is-IS: Auðkenni
-  is-RU: ᛆᚢᚧᚴᛂᚿᚿᛁ
-  sv-SE: ID
+Account Settings:
+  en-US: Account Settings
+  zh-CN: 帐户设置
+  es: Configuraciones de la cuenta
+  ar: إعدادات الحساب
+  id: Pengaturan Akun
+  pt-BR: Configurações de Conta
+  pt-PT: Criar jogo
+  fr: Paramètres du Compte
+  ja: アカウント設定
+  ru: Настройки учетной записи
+  de: Kontoeinstellungen
+  is-IS: Reikningsstillingar
+  is-RU: ᚱᛂᛁᚴᚿᛁᚿᚵᛋᛋᛐᛁᛚᛚᛁᚿᚵᛆᚱ
+  sv-SE: Kontoinställningar
 
-attacker:
-  en-US: attacker
-  zh-CN: 攻击者
-  es: agresor
-  ar: مهاجم
-  id: penyerang
-  pt-BR: atacante
-  pt-PT: atacante
-  fr: attaquant
-  ja: アタッカー
-  ru: нападающий
-  de: Angreifer
-  is-IS: árásarmaður
-  is-RU: ᚨᚱᚨᛋᛆᚱᛘᛆᚧᚢᚱ
-  sv-SE: angripare
+Attacker wins!:
+  en-US: Attacker wins!
+  zh-CN: 进攻方获胜！
+  es: ¡La atacante gana!
+  ar: المهاجم يفوز!
+  id: Penyerang Menang!
+  pt-BR: O atacante vence!
+  pt-PT: O atacante vence!
+  fr: L'attaquant gagne !
+  ja: 攻撃者が勝利！
+  ru: Атакующий побеждает!
+  de: Angreifer gewinnt!
+  is-IS: Sóknarmaðurinn vinnur!
+  is-RU: ᛋᛟᚴᚿᛆᚱᛘᛆᚧᚢᚱᛁᚿᚿ ᚡᛁᚿᚿᚢᚱ!
+  sv-SE: Anfallaren vinner!
 
-defender:
-  en-US: defender
-  zh-CN: 后卫
-  es: defensor
-  ar: مناصر
-  id: pembela
-  pt-BR: defensor
-  pt-PT: defensor
-  fr: défenseur
-  ja: ディフェンダー
-  ru: защитник
-  de: Verteidiger
-  is-IS: varnarmaður
-  is-RU: ᚡᛆᚱᚿᛆᚱᛘᛆᚧᚢᚱ
-  sv-SE: försvarare
-
-rated:
- en-US: rated
- zh-CN: 额定
- es: calificado
- ar: مصنف
- id: dinilai
- pt-BR: classificado
- pt-PT: classificado
- fr: évalué
- ja: 評価
- ru: оцененный
- de: bewertet
- is-IS: metið
- is-RU: ᛘᛂᛐᛁᚧ
- sv-SE: betygsatt
-
-timed:
- en-US: timed
- zh-CN: 定时
- es: cronometrado
- ar: موقوت
- id: waktunya
- pt-BR: cronometrado
- pt-PT: cronometrado
- fr: chronométré
- ja: 時間制限付き
- ru: рассчитанный по времени
- de: zeitgesteuert
- is-IS: tímasett
- is-RU: ᛐᛇᛘᛆᛋᛂᛐᛐ
- sv-SE: tidsbestämd
-
-rating:
-  en-US: rating
-  zh-CN: 等级
-  es: clasificación
-  ar: تصنيف
-  id: pangkat
-  pt-BR: avaliação
-  pt-PT: avaliação
-  fr: classement
-  ja: 評価
-  ru: рейтинг
-  de: Bewertung
-  is-IS: einkunn
-  is-RU: ᛂᛁᚿᚴᚢᚿᚿ
-  sv-SE: gradering
-
-wins:
-  en-US: wins
-  zh-CN: 胜利
-  es: victorias
-  ar: يفوز
-  id: menang
-  pt-BR: vitórias
-  pt-PT: vitórias
-  fr: victoires
-  ja: 勝利
-  ru: победы
-  de: Siege
-  is-IS: sigrar
-  is-RU: ᛋᛁᚵᚱᛆᚱ
-  sv-SE: vinner
-
-losses:
-  en-US: losses
-  zh-CN: 损失
-  es: pérdidas
-  ar: خسائر
-  id: kerugian
-  pt-BR: perdas
-  pt-PT: perdas
-  fr: défaites
-  ja: 損失
-  ru: потери
-  de: Verluste
-  is-IS: tap
-  is-RU: ᛐᛆᛔ
-  sv-SE: förluster
-
-draws:
-  en-US: draws
-  zh-CN: 抽签
-  es: sorteos
-  ar: تعادلات
-  id: menggambar
-  pt-BR: empates
-  pt-PT: empates
-  fr: nuls
-  ja: 引き分け
-  ru: рисует
-  de: zieht
-  is-IS: teiknar
-  is-RU: ᛐᛂᛁᚴᚿᛆᚱ
-  sv-SE: dragningar
-
-show password:
-  en-US: show password
-  zh-CN: 显示密码
-  es: mostrar contraseña
-  ar: إظهار كلمة المرور
-  id: tampilkan kata sandi
-  pt-BR: mostrar senha
-  pt-PT: mostrar senha
-  fr: afficher le mot de passe
-  ja: パスワードを表示
-  ru: показать пароль
-  de: Passwort anzeigen
-  is-IS: sýna lykilorð
-  is-RU: ᛋᛨᚿᛆ ᛚᛣᚴᛁᛚᚮᚱᚧ
-  sv-SE: dragningar
-
-Login:
-  en-US: Login
-  zh-CN: 登录
-  es: Acceso
-  ar: تسجيل الدخول
-  id: Login
-  pt-BR: Conecte-se
-  pt-PT: Conecte-se
-  fr: Connexion
-  ja: ログイン
-  ru: Авторизоваться
-  de: Login
-  is-IS: Innskráning
-  is-RU: ᛁᚿᚿᛋᚴᚱᚨᚿᛁᚿᚵ
-  sv-SE: Inloggning
+Change Password:
+  en-US: Change Password
+  zh-CN: 更改密码
+  es: Cambiar la contraseña
+  ar: تغيير كلمة المرور
+  id: Ubah Kata Sandi
+  pt-BR: Alterar a senha
+  pt-PT: Alterar a palavra-passe
+  fr: Changer le Mot de Passe
+  ja: パスワードを変更する
+  ru: Изменить пароль
+  de: Kennwort ändern
+  is-IS: Breyta lykilorði
+  is-RU: ᛒᚱᛂᛣᛐᛆ ᛚᛣᚴᛁᛚᚮᚱᚧᛁ
+  sv-SE: Ändra lösenord
 
 Create Account:
   en-US: Create Account
@@ -224,21 +96,248 @@ Create Account:
   is-RU: ᛋᛐᚮᚠᚿᛆ ᛆᚧᚵᛆᚿᚵ
   sv-SE: Skapa konto
 
-Reset Password:
-  en-US: Reset Password
-  zh-CN: 重置密码
-  es: Restablecer contraseña
-  ar: إعادة تعيين كلمة المرور
-  id: Setel Ulang Kata Sandi
-  pt-BR: Redefinir senha
-  pt-PT: Redefinir palavra-passe
-  fr: Réinitialiser Le Mot de Passe
-  ja: パスワードをリセットする
-  ru: Сбросить пароль
-  de: Passwort zurücksetzen
-  is-IS: Endurstilla lykilorð
-  is-RU: ᛂᚿᛑᚢᚱᛋᛐᛁᛚᛚᛆ ᛚᛣᚴᛁᛚᚮᚱᚧ
-  sv-SE: Återställ lösenord
+Create Game:
+  en-US: Create Game
+  zh-CN: 创建游戏
+  es: Crear juego
+  ar: إنشاء لعبة
+  id: Buat Game
+  pt-BR: Criar jogo
+  pt-PT: Criar jogo
+  fr: Créer un Jeu
+  ja: ゲームを作成する
+  ru: Создать игру
+  de: Spiel erstellen
+  is-IS: Búa til leik
+  is-RU: ᛒᚤᛆ ᛐᛁᛚ ᛚᛂᛁᚴ
+  sv-SE: Skapa spel
+
+Dark:
+  en-US: Dark
+  zh-CN: 黑暗
+  es: Oscuro
+  ar: مظلم
+  id: Gelap
+  pt-BR: Escuro
+  pt-PT: Escuro
+  fr: Sombre
+  ja: 暗い
+  ru: Темный
+  de: Dunkel
+  is-IS: Dökkt
+  is-RU: ᛑᚯᚴᚴᛐ
+  sv-SE: Mörk
+
+Decline:
+  en-US: Decline
+  zh-CN: 拒绝
+  es: Rechazar
+  ar: انخفاض
+  id: Menolak
+  pt-BR: Declínio
+  pt-PT: Recusar
+  fr: Refuse
+  ja: 衰退
+  ru: Отклонить
+  de: Abfall
+  is-IS: Hafna
+  is-RU: ᚼᛆᚠᚿᛆ
+  sv-SE: Nedgång
+
+Defender wins!:
+  en-US: Defender wins!
+  zh-CN: 防守者获胜！
+  es: ¡El defensor gana!
+  ar: المدافع يفوز!
+  id: Bek Menang!
+  pt-BR: O defensor vence!
+  pt-PT: O defensor ganha!
+  fr: Le défenseur gagne !
+  ja: ディフェンダーが勝利！
+  ru: Победа защитника!
+  de: Verteidiger gewinnt!
+  is-IS: Varnarmaðurinn vinnur!
+  is-RU: ᚡᛆᚱᚿᛆᚱᛘᛆᚧᚢᚱᛁᚿᚿ ᚡᛁᚿᚿᚢᚱ!
+  sv-SE: Försvararen vinner!
+
+Delete Account:
+  en-US: Delete Account
+  zh-CN: 删除帐户
+  es: Eliminar cuenta
+  ar: حذف الحساب
+  id: Hapus Akun
+  pt-BR: Excluir conta
+  pt-PT: Apagar conta
+  fr: Supprimer le Compte
+  ja: アカウントを削除
+  ru: Удалить аккаунт
+  de: Konto löschen
+  is-IS: Eyða reikningi
+  is-RU: ᛂᛣᚧᛆ ᚱᛂᛁᚴᚿᛁᚿᚵᛁ
+  sv-SE: Ta bort konto
+
+Estimate Score:
+  en-US: Estimate Score
+
+Get Archived Games:
+  en-US: Get Archived Games
+  zh-CN: 获取存档游戏
+  es: Obtener juegos archivados
+  ar: احصل على الألعاب المؤرشفة
+  id: Dapatkan Game yang Diarsipkan
+  pt-BR: Obter jogos arquivados
+  pt-PT: Obter jogos arquivados
+  fr: Obtenir des jeux archivés
+  ja: アーカイブされたゲームを入手する
+  ru: Получить архив игр
+  de: Archivierte Spiele abrufen
+  is-IS: Fáðu geymda leiki
+  is-RU: ᚠᚨᚧᚢ ᚵᛂᛣᛘᛑᛆ ᛚᛂᛁᚴᛁ
+  sv-SE: Hämta arkiverade spel
+
+ID:
+  en-US: ID
+  zh-CN: ID
+  es: IDENTIFICACIÓN
+  ar: بطاقة تعريف
+  id: PENGENAL
+  pt-BR: EU IA
+  pt-PT: EU IA
+  fr: IDENTIFIANT
+  ja: ID
+  ru: ИДЕНТИФИКАТОР
+  de: AUSWEIS
+  is-IS: Auðkenni
+  is-RU: ᛆᚢᚧᚴᛂᚿᚿᛁ
+  sv-SE: ID
+
+It's a draw.:
+  en-US: It's a draw.
+  zh-CN: 平局。
+  es: Es un empate.
+  ar: إنها تعادل.
+  id: Itu seri.
+  pt-BR: É um empate.
+  pt-PT: É um empate.
+  fr: C'est un match nul.
+  ja: 引き分けです。
+  ru: Ничья.
+  de: Es ist unentschieden.
+  is-IS: Það er jafntefli.
+  is-RU: ᚦᛆᚧ ᛂᚱ ᛃᛆᚠᚿᛐᛂᚠᛚᛁ.
+  sv-SE: Det är oavgjort.
+
+Join:
+  en-US: Join
+  zh-CN: 加入
+  es: Unirse
+  ar: ينضم
+  id: Bergabung
+  pt-BR: Juntar
+  pt-PT: Juntar
+  fr: Rejoindre
+  ja: 参加する
+  ru: Присоединиться
+  de: Verbinden
+  is-IS: Vertu með
+  is-RU: ᚡᛂᚱᛐᚢ ᛘᛂᚧ
+  sv-SE: Ansluta sig till
+
+Leave:
+  en-US: Leave
+  zh-CN: 撤走
+  es: Dejar
+  ar: يترك
+  id: Meninggalkan
+  pt-BR: Deixar
+  pt-PT: Ausência
+  fr: Laisser
+  ja: 離れる
+  ru: Оставлять
+  de: Verlassen
+  is-IS: Fara
+  is-RU: ᚠᛆᚱᛆ
+  sv-SE: Lämna
+
+Light:
+  en-US: Light
+  zh-CN: 亮
+  es: Ligero
+  ar: ضوء
+  id: Lampu
+  pt-BR: Luz
+  pt-PT: Luz
+  fr: Lumière
+  ja: ライト
+  ru: Свет
+  de: Licht
+  is-IS: Ljós
+  is-RU: ᛚᛃᛟᛋ
+  sv-SE: Ljus
+
+Login:
+  en-US: Login
+  zh-CN: 登录
+  es: Acceso
+  ar: تسجيل الدخول
+  id: Login
+  pt-BR: Conecte-se
+  pt-PT: Conecte-se
+  fr: Connexion
+  ja: ログイン
+  ru: Авторизоваться
+  de: Login
+  is-IS: Innskráning
+  is-RU: ᛁᚿᚿᛋᚴᚱᚨᚿᛁᚿᚵ
+  sv-SE: Inloggning
+
+Muted:
+  en-US: Muted
+  zh-CN: 静音
+  es: Apagado
+  ar: مكتوم
+  id: Meredam
+  pt-BR: Silenciado
+  pt-PT: Silenciado
+  fr: Sourdine
+  ja: ミュート
+  ru: Приглушенный
+  de: Stummgeschaltet
+  is-IS: Þaggað
+  is-RU: ᚦᛆᚵᚵᛆᚧ
+  sv-SE: Ljudlös
+
+My Games Only:
+  en-US: My Games Only
+  zh-CN: 仅限我的游戏
+  es: Solo mis juegos
+  ar: ألعابي فقط
+  id: Hanya Game Saya
+  pt-BR: Somente meus jogos
+  pt-PT: Somente os meus jogos
+  fr: Mes jeux uniquement
+  ja: 私のゲームのみ
+  ru: Только мои игры
+  de: Nur meine Spiele
+  is-IS: Aðeins mínir leikir
+  is-RU: ᛆᚧᛂᛁᚿᛋ ᛘᛇᚿᛁᚱ ᛚᛂᛁᚴᛁᚱ
+  sv-SE: Bara mina spel
+
+New Game:
+  en-US: New Game
+  zh-CN: 新游戏
+  es: Nuevo juego
+  ar: لعبة جديدة
+  id: Permainan Baru
+  pt-BR: Novo jogo
+  pt-PT: Novo jogo
+  fr: Nouveau Jeu
+  ja: 新しいゲーム
+  ru: Новая Игра
+  de: Neues Spiel
+  is-IS: Nýr leikur
+  is-RU: ᚿᛨᚱ ᛚᛂᛁᚴᚢᚱ
+  sv-SE: Nytt spel
 
 Quit:
   en-US: Quit
@@ -255,6 +354,374 @@ Quit:
   is-IS: Hætta
   is-RU: ᚼᛅᛐᛐᛆ
   sv-SE: Sluta
+
+REALLY DELETE ACCOUNT:
+  en-US: REALLY DELETE ACCOUNT
+  zh-CN: 确实删除帐户
+  es: REALMENTE ELIMINAR CUENTA
+  ar: حذف الحساب حقًا
+  id: BENAR-BENAR HAPUS AKUN
+  pt-BR: REALMENTE EXCLUIR CONTA
+  pt-PT: REALMENTE APAGAR CONTA
+  fr: SUPPRIMER VRAIMENT LE COMPTE
+  ja: 本当にアカウントを削除する
+  ru: Действительно удалить аккаунт
+  de: Konto wirklich löschen
+  is-IS: Eyða virkilega reikningi
+  is-RU: ᛂᛣᚧᛆ ᚡᛁᚱᚴᛁᛚᛂᚵᛆ ᚱᛂᛁᚴᚿᛁᚿᚵᛁ
+  sv-SE: Ta bort kontot på riktigt
+
+Request Draw:
+  en-US: Request Draw
+  zh-CN: 请求抽奖
+  es: Solicitud de sorteo
+  ar: طلب السحب
+  id: Permintaan Undian
+  pt-BR: Solicitar sorteio
+  pt-PT: Solicitar sorteio
+  fr: Demande Dessin
+  ja: 抽選をリクエスト
+  ru: Запросить розыгрыш
+  de: Anfrage ziehen
+  is-IS: Beiðni um drátt
+  is-RU: ᛒᛂᛁᚧᚿᛁ ᚢᛘ ᛑᚱᚨᛐᛐ
+  sv-SE: Begär lottning
+
+Reset Email:
+  en-US: Reset Email
+  zh-CN: 重置电子邮件
+  es: Restablecer correo electrónico
+  ar: إعادة تعيين البريد الإلكتروني
+  id: Setel Ulang Email
+  pt-BR: Redefinir email
+  pt-PT: Redefinir email
+  fr: Réinitialiser l'email
+  ja: メールをリセット
+  ru: Сбросить адрес электронной почты
+  de: E-Mail zurücksetzen
+  is-IS: Endurstilla tölvupóst
+  is-RU: ᛂᚿᛑᚢᚱᛋᛐᛁᛚᛚᛆ ᛐᚯᛚᚡᚢᛔᛟᛋᛐ
+  sv-SE: Återställ e-post
+
+Reset Password:
+  en-US: Reset Password
+  zh-CN: 重置密码
+  es: Restablecer contraseña
+  ar: إعادة تعيين كلمة المرور
+  id: Setel Ulang Kata Sandi
+  pt-BR: Redefinir senha
+  pt-PT: Redefinir palavra-passe
+  fr: Réinitialiser Le Mot de Passe
+  ja: パスワードをリセットする
+  ru: Сбросить пароль
+  de: Passwort zurücksetzen
+  is-IS: Endurstilla lykilorð
+  is-RU: ᛂᚿᛑᚢᚱᛋᛐᛁᛚᛚᛆ ᛚᛣᚴᛁᛚᚮᚱᚧ
+  sv-SE: Återställ lösenord
+
+Resign:
+  en-US: Resign
+  zh-CN: 辞职
+  es: Renunciar
+  ar: الاستقالة
+  id: Berhenti
+  pt-BR: Renunciar
+  pt-PT: Demitir-se
+  fr: Démissionner
+  ja: 辞任する
+  ru: Подать в отставку
+  de: Zurücktreten
+  is-IS: Segja upp
+  is-RU: ᛋᛂᚵᛃᛆ ᚢᛔᛔ
+  sv-SE: Avgå
+
+Resume:
+  en-US: Resume
+  zh-CN: 重新开始
+  es: Reanudar
+  ar: سيرة ذاتية
+  id: Melanjutkan
+  pt-BR: Retomar
+  pt-PT: Retomar
+  fr: Reprendre
+  ja: 再開する
+  ru: Резюме
+  de: Wieder aufnehmen
+  is-IS: Ferilskrá
+  is-RU: ᚠᛂᚱᛁᛚᛋᚴᚱᚨ
+  sv-SE: Resume
+
+Review Game:
+  en-US: Review Game
+  zh-CN: 回顾游戏
+  es: Reseña del juego
+  ar: مراجعة اللعبة
+  id: Ulasan Game
+  pt-BR: Análise do jogo
+  pt-PT: Análise do jogo
+  fr: Revue du jeu
+  ja: ゲームのレビュー
+  ru: Обзор игры
+  de: Spiel überprüfen
+  is-IS: Umsögn um leik
+  is-RU: ᚢᛘᛋᚯᚵᚿ ᚢᛘ ᛚᛂᛁᚴ
+  sv-SE: Recensera spelet
+
+Rules:
+  en-US: Rules
+  zh-CN: 规则
+  es: Normas
+  ar: قواعد
+  id: Aturan
+  pt-BR: Regras
+  pt-PT: Regras
+  fr: Règles
+  ja: ルール
+  ru: Правила
+  de: Regeln
+  is-IS: Reglur
+  is-RU: ᚱᛂᚵᛚᚢᚱ
+  sv-SE: Regler
+
+Users:
+  en-US: Users
+  zh-CN: 用户
+  es: Usuarios
+  ar: المستخدمون
+  id: Pengguna
+  pt-BR: Usuários
+  pt-PT: Usuários
+  fr: Usagers
+  ja: ユーザー
+  ru: Пользователи
+  de: Benutzer
+  is-IS: Notendur
+  is-RU: ᚿᚮᛐᛂᚿᛑᚢᚱ
+  sv-SE: Användare
+
+Watch:
+  en-US: Watch
+  zh-CN: 观
+  es: Mirar
+  ar: يشاهد
+  id: Jam tangan
+  pt-BR: Assistir
+  pt-PT: Relógio
+  fr: Regarde
+  ja: 時計
+  ru: Смотреть
+  de: Betrachten
+  is-IS: Horfa
+  is-RU: ᚼᛆᚠᚿᛆ
+  sv-SE: Titta
+
+add hours:
+  en-US: add hours
+  zh-CN: 添加小时
+  es: añadir horas
+  ar: إضافة ساعات
+  id: tambahkan jam
+  pt-BR: adicionar horas
+  pt-PT: adicionar horas
+  fr: ajouter des heures
+  ja: 時間を追加
+  ru: добавить часы
+  de: Stunden hinzufügen
+  is-IS: bæta við opnunartíma
+  is-RU: ᛒᛅᛐᛆ ᚡᛁᚧ ᚮᛔᚿᚢᚿᛆᚱᛐᛇᛘᛆ
+  sv-SE: lägg till öppettider
+
+add minutes:
+  en-US: add minutes
+  zh-CN: 添加分钟
+  es: añadir minutos
+  ar: إضافة دقائق
+  id: tambahkan menit
+  pt-BR: adicionar minutos
+  pt-PT: adicionar minutos
+  fr: ajouter des minutes
+  ja: 数分追加
+  ru: добавить минуты
+  de: Minuten hinzufügen
+  is-IS: bæta við mínútum
+  is-RU: ᛒᛅᛐᛆ ᚡᛁᚧ ᛘᛇᚿᚤᛐᚢᛘ
+  sv-SE: lägg till minuter
+
+add seconds:
+  en-US: add seconds
+  zh-CN: 添加秒
+  es: añadir segundos
+  ar: أضف ثواني
+  id: tambahkan detik
+  pt-BR: adicionar segundos
+  pt-PT: adicionar segundos
+  fr: ajouter des secondes
+  ja: 秒を追加
+  ru: добавить секунды
+  de: Sekunden hinzufügen
+  is-IS: bæta við sekúndum
+  is-RU: ᛒᛅᛐᛆ ᚡᛁᚧ ᛋᛂᚴᚤᚿᛑᚢᛘ
+  sv-SE: lägg till sekunder
+
+attacker:
+  en-US: attacker
+  zh-CN: 攻击者
+  es: agresor
+  ar: مهاجم
+  id: penyerang
+  pt-BR: atacante
+  pt-PT: atacante
+  fr: attaquant
+  ja: アタッカー
+  ru: нападающий
+  de: Angreifer
+  is-IS: árásarmaður
+  is-RU: ᚨᚱᚨᛋᛆᚱᛘᛆᚧᚢᚱ
+  sv-SE: angripare
+
+board size:
+  en-US: board size
+  zh-CN: 板尺寸
+  es: tamaño del tablero
+  ar: حجم اللوحة
+  id: ukuran papan
+  pt-BR: tamanho do tabuleiro
+  pt-PT: tamanho do tabuleiro
+  fr: taille de la planche
+  ja: ボードサイズ
+  ru: размер платы
+  de: Brettgröße
+  is-IS: stærð borðs
+  is-RU: ᛋᛐᛅᚱᚧ ᛒᚮᚱᚧᛋ
+  sv-SE: brädestorlek
+
+connected to:
+  en-US: connected to
+  zh-CN: 连接到
+  es: Conectado a
+  ar: متصل بـ
+  id: terhubung ke
+  pt-BR: conectado a
+  pt-PT: ligado a
+  fr: connecté à
+  ja: 接続されている
+  ru: подключен к
+  de: verbunden mit
+  is-IS: tengdur við
+  is-RU: ᛐᛂᚿᚵᛑᚢᚱ ᚡᛁᚧ
+  sv-SE: ansluten till
+
+days:
+  en-US: days
+  zh-CN: 天
+  es: días
+  ar: أيام
+  id: hari
+  pt-BR: dias
+  pt-PT: dias
+  fr: jours
+  ja: 日数
+  ru: дней
+  de: Tage
+  is-IS: dagar
+  is-RU: ᛑᛆᚵᛆᚱ
+  sv-SE: dagar
+
+defender:
+  en-US: defender
+  zh-CN: 后卫
+  es: defensor
+  ar: مناصر
+  id: pembela
+  pt-BR: defensor
+  pt-PT: defensor
+  fr: défenseur
+  ja: ディフェンダー
+  ru: защитник
+  de: Verteidiger
+  is-IS: varnarmaður
+  is-RU: ᚡᛆᚱᚿᛆᚱᛘᛆᚧᚢᚱ
+  sv-SE: försvarare
+
+draws:
+  en-US: draws
+  zh-CN: 抽签
+  es: sorteos
+  ar: تعادلات
+  id: menggambar
+  pt-BR: empates
+  pt-PT: empates
+  fr: nuls
+  ja: 引き分け
+  ru: рисует
+  de: zieht
+  is-IS: teiknar
+  is-RU: ᛐᛂᛁᚴᚿᛆᚱ
+  sv-SE: dragningar
+
+email address:
+  en-US: email address
+  zh-CN: 电子邮件
+  es: dirección de correo electrónico
+  ar: عنوان البريد الإلكتروني
+  id: alamat email
+  pt-BR: endereço de email
+  pt-PT: endereço de email
+  fr: adresse email
+  ja: 電子メールアドレス
+  ru: Адрес электронной почты
+  de: E-Mail-Adresse
+  is-IS: netfang
+  is-RU: ᚿᛂᛐᚠᛆᚿᚵ
+  sv-SE: e-postadress
+
+email code:
+  en-US: email code
+  zh-CN: 电子邮件代码
+  es: código de correo electrónico
+  ar: رمز البريد الإلكتروني
+  id: kode email
+  pt-BR: código de email
+  pt-PT: código de email
+  fr: code email
+  ja: メールコード
+  ru: код электронной почты
+  de: E-Mail-Code
+  is-IS: netfangskóði
+  is-RU: ᚿᛂᛐᚠᛆᚿᚵᛋᚴᛟᚧᛁ
+  sv-SE: e-post koda
+
+hours:
+  en-US: hours
+  zh-CN: 小时
+  es: horas
+  ar: ساعات
+  id: jam
+  pt-BR: horas
+  pt-PT: horas
+  fr: heures
+  ja: 時間
+  ru: часы
+  de: Std.
+  is-IS: klukkustundir
+  is-RU: ᚴᛚᚢᚴᚴᚢᛋᛐᚢᚿᛑᛁᚱ
+  sv-SE: timmar
+
+lag:
+  en-US: lag
+  zh-CN: 落后
+  es: retraso
+  ar: تأخر
+  id: ketinggalan
+  pt-BR: atraso
+  pt-PT: atraso
+  fr: décalage
+  ja: 遅れ
+  ru: отставание
+  de: Verzögerung
+  is-IS: töf
+  is-RU: ᛐᚯᚠ
+  sv-SE: eftersläpning
 
 locale:
   en-US: locale
@@ -304,421 +771,21 @@ logged out:
   is-RU: ᚤᛐᛋᚴᚱᚨᚧ(ᚢᚱ)
   sv-SE: utloggad
 
-Leave:
-  en-US: Leave
-  zh-CN: 撤走
-  es: Dejar
-  ar: يترك
-  id: Meninggalkan
-  pt-BR: Deixar
-  pt-PT: Ausência
-  fr: Laisser
-  ja: 離れる
-  ru: Оставлять
-  de: Verlassen
-  is-IS: Fara
-  is-RU: ᚠᛆᚱᛆ
-  sv-SE: Lämna
-
-Dark:
-  en-US: Dark
-  zh-CN: 黑暗
-  es: Oscuro
-  ar: مظلم
-  id: Gelap
-  pt-BR: Escuro
-  pt-PT: Escuro
-  fr: Sombre
-  ja: 暗い
-  ru: Темный
-  de: Dunkel
-  is-IS: Dökkt
-  is-RU: ᛑᚯᚴᚴᛐ
-  sv-SE: Mörk
-
-Light:
-  en-US: Light
-  zh-CN: 亮
-  es: Ligero
-  ar: ضوء
-  id: Lampu
-  pt-BR: Luz
-  pt-PT: Luz
-  fr: Lumière
-  ja: ライト
-  ru: Свет
-  de: Licht
-  is-IS: Ljós
-  is-RU: ᛚᛃᛟᛋ
-  sv-SE: Ljus
-
-Create Game:
-  en-US: Create Game
-  zh-CN: 创建游戏
-  es: Crear juego
-  ar: إنشاء لعبة
-  id: Buat Game
-  pt-BR: Criar jogo
-  pt-PT: Criar jogo
-  fr: Créer un Jeu
-  ja: ゲームを作成する
-  ru: Создать игру
-  de: Spiel erstellen
-  is-IS: Búa til leik
-  is-RU: ᛒᚤᛆ ᛐᛁᛚ ᛚᛂᛁᚴ
-  sv-SE: Skapa spel
-
-Users:
-  en-US: Users
-  zh-CN: 用户
-  es: Usuarios
-  ar: المستخدمون
-  id: Pengguna
-  pt-BR: Usuários
-  pt-PT: Usuários
-  fr: Usagers
-  ja: ユーザー
-  ru: Пользователи
-  de: Benutzer
-  is-IS: Notendur
-  is-RU: ᚿᚮᛐᛂᚿᛑᚢᚱ
-  sv-SE: Användare
-
-Account Settings:
-  en-US: Account Settings
-  zh-CN: 帐户设置
-  es: Configuraciones de la cuenta
-  ar: إعدادات الحساب
-  id: Pengaturan Akun
-  pt-BR: Configurações de Conta
-  pt-PT: Criar jogo
-  fr: Paramètres du Compte
-  ja: アカウント設定
-  ru: Настройки учетной записи
-  de: Kontoeinstellungen
-  is-IS: Reikningsstillingar
-  is-RU: ᚱᛂᛁᚴᚿᛁᚿᚵᛋᛋᛐᛁᛚᛚᛁᚿᚵᛆᚱ
-  sv-SE: Kontoinställningar
-
-Rules:
-  en-US: Rules
-  zh-CN: 规则
-  es: Normas
-  ar: قواعد
-  id: Aturan
-  pt-BR: Regras
-  pt-PT: Regras
-  fr: Règles
-  ja: ルール
-  ru: Правила
-  de: Regeln
-  is-IS: Reglur
-  is-RU: ᚱᛂᚵᛚᚢᚱ
-  sv-SE: Regler
-
-connected to:
-  en-US: connected to
-  zh-CN: 连接到
-  es: Conectado a
-  ar: متصل بـ
-  id: terhubung ke
-  pt-BR: conectado a
-  pt-PT: ligado a
-  fr: connecté à
-  ja: 接続されている
-  ru: подключен к
-  de: verbunden mit
-  is-IS: tengdur við
-  is-RU: ᛐᛂᚿᚵᛑᚢᚱ ᚡᛁᚧ
-  sv-SE: ansluten till
-
-via:
-  en-US: via
-  zh-CN: 通过
-  es: por
-  ar: عبر
-  id: melalui
-  pt-BR: através de
-  pt-PT: através de
-  fr: par
-  ja: 経由
-  ru: с помощью
-  de: über
-  is-IS: í gegnum
-  is-RU: ᛇ ᚵᛂᚵᚿᚢᛘ
-  sv-SE: via
-
-email address:
-  en-US: email address
-  zh-CN: 电子邮件
-  es: dirección de correo electrónico
-  ar: عنوان البريد الإلكتروني
-  id: alamat email
-  pt-BR: endereço de email
-  pt-PT: endereço de email
-  fr: adresse email
-  ja: 電子メールアドレス
-  ru: Адрес электронной почты
-  de: E-Mail-Adresse
-  is-IS: netfang
-  is-RU: ᚿᛂᛐᚠᛆᚿᚵ
-  sv-SE: e-postadress
-
-email code:
-  en-US: email code
-  zh-CN: 电子邮件代码
-  es: código de correo electrónico
-  ar: رمز البريد الإلكتروني
-  id: kode email
-  pt-BR: código de email
-  pt-PT: código de email
-  fr: code email
-  ja: メールコード
-  ru: код электронной почты
-  de: E-Mail-Code
-  is-IS: netfangskóði
-  is-RU: ᚿᛂᛐᚠᛆᚿᚵᛋᚴᛟᚧᛁ
-  sv-SE: e-post koda
-
-verified:
-  en-US: verified
-  zh-CN: 已验证
-  es: verificado
-  ar: تم التحقق
-  id: terverifikasi
-  pt-BR: verificado
-  pt-PT: verificado
-  fr: accepté
-  ja: 検証済み
-  ru: проверено
-  de: verifiziert
-  is-IS: staðfest
-  is-RU: ᛋᛐᛆᚧᚠᛂᛋᛐ
-  sv-SE: verifierad
-
-unverified:
-  en-US: unverified
-  zh-CN: 未经验证
-  es: inconfirmado
-  ar: غير مُتحقق
-  id: belum diverifikasi
-  pt-BR: não verificado
-  pt-PT: não verificado
-  fr: non vérifié
-  ja: 未確認
-  ru: непроверенный
-  de: nicht verifiziert
-  is-IS: óstaðfest
-  is-RU: ᛟᛋᛐᛆᚧᚠᛂᛋᛐ
-  sv-SE: obekräftad
-
-Reset Email:
-  en-US: Reset Email
-  zh-CN: 重置电子邮件
-  es: Restablecer correo electrónico
-  ar: إعادة تعيين البريد الإلكتروني
-  id: Setel Ulang Email
-  pt-BR: Redefinir email
-  pt-PT: Redefinir email
-  fr: Réinitialiser l'email
-  ja: メールをリセット
-  ru: Сбросить адрес электронной почты
-  de: E-Mail zurücksetzen
-  is-IS: Endurstilla tölvupóst
-  is-RU: ᛂᚿᛑᚢᚱᛋᛐᛁᛚᛚᛆ ᛐᚯᛚᚡᚢᛔᛟᛋᛐ
-  sv-SE: Återställ e-post
-
-Change Password:
-  en-US: Change Password
-  zh-CN: 更改密码
-  es: Cambiar la contraseña
-  ar: تغيير كلمة المرور
-  id: Ubah Kata Sandi
-  pt-BR: Alterar a senha
-  pt-PT: Alterar a palavra-passe
-  fr: Changer le Mot de Passe
-  ja: パスワードを変更する
-  ru: Изменить пароль
-  de: Kennwort ändern
-  is-IS: Breyta lykilorði
-  is-RU: ᛒᚱᛂᛣᛐᛆ ᛚᛣᚴᛁᛚᚮᚱᚧᛁ
-  sv-SE: Ändra lösenord
-
-Delete Account:
-  en-US: Delete Account
-  zh-CN: 删除帐户
-  es: Eliminar cuenta
-  ar: حذف الحساب
-  id: Hapus Akun
-  pt-BR: Excluir conta
-  pt-PT: Apagar conta
-  fr: Supprimer le Compte
-  ja: アカウントを削除
-  ru: Удалить аккаунт
-  de: Konto löschen
-  is-IS: Eyða reikningi
-  is-RU: ᛂᛣᚧᛆ ᚱᛂᛁᚴᚿᛁᚿᚵᛁ
-  sv-SE: Ta bort konto
-
-REALLY DELETE ACCOUNT:
-  en-US: REALLY DELETE ACCOUNT
-  zh-CN: 确实删除帐户
-  es: REALMENTE ELIMINAR CUENTA
-  ar: حذف الحساب حقًا
-  id: BENAR-BENAR HAPUS AKUN
-  pt-BR: REALMENTE EXCLUIR CONTA
-  pt-PT: REALMENTE APAGAR CONTA
-  fr: SUPPRIMER VRAIMENT LE COMPTE
-  ja: 本当にアカウントを削除する
-  ru: Действительно удалить аккаунт
-  de: Konto wirklich löschen
-  is-IS: Eyða virkilega reikningi
-  is-RU: ᛂᛣᚧᛆ ᚡᛁᚱᚴᛁᛚᛂᚵᛆ ᚱᛂᛁᚴᚿᛁᚿᚵᛁ
-  sv-SE: Ta bort kontot på riktigt
-
-minutes:
-  en-US: minutes
-  zh-CN: 分钟
-  es: minutos
-  ar: دقائق
-  id: menit
-  pt-BR: minutos
-  pt-PT: minutos
-  fr: minutes
-  ja: 分
-  ru: минут
-  de: Minuten
-  is-IS: mínútur
-  is-RU: ᛘᛇᚿᚤᛐᚢᚱ
-  sv-SE: minuter
-
-add seconds:
-  en-US: add seconds
-  zh-CN: 添加秒
-  es: añadir segundos
-  ar: أضف ثواني
-  id: tambahkan detik
-  pt-BR: adicionar segundos
-  pt-PT: adicionar segundos
-  fr: ajouter des secondes
-  ja: 秒を追加
-  ru: добавить секунды
-  de: Sekunden hinzufügen
-  is-IS: bæta við sekúndum
-  is-RU: ᛒᛅᛐᛆ ᚡᛁᚧ ᛋᛂᚴᚤᚿᛑᚢᛘ
-  sv-SE: lägg till sekunder
-
-role:
-  en-US: role
-  zh-CN: 角色
-  es: role
-  ar: وظيفة
-  id: peran
-  pt-BR: papel
-  pt-PT: papel
-  fr: rôle
-  ja: 役割
-  ru: роль
-  de: Rolle
-  is-IS: hlutverk
-  is-RU: ᚼᛚᚢᛐᚡᛂᚱᚴ
-  sv-SE: roll
-
-New Game:
-  en-US: New Game
-  zh-CN: 新游戏
-  es: Nuevo juego
-  ar: لعبة جديدة
-  id: Permainan Baru
-  pt-BR: Novo jogo
-  pt-PT: Novo jogo
-  fr: Nouveau Jeu
-  ja: 新しいゲーム
-  ru: Новая Игра
-  de: Neues Spiel
-  is-IS: Nýr leikur
-  is-RU: ᚿᛨᚱ ᛚᛂᛁᚴᚢᚱ
-  sv-SE: Nytt spel
-
-Accept:
-  en-US: Accept
-  zh-CN: 接受
-  es: Aceptar
-  ar: يقبل
-  id: Menerima
-  pt-BR: Aceitar
-  pt-PT: Aceitar
-  fr: Accepter
-  ja: 受け入れる
-  ru: Принимать
-  de: Akzeptieren
-  is-IS: Samþykkja
-  is-RU: ᛋᛆᛘᚦᛣᚴᚴᛃᛆ
-  sv-SE: Acceptera
-
-Decline:
-  en-US: Decline
-  zh-CN: 拒绝
-  es: Rechazar
-  ar: انخفاض
-  id: Menolak
-  pt-BR: Declínio
-  pt-PT: Recusar
-  fr: Refuse
-  ja: 衰退
-  ru: Отклонить
-  de: Abfall
-  is-IS: Hafna
-  is-RU: ᚼᛆᚠᚿᛆ
-  sv-SE: Nedgång
-
-Watch:
-  en-US: Watch
-  zh-CN: 观
-  es: Mirar
-  ar: يشاهد
-  id: Jam tangan
-  pt-BR: Assistir
-  pt-PT: Relógio
-  fr: Regarde
-  ja: 時計
-  ru: Смотреть
-  de: Betrachten
-  is-IS: Horfa
-  is-RU: ᚼᛆᚠᚿᛆ
-  sv-SE: Titta
-
-Join:
-  en-US: Join
-  zh-CN: 加入
-  es: Unirse
-  ar: ينضم
-  id: Bergabung
-  pt-BR: Juntar
-  pt-PT: Juntar
-  fr: Rejoindre
-  ja: 参加する
-  ru: Присоединиться
-  de: Verbinden
-  is-IS: Vertu með
-  is-RU: ᚡᛂᚱᛐᚢ ᛘᛂᚧ
-  sv-SE: Ansluta sig till
-
-Resume:
-  en-US: Resume
-  zh-CN: 重新开始
-  es: Reanudar
-  ar: سيرة ذاتية
-  id: Melanjutkan
-  pt-BR: Retomar
-  pt-PT: Retomar
-  fr: Reprendre
-  ja: 再開する
-  ru: Резюме
-  de: Wieder aufnehmen
-  is-IS: Ferilskrá
-  is-RU: ᚠᛂᚱᛁᛚᛋᚴᚱᚨ
-  sv-SE: Resume
+losses:
+  en-US: losses
+  zh-CN: 损失
+  es: pérdidas
+  ar: خسائر
+  id: kerugian
+  pt-BR: perdas
+  pt-PT: perdas
+  fr: défaites
+  ja: 損失
+  ru: потери
+  de: Verluste
+  is-IS: tap
+  is-RU: ᛐᛆᛔ
+  sv-SE: förluster
 
 message:
   en-US: message
@@ -736,6 +803,22 @@ message:
   is-RU: ᛋᚴᛁᛚᛆᛒᚮᚧ
   sv-SE: meddelande
 
+minutes:
+  en-US: minutes
+  zh-CN: 分钟
+  es: minutos
+  ar: دقائق
+  id: menit
+  pt-BR: minutos
+  pt-PT: minutos
+  fr: minutes
+  ja: 分
+  ru: минут
+  de: Minuten
+  is-IS: mínútur
+  is-RU: ᛘᛇᚿᚤᛐᚢᚱ
+  sv-SE: minuter
+
 move:
   en-US: move
   zh-CN: 举动
@@ -751,22 +834,6 @@ move:
   is-IS: færa
   is-RU: ᚠᛅᚱᛆ
   sv-SE: flytta
-
-yes:
-  en-US: yes
-  zh-CN: 是的
-  es: Sí
-  ar: نعم
-  id: ya
-  pt-BR: sim
-  pt-PT: Sim
-  fr: oui
-  ja: はい
-  ru: да
-  de: ja
-  is-IS: já
-  is-RU: ᛃᚨ
-  sv-SE: ja
 
 no:
   en-US: no
@@ -784,21 +851,247 @@ no:
   is-RU: ᚿᛂᛁ
   sv-SE: inga
 
-Muted:
-  en-US: Muted
-  zh-CN: 静音
-  es: Apagado
-  ar: مكتوم
-  id: Meredam
-  pt-BR: Silenciado
-  pt-PT: Silenciado
-  fr: Sourdine
-  ja: ミュート
-  ru: Приглушенный
-  de: Stummgeschaltet
-  is-IS: Þaggað
-  is-RU: ᚦᛆᚵᚵᛆᚧ
-  sv-SE: Ljudlös
+none:
+  en-US: none
+  zh-CN: 没有任何
+  es: ninguno
+  ar: لا أحد
+  id: tidak ada
+  pt-BR: nenhum
+  pt-PT: nenhum
+  fr: aucun
+  ja: なし
+  ru: никто
+  de: keiner
+  is-IS: enginn
+  is-RU: ᛂᚿᚵᛁᚿᚿ
+  sv-SE: ingen
+
+password:
+  en-US: password
+  zh-CN: 密码
+  es: contraseña
+  ar: كلمة المرور
+  id: kata sandi
+  pt-BR: senha
+  pt-PT: palavra-passe
+  fr: mot de passe
+  ja: パスワード
+  ru: пароль
+  de: Passwort
+  is-IS: lykilorð
+  is-RU: ᛚᛣᚴᛁᛚᚮᚱᚧ
+  sv-SE: lösenord
+
+rated:
+ en-US: rated
+ zh-CN: 额定
+ es: calificado
+ ar: مصنف
+ id: dinilai
+ pt-BR: classificado
+ pt-PT: classificado
+ fr: évalué
+ ja: 評価
+ ru: оцененный
+ de: bewertet
+ is-IS: metið
+ is-RU: ᛘᛂᛐᛁᚧ
+ sv-SE: betygsatt
+
+rating:
+  en-US: rating
+  zh-CN: 等级
+  es: clasificación
+  ar: تصنيف
+  id: pangkat
+  pt-BR: avaliação
+  pt-PT: avaliação
+  fr: classement
+  ja: 評価
+  ru: рейтинг
+  de: Bewertung
+  is-IS: einkunn
+  is-RU: ᛂᛁᚿᚴᚢᚿᚿ
+  sv-SE: gradering
+
+role:
+  en-US: role
+  zh-CN: 角色
+  es: role
+  ar: وظيفة
+  id: peran
+  pt-BR: papel
+  pt-PT: papel
+  fr: rôle
+  ja: 役割
+  ru: роль
+  de: Rolle
+  is-IS: hlutverk
+  is-RU: ᚼᛚᚢᛐᚡᛂᚱᚴ
+  sv-SE: roll
+
+show password:
+  en-US: show password
+  zh-CN: 显示密码
+  es: mostrar contraseña
+  ar: إظهار كلمة المرور
+  id: tampilkan kata sandi
+  pt-BR: mostrar senha
+  pt-PT: mostrar senha
+  fr: afficher le mot de passe
+  ja: パスワードを表示
+  ru: показать пароль
+  de: Passwort anzeigen
+  is-IS: sýna lykilorð
+  is-RU: ᛋᛨᚿᛆ ᛚᛣᚴᛁᛚᚮᚱᚧ
+  sv-SE: dragningar
+
+size:
+  en-US: size
+  zh-CN: 尺寸
+  es: tamaño
+  ar: مقاس
+  id: ukuran
+  pt-BR: tamanho
+  pt-PT: tamanho
+  fr: taille
+  ja: サイズ
+  ru: размер
+  de: Größe
+  is-IS: stærð
+  is-RU: ᛋᛐᛅᚱᚧ
+  sv-SE: storlek
+
+time:
+  en-US: time
+  zh-CN: 时间
+  es: tiempo
+  ar: وقت
+  id: waktu
+  pt-BR: tempo
+  pt-PT: hora
+  fr: temps
+  ja: 時間
+  ru: время
+  de: Zeit
+  is-IS: tími
+  is-RU: ᛐᛇᛘᛁ
+  sv-SE: tid
+
+timed:
+ en-US: timed
+ zh-CN: 定时
+ es: cronometrado
+ ar: موقوت
+ id: waktunya
+ pt-BR: cronometrado
+ pt-PT: cronometrado
+ fr: chronométré
+ ja: 時間制限付き
+ ru: рассчитанный по времени
+ de: zeitgesteuert
+ is-IS: tímasett
+ is-RU: ᛐᛇᛘᛆᛋᛂᛐᛐ
+ sv-SE: tidsbestämd
+
+unverified:
+  en-US: unverified
+  zh-CN: 未经验证
+  es: inconfirmado
+  ar: غير مُتحقق
+  id: belum diverifikasi
+  pt-BR: não verificado
+  pt-PT: não verificado
+  fr: non vérifié
+  ja: 未確認
+  ru: непроверенный
+  de: nicht verifiziert
+  is-IS: óstaðfest
+  is-RU: ᛟᛋᛐᛆᚧᚠᛂᛋᛐ
+  sv-SE: obekräftad
+
+username:
+  en-US: username
+  zh-CN: 用户名
+  es: nombre de usuario
+  ar: اسم المستخدم
+  id: nama belakang
+  pt-BR: nome de usuário
+  pt-PT: nome de utilizador
+  fr: nom d'utilisateur
+  ja: ユーザー名
+  ru: имя пользователя
+  de: Benutzername
+  is-IS: notandanafn
+  is-RU: ᚿᚮᛐᛆᚿᛑᛆᚿᛆᚠᚿ
+  sv-SE: användarnamn
+
+verified:
+  en-US: verified
+  zh-CN: 已验证
+  es: verificado
+  ar: تم التحقق
+  id: terverifikasi
+  pt-BR: verificado
+  pt-PT: verificado
+  fr: accepté
+  ja: 検証済み
+  ru: проверено
+  de: verifiziert
+  is-IS: staðfest
+  is-RU: ᛋᛐᛆᚧᚠᛂᛋᛐ
+  sv-SE: verifierad
+
+via:
+  en-US: via
+  zh-CN: 通过
+  es: por
+  ar: عبر
+  id: melalui
+  pt-BR: através de
+  pt-PT: através de
+  fr: par
+  ja: 経由
+  ru: с помощью
+  de: über
+  is-IS: í gegnum
+  is-RU: ᛇ ᚵᛂᚵᚿᚢᛘ
+  sv-SE: via
+
+wins:
+  en-US: wins
+  zh-CN: 胜利
+  es: victorias
+  ar: يفوز
+  id: menang
+  pt-BR: vitórias
+  pt-PT: vitórias
+  fr: victoires
+  ja: 勝利
+  ru: победы
+  de: Siege
+  is-IS: sigrar
+  is-RU: ᛋᛁᚵᚱᛆᚱ
+  sv-SE: vinner
+
+yes:
+  en-US: yes
+  zh-CN: 是的
+  es: Sí
+  ar: نعم
+  id: ya
+  pt-BR: sim
+  pt-PT: Sim
+  fr: oui
+  ja: はい
+  ru: да
+  de: ja
+  is-IS: já
+  is-RU: ᛃᚨ
+  sv-SE: ja
+
+
 
 I rejoined.:
   en-US: I rejoined.
@@ -832,198 +1125,6 @@ I'm leaving.:
   is-RU: ᛖᚵ ᛂᚱ ᛆᚧ ᚠᛆᚱᛆ.
   sv-SE: Jag går.
 
-Resign:
-  en-US: Resign
-  zh-CN: 辞职
-  es: Renunciar
-  ar: الاستقالة
-  id: Berhenti
-  pt-BR: Renunciar
-  pt-PT: Demitir-se
-  fr: Démissionner
-  ja: 辞任する
-  ru: Подать в отставку
-  de: Zurücktreten
-  is-IS: Segja upp
-  is-RU: ᛋᛂᚵᛃᛆ ᚢᛔᛔ
-  sv-SE: Avgå
-
-Request Draw:
-  en-US: Request Draw
-  zh-CN: 请求抽奖
-  es: Solicitud de sorteo
-  ar: طلب السحب
-  id: Permintaan Undian
-  pt-BR: Solicitar sorteio
-  pt-PT: Solicitar sorteio
-  fr: Demande Dessin
-  ja: 抽選をリクエスト
-  ru: Запросить розыгрыш
-  de: Anfrage ziehen
-  is-IS: Beiðni um drátt
-  is-RU: ᛒᛂᛁᚧᚿᛁ ᚢᛘ ᛑᚱᚨᛐᛐ
-  sv-SE: Begär lottning
-
-Accept Draw:
-  en-US: Accept Draw
-  zh-CN: 接受抽签
-  es: Aceptar sorteo
-  ar: قبول السحب
-  id: Terima Undian
-  pt-BR: Aceitar sorteio
-  pt-PT: Aceitar sorteio
-  fr: Accepter Dessin
-  ja: 引き分けを受け入れる
-  ru: Принять ничью
-  de: Unentschieden akzeptieren
-  is-IS: amþykkja jafntefli
-  is-RU: ᛆᛘᚦᛣᚴᚴᛃᛆ ᛃᛆᚠᚿᛐᛂᚠᛚᛁ
-  sv-SE: Acceptera oavgjort
-
-Attacker wins!:
-  en-US: Attacker wins!
-  zh-CN: 进攻方获胜！
-  es: ¡La atacante gana!
-  ar: المهاجم يفوز!
-  id: Penyerang Menang!
-  pt-BR: O atacante vence!
-  pt-PT: O atacante vence!
-  fr: L'attaquant gagne !
-  ja: 攻撃者が勝利！
-  ru: Атакующий побеждает!
-  de: Angreifer gewinnt!
-  is-IS: Sóknarmaðurinn vinnur!
-  is-RU: ᛋᛟᚴᚿᛆᚱᛘᛆᚧᚢᚱᛁᚿᚿ ᚡᛁᚿᚿᚢᚱ!
-  sv-SE: Anfallaren vinner!
-
-It's a draw.:
-  en-US: It's a draw.
-  zh-CN: 平局。
-  es: Es un empate.
-  ar: إنها تعادل.
-  id: Itu seri.
-  pt-BR: É um empate.
-  pt-PT: É um empate.
-  fr: C'est un match nul.
-  ja: 引き分けです。
-  ru: Ничья.
-  de: Es ist unentschieden.
-  is-IS: Það er jafntefli.
-  is-RU: ᚦᛆᚧ ᛂᚱ ᛃᛆᚠᚿᛐᛂᚠᛚᛁ.
-  sv-SE: Det är oavgjort.
-
-Defender wins!:
-  en-US: Defender wins!
-  zh-CN: 防守者获胜！
-  es: ¡El defensor gana!
-  ar: المدافع يفوز!
-  id: Bek Menang!
-  pt-BR: O defensor vence!
-  pt-PT: O defensor ganha!
-  fr: Le défenseur gagne !
-  ja: ディフェンダーが勝利！
-  ru: Победа защитника!
-  de: Verteidiger gewinnt!
-  is-IS: Varnarmaðurinn vinnur!
-  is-RU: ᚡᛆᚱᚿᛆᚱᛘᛆᚧᚢᚱᛁᚿᚿ ᚡᛁᚿᚿᚢᚱ!
-  sv-SE: Försvararen vinner!
-
-Review Game:
-  en-US: Review Game
-  zh-CN: 回顾游戏
-  es: Reseña del juego
-  ar: مراجعة اللعبة
-  id: Ulasan Game
-  pt-BR: Análise do jogo
-  pt-PT: Análise do jogo
-  fr: Revue du jeu
-  ja: ゲームのレビュー
-  ru: Обзор игры
-  de: Spiel überprüfen
-  is-IS: Umsögn um leik
-  is-RU: ᚢᛘᛋᚯᚵᚿ ᚢᛘ ᛚᛂᛁᚴ
-  sv-SE: Recensera spelet
-
-Get Archived Games:
-  en-US: Get Archived Games
-  zh-CN: 获取存档游戏
-  es: Obtener juegos archivados
-  ar: احصل على الألعاب المؤرشفة
-  id: Dapatkan Game yang Diarsipkan
-  pt-BR: Obter jogos arquivados
-  pt-PT: Obter jogos arquivados
-  fr: Obtenir des jeux archivés
-  ja: アーカイブされたゲームを入手する
-  ru: Получить архив игр
-  de: Archivierte Spiele abrufen
-  is-IS: Fáðu geymda leiki
-  is-RU: ᚠᚨᚧᚢ ᚵᛂᛣᛘᛑᛆ ᛚᛂᛁᚴᛁ
-  sv-SE: Hämta arkiverade spel
-
-My Games Only:
-  en-US: My Games Only
-  zh-CN: 仅限我的游戏
-  es: Solo mis juegos
-  ar: ألعابي فقط
-  id: Hanya Game Saya
-  pt-BR: Somente meus jogos
-  pt-PT: Somente os meus jogos
-  fr: Mes jeux uniquement
-  ja: 私のゲームのみ
-  ru: Только мои игры
-  de: Nur meine Spiele
-  is-IS: Aðeins mínir leikir
-  is-RU: ᛆᚧᛂᛁᚿᛋ ᛘᛇᚿᛁᚱ ᛚᛂᛁᚴᛁᚱ
-  sv-SE: Bara mina spel
-
-board size:
-  en-US: board size
-  zh-CN: 板尺寸
-  es: tamaño del tablero
-  ar: حجم اللوحة
-  id: ukuran papan
-  pt-BR: tamanho do tabuleiro
-  pt-PT: tamanho do tabuleiro
-  fr: taille de la planche
-  ja: ボードサイズ
-  ru: размер платы
-  de: Brettgröße
-  is-IS: stærð borðs
-  is-RU: ᛋᛐᛅᚱᚧ ᛒᚮᚱᚧᛋ
-  sv-SE: brädestorlek
-
-size:
-  en-US: size
-  zh-CN: 尺寸
-  es: tamaño
-  ar: مقاس
-  id: ukuran
-  pt-BR: tamanho
-  pt-PT: tamanho
-  fr: taille
-  ja: サイズ
-  ru: размер
-  de: Größe
-  is-IS: stærð
-  is-RU: ᛋᛐᛅᚱᚧ
-  sv-SE: storlek
-
-none:
-  en-US: none
-  zh-CN: 没有任何
-  es: ninguno
-  ar: لا أحد
-  id: tidak ada
-  pt-BR: nenhum
-  pt-PT: nenhum
-  fr: aucun
-  ja: なし
-  ru: никто
-  de: keiner
-  is-IS: enginn
-  is-RU: ᛂᚿᚵᛁᚿᚿ
-  sv-SE: ingen
-
 unrated:
   en-US: unrated
   zh-CN: 未分级
@@ -1039,99 +1140,3 @@ unrated:
   is-IS: óflokkað
   is-RU: ᛟᚠᛚᚮᚴᚴᛆᚧ
   sv-SE: oklassificerad
-
-time:
-  en-US: time
-  zh-CN: 时间
-  es: tiempo
-  ar: وقت
-  id: waktu
-  pt-BR: tempo
-  pt-PT: hora
-  fr: temps
-  ja: 時間
-  ru: время
-  de: Zeit
-  is-IS: tími
-  is-RU: ᛐᛇᛘᛁ
-  sv-SE: tid
-
-days:
-  en-US: days
-  zh-CN: 天
-  es: días
-  ar: أيام
-  id: hari
-  pt-BR: dias
-  pt-PT: dias
-  fr: jours
-  ja: 日数
-  ru: дней
-  de: Tage
-  is-IS: dagar
-  is-RU: ᛑᛆᚵᛆᚱ
-  sv-SE: dagar
-
-hours:
-  en-US: hours
-  zh-CN: 小时
-  es: horas
-  ar: ساعات
-  id: jam
-  pt-BR: horas
-  pt-PT: horas
-  fr: heures
-  ja: 時間
-  ru: часы
-  de: Std.
-  is-IS: klukkustundir
-  is-RU: ᚴᛚᚢᚴᚴᚢᛋᛐᚢᚿᛑᛁᚱ
-  sv-SE: timmar
-
-add hours:
-  en-US: add hours
-  zh-CN: 添加小时
-  es: añadir horas
-  ar: إضافة ساعات
-  id: tambahkan jam
-  pt-BR: adicionar horas
-  pt-PT: adicionar horas
-  fr: ajouter des heures
-  ja: 時間を追加
-  ru: добавить часы
-  de: Stunden hinzufügen
-  is-IS: bæta við opnunartíma
-  is-RU: ᛒᛅᛐᛆ ᚡᛁᚧ ᚮᛔᚿᚢᚿᛆᚱᛐᛇᛘᛆ
-  sv-SE: lägg till öppettider
-
-add minutes:
-  en-US: add minutes
-  zh-CN: 添加分钟
-  es: añadir minutos
-  ar: إضافة دقائق
-  id: tambahkan menit
-  pt-BR: adicionar minutos
-  pt-PT: adicionar minutos
-  fr: ajouter des minutes
-  ja: 数分追加
-  ru: добавить минуты
-  de: Minuten hinzufügen
-  is-IS: bæta við mínútum
-  is-RU: ᛒᛅᛐᛆ ᚡᛁᚧ ᛘᛇᚿᚤᛐᚢᛘ
-  sv-SE: lägg till minuter
-
-lag:
-  en-US: lag
-  zh-CN: 落后
-  es: retraso
-  ar: تأخر
-  id: ketinggalan
-  pt-BR: atraso
-  pt-PT: atraso
-  fr: décalage
-  ja: 遅れ
-  ru: отставание
-  de: Verzögerung
-  is-IS: töf
-  is-RU: ᛐᚯᚠ
-  sv-SE: eftersläpning
