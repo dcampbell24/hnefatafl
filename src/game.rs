@@ -496,14 +496,17 @@ impl Game {
             },
             Message::Empty => Ok(None),
             Message::FinalStatus => Ok(Some(format!("{}", self.status))),
-            Message::GenerateMove => match ai.generate_move(self) {
-                (Some(play), score, delay_milliseconds, _heat_map) => Ok(Some(format!(
-                    "{play}, score: {score}, delay milliseconds: {delay_milliseconds}"
-                ))),
-                (None, _score, _delay_milliseconds, _heat_map) => {
+            Message::GenerateMove => {
+                let generate_move = ai.generate_move(self);
+                if let Some(play) = generate_move.play {
+                    Ok(Some(format!(
+                        "{play}, score: {}, delay milliseconds: {}",
+                        generate_move.score, generate_move.delay_milliseconds
+                    )))
+                } else {
                     Err(anyhow::Error::msg("failed to generate move"))
                 }
-            },
+            }
             Message::KnownCommand(command) => {
                 if COMMANDS.contains(&command.as_str()) {
                     Ok(Some("true".to_string()))

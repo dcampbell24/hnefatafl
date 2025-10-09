@@ -23,6 +23,7 @@ use futures::{SinkExt, executor};
 use hnefatafl_copenhagen::{
     COPYRIGHT, Id, LONG_VERSION, SERVER_PORT, VERSION_ID,
     accounts::Email,
+    ai::{AI, AiMonteCarlo},
     board::{self, BoardSize},
     client::{Size, Theme, User},
     draw::Draw,
@@ -258,6 +259,8 @@ struct Client {
     delete_account: bool,
     #[serde(default)]
     email_everyone: bool,
+    #[serde(skip)]
+    estimate_score: bool,
     #[serde(skip)]
     captures: HashSet<Vertex>,
     #[serde(skip)]
@@ -787,6 +790,13 @@ impl<'a> Client {
             ));
         }
 
+        let estimate_score = checkbox(t!("Estimate Score"), self.estimate_score)
+            .text_shaping(text::Shaping::Advanced)
+            .on_toggle(Message::EstimateScore)
+            .size(32);
+
+        user_area = user_area.push(row![estimate_score].spacing(SPACING));
+
         if let Some(handle) = &self.archived_game_handle {
             let mut left_all = button(text("⏮").shaping(text::Shaping::Advanced));
             let mut left = button(text("⏪").shaping(text::Shaping::Advanced));
@@ -922,6 +932,25 @@ impl<'a> Client {
             Message::EmailReset => {
                 self.email = None;
                 self.send("email_reset\n".to_string());
+            }
+            Message::EstimateScore(selected) => {
+                if !self.estimate_score && selected {
+                    println!("Start running score estimator...");
+                    let mut game = self.game.clone().expect("you should have a game by now");
+
+                    let mut ai = Box::new(
+                        AiMonteCarlo::new(game.board.size(), 10_000)
+                            .expect("you should be able to create an AI"),
+                    );
+
+                    let generate_move = ai.generate_move(&mut game);
+                    println!("{generate_move}");
+                    println!("{}", generate_move.heat_map);
+                } else if self.estimate_score && !selected {
+                    println!("Stop running score estimator...");
+                }
+
+                self.estimate_score = selected;
             }
             Message::FocusNext => return focus_next(),
             Message::FocusPrevious => return focus_previous(),
@@ -2688,6 +2717,7 @@ enum Message {
     DeleteAccount,
     EmailEveryone,
     EmailReset,
+    EstimateScore(bool),
     FocusPrevious,
     FocusNext,
     GameAccept(Id),
