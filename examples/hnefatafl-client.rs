@@ -20,32 +20,24 @@ use std::{
 use chrono::{Local, Utc};
 use clap::{CommandFactory, Parser, command};
 use futures::{SinkExt, executor};
-use hnefatafl_copenhagen::Id;
-use hnefatafl_copenhagen::SERVER_PORT;
-use hnefatafl_copenhagen::board::BoardSize;
-use hnefatafl_copenhagen::client::Size;
-use hnefatafl_copenhagen::client::Theme;
-use hnefatafl_copenhagen::client::User;
-use hnefatafl_copenhagen::locale::Locale;
-use hnefatafl_copenhagen::play::Plays;
-use hnefatafl_copenhagen::server_game::{ArchivedGame, ArchivedGameHandle};
-use hnefatafl_copenhagen::utils;
-use hnefatafl_copenhagen::utils::data_file;
 use hnefatafl_copenhagen::{
-    COPYRIGHT, VERSION_ID,
+    COPYRIGHT, Id, LONG_VERSION, SERVER_PORT, VERSION_ID,
     accounts::Email,
+    board::{self, BoardSize},
+    client::{Size, Theme, User},
     draw::Draw,
     game::{Game, TimeUnix},
     glicko::{CONFIDENCE_INTERVAL_95, Rating},
-    play::{BOARD_LETTERS, Vertex},
+    locale::Locale,
+    play::{BOARD_LETTERS, Plays, Vertex},
     rating::Rated,
     role::Role,
-    server_game::{ServerGameLight, ServerGamesLight},
+    server_game::{ArchivedGame, ArchivedGameHandle, ServerGameLight, ServerGamesLight},
     space::Space,
     status::Status,
     time::{Time, TimeSettings},
+    utils::{self, data_file},
 };
-use hnefatafl_copenhagen::{LONG_VERSION, board};
 use iced::keyboard::Key;
 use iced::keyboard::key::Named;
 use iced::widget::operation::{focus_next, focus_previous};
