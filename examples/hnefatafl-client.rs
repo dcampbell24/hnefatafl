@@ -23,7 +23,7 @@ use futures::{SinkExt, executor};
 use hnefatafl_copenhagen::{
     COPYRIGHT, Id, LONG_VERSION, SERVER_PORT, VERSION_ID,
     accounts::Email,
-    ai::{AI, AiMonteCarlo},
+    ai::{AI, AiMonteCarlo, GenerateMove},
     board::{self, BoardSize},
     client::{Size, Theme, User},
     draw::Draw,
@@ -37,6 +37,7 @@ use hnefatafl_copenhagen::{
     space::Space,
     status::Status,
     time::{Time, TimeSettings},
+    tree::Node,
     utils::{self, data_file},
 };
 #[cfg(target_os = "linux")]
@@ -261,6 +262,8 @@ struct Client {
     email_everyone: bool,
     #[serde(skip)]
     estimate_score: bool,
+    #[serde(skip)]
+    estimate_score_tx: Option<mpsc::Sender<Node>>,
     #[serde(skip)]
     captures: HashSet<Vertex>,
     #[serde(skip)]
@@ -844,8 +847,9 @@ impl<'a> Client {
         };
 
         let subscription_2 = Subscription::run(pass_messages);
+        let subscription_3 = Subscription::run(estimate_score);
 
-        let subscription_3 = event::listen_with(|event, _status, _id| match event {
+        let subscription_4 = event::listen_with(|event, _status, _id| match event {
             Event::Window(iced::window::Event::Resized(size)) => {
                 Some(Message::WindowResized((size.width, size.height)))
             }
@@ -872,7 +876,12 @@ impl<'a> Client {
             _ => None,
         });
 
-        Subscription::batch(vec![subscription_1, subscription_2, subscription_3])
+        Subscription::batch(vec![
+            subscription_1,
+            subscription_2,
+            subscription_3,
+            subscription_4,
+        ])
     }
 
     fn texting(&'a self, messages: &'a VecDeque<String>) -> Container<'a, Message> {
@@ -935,7 +944,7 @@ impl<'a> Client {
             }
             Message::EstimateScore(selected) => {
                 if !self.estimate_score && selected {
-                    println!("Start running score estimator...");
+                    info!("start running score estimator...");
 
                     let handle = self
                         .archived_game_handle
@@ -943,23 +952,23 @@ impl<'a> Client {
                         .expect("we should have a game handle now");
 
                     let node = handle.boards.here();
-                    let mut game = Game::from(node);
-
-                    let mut ai = Box::new(
-                        AiMonteCarlo::new(game.board.size(), 1_000)
-                            .expect("you should be able to create an AI"),
-                    );
-
-                    thread::spawn(move || {
-                        let generate_move = ai.generate_move(&mut game);
-                        println!("{generate_move}");
-                        println!("{}", generate_move.heat_map);
-                    });
-                } else if self.estimate_score && !selected {
-                    println!("Stop running score estimator...");
+                    self.send_estimate_score(node);
                 }
 
-                self.estimate_score = selected;
+                self.estimate_score = true;
+            }
+            Message::EstimateScoreConnected(tx) => self.estimate_score_tx = Some(tx),
+            Message::EstimateScoreDisplay((node, generate_move)) => {
+                info!("stop running score estimator...");
+
+                if let Some(handle) = self.archived_game_handle.as_ref()
+                    && handle.boards.here() == node
+                {
+                    println!("{generate_move}");
+                    println!("{}", generate_move.heat_map);
+                }
+
+                self.estimate_score = false;
             }
             Message::FocusNext => return focus_next(),
             Message::FocusPrevious => return focus_previous(),
@@ -2708,8 +2717,21 @@ impl<'a> Client {
         handle_error(
             self.tx
                 .as_mut()
-                .expect("you should have a tx available by now")
+                .unwrap_or_else(|| {
+                    panic!("error sending {string:?}: you should have a tx available by now")
+                })
                 .send(string),
+        );
+    }
+
+    fn send_estimate_score(&mut self, node: Node) {
+        handle_error(
+            self.estimate_score_tx
+                .as_mut()
+                .unwrap_or_else(|| {
+                    panic!("error sending {node:?}: you should have a tx available by now")
+                })
+                .send(node),
         );
     }
 }
@@ -2727,6 +2749,8 @@ enum Message {
     EmailEveryone,
     EmailReset,
     EstimateScore(bool),
+    EstimateScoreConnected(mpsc::Sender<Node>),
+    EstimateScoreDisplay((Node, GenerateMove)),
     FocusPrevious,
     FocusNext,
     GameAccept(Id),
@@ -2779,13 +2803,48 @@ enum Message {
     WindowResized((f32, f32)),
 }
 
+fn estimate_score() -> impl Stream<Item = Message> {
+    stream::channel(
+        100,
+        move |mut sender: iced::futures::channel::mpsc::Sender<Message>| async move {
+            let (tx, rx) = mpsc::channel();
+
+            if let Err(error) = sender.send(Message::EstimateScoreConnected(tx)).await {
+                error!("failed to send channel: {error}");
+                exit(1);
+            }
+
+            thread::spawn(move || {
+                loop {
+                    let node = handle_error(rx.recv());
+                    let mut game = Game::from(node.clone());
+
+                    let mut ai = Box::new(
+                        AiMonteCarlo::new(game.board.size(), 1_000)
+                            .expect("you should be able to create an AI"),
+                    );
+
+                    let generate_move = ai.generate_move(&mut game);
+
+                    if let Err(error) = executor::block_on(
+                        sender.send(Message::EstimateScoreDisplay((node, generate_move))),
+                    ) {
+                        error!("failed to send channel: {error}");
+                        exit(1);
+                    }
+                }
+            });
+        },
+    )
+}
+
 fn pass_messages() -> impl Stream<Item = Message> {
     stream::channel(
         100,
         move |mut sender: iced::futures::channel::mpsc::Sender<Message>| async move {
             let (tx, rx) = mpsc::channel();
 
-            if let Err(error) = sender.send(Message::StreamConnected(tx.clone())).await {
+            if let Err(error) = sender.send(Message::StreamConnected(tx)).await {
                 error!("failed to send channel: {error}");
                 exit(1);
             }
