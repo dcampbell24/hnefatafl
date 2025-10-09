@@ -38,25 +38,23 @@ use hnefatafl_copenhagen::{
     time::{Time, TimeSettings},
     utils::{self, data_file},
 };
-use iced::keyboard::Key;
-use iced::keyboard::key::Named;
-use iced::widget::operation::{focus_next, focus_previous};
 #[cfg(target_os = "linux")]
 use iced::window::settings::PlatformSpecific;
 use iced::{
-    Element, Event, Pixels, Subscription,
+    Element, Event, Pixels, Subscription, Task,
     alignment::{Horizontal, Vertical},
     event,
     font::Font,
     futures::Stream,
+    keyboard::{self, Key, key::Named},
     stream,
     widget::{
-        Column, Container, Row, Scrollable, button, checkbox, column, container, pick_list, radio,
-        row, scrollable, text, text_editor, text_input, tooltip,
+        Column, Container, Row, Scrollable, button, checkbox, column, container,
+        operation::{focus_next, focus_previous},
+        pick_list, radio, row, scrollable, text, text_editor, text_input, tooltip,
     },
     window::{self, icon},
 };
-use iced::{Task, keyboard};
 use log::{debug, error, info, trace};
 use rust_i18n::t;
 use serde::{Deserialize, Serialize};
