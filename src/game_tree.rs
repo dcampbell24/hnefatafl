@@ -1,6 +1,7 @@
 use std::{collections::HashMap, fmt};
 
 use rand::Rng;
+use serde::{Deserialize, Serialize};
 
 use crate::{
     board::{BoardSize, board_11x11, board_13x13},
@@ -191,7 +192,7 @@ impl From<Game> for Tree {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Node {
     pub play: Option<Plae>,
     pub score: f64,

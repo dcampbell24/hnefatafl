@@ -115,7 +115,7 @@ impl Tree {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Node {
     index: usize,
     pub board: Board,
