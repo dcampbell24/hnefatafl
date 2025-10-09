@@ -1,4 +1,4 @@
-use std::{collections::HashMap, sync::mpsc::channel};
+use std::{collections::HashMap, fmt, sync::mpsc::channel};
 
 use chrono::Utc;
 use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
@@ -14,29 +14,58 @@ use crate::{
 };
 
 pub trait AI {
-    fn generate_move(&mut self, game: &mut Game) -> (Option<Plae>, f64, i64, HeatMap);
+    fn generate_move(&mut self, game: &mut Game) -> GenerateMove;
     #[allow(clippy::missing_errors_doc)]
     fn play(&mut self, game: &mut Game, play: &Plae) -> anyhow::Result<()>;
+}
+
+pub struct GenerateMove {
+    pub play: Option<Plae>,
+    pub score: f64,
+    pub delay_milliseconds: i64,
+    pub heat_map: HeatMap,
+}
+
+impl fmt::Display for GenerateMove {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if let Some(play) = &self.play {
+            writeln!(
+                f,
+                "{play}, score: {}, delay milliseconds: {}",
+                self.score, self.delay_milliseconds,
+            )
+        } else {
+            Ok(())
+        }
+    }
 }
 
 #[derive(Clone, Debug, Default)]
 pub struct AiBanal;
 
 impl AI for AiBanal {
-    fn generate_move(&mut self, game: &mut Game) -> (Option<Plae>, f64, i64, HeatMap) {
+    fn generate_move(&mut self, game: &mut Game) -> GenerateMove {
+        let mut generate_move = GenerateMove {
+            play: None,
+            score: 0.0,
+            delay_milliseconds: 0,
+            heat_map: HeatMap::default(),
+        };
+
         if game.status != Status::Ongoing {
-            return (None, 0.0, 0, HeatMap::default());
+            return generate_move;
         }
 
         let play = game.all_legal_plays()[0].clone();
         match game.play(&play) {
             Ok(_captures) => {}
             Err(_) => {
-                return (None, 0.0, 0, HeatMap::default());
+                return generate_move;
             }
         }
 
-        (Some(play), 0.0, 0, HeatMap::default())
+        generate_move.play = Some(play);
+        generate_move
     }
 
     fn play(&mut self, game: &mut Game, play: &Plae) -> anyhow::Result<()> {
@@ -67,9 +96,16 @@ impl Default for AiMonteCarlo {
 }
 
 impl AI for AiMonteCarlo {
-    fn generate_move(&mut self, game: &mut Game) -> (Option<Plae>, f64, i64, HeatMap) {
+    fn generate_move(&mut self, game: &mut Game) -> GenerateMove {
+        let generate_move = GenerateMove {
+            play: None,
+            score: 0.0,
+            delay_milliseconds: 0,
+            heat_map: HeatMap::default(),
+        };
+
         if game.status != Status::Ongoing {
-            return (None, 0.0, 0, HeatMap::default());
+            return generate_move;
         }
 
         let t0 = Utc::now().timestamp_millis();
@@ -122,7 +158,7 @@ impl AI for AiMonteCarlo {
         match game.play(play) {
             Ok(_captures) => {}
             Err(_) => {
-                return (None, 0.0, 0, HeatMap::default());
+                return generate_move;
             }
         }
 
@@ -135,7 +171,12 @@ impl AI for AiMonteCarlo {
         let delay = t1 - t0;
         let heat_map = HeatMap::from(&nodes);
 
-        (node.play.clone(), node.score, delay, heat_map)
+        GenerateMove {
+            play: node.play.clone(),
+            score: node.score,
+            delay_milliseconds: delay,
+            heat_map,
+        }
     }
 
     fn play(&mut self, game: &mut Game, play: &Plae) -> anyhow::Result<()> {

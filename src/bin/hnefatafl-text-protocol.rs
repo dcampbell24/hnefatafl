@@ -115,17 +115,19 @@ fn play_ai(args: &Args) -> anyhow::Result<()> {
     }
 
     loop {
-        let (play, score, delay_milliseconds, heat_map) = ai.generate_move(&mut game);
-        let play = play.ok_or(anyhow::Error::msg("The game is already over."))?;
+        let generate_move = ai.generate_move(&mut game);
+        if generate_move.play.is_none() {
+            return Err(anyhow::Error::msg("The game is already over."));
+        }
 
         if args.display_game {
             clear_screen()?;
             println!("{game}\n");
         } else {
-            println!("{heat_map}");
+            println!("{}", generate_move.heat_map);
         }
 
-        println!("= {play}, score: {score}, delay milliseconds: {delay_milliseconds}");
+        println!("= {generate_move}");
 
         if game.status != Status::Ongoing {
             return Ok(());
@@ -160,19 +162,19 @@ fn play_tcp(address: &str, display_game: bool, loops: i64) -> anyhow::Result<()>
                     }
                 }
                 "generate_move" => {
-                    let (play, score, delay_milliseconds, heat_map) = ai.generate_move(&mut game);
-                    let play = play.ok_or(anyhow::Error::msg("The game is already over."))?;
-
-                    write_command(&format!("{play}\n"), &mut stream)?;
+                    let generate_move = ai.generate_move(&mut game);
+                    if let Some(play) = &generate_move.play {
+                        write_command(&format!("{play}\n"), &mut stream)?;
+                    } else {
+                        return Err(anyhow::Error::msg("The game is already over."));
+                    }
 
                     if display_game {
                         println!("{game}");
                     }
 
-                    println!(
-                        "play: {play} score: {score} delay milliseconds: {delay_milliseconds}"
-                    );
-                    println!("{heat_map}");
+                    println!("{generate_move}");
+                    println!("{}", generate_move.heat_map);
                 }
                 _ => unreachable!("You can't get here!"),
             }
