@@ -52,10 +52,7 @@ impl HeatMap {
             froms_hash_map.insert(*play, *score);
         }
 
-        // Fixme: fix the defender!
-        // This is empty for the defender!
-        // println!("{froms:?}");
-        // Handle clicking on the board.
+        // Fixme: handle clicking on the board.
 
         for y in 0..board_size {
             for x in 0..board_size {
@@ -90,8 +87,6 @@ impl From<&Vec<&Node>> for HeatMap {
                     Plae::Play(play) => {
                         let board_index: usize = (&play.to).into();
 
-                        // Fixme!
-                        println!("{}", play.role);
                         heat_map
                             .spaces
                             .entry((play.role, play.from.clone()))

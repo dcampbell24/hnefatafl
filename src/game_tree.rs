@@ -167,9 +167,22 @@ impl Tree {
 impl From<Game> for Tree {
     fn from(game: Game) -> Self {
         let mut arena = HashMap::new();
+
         let play = match &game.plays {
-            Plays::PlayRecords(plays) => plays.last().unwrap(),
-            Plays::PlayRecordsTimed(plays) => &plays.last().unwrap().play,
+            Plays::PlayRecords(plays) => {
+                if let Some(play) = plays.last() {
+                    play.clone()
+                } else {
+                    None
+                }
+            }
+            Plays::PlayRecordsTimed(plays) => {
+                if let Some(timing) = plays.last() {
+                    timing.play.clone()
+                } else {
+                    None
+                }
+            }
         };
 
         let hash = game.calculate_hash();
