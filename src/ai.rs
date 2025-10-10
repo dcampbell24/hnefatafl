@@ -111,6 +111,10 @@ impl AI for AiMonteCarlo {
 
         let t0 = Utc::now().timestamp_millis();
 
+        for tree in &mut self.trees {
+            *tree = Tree::from(game.clone());
+        }
+
         let (tx, rx) = channel();
         self.trees.par_iter_mut().for_each_with(tx, |tx, tree| {
             let nodes = tree.monte_carlo_tree_search(self.loops);
@@ -169,13 +173,13 @@ impl AI for AiMonteCarlo {
         }
 
         let t1 = Utc::now().timestamp_millis();
-        let delay = t1 - t0;
+        let delay_milliseconds = t1 - t0;
         let heat_map = HeatMap::from(&nodes);
 
         GenerateMove {
             play: node.play.clone(),
             score: node.score,
-            delay_milliseconds: delay,
+            delay_milliseconds,
             heat_map,
         }
     }
