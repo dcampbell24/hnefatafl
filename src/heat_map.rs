@@ -14,6 +14,7 @@ pub struct HeatMap {
 }
 
 impl HeatMap {
+    // Fixme: handle clicking on the board.Map
     #[allow(clippy::missing_panics_doc)]
     #[must_use]
     pub fn draw(&self, role: Role) -> Vec<f64> {
@@ -25,34 +26,39 @@ impl HeatMap {
             vec![0.0; 13 * 13]
         };
 
+        if role == Role::Roleless {
+            return spaces;
+        }
+
         let mut froms = Vec::new();
         for key in self.spaces.keys() {
-            let mut vector = self.spaces[key].clone();
+            let min_max = match role {
+                Role::Attacker => *self.spaces[key]
+                    .iter()
+                    .max_by(|a, b| f64::total_cmp(a, b))
+                    .expect("there is at least one value"),
+                Role::Defender => *self.spaces[key]
+                    .iter()
+                    .min_by(|a, b| f64::total_cmp(a, b))
+                    .expect("there is at least one value"),
+                Role::Roleless => unreachable!(),
+            };
 
-            for i in &mut vector {
-                if *i != 0.0 {
-                    *i = f64::midpoint(*i, 1.0);
-                }
-            }
-
-            let max = vector
-                .iter()
-                .max_by(|a, b| f64::total_cmp(a, b))
-                .expect("there is at least one value");
-
-            froms.push((key, *max));
+            froms.push((key, min_max));
         }
 
         froms.sort_by(|a, b| f64::total_cmp(&a.1, &b.1));
-        let mut froms_hash_map = HashMap::new();
-        let mut set_score = 1.0;
-        for (play, score) in &mut froms {
-            *score = set_score;
-            set_score -= 0.1;
-            froms_hash_map.insert(*play, *score);
+        if Role::Attacker == role {
+            froms.reverse();
         }
 
-        // Fixme: handle clicking on the board.
+        let mut froms_hash_map = HashMap::new();
+        let mut score = 1.0;
+
+        for (play, _) in &mut froms {
+            froms_hash_map.insert(*play, score);
+            score -= 0.1;
+        }
 
         for y in 0..board_size {
             for x in 0..board_size {
