@@ -534,7 +534,7 @@ impl<'a> Client {
 
                 if let Some(heat_map) = &heat_map {
                     let heat = heat_map[y * board_size_usize + x];
-                    text_ = text_.color(Color::from_rgba(0.0, 1.0, 1.0, heat as f32));
+                    text_ = text_.color(Color::from_rgba(0.0, 0.0, 0.0, heat as f32));
                 }
 
                 let mut button_ = button(text_).width(board_dimension).height(board_dimension);

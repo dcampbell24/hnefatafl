@@ -79,12 +79,23 @@ impl HeatMap {
 
         spaces
     }
+
+    fn new(board_size: BoardSize) -> Self {
+        Self {
+            board_size,
+            spaces: HashMap::new(),
+        }
+    }
 }
 
 impl From<&Vec<&Node>> for HeatMap {
     #[allow(clippy::float_cmp)]
     fn from(nodes: &Vec<&Node>) -> Self {
-        let mut heat_map = HeatMap::default();
+        let mut heat_map = if let Some(node) = nodes.first() {
+            HeatMap::new(node.board_size)
+        } else {
+            HeatMap::default()
+        };
 
         for node in nodes {
             if let Some(play) = &node.play {
