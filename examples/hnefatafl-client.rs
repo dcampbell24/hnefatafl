@@ -20,6 +20,7 @@ use std::{
 use chrono::{Local, Utc};
 use clap::{CommandFactory, Parser, command};
 use futures::{SinkExt, executor};
+use hnefatafl_copenhagen::heat_map::HeatMap;
 use hnefatafl_copenhagen::{
     COPYRIGHT, Id, LONG_VERSION, SERVER_PORT, VERSION_ID,
     accounts::Email,
@@ -40,6 +41,7 @@ use hnefatafl_copenhagen::{
     tree::Node,
     utils::{self, data_file},
 };
+use iced::Color;
 #[cfg(target_os = "linux")]
 use iced::window::settings::PlatformSpecific;
 use iced::{
@@ -76,6 +78,10 @@ struct Args {
     /// Connect to the server at host
     #[arg(default_value = "hnefatafl.org", long)]
     host: String,
+
+    /// How many Monte Carlo loops to run
+    #[arg(default_value_t = 1_000, long)]
+    loops: i64,
 
     /// Make the window size tiny
     #[arg(long)]
@@ -294,6 +300,10 @@ struct Client {
     games_light: ServerGamesLight,
     #[serde(skip)]
     game_settings: NewGameSettings,
+    #[serde(skip)]
+    heat_map: Option<HeatMap>,
+    #[serde(skip)]
+    heat_map_display: bool,
     #[serde(default)]
     locale_selected: Locale,
     #[serde(skip)]
@@ -394,16 +404,24 @@ impl<'a> Client {
         self.archived_game_selected = None;
     }
 
+    #[allow(clippy::cast_possible_truncation)]
     #[allow(clippy::too_many_lines)]
     #[must_use]
     fn board(&self) -> Row<'_, Message> {
-        let board = if let Some(game_handle) = &self.archived_game_handle {
-            &game_handle.boards.here().board
+        let (board, heat_map) = if let Some(game_handle) = &self.archived_game_handle {
+            let node = game_handle.boards.here();
+            if self.heat_map_display
+                && let Some(heat_map) = &self.heat_map
+            {
+                (&node.board.clone(), Some(heat_map.draw(node.turn)))
+            } else {
+                (&node.board.clone(), None)
+            }
         } else {
             let Some(game) = &self.game else {
                 panic!("we should be in a game");
             };
-            &game.board
+            (&game.board, None)
         };
 
         let board_size = board.size();
@@ -512,6 +530,11 @@ impl<'a> Client {
 
                 if self.captures.contains(&vertex) {
                     text_ = text("X").size(piece_size).center();
+                }
+
+                if let Some(heat_map) = &heat_map {
+                    let heat = heat_map[y * board_size_usize + x];
+                    text_ = text_.color(Color::from_rgba(0.0, 1.0, 1.0, heat as f32));
                 }
 
                 let mut button_ = button(text_).width(board_dimension).height(board_dimension);
@@ -800,6 +823,16 @@ impl<'a> Client {
 
         user_area = user_area.push(row![estimate_score].spacing(SPACING));
 
+        let heat_map = checkbox(
+            t!("Heat Map"),
+            self.heat_map_display && self.heat_map.is_some(),
+        )
+        .text_shaping(text::Shaping::Advanced)
+        .on_toggle(Message::HeatMap)
+        .size(32);
+
+        user_area = user_area.push(row![heat_map].spacing(SPACING));
+
         if let Some(handle) = &self.archived_game_handle {
             let mut left_all = button(text("⏮").shaping(text::Shaping::Advanced));
             let mut left = button(text("⏪").shaping(text::Shaping::Advanced));
@@ -959,13 +992,13 @@ impl<'a> Client {
             }
             Message::EstimateScoreConnected(tx) => self.estimate_score_tx = Some(tx),
             Message::EstimateScoreDisplay((node, generate_move)) => {
-                info!("stop running score estimator...");
+                info!("finish running score estimator...");
 
                 if let Some(handle) = self.archived_game_handle.as_ref()
                     && handle.boards.here() == node
                 {
-                    println!("{generate_move}");
-                    println!("{}", generate_move.heat_map);
+                    info!("{generate_move}");
+                    self.heat_map = Some(generate_move.heat_map);
                 }
 
                 self.estimate_score = false;
@@ -999,6 +1032,7 @@ impl<'a> Client {
                 self.game_id = id;
                 self.send(format!("watch_game {id}\n"));
             }
+            Message::HeatMap(display) => self.heat_map_display = display,
             Message::Leave => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
@@ -2760,6 +2794,7 @@ enum Message {
     GameResume(Id),
     GameSubmit,
     GameWatch(Id),
+    HeatMap(bool),
     Leave,
     LocaleSelected(Locale),
     MyGamesOnly(bool),
@@ -2804,6 +2839,8 @@ enum Message {
 }
 
 fn estimate_score() -> impl Stream<Item = Message> {
+    let args = Args::parse();
+
     stream::channel(
         100,
         move |mut sender: iced::futures::channel::mpsc::Sender<Message>| async move {
@@ -2820,7 +2857,7 @@ fn estimate_score() -> impl Stream<Item = Message> {
                     let mut game = Game::from(node.clone());
 
                     let mut ai = Box::new(
-                        AiMonteCarlo::new(game.board.size(), 1_000)
+                        AiMonteCarlo::new(game.board.size(), args.loops)
                             .expect("you should be able to create an AI"),
                     );
 
