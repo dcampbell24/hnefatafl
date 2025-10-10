@@ -25,10 +25,12 @@ impl Tree {
             .unwrap_or_else(|| panic!("The hashmap should have the node {parent_index}."));
 
         node.children.push(child_index);
+        let board_size = node.board_size;
 
         self.arena.insert(
             child_index,
             Node {
+                board_size,
                 play: Some(play),
                 score: 0.0,
                 count: 1.0,
@@ -148,6 +150,7 @@ impl Tree {
         arena.insert(
             hash,
             Node {
+                board_size,
                 play: None,
                 score: 0.0,
                 count: 0.0,
@@ -189,6 +192,7 @@ impl From<Game> for Tree {
         arena.insert(
             hash,
             Node {
+                board_size: game.board.size(),
                 play: play.clone(),
                 score: 0.0,
                 count: 0.0,
@@ -207,6 +211,7 @@ impl From<Game> for Tree {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Node {
+    pub board_size: BoardSize,
     pub play: Option<Plae>,
     pub score: f64,
     pub count: f64,
