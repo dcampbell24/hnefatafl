@@ -9,10 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- hnefatafl-client: monte carlo heat map to replay games.
+- hnefatafl-client: save the archived games.
 - hnefatafl-text-protocol: display seconds left.
 
 ### Changed
 
+- hnefatafl-client: use postcard instead of ron for the user config file.
 - Make the engine faster.
 
 ### Fixed
