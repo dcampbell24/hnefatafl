@@ -214,14 +214,14 @@ fn main() -> anyhow::Result<()> {
 }
 
 fn active_games_file() -> PathBuf {
-    let mut archived_games_file = if let Some(data_file) = dirs::data_dir() {
+    let mut active_games_file = if let Some(data_file) = dirs::data_dir() {
         data_file
     } else {
         PathBuf::new()
     };
 
-    archived_games_file.push("hnefatafl-games-active.postcard");
-    archived_games_file
+    active_games_file.push("hnefatafl-games-active.postcard");
+    active_games_file
 }
 
 fn archived_games_file() -> PathBuf {
