@@ -57,7 +57,7 @@ impl HeatMap {
 
         for (play, _) in &mut froms {
             froms_hash_map.insert(*play, score);
-            score -= 0.1;
+            score -= 0.3;
         }
 
         for y in 0..board_size {
