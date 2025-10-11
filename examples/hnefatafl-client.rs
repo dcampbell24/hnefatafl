@@ -258,7 +258,7 @@ struct Client {
     #[serde(default)]
     archived_games: Vec<ArchivedGame>,
     #[serde(skip)]
-    archived_games_filtered: Vec<ArchivedGame>,
+    archived_games_filtered: Option<Vec<ArchivedGame>>,
     #[serde(skip)]
     archived_game_selected: Option<ArchivedGame>,
     #[serde(skip)]
@@ -947,8 +947,8 @@ impl<'a> Client {
             Message::AccountSettings => self.screen = Screen::AccountSettings,
             Message::ArchivedGames(mut archived_games) => {
                 archived_games.reverse();
-                self.archived_games = archived_games.clone();
-                self.archived_games_filtered = archived_games;
+                self.archived_games = archived_games;
+                self.archived_games_filtered = None;
                 handle_error(self.save_client());
             }
             Message::ArchivedGamesGet => self.send("archived_games\n".to_string()),
@@ -1070,16 +1070,17 @@ impl<'a> Client {
             }
             Message::MyGamesOnly(selected) => {
                 if selected {
-                    self.archived_games_filtered = self
-                        .archived_games
-                        .iter()
-                        .filter(|game| {
-                            game.attacker == self.username || game.defender == self.username
-                        })
-                        .cloned()
-                        .collect();
+                    self.archived_games_filtered = Some(
+                        self.archived_games
+                            .iter()
+                            .filter(|game| {
+                                game.attacker == self.username || game.defender == self.username
+                            })
+                            .cloned()
+                            .collect(),
+                    );
                 } else {
-                    self.archived_games_filtered = self.archived_games.clone();
+                    self.archived_games_filtered = None;
                 }
 
                 self.my_games_only = selected;
@@ -2581,8 +2582,14 @@ impl<'a> Client {
                     review_game = review_game.on_press(Message::ReviewGame);
                 }
 
+                let archived_games = if let Some(archived_games) = &self.archived_games_filtered {
+                    archived_games.clone()
+                } else {
+                    self.archived_games.clone()
+                };
+
                 let review_game_pick = pick_list(
-                    self.archived_games_filtered.clone(),
+                    archived_games,
                     self.archived_game_selected.clone(),
                     Message::ArchivedGameSelected,
                 )
