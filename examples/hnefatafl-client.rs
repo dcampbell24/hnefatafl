@@ -63,8 +63,7 @@ use log::{debug, error, info, trace};
 use rust_i18n::t;
 use serde::{Deserialize, Serialize};
 
-const USER_CONFIG_FILE: &str = "hnefatafl.ron";
-const USER_CONFIG_FILE_POSTCARD: &str = "hnefatafl.postcard";
+const USER_CONFIG_FILE: &str = "hnefatafl.postcard";
 
 const PADDING: u16 = 10;
 const SPACING: Pixels = Pixels(10.0);
@@ -162,8 +161,8 @@ fn i18n_buttons() -> HashMap<String, String> {
 fn init_client() -> Client {
     let user_config_file = data_file(USER_CONFIG_FILE);
     let mut error = None;
-    let mut client: Client = match &fs::read_to_string(&user_config_file) {
-        Ok(string) => match ron::from_str(string.as_str()) {
+    let mut client: Client = match &fs::read(&user_config_file) {
+        Ok(bytes) => match postcard::from_bytes(bytes) {
             Ok(client) => client,
             Err(err) => {
                 error = Some(format!(
@@ -194,6 +193,10 @@ fn init_client() -> Client {
 
     client.strings = i18n_buttons();
     client.text_input = client.username.clone();
+
+    if client.username == "david" {
+        client.email_everyone = true;
+    }
 
     client
 }
@@ -267,7 +270,7 @@ struct Client {
     defender: String,
     #[serde(skip)]
     delete_account: bool,
-    #[serde(default)]
+    #[serde(skip)]
     email_everyone: bool,
     #[serde(skip)]
     estimate_score: bool,
@@ -2739,15 +2742,9 @@ impl<'a> Client {
     }
 
     fn save_client(&self) -> anyhow::Result<()> {
-        let ron_string = ron::ser::to_string_pretty(&self, ron::ser::PrettyConfig::default())?;
-        if !ron_string.is_empty() {
-            let mut file = File::create(data_file(USER_CONFIG_FILE))?;
-            file.write_all(ron_string.as_bytes())?;
-        }
-
         let postcard_bytes = postcard::to_allocvec(&self)?;
         if !postcard_bytes.is_empty() {
-            let mut file = File::create(data_file(USER_CONFIG_FILE_POSTCARD))?;
+            let mut file = File::create(data_file(USER_CONFIG_FILE))?;
             file.write_all(&postcard_bytes)?;
         }
 
