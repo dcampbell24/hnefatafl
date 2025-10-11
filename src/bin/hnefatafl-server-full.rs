@@ -5,7 +5,6 @@ use std::{
     fs::{self, File, OpenOptions},
     io::{BufRead, BufReader, ErrorKind, Read, Write},
     net::{TcpListener, TcpStream},
-    path::PathBuf,
     process::exit,
     str::FromStr,
     sync::mpsc::{self, Receiver, Sender},
@@ -46,6 +45,10 @@ use log::{debug, error, info};
 use password_hash::SaltString;
 use rand::{random, rngs::OsRng};
 use serde::{Deserialize, Serialize};
+
+const ACTIVE_GAMES_FILE: &str = "hnefatafl-games-active.postcard";
+const ARCHIVED_GAMES_FILE: &str = "hnefatafl-games.ron";
+const USERS_FILE: &str = "hnefatafl-copenhagen.ron";
 
 /// Copenhagen Hnefatafl Server
 ///
@@ -104,8 +107,8 @@ fn main() -> anyhow::Result<()> {
     };
 
     if !args.skip_the_data_file {
-        let data_file = data_file("hnefatafl-copenhagen.ron");
-        match &fs::read_to_string(&data_file) {
+        let users_file = data_file(USERS_FILE);
+        match &fs::read_to_string(&users_file) {
             Ok(string) => match ron::from_str(string.as_str()) {
                 Ok(server_ron) => {
                     server = server_ron;
@@ -114,7 +117,7 @@ fn main() -> anyhow::Result<()> {
                 Err(err) => {
                     return Err(anyhow::Error::msg(format!(
                         "RON: {}: {err}",
-                        data_file.display(),
+                        users_file.display(),
                     )));
                 }
             },
@@ -124,7 +127,7 @@ fn main() -> anyhow::Result<()> {
             },
         }
 
-        let archived_games_file = archived_games_file();
+        let archived_games_file = data_file(ARCHIVED_GAMES_FILE);
         match fs::read_to_string(&archived_games_file) {
             Ok(archived_games_string) => {
                 let mut archived_games = Vec::new();
@@ -149,7 +152,7 @@ fn main() -> anyhow::Result<()> {
             }
         }
 
-        let active_games_file = active_games_file();
+        let active_games_file = data_file(ACTIVE_GAMES_FILE);
         if fs::exists(&active_games_file)? {
             let mut file = File::open(active_games_file)?;
             let mut data = Vec::new();
@@ -211,28 +214,6 @@ fn main() -> anyhow::Result<()> {
     }
 
     Ok(())
-}
-
-fn active_games_file() -> PathBuf {
-    let mut active_games_file = if let Some(data_file) = dirs::data_dir() {
-        data_file
-    } else {
-        PathBuf::new()
-    };
-
-    active_games_file.push("hnefatafl-games-active.postcard");
-    active_games_file
-}
-
-fn archived_games_file() -> PathBuf {
-    let mut archived_games_file = if let Some(data_file) = dirs::data_dir() {
-        data_file
-    } else {
-        PathBuf::new()
-    };
-
-    archived_games_file.push("hnefatafl-games.ron");
-    archived_games_file
 }
 
 #[allow(clippy::too_many_lines)]
@@ -454,7 +435,7 @@ impl Server {
         };
         let game = ArchivedGame::new(game, attacker.rating.clone(), defender.rating.clone());
 
-        let archived_games_file = archived_games_file();
+        let archived_games_file = data_file(ARCHIVED_GAMES_FILE);
         let game_string = ron::ser::to_string(&game)?;
 
         let mut file = OpenOptions::new()
@@ -1354,7 +1335,7 @@ impl Server {
                         active_games.push(ServerGameSerialized::from(game));
                     }
 
-                    let mut file = handle_error(File::create(active_games_file()));
+                    let mut file = handle_error(File::create(data_file(ACTIVE_GAMES_FILE)));
                     handle_error(
                         file.write_all(
                             handle_error(postcard::to_allocvec(&active_games)).as_slice(),
@@ -1953,9 +1934,9 @@ impl Server {
                 ron::ser::to_string_pretty(&server, ron::ser::PrettyConfig::default())
             && !string.trim().is_empty()
         {
-            let data_file = data_file("hnefatafl-copenhagen.ron");
+            let users_file = data_file(USERS_FILE);
 
-            if let Ok(mut file) = File::create(&data_file)
+            if let Ok(mut file) = File::create(&users_file)
                 && let Err(error) = file.write_all(string.as_bytes())
             {
                 error!("{error}");
