@@ -63,8 +63,8 @@ use log::{debug, error, info, trace};
 use rust_i18n::t;
 use serde::{Deserialize, Serialize};
 
-const _ARCHIVED_GAMES_FILE: &str = "hnefatafl-games.postcard";
 const USER_CONFIG_FILE: &str = "hnefatafl.ron";
+const USER_CONFIG_FILE_POSTCARD: &str = "hnefatafl.postcard";
 
 const PADDING: u16 = 10;
 const SPACING: Pixels = Pixels(10.0);
@@ -255,7 +255,7 @@ fn main() -> anyhow::Result<()> {
 struct Client {
     #[serde(skip)]
     attacker: String,
-    #[serde(skip)]
+    #[serde(default)]
     archived_games: Vec<ArchivedGame>,
     #[serde(skip)]
     archived_games_filtered: Vec<ArchivedGame>,
@@ -949,12 +949,13 @@ impl<'a> Client {
                 archived_games.reverse();
                 self.archived_games = archived_games.clone();
                 self.archived_games_filtered = archived_games;
+                handle_error(self.save_client());
             }
             Message::ArchivedGamesGet => self.send("archived_games\n".to_string()),
             Message::ArchivedGameSelected(game) => self.archived_game_selected = Some(game),
             Message::ChangeTheme(theme) => {
                 self.theme = theme;
-                self.save_client();
+                handle_error(self.save_client());
             }
             Message::BoardSizeSelected(size) => self.game_settings.board_size = Some(size),
             Message::ConnectedTo(address) => self.connected_to = address,
@@ -1065,7 +1066,7 @@ impl<'a> Client {
                 }
 
                 self.locale_selected = locale;
-                self.save_client();
+                handle_error(self.save_client());
             }
             Message::MyGamesOnly(selected) => {
                 if selected {
@@ -1716,7 +1717,7 @@ impl<'a> Client {
                 }
                 self.text_input.clear();
                 self.archived_game_reset();
-                self.save_client();
+                handle_error(self.save_client());
             }
             Message::TextSendLogin => {
                 if !self.connected_tcp {
@@ -1742,7 +1743,7 @@ impl<'a> Client {
                 self.password.clear();
                 self.text_input.clear();
                 self.archived_game_reset();
-                self.save_client();
+                handle_error(self.save_client());
             }
             Message::Tick => {
                 self.counter = self.counter.wrapping_add(1);
@@ -2730,18 +2731,20 @@ impl<'a> Client {
         self.play_to_previous = None;
     }
 
-    fn save_client(&self) {
-        if let Ok(string) = ron::ser::to_string_pretty(&self, ron::ser::PrettyConfig::default())
-            && !string.trim().is_empty()
-        {
-            let user_config_file = data_file(USER_CONFIG_FILE);
-
-            if let Ok(mut file) = File::create(&user_config_file)
-                && let Err(error) = file.write_all(string.as_bytes())
-            {
-                error!("{error}");
-            }
+    fn save_client(&self) -> anyhow::Result<()> {
+        let ron_string = ron::ser::to_string_pretty(&self, ron::ser::PrettyConfig::default())?;
+        if !ron_string.is_empty() {
+            let mut file = File::create(data_file(USER_CONFIG_FILE))?;
+            file.write_all(ron_string.as_bytes())?;
         }
+
+        let postcard_bytes = postcard::to_allocvec(&self)?;
+        if !postcard_bytes.is_empty() {
+            let mut file = File::create(data_file(USER_CONFIG_FILE_POSTCARD))?;
+            file.write_all(&postcard_bytes)?;
+        }
+
+        Ok(())
     }
 
     fn send(&mut self, string: String) {
