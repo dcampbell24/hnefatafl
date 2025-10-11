@@ -816,22 +816,17 @@ impl<'a> Client {
             ));
         }
 
-        let estimate_score = checkbox(t!("Estimate Score"), self.estimate_score)
-            .text_shaping(text::Shaping::Advanced)
-            .on_toggle(Message::EstimateScore)
+        let heat_map = checkbox("", self.heat_map_display && self.heat_map.is_some())
+            .on_toggle(Message::HeatMap)
             .size(32);
 
-        user_area = user_area.push(row![estimate_score].spacing(SPACING));
+        // Fixme: translate Heat Map.
+        let mut heat_map_text = button(text("Heat Map").shaping(text::Shaping::Advanced));
+        if !self.estimate_score {
+            heat_map_text = heat_map_text.on_press(Message::EstimateScore);
+        }
 
-        let heat_map = checkbox(
-            t!("Heat Map"),
-            self.heat_map_display && self.heat_map.is_some(),
-        )
-        .text_shaping(text::Shaping::Advanced)
-        .on_toggle(Message::HeatMap)
-        .size(32);
-
-        user_area = user_area.push(row![heat_map].spacing(SPACING));
+        user_area = user_area.push(row![heat_map, heat_map_text].spacing(SPACING));
 
         if let Some(handle) = &self.archived_game_handle {
             let mut left_all = button(text("⏮").shaping(text::Shaping::Advanced));
@@ -975,8 +970,8 @@ impl<'a> Client {
                 self.email = None;
                 self.send("email_reset\n".to_string());
             }
-            Message::EstimateScore(selected) => {
-                if !self.estimate_score && selected {
+            Message::EstimateScore => {
+                if !self.estimate_score {
                     info!("start running score estimator...");
 
                     let handle = self
@@ -985,10 +980,9 @@ impl<'a> Client {
                         .expect("we should have a game handle now");
 
                     let node = handle.boards.here();
+                    self.estimate_score = true;
                     self.send_estimate_score(node);
                 }
-
-                self.estimate_score = true;
             }
             Message::EstimateScoreConnected(tx) => self.estimate_score_tx = Some(tx),
             Message::EstimateScoreDisplay((node, generate_move)) => {
@@ -2782,7 +2776,7 @@ enum Message {
     DeleteAccount,
     EmailEveryone,
     EmailReset,
-    EstimateScore(bool),
+    EstimateScore,
     EstimateScoreConnected(mpsc::Sender<Node>),
     EstimateScoreDisplay((Node, GenerateMove)),
     FocusPrevious,
