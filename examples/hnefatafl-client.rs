@@ -64,6 +64,8 @@ use rust_i18n::t;
 use serde::{Deserialize, Serialize};
 
 const _ARCHIVED_GAMES_FILE: &str = "hnefatafl-games.postcard";
+const USER_CONFIG_FILE: &str = "hnefatafl.ron";
+
 const PADDING: u16 = 10;
 const SPACING: Pixels = Pixels(10.0);
 const SPACING_B: Pixels = Pixels(20.0);
@@ -158,15 +160,15 @@ fn i18n_buttons() -> HashMap<String, String> {
 }
 
 fn init_client() -> Client {
-    let data_file = data_file("hnefatafl.ron");
+    let user_config_file = data_file(USER_CONFIG_FILE);
     let mut error = None;
-    let mut client: Client = match &fs::read_to_string(&data_file) {
+    let mut client: Client = match &fs::read_to_string(&user_config_file) {
         Ok(string) => match ron::from_str(string.as_str()) {
             Ok(client) => client,
             Err(err) => {
                 error = Some(format!(
                     "error parsing the ron file {}: {err}",
-                    data_file.display()
+                    user_config_file.display()
                 ));
                 Client::default()
             }
@@ -177,7 +179,7 @@ fn init_client() -> Client {
             } else {
                 error = Some(format!(
                     "error opening the file {}: {err}",
-                    data_file.display()
+                    user_config_file.display()
                 ));
                 Client::default()
             }
@@ -2732,9 +2734,9 @@ impl<'a> Client {
         if let Ok(string) = ron::ser::to_string_pretty(&self, ron::ser::PrettyConfig::default())
             && !string.trim().is_empty()
         {
-            let data_file = data_file("hnefatafl.ron");
+            let user_config_file = data_file(USER_CONFIG_FILE);
 
-            if let Ok(mut file) = File::create(&data_file)
+            if let Ok(mut file) = File::create(&user_config_file)
                 && let Err(error) = file.write_all(string.as_bytes())
             {
                 error!("{error}");
