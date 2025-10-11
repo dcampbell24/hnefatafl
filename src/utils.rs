@@ -11,6 +11,7 @@ pub fn data_file(file: &str) -> PathBuf {
     } else {
         PathBuf::new()
     };
+
     data_file.push(file);
     data_file
 }

@@ -63,6 +63,7 @@ use log::{debug, error, info, trace};
 use rust_i18n::t;
 use serde::{Deserialize, Serialize};
 
+const _ARCHIVED_GAMES_FILE: &str = "hnefatafl-games.postcard";
 const PADDING: u16 = 10;
 const SPACING: Pixels = Pixels(10.0);
 const SPACING_B: Pixels = Pixels(20.0);
