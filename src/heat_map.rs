@@ -57,7 +57,11 @@ impl HeatMap {
 
         for (play, _) in &mut froms {
             froms_hash_map.insert(*play, score);
+
             score -= 0.3;
+            if score < 0.0 {
+                score = f64::INFINITY;
+            }
         }
 
         for y in 0..board_size {
@@ -72,7 +76,7 @@ impl HeatMap {
                 )) {
                     spaces[y * board_size + x] = *i;
                 } else {
-                    spaces[y * board_size + x] = 0.0;
+                    spaces[y * board_size + x] = 0.25;
                 }
             }
         }

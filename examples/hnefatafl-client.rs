@@ -538,9 +538,19 @@ impl<'a> Client {
                     text_ = text("X").size(piece_size).center();
                 }
 
-                if let Some(heat_map) = &heat_map {
-                    let heat = heat_map[y * board_size_usize + x];
-                    text_ = text_.color(Color::from_rgba(0.0, 0.0, 0.0, heat as f32));
+                if let Some(heat_map) = &heat_map
+                    && possible_moves.is_some()
+                {
+                    if let Some(_vertex_from) = self.play_from.as_ref() {
+                        // Fixme: draw the to heat map!
+                    } else {
+                        let heat = heat_map[y * board_size_usize + x];
+                        if heat == f64::INFINITY {
+                            text_ = text_.color(Color::from_rgba(0.0, 0.0, 0.0, 0.0));
+                        } else {
+                            text_ = text_.color(Color::from_rgba(0.0, 0.0, 0.0, heat as f32));
+                        }
+                    }
                 }
 
                 let mut button_ = button(text_).width(board_dimension).height(board_dimension);
@@ -822,19 +832,20 @@ impl<'a> Client {
             ));
         }
 
-        let heat_map = checkbox("", self.heat_map_display && self.heat_map.is_some())
-            .on_toggle(Message::HeatMap)
-            .size(32);
-
-        // Fixme: translate Heat Map.
-        let mut heat_map_text = button(text("Heat Map").shaping(text::Shaping::Advanced));
-        if !self.estimate_score {
-            heat_map_text = heat_map_text.on_press(Message::EstimateScore);
-        }
-
-        user_area = user_area.push(row![heat_map, heat_map_text].spacing(SPACING));
-
         if let Some(handle) = &self.archived_game_handle {
+            let mut heat_map = checkbox("", self.heat_map_display).size(32);
+            if self.heat_map.is_some() {
+                heat_map = heat_map.on_toggle(Message::HeatMap);
+            }
+
+            // Fixme: translate Heat Map.
+            let mut heat_map_text = button(text("Heat Map").shaping(text::Shaping::Advanced));
+            if !self.estimate_score {
+                heat_map_text = heat_map_text.on_press(Message::EstimateScore);
+            }
+
+            user_area = user_area.push(row![heat_map, heat_map_text].spacing(SPACING));
+
             let mut left_all = button(text("⏮").shaping(text::Shaping::Advanced));
             let mut left = button(text("⏪").shaping(text::Shaping::Advanced));
             if handle.play > 0 {
