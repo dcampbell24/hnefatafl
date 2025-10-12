@@ -357,7 +357,7 @@ impl Board {
 
                         let play = Play {
                             role: *turn,
-                            from: vertex_from.clone(),
+                            from: vertex_from,
                             to: vertex_to,
                         };
 
@@ -864,7 +864,7 @@ impl Board {
                     hasher,
                 );
 
-                already_checked.insert(kings_vertex.clone());
+                already_checked.insert(kings_vertex);
                 let mut stack = Vec::with_capacity(board_size_usize * board_size_usize);
                 stack.push(kings_vertex);
 
@@ -951,25 +951,25 @@ impl Board {
                     if let Some(vertex) = vertex.up()
                         && !already_checked.contains(&vertex)
                     {
-                        stack.push((vertex.clone(), Direction::LeftRight));
+                        stack.push((vertex, Direction::LeftRight));
                         already_checked.insert(vertex);
                     }
                     if let Some(vertex) = vertex.left()
                         && !already_checked.contains(&vertex)
                     {
-                        stack.push((vertex.clone(), Direction::UpDown));
+                        stack.push((vertex, Direction::UpDown));
                         already_checked.insert(vertex);
                     }
                     if let Some(vertex) = vertex.down()
                         && !already_checked.contains(&vertex)
                     {
-                        stack.push((vertex.clone(), Direction::LeftRight));
+                        stack.push((vertex, Direction::LeftRight));
                         already_checked.insert(vertex);
                     }
                     if let Some(vertex) = vertex.right()
                         && !already_checked.contains(&vertex)
                     {
-                        stack.push((vertex.clone(), Direction::UpDown));
+                        stack.push((vertex, Direction::UpDown));
                         already_checked.insert(vertex);
                     }
                 } else if space.role() == Role::Attacker {
@@ -1392,7 +1392,7 @@ fn expand_flood_fill(
 ) -> bool {
     if let Some(vertex) = vertex {
         if !already_checked.contains(&vertex) {
-            stack.push(vertex.clone());
+            stack.push(vertex);
             already_checked.insert(vertex);
         }
 
