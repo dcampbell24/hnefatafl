@@ -481,7 +481,7 @@ impl<'a> Client {
                     y,
                 };
 
-                let mut text_ = match board.get(&vertex) {
+                let mut txt = match board.get(&vertex) {
                     Space::Empty => {
                         if (board_size == BoardSize::_11
                             && ((y, x) == (0, 0)
@@ -506,7 +506,7 @@ impl<'a> Client {
                     Space::Defender => text("♙"),
                 };
 
-                text_ = text_
+                txt = txt
                     .size(piece_size)
                     .shaping(text::Shaping::Advanced)
                     .center();
@@ -527,7 +527,7 @@ impl<'a> Client {
                     }
 
                     if (y, x) == (from.y, from.x) {
-                        text_ = text(arrow)
+                        txt = text(arrow)
                             .size(piece_size)
                             .shaping(text::Shaping::Advanced)
                             .center();
@@ -535,7 +535,7 @@ impl<'a> Client {
                 }
 
                 if self.captures.contains(&vertex) {
-                    text_ = text("X").size(piece_size).center();
+                    txt = text("X").size(piece_size).center();
                 }
 
                 if let Some(heat_map) = &heat_map
@@ -546,14 +546,14 @@ impl<'a> Client {
                     } else {
                         let heat = heat_map[y * board_size_usize + x];
                         if heat == f64::INFINITY {
-                            text_ = text_.color(Color::from_rgba(0.0, 0.0, 0.0, 0.0));
+                            txt = txt.color(Color::from_rgba(0.0, 0.0, 0.0, 0.0));
                         } else {
-                            text_ = text_.color(Color::from_rgba(0.0, 0.0, 0.0, heat as f32));
+                            txt = txt.color(Color::from_rgba(0.0, 0.0, 0.0, heat as f32));
                         }
                     }
                 }
 
-                let mut button_ = button(text_).width(board_dimension).height(board_dimension);
+                let mut button_ = button(txt).width(board_dimension).height(board_dimension);
 
                 if let Some(legal_moves) = &possible_moves {
                     if let Some(vertex_from) = self.play_from.as_ref() {
