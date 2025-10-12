@@ -844,7 +844,7 @@ impl<'a> Client {
                 heat_map_text = heat_map_text.on_press(Message::EstimateScore);
             }
 
-            user_area = user_area.push(row![heat_map, heat_map_text].spacing(SPACING));
+            user_area = user_area.push(row![heat_map, heat_map_text]);
 
             let mut left_all = button(text("⏮").shaping(text::Shaping::Advanced));
             let mut left = button(text("⏪").shaping(text::Shaping::Advanced));
