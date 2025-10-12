@@ -534,13 +534,14 @@ impl<'a> Client {
                     txt = text("X").size(piece_size).center();
                 }
 
-                if let Some(heat_map) = &heat_map
+                if let Some((heat_map_from, heat_map_to)) = &heat_map
                     && possible_moves.is_some()
                 {
-                    if let Some(_vertex_from) = self.play_from.as_ref() {
+                    if let Some(vertex_from) = self.play_from.as_ref() {
                         // Fixme: draw the to heat map!
+                        if let Some(_map) = heat_map_to.get(&(Role::Attacker, *vertex_from)) {}
                     } else {
-                        let heat = heat_map[y * board_size_usize + x];
+                        let heat = heat_map_from[y * board_size_usize + x];
                         if heat == f64::INFINITY {
                             txt = txt.color(Color::from_rgba(0.0, 0.0, 0.0, 0.0));
                         } else {
@@ -1170,7 +1171,7 @@ impl<'a> Client {
             }
             Message::PlayMoveFrom(vertex) => self.play_from = Some(vertex),
             Message::PlayMoveTo(to) => {
-                let Some(from) = self.play_from.clone() else {
+                let Some(from) = self.play_from else {
                     panic!("you have to have a from to get to to");
                 };
 
@@ -1204,7 +1205,7 @@ impl<'a> Client {
                     self.my_turn = false;
                 }
 
-                self.play_from_previous = self.play_from.clone();
+                self.play_from_previous = self.play_from;
                 self.play_to_previous = Some(to);
                 self.play_from = None;
             }

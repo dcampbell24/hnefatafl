@@ -175,8 +175,8 @@ impl Game {
                 };
                 let play = Play {
                     role: self.turn,
-                    from: vertex_from.clone(),
-                    to: vertex_to.clone(),
+                    from: vertex_from,
+                    to: vertex_to,
                 };
 
                 if self
@@ -196,8 +196,8 @@ impl Game {
                 };
                 let play = Play {
                     role: self.turn,
-                    from: vertex_from.clone(),
-                    to: vertex_to.clone(),
+                    from: vertex_from,
+                    to: vertex_to,
                 };
 
                 if self
@@ -235,7 +235,7 @@ impl Game {
             for to in tos {
                 plays.push(Plae::Play(Play {
                     role: moves.role,
-                    from: from.clone(),
+                    from,
                     to,
                 }));
             }
@@ -279,7 +279,7 @@ impl Game {
                 if game
                     .play(&Plae::Play(Play {
                         role: self.turn,
-                        from: king.clone(),
+                        from: king,
                         to: exit,
                     }))
                     .is_ok()
@@ -319,7 +319,7 @@ impl Game {
                             return Some(Plae::Play(Play {
                                 role: Role::Defender,
                                 from: kings_position,
-                                to: play.clone(),
+                                to: *play,
                             }));
                         }
                     }

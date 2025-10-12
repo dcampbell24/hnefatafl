@@ -14,10 +14,10 @@ pub struct HeatMap {
 }
 
 impl HeatMap {
-    // Fixme: handle clicking on the board.Map
+    #[allow(clippy::type_complexity)]
     #[allow(clippy::missing_panics_doc)]
     #[must_use]
-    pub fn draw(&self, role: Role) -> Vec<f64> {
+    pub fn draw(&self, role: Role) -> (Vec<f64>, HashMap<(Role, Vertex), Vec<f64>>) {
         let board_size: usize = self.board_size.into();
 
         let mut spaces = if self.board_size == BoardSize::_11 {
@@ -27,7 +27,7 @@ impl HeatMap {
         };
 
         if role == Role::Roleless {
-            return spaces;
+            return (spaces, HashMap::new());
         }
 
         let mut froms = Vec::new();
@@ -81,7 +81,7 @@ impl HeatMap {
             }
         }
 
-        spaces
+        (spaces, self.spaces.clone())
     }
 
     fn new(board_size: BoardSize) -> Self {
@@ -110,7 +110,7 @@ impl From<&Vec<&Node>> for HeatMap {
 
                         heat_map
                             .spaces
-                            .entry((play.role, play.from.clone()))
+                            .entry((play.role, play.from))
                             .and_modify(|board| {
                                 let score = board
                                     .get_mut(board_index)
