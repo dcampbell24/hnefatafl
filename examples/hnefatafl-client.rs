@@ -194,10 +194,6 @@ fn init_client() -> Client {
     client.strings = i18n_buttons();
     client.text_input = client.username.clone();
 
-    if client.username == "david" {
-        client.email_everyone = true;
-    }
-
     client
 }
 
@@ -1561,7 +1557,12 @@ impl<'a> Client {
                                 self.game_id = id;
                             }
                             Some("leave_game") => self.game_id = 0,
-                            Some("login") => self.screen = Screen::Games,
+                            Some("login") => {
+                                if self.username == "david" {
+                                    self.email_everyone = true;
+                                }
+                                self.screen = Screen::Games;
+                            }
                             Some("new_game") => {
                                 // = new_game game 15 none david rated fischer 900_000 10
                                 if Some("game") == text.next() {
