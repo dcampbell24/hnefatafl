@@ -1024,6 +1024,7 @@ impl<'a> Client {
                     && handle.boards.here() == node
                 {
                     info!("{generate_move}");
+                    debug!("{}", generate_move.heat_map);
                     self.heat_map = Some(generate_move.heat_map);
                 }
 
