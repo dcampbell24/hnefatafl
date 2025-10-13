@@ -20,6 +20,7 @@ use std::{
 use chrono::{Local, Utc};
 use clap::{CommandFactory, Parser, command};
 use futures::{SinkExt, executor};
+use hnefatafl_copenhagen::heat_map::Heat;
 use hnefatafl_copenhagen::heat_map::HeatMap;
 use hnefatafl_copenhagen::{
     COPYRIGHT, Id, LONG_VERSION, SERVER_PORT, VERSION_ID,
@@ -538,15 +539,31 @@ impl<'a> Client {
                     && possible_moves.is_some()
                 {
                     if let Some(vertex_from) = self.play_from.as_ref() {
-                        // Fixme: draw the to heat map!
-                        if let Some(_map) = heat_map_to.get(&(Role::Attacker, *vertex_from)) {}
+                        let space = board.get(vertex_from);
+                        let turn = space.role();
+                        if let Some(heat_map_to) = heat_map_to.get(&(turn, *vertex_from)) {
+                            let heat = heat_map_to[y * board_size_usize + x];
+
+                            if heat == Heat::UnRanked {
+                                txt = txt.color(Color::from_rgba(0.0, 0.0, 0.0, heat.into()));
+                            } else {
+                                let txt_char = match space {
+                                    Space::Attacker => "♟",
+                                    Space::Defender => "♙",
+                                    Space::Empty => "",
+                                    Space::King => "♔",
+                                };
+
+                                txt = text(txt_char)
+                                    .size(piece_size)
+                                    .shaping(text::Shaping::Advanced)
+                                    .center()
+                                    .color(Color::from_rgba(0.0, 0.0, 0.0, heat.into()));
+                            }
+                        }
                     } else {
                         let heat = heat_map_from[y * board_size_usize + x];
-                        if heat == f64::INFINITY {
-                            txt = txt.color(Color::from_rgba(0.0, 0.0, 0.0, 0.0));
-                        } else {
-                            txt = txt.color(Color::from_rgba(0.0, 0.0, 0.0, heat as f32));
-                        }
+                        txt = txt.color(Color::from_rgba(0.0, 0.0, 0.0, heat.into()));
                     }
                 }
 

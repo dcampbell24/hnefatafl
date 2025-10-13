@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fmt};
+use std::{cmp::Ordering, collections::HashMap, fmt};
 
 use crate::{
     board::BoardSize,
@@ -7,27 +7,101 @@ use crate::{
     role::Role,
 };
 
+#[derive(Clone, Copy, Debug, Default)]
+pub enum Heat {
+    Ranked(u8),
+    Score(f64),
+    #[default]
+    UnRanked,
+}
+
+// It would be Color but iced is only in the examples. This is the alpha value.
+#[allow(clippy::cast_possible_truncation)]
+impl From<Heat> for f32 {
+    fn from(cell: Heat) -> Self {
+        match cell {
+            Heat::Score(score) => score as f32,
+            Heat::UnRanked => 0.25,
+            Heat::Ranked(rank) => match rank {
+                0 => 1.0,
+                1 => 0.5,
+                2 => 0.25,
+                3 => 0.125,
+                4 => 0.0625,
+                _ => 0.0,
+            },
+        }
+    }
+}
+
+impl Ord for Heat {
+    fn cmp(&self, other: &Self) -> Ordering {
+        match self {
+            Self::Ranked(rank) => match other {
+                Self::Ranked(rank_other) => rank.cmp(rank_other),
+                Self::Score(_) => Ordering::Less,
+                Self::UnRanked => Ordering::Greater,
+            },
+            Self::Score(score) => match other {
+                Self::Ranked(_) | Self::UnRanked => Ordering::Greater,
+                Self::Score(score_other) => score.total_cmp(score_other),
+            },
+            Self::UnRanked => match other {
+                Self::Ranked(_) | Self::Score(_) => Ordering::Less,
+                Self::UnRanked => Ordering::Equal,
+            },
+        }
+    }
+}
+
+impl PartialOrd for Heat {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl PartialEq for Heat {
+    fn eq(&self, other: &Self) -> bool {
+        match self {
+            Self::Ranked(rank) => match other {
+                Self::Ranked(rank_other) => rank == rank_other,
+                Self::Score(_) | Self::UnRanked => false,
+            },
+            Self::Score(score) => match other {
+                Self::Ranked(_) | Self::UnRanked => false,
+                Self::Score(score_other) => score == score_other,
+            },
+            Self::UnRanked => match other {
+                Self::Ranked(_) | Self::Score(_) => false,
+                Self::UnRanked => true,
+            },
+        }
+    }
+}
+
+impl Eq for Heat {}
+
 #[derive(Clone, Debug, Default)]
 pub struct HeatMap {
     pub board_size: BoardSize,
-    pub spaces: HashMap<(Role, Vertex), Vec<f64>>,
+    pub spaces: HashMap<(Role, Vertex), Vec<Heat>>,
 }
 
 impl HeatMap {
     #[allow(clippy::type_complexity)]
     #[allow(clippy::missing_panics_doc)]
     #[must_use]
-    pub fn draw(&self, role: Role) -> (Vec<f64>, HashMap<(Role, Vertex), Vec<f64>>) {
+    pub fn draw(&self, role: Role) -> (Vec<Heat>, HashMap<(Role, Vertex), Vec<Heat>>) {
         let board_size: usize = self.board_size.into();
 
-        let mut spaces = if self.board_size == BoardSize::_11 {
-            vec![0.0; 11 * 11]
+        let mut spaces_from = if self.board_size == BoardSize::_11 {
+            vec![Heat::default(); 11 * 11]
         } else {
-            vec![0.0; 13 * 13]
+            vec![Heat::default(); 13 * 13]
         };
 
         if role == Role::Roleless {
-            return (spaces, HashMap::new());
+            return (spaces_from, HashMap::new());
         }
 
         let mut froms = Vec::new();
@@ -35,11 +109,11 @@ impl HeatMap {
             let min_max = match role {
                 Role::Attacker => *self.spaces[key]
                     .iter()
-                    .max_by(|a, b| f64::total_cmp(a, b))
+                    .max_by(|a, b| Heat::cmp(a, b))
                     .expect("there is at least one value"),
                 Role::Defender => *self.spaces[key]
                     .iter()
-                    .min_by(|a, b| f64::total_cmp(a, b))
+                    .min_by(|a, b| Heat::cmp(a, b))
                     .expect("there is at least one value"),
                 Role::Roleless => unreachable!(),
             };
@@ -47,21 +121,14 @@ impl HeatMap {
             froms.push((key, min_max));
         }
 
-        froms.sort_by(|a, b| f64::total_cmp(&a.1, &b.1));
+        froms.sort_by(|a, b| Heat::cmp(&a.1, &b.1));
         if Role::Attacker == role {
             froms.reverse();
         }
 
         let mut froms_hash_map = HashMap::new();
-        let mut score = 1.0;
-
-        for (play, _) in &mut froms {
-            froms_hash_map.insert(*play, score);
-
-            score -= 0.3;
-            if score < 0.0 {
-                score = f64::INFINITY;
-            }
+        for ((play, _), rank) in froms.iter_mut().zip(0u8..) {
+            froms_hash_map.insert(*play, rank);
         }
 
         for y in 0..board_size {
@@ -74,14 +141,49 @@ impl HeatMap {
                         size: self.board_size,
                     },
                 )) {
-                    spaces[y * board_size + x] = *i;
+                    spaces_from[y * board_size + x] = Heat::Ranked(*i);
                 } else {
-                    spaces[y * board_size + x] = 0.25;
+                    spaces_from[y * board_size + x] = Heat::UnRanked;
                 }
             }
         }
 
-        (spaces, self.spaces.clone())
+        let mut spaces_to = self.spaces.clone();
+        for ((role, _vertex), board) in &mut spaces_to {
+            let mut played_on = Vec::new();
+
+            for y in 0..board_size {
+                for x in 0..board_size {
+                    let heat = board[y * board_size + x];
+                    if let Heat::Score(score) = heat {
+                        let vertex = Vertex {
+                            size: BoardSize::try_from(board_size)
+                                .expect("we should have a valid board size"),
+                            x,
+                            y,
+                        };
+                        played_on.push((vertex, role, score));
+                    }
+                }
+            }
+
+            played_on.sort_by(|a, b| f64::total_cmp(&a.2, &b.2));
+
+            if *role == Role::Attacker {
+                played_on.reverse();
+            }
+
+            let mut rank = 0;
+            for (vertex, _, _) in played_on {
+                let heat = &mut board[vertex.y * board_size + vertex.x];
+                if let Heat::Score(_) = heat {
+                    *heat = Heat::Ranked(rank);
+                    rank += 1;
+                }
+            }
+        }
+
+        (spaces_from, spaces_to)
     }
 
     fn new(board_size: BoardSize) -> Self {
@@ -116,18 +218,18 @@ impl From<&Vec<&Node>> for HeatMap {
                                     .get_mut(board_index)
                                     .expect("The board should contain this space.");
 
-                                debug_assert_eq!(*score, 0.0);
-                                *score = node.score;
+                                debug_assert_eq!(*score, Heat::UnRanked);
+                                *score = Heat::Score(node.score);
                             })
                             .or_insert({
                                 let size: usize = play.from.size.into();
-                                let mut board = vec![0.0; size * size];
+                                let mut board = vec![Heat::default(); size * size];
 
                                 let score = board
                                     .get_mut(board_index)
                                     .expect("The board should contain this space.");
 
-                                *score = node.score;
+                                *score = Heat::Score(node.score);
 
                                 board
                             });
@@ -157,10 +259,10 @@ impl fmt::Display for HeatMap {
             for y in 0..board_size {
                 for x in 0..board_size {
                     let score = board[y * board_size + x];
-                    if score == 0.0 {
-                        write!(f, "------- ")?;
-                    } else {
+                    if let Heat::Score(score) = score {
                         write!(f, "{score:+.4} ")?;
+                    } else {
+                        write!(f, "------- ")?;
                     }
                 }
                 writeln!(f)?;
