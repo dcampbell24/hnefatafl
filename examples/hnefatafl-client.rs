@@ -4,6 +4,7 @@
 use std::io::Cursor;
 use std::io::Read;
 
+use std::time::Duration;
 use std::{
     collections::{HashMap, HashSet, VecDeque},
     f64,
@@ -81,9 +82,9 @@ struct Args {
     #[arg(default_value = "hnefatafl.org", long)]
     host: String,
 
-    /// How many Monte Carlo loops to run
-    #[arg(default_value_t = 1_000, long)]
-    loops: i64,
+    /// How many seconds to run Monte Carlo loops
+    #[arg(default_value_t = 8, long)]
+    seconds: u64,
 
     /// Make the window size tiny
     #[arg(long)]
@@ -2889,11 +2890,9 @@ fn estimate_score() -> impl Stream<Item = Message> {
                 loop {
                     let node = handle_error(rx.recv());
                     let mut game = Game::from(node.clone());
-
-                    let mut ai = Box::new(
-                        AiMonteCarlo::new(game.board.size(), args.loops)
-                            .expect("you should be able to create an AI"),
-                    );
+                    let seconds = Duration::from_secs(args.seconds);
+                    let mut ai = AiMonteCarlo::new(game.board.size(), seconds)
+                        .expect("you should be able to create an AI");
 
                     let generate_move = ai.generate_move(&mut game);
 

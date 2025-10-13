@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use criterion::{Criterion, criterion_group, criterion_main};
 
-use hnefatafl_copenhagen::{board::BoardSize, game_tree::Tree, hnefatafl_rs, setup_hnefatafl_rs};
+use hnefatafl_copenhagen::{hnefatafl_rs, setup_hnefatafl_rs};
 
 fn game_play_outs(c: &mut Criterion) {
     let game_records = setup_hnefatafl_rs().unwrap();
@@ -11,19 +11,10 @@ fn game_play_outs(c: &mut Criterion) {
     });
 }
 
-fn monte_carlo(c: &mut Criterion) {
-    c.bench_function("monte_carlo", move |b| {
-        b.iter(|| {
-            let mut tree = Tree::new(BoardSize::_11);
-            let _plays = tree.monte_carlo_tree_search(10);
-        });
-    });
-}
-
 criterion_group! {
     name = benches;
     config = Criterion::default().measurement_time(Duration::from_secs(10));
-    targets = game_play_outs, monte_carlo
+    targets = game_play_outs
 }
 
 criterion_main!(benches);

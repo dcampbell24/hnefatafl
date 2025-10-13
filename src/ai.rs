@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fmt, sync::mpsc::channel};
+use std::{collections::HashMap, fmt, sync::mpsc::channel, time::Duration};
 
 use chrono::Utc;
 use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
@@ -80,7 +80,7 @@ pub struct AiMonteCarlo {
     pub seconds_to_move: i64,
     pub size: BoardSize,
     pub trees: Vec<Tree>,
-    loops: i64,
+    seconds: Duration,
 }
 
 impl Default for AiMonteCarlo {
@@ -91,7 +91,7 @@ impl Default for AiMonteCarlo {
             seconds_to_move: 1,
             size,
             trees: Self::make_trees(size).unwrap(),
-            loops: 1_000,
+            seconds: Duration::from_secs(1),
         }
     }
 }
@@ -117,12 +117,12 @@ impl AI for AiMonteCarlo {
 
         let (tx, rx) = channel();
         self.trees.par_iter_mut().for_each_with(tx, |tx, tree| {
-            let nodes = tree.monte_carlo_tree_search(self.loops);
+            let nodes = tree.monte_carlo_tree_search(self.seconds);
             tx.send(nodes).unwrap();
         });
 
         let mut nodes_master = HashMap::new();
-        while let Ok(nodes) = rx.recv() {
+        while let Ok((_, nodes)) = rx.recv() {
             for mut node in nodes {
                 if let Some(Plae::Play(play)) = node.clone().play {
                     nodes_master
@@ -208,12 +208,13 @@ impl AiMonteCarlo {
     }
 
     #[allow(clippy::missing_errors_doc)]
-    pub fn new(size: BoardSize, loops: i64) -> anyhow::Result<Self> {
+    pub fn new(size: BoardSize, seconds: Duration) -> anyhow::Result<Self> {
         Ok(Self {
+            // Fixme???
             seconds_to_move: 1,
             size,
             trees: Self::make_trees(size)?,
-            loops,
+            seconds,
         })
     }
 }

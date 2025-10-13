@@ -1,4 +1,8 @@
-use std::{collections::HashMap, fmt};
+use std::{
+    collections::HashMap,
+    fmt,
+    time::{Duration, Instant},
+};
 
 use rand::Rng;
 use serde::{Deserialize, Serialize};
@@ -42,8 +46,19 @@ impl Tree {
 
     #[allow(clippy::missing_panics_doc)]
     #[must_use]
-    pub fn monte_carlo_tree_search(&mut self, loops: i64) -> Vec<Node> {
-        for _ in 0..loops {
+    pub fn monte_carlo_tree_search(&mut self, duration: Duration) -> (u64, Vec<Node>) {
+        let t0 = Instant::now();
+
+        let mut loops = 0;
+        loop {
+            let t1 = Instant::now();
+            let elapsed_time = t1 - t0;
+
+            if duration < elapsed_time {
+                break;
+            }
+            loops += 1;
+
             let mut game = self.game.clone();
             let mut here = self.here;
 
@@ -127,10 +142,13 @@ impl Tree {
         }
 
         let children = &self.arena[&self.here].children;
-        children
-            .iter()
-            .map(|child| self.arena[child].clone())
-            .collect::<Vec<_>>()
+        (
+            loops,
+            children
+                .iter()
+                .map(|child| self.arena[child].clone())
+                .collect::<Vec<_>>(),
+        )
     }
 
     #[must_use]
