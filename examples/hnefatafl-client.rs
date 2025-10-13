@@ -20,8 +20,6 @@ use std::{
 use chrono::{Local, Utc};
 use clap::{CommandFactory, Parser, command};
 use futures::{SinkExt, executor};
-use hnefatafl_copenhagen::heat_map::Heat;
-use hnefatafl_copenhagen::heat_map::HeatMap;
 use hnefatafl_copenhagen::{
     COPYRIGHT, Id, LONG_VERSION, SERVER_PORT, VERSION_ID,
     accounts::Email,
@@ -31,6 +29,7 @@ use hnefatafl_copenhagen::{
     draw::Draw,
     game::{Game, TimeUnix},
     glicko::{CONFIDENCE_INTERVAL_95, Rating},
+    heat_map::{Heat, HeatMap},
     locale::Locale,
     play::{BOARD_LETTERS, Plays, Vertex},
     rating::Rated,
