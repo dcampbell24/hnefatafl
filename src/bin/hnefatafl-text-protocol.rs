@@ -2,6 +2,7 @@ use std::{
     io::{self, BufReader},
     net::TcpStream,
     process::{Command, ExitStatus},
+    time::Duration,
 };
 
 use clap::command;
@@ -30,9 +31,9 @@ struct Args {
     #[arg(long)]
     display_game: bool,
 
-    /// The number of Monte Carlo iterations
-    #[arg(default_value_t = 1_000, long)]
-    loops: i64,
+    /// How many seconds to run Monte Carlo loops
+    #[arg(default_value_t = 8, long)]
+    seconds: u64,
 
     /// Listen for HTP drivers on host and port
     #[arg(long, value_name = "host:port")]
@@ -41,13 +42,14 @@ struct Args {
 
 fn main() -> anyhow::Result<()> {
     let args = Args::parse();
+    let seconds = Duration::from_secs(args.seconds);
 
     if let Some(address) = args.tcp {
-        play_tcp(&address, args.display_game, args.loops)?;
+        play_tcp(&address, args.display_game, seconds)?;
     } else if args.ai {
-        play_ai(&args)?;
+        play_ai(args.display_game, seconds)?;
     } else {
-        play(&args)?;
+        play(args.display_game)?;
     }
 
     Ok(())
@@ -66,12 +68,12 @@ fn clear_screen() -> anyhow::Result<ExitStatus> {
     Ok(exit_status)
 }
 
-fn play(args: &Args) -> anyhow::Result<()> {
+fn play(display_game: bool) -> anyhow::Result<()> {
     let mut buffer = String::new();
     let stdin = io::stdin();
     let mut game = Game::default();
 
-    if args.display_game {
+    if display_game {
         clear_screen()?;
         println!("{game}\n");
         println!("Enter 'list_commands' for a list of commands.");
@@ -86,7 +88,7 @@ fn play(args: &Args) -> anyhow::Result<()> {
 
         let result = game.read_line(&buffer);
 
-        if args.display_game {
+        if display_game {
             clear_screen()?;
             println!("{game}\n");
         }
@@ -104,12 +106,12 @@ fn play(args: &Args) -> anyhow::Result<()> {
     }
 }
 
-fn play_ai(args: &Args) -> anyhow::Result<()> {
+fn play_ai(display_game: bool, seconds: Duration) -> anyhow::Result<()> {
     let mut buffer = String::new();
     let mut game = Game::default();
-    let mut ai = AiMonteCarlo::new(game.board.size(), args.loops)?;
+    let mut ai = AiMonteCarlo::new(game.board.size(), seconds)?;
 
-    if args.display_game {
+    if display_game {
         clear_screen()?;
         println!("{game}\n");
     }
@@ -120,7 +122,7 @@ fn play_ai(args: &Args) -> anyhow::Result<()> {
             return Err(anyhow::Error::msg("The game is already over."));
         }
 
-        if args.display_game {
+        if display_game {
             clear_screen()?;
             println!("{game}\n");
         } else {
@@ -137,9 +139,9 @@ fn play_ai(args: &Args) -> anyhow::Result<()> {
     }
 }
 
-fn play_tcp(address: &str, display_game: bool, loops: i64) -> anyhow::Result<()> {
+fn play_tcp(address: &str, display_game: bool, seconds: Duration) -> anyhow::Result<()> {
     let mut game = Game::default();
-    let mut ai: Box<dyn AI + 'static> = Box::new(AiMonteCarlo::new(game.board.size(), loops)?);
+    let mut ai: Box<dyn AI + 'static> = Box::new(AiMonteCarlo::new(game.board.size(), seconds)?);
     let mut stream = TcpStream::connect(address)?;
     println!("connected to {address} ...");
 

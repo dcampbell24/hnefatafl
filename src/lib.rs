@@ -211,7 +211,7 @@ pub fn write_command(command: &str, stream: &mut TcpStream) -> anyhow::Result<()
 
 #[cfg(test)]
 mod tests {
-    use std::{fmt, str::FromStr};
+    use std::{fmt, str::FromStr, time::Duration};
 
     use crate::{
         ai::{AI, AiBanal},
@@ -237,11 +237,21 @@ mod tests {
         hnefatafl_rs(&setup_hnefatafl_rs()?)
     }
 
-    #[ignore = "takes too long"]
     #[test]
     fn monte_carlo() {
         let mut tree = Tree::new(BoardSize::_11);
-        let _plays = tree.monte_carlo_tree_search(100);
+        let duration = Duration::from_secs(1);
+        let (loops, _plays) = tree.monte_carlo_tree_search(duration);
+        println!("{loops}");
+    }
+
+    #[ignore = "takes too long"]
+    #[test]
+    fn monte_carlo_long() {
+        let mut tree = Tree::new(BoardSize::_11);
+        let duration = Duration::from_secs(10);
+        let (loops, _plays) = tree.monte_carlo_tree_search(duration);
+        println!("{loops}");
     }
 
     #[test]
