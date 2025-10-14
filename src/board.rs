@@ -1,8 +1,14 @@
 use std::{collections::HashMap, fmt, str::FromStr};
 
+use crypto_bigint::U256;
 use rustc_hash::{FxBuildHasher, FxHashSet};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
+#[cfg(feature = "js")]
+use wasm_bindgen::prelude::wasm_bindgen;
+
+const BOARD_SIZE_11: usize = 11 * 11;
+const BOARD_SIZE_13: usize = 13 * 13;
 
 use crate::{
     game::PreviousBoards,
@@ -302,6 +308,14 @@ impl TryFrom<[&str; 13]> for Board {
 }
 
 impl Board {
+    #[must_use]
+    pub fn new(board_size: BoardSize) -> Self {
+        match board_size {
+            BoardSize::_11 => board_11x11(),
+            BoardSize::_13 => board_13x13(),
+        }
+    }
+
     fn able_to_move(&self, play_from: &Vertex) -> bool {
         if let Some(vertex) = play_from.up()
             && self.get(&vertex) == Space::Empty
@@ -1122,7 +1136,7 @@ impl Board {
         board.set(&play.from, Space::Empty);
         board.set(&play.to, space_from);
 
-        if turn == &Role::Defender && previous_boards.0.contains(&board) {
+        if turn == &Role::Defender && previous_boards.0.contains(&PreviousBoard::from(&board)) {
             return Err(InvalidMove::RepeatMove);
         }
 
@@ -1178,7 +1192,7 @@ impl Board {
         previous_boards: &mut PreviousBoards,
     ) -> anyhow::Result<(Vec<Vertex>, Status)> {
         let (board, captures, status) = self.play_internal(play, status, turn, previous_boards)?;
-        previous_boards.0.insert(board.clone());
+        previous_boards.0.insert(PreviousBoard::from(&board));
         *self = board;
 
         Ok((captures, status))
@@ -1254,6 +1268,18 @@ impl Board {
     }
 }
 
+#[cfg(not(feature = "js"))]
+#[derive(
+    Clone, Copy, Debug, Default, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize,
+)]
+pub enum BoardSize {
+    #[default]
+    _11,
+    _13,
+}
+
+#[cfg(feature = "js")]
+#[wasm_bindgen]
 #[derive(
     Clone, Copy, Debug, Default, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize,
 )]
@@ -1309,7 +1335,7 @@ impl TryFrom<usize> for BoardSize {
 
 #[must_use]
 #[allow(clippy::missing_panics_doc)]
-pub fn board_11x11() -> Board {
+fn board_11x11() -> Board {
     let spaces: Vec<Space> = STARTING_POSITION_11X11
         .iter()
         .flat_map(|space| space.chars().map(|ch| ch.try_into().unwrap()))
@@ -1320,7 +1346,7 @@ pub fn board_11x11() -> Board {
 
 #[must_use]
 #[allow(clippy::missing_panics_doc)]
-pub fn board_13x13() -> Board {
+fn board_13x13() -> Board {
     let spaces: Vec<Space> = STARTING_POSITION_13X13
         .iter()
         .flat_map(|space| space.chars().map(|ch| ch.try_into().unwrap()))
@@ -1420,5 +1446,149 @@ fn on_restricted_square<T>(spaces: &[T], vertex: &Vertex) -> bool {
         RESTRICTED_SQUARES_13X13.contains(vertex)
     } else {
         panic!("The board size is {len}!");
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
+pub enum PreviousBoard {
+    Size11(PreviousBoard11),
+    Size13(PreviousBoard13),
+}
+
+impl PreviousBoard {
+    #[must_use]
+    pub fn new(board_size: BoardSize) -> Self {
+        match board_size {
+            BoardSize::_11 => PreviousBoard::Size11(PreviousBoard11::default()),
+            BoardSize::_13 => PreviousBoard::Size13(PreviousBoard13::default()),
+        }
+    }
+}
+
+impl Default for PreviousBoard {
+    fn default() -> Self {
+        Self::Size11(PreviousBoard11::default())
+    }
+}
+
+impl From<&Board> for PreviousBoard {
+    fn from(board: &Board) -> Self {
+        match board.spaces.len() {
+            BOARD_SIZE_11 => PreviousBoard::Size11(PreviousBoard11::from(board)),
+            BOARD_SIZE_13 => PreviousBoard::Size13(PreviousBoard13::from(board)),
+            _ => unreachable!(),
+        }
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
+pub struct PreviousBoard11 {
+    pub attackers: u128,
+    pub defenders: u128,
+    pub king: u128,
+}
+
+impl PreviousBoard11 {
+    #[must_use]
+    pub fn empty() -> Self {
+        PreviousBoard11 {
+            attackers: 0,
+            defenders: 0,
+            king: 0,
+        }
+    }
+}
+
+impl From<&Board> for PreviousBoard11 {
+    fn from(board: &Board) -> Self {
+        let mut previous_board = PreviousBoard11::empty();
+
+        for (space, i) in board.spaces.iter().zip(0u32..) {
+            let mask = 1 << i;
+            match space {
+                Space::Attacker => previous_board.attackers |= mask,
+                Space::Defender => previous_board.defenders |= mask,
+                Space::Empty => {}
+                Space::King => previous_board.king |= mask,
+            }
+        }
+
+        previous_board
+    }
+}
+
+impl Default for PreviousBoard11 {
+    fn default() -> Self {
+        Self::from(&board_11x11())
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
+pub struct PreviousBoard13 {
+    pub attackers: U256,
+    pub defenders: U256,
+    pub king: U256,
+}
+
+impl From<&Board> for PreviousBoard13 {
+    fn from(board: &Board) -> Self {
+        let mut previous_board = PreviousBoard13 {
+            attackers: U256::ZERO,
+            defenders: U256::ZERO,
+            king: U256::ZERO,
+        };
+
+        for (space, i) in board.spaces.iter().zip(0u32..) {
+            let mask = U256::ONE
+                .overflowing_shl(i)
+                .expect("this should be a valid U256");
+            match space {
+                Space::Attacker => previous_board.attackers |= mask,
+                Space::Defender => previous_board.defenders |= mask,
+                Space::Empty => {}
+                Space::King => previous_board.king |= mask,
+            }
+        }
+
+        previous_board
+    }
+}
+
+impl Default for PreviousBoard13 {
+    fn default() -> Self {
+        Self::from(&board_13x13())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::board::{Board, PreviousBoard, PreviousBoard11};
+
+    #[test]
+    fn king() -> anyhow::Result<()> {
+        let board = [
+            "K..........",
+            "...........",
+            "...........",
+            "...........",
+            "...........",
+            "...........",
+            "...........",
+            "...........",
+            "...........",
+            "...........",
+            "...........",
+        ];
+
+        let board = Board::try_from(board)?;
+        let previous_board_1 = PreviousBoard::from(&board);
+
+        let mut previous_board_2 = PreviousBoard11::empty();
+        previous_board_2.king = 1;
+        let previous_board_2 = PreviousBoard::Size11(previous_board_2);
+
+        assert_eq!(previous_board_1, previous_board_2);
+
+        Ok(())
     }
 }

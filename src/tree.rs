@@ -1,5 +1,5 @@
 use crate::{
-    board::{Board, BoardSize, board_11x11, board_13x13},
+    board::{Board, BoardSize},
     role::Role,
 };
 
@@ -96,10 +96,7 @@ impl Tree {
 
     #[must_use]
     pub fn new(board_size: BoardSize) -> Self {
-        let board = match board_size {
-            BoardSize::_11 => board_11x11(),
-            BoardSize::_13 => board_13x13(),
-        };
+        let board = Board::new(board_size);
 
         Self {
             node: 0,

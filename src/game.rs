@@ -15,7 +15,7 @@ use wasm_bindgen::prelude::wasm_bindgen;
 
 use crate::{
     ai::{AI, AiBanal},
-    board::{Board, BoardSize, board_11x11, board_13x13},
+    board::{Board, BoardSize, PreviousBoard},
     message::{COMMANDS, Message},
     play::{Captures, Plae, Play, PlayRecordTimed, Plays, Vertex},
     role::Role,
@@ -32,6 +32,7 @@ pub struct Game {
     pub ai: AiBanal,
     pub board: Board,
     pub plays: Plays,
+    pub previous_board: PreviousBoard,
     pub previous_boards: PreviousBoards,
     pub status: Status,
     pub time: TimeUnix,
@@ -53,6 +54,8 @@ pub struct Game {
     #[wasm_bindgen(skip)]
     pub plays: Plays,
     #[wasm_bindgen(skip)]
+    pub previous_board: PreviousBoard,
+    #[wasm_bindgen(skip)]
     pub previous_boards: PreviousBoards,
     #[wasm_bindgen(skip)]
     pub status: Status,
@@ -64,20 +67,6 @@ pub struct Game {
     pub defender_time: TimeSettings,
     #[wasm_bindgen(skip)]
     pub turn: Role,
-}
-
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
-pub struct PreviousBoards(pub FxHashSet<Board>);
-
-impl Default for PreviousBoards {
-    fn default() -> Self {
-        let hasher = FxBuildHasher;
-        let mut boards = FxHashSet::with_capacity_and_hasher(128, hasher);
-
-        boards.insert(board_11x11());
-        boards.insert(board_13x13());
-        Self(boards)
-    }
 }
 
 impl fmt::Display for Game {
@@ -113,8 +102,13 @@ impl fmt::Display for Game {
 impl Game {
     #[must_use]
     #[wasm_bindgen(constructor)]
-    pub fn new() -> Game {
-        Game::default()
+    pub fn new(board_size: BoardSize) -> Game {
+        Game {
+            board: Board::new(board_size),
+            previous_board: PreviousBoard::new(board_size),
+            previous_boards: PreviousBoards::new(board_size),
+            ..Game::default()
+        }
     }
 
     /// # Errors
@@ -331,6 +325,17 @@ impl Game {
         None
     }
 
+    #[cfg(not(feature = "js"))]
+    #[must_use]
+    pub fn new(board_size: BoardSize) -> Game {
+        Game {
+            board: Board::new(board_size),
+            previous_board: PreviousBoard::new(board_size),
+            previous_boards: PreviousBoards::new(board_size),
+            ..Game::default()
+        }
+    }
+
     /// # Errors
     ///
     /// If the game is already over or the move is illegal.
@@ -481,19 +486,12 @@ impl Game {
         let mut ai: Box<dyn AI> = Box::new(AiBanal);
 
         match message {
-            Message::BoardSize(size) => match size {
-                11 => {
-                    *self = Game::default();
-                    self.board = board_11x11();
-                    Ok(Some(String::new()))
-                }
-                13 => {
-                    *self = Game::default();
-                    self.board = board_13x13();
-                    Ok(Some(String::new()))
-                }
-                _ => Err(anyhow::Error::msg("the board size must be 11 or 13")),
-            },
+            Message::BoardSize(board_size) => {
+                let board_size = BoardSize::try_from(board_size)?;
+                *self = Game::new(board_size);
+
+                Ok(Some(String::new()))
+            }
             Message::Empty => Ok(None),
             Message::FinalStatus => Ok(Some(format!("{}", self.status))),
             Message::GenerateMove => {
@@ -563,10 +561,7 @@ impl Game {
             Message::Quit => exit(0),
             Message::ShowBoard => Ok(Some(self.board.to_string())),
             Message::TimeSettings(time_settings) => {
-                self.board = match self.board.size() {
-                    BoardSize::_11 => board_11x11(),
-                    BoardSize::_13 => board_13x13(),
-                };
+                *self = Game::new(self.board.size());
 
                 self.plays = Plays::new(&time_settings);
                 match time_settings {
@@ -638,6 +633,26 @@ impl From<Node> for Game {
 pub struct LegalMoves {
     pub role: Role,
     pub moves: HashMap<Vertex, Vec<Vertex>>,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct PreviousBoards(pub FxHashSet<PreviousBoard>);
+
+impl PreviousBoards {
+    fn new(board_size: BoardSize) -> Self {
+        let hasher = FxBuildHasher;
+        // Fixme?
+        let mut boards = FxHashSet::with_capacity_and_hasher(128, hasher);
+
+        boards.insert(PreviousBoard::new(board_size));
+        Self(boards)
+    }
+}
+
+impl Default for PreviousBoards {
+    fn default() -> Self {
+        PreviousBoards::new(BoardSize::_11)
+    }
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
