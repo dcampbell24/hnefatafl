@@ -81,7 +81,7 @@ impl AI for AiBanal {
 pub struct AiMonteCarlo {
     pub size: BoardSize,
     pub trees: Vec<Tree>,
-    seconds: Duration,
+    duration: Duration,
 }
 
 impl Default for AiMonteCarlo {
@@ -91,7 +91,7 @@ impl Default for AiMonteCarlo {
         Self {
             size,
             trees: Self::make_trees(size).unwrap(),
-            seconds: Duration::from_secs(1),
+            duration: Duration::from_secs(1),
         }
     }
 }
@@ -118,7 +118,7 @@ impl AI for AiMonteCarlo {
 
         let (tx, rx) = channel();
         self.trees.par_iter_mut().for_each_with(tx, |tx, tree| {
-            let nodes = tree.monte_carlo_tree_search(self.seconds);
+            let nodes = tree.monte_carlo_tree_search(self.duration);
             tx.send(nodes).unwrap();
         });
 
@@ -212,11 +212,11 @@ impl AiMonteCarlo {
     }
 
     #[allow(clippy::missing_errors_doc)]
-    pub fn new(size: BoardSize, seconds: Duration) -> anyhow::Result<Self> {
+    pub fn new(size: BoardSize, duration: Duration) -> anyhow::Result<Self> {
         Ok(Self {
             size,
             trees: Self::make_trees(size)?,
-            seconds,
+            duration,
         })
     }
 }
