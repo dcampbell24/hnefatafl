@@ -24,6 +24,7 @@ pub struct GenerateMove {
     pub play: Option<Plae>,
     pub score: f64,
     pub delay_milliseconds: i64,
+    pub loops: u64,
     pub heat_map: HeatMap,
 }
 
@@ -32,8 +33,8 @@ impl fmt::Display for GenerateMove {
         if let Some(play) = &self.play {
             writeln!(
                 f,
-                "{play}, score: {}, delay milliseconds: {}",
-                self.score, self.delay_milliseconds,
+                "{play}, score: {}, delay milliseconds: {}, loops: {}",
+                self.score, self.delay_milliseconds, self.loops
             )
         } else {
             Ok(())
@@ -50,6 +51,7 @@ impl AI for AiBanal {
             play: None,
             score: 0.0,
             delay_milliseconds: 0,
+            loops: 0,
             heat_map: HeatMap::default(),
         };
 
@@ -102,6 +104,7 @@ impl AI for AiMonteCarlo {
             play: None,
             score: 0.0,
             delay_milliseconds: 0,
+            loops: 0,
             heat_map: HeatMap::default(),
         };
 
@@ -121,8 +124,10 @@ impl AI for AiMonteCarlo {
             tx.send(nodes).unwrap();
         });
 
+        let mut loops_total = 0;
         let mut nodes_master = HashMap::new();
-        while let Ok((_, nodes)) = rx.recv() {
+        while let Ok((loops, nodes)) = rx.recv() {
+            loops_total += loops;
             for mut node in nodes {
                 if let Some(Plae::Play(play)) = node.clone().play {
                     nodes_master
@@ -180,6 +185,7 @@ impl AI for AiMonteCarlo {
             play: node.play.clone(),
             score: node.score,
             delay_milliseconds,
+            loops: loops_total,
             heat_map,
         }
     }
