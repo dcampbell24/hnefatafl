@@ -79,7 +79,6 @@ impl AI for AiBanal {
 
 #[derive(Clone, Debug)]
 pub struct AiMonteCarlo {
-    pub seconds_to_move: i64,
     pub size: BoardSize,
     pub trees: Vec<Tree>,
     seconds: Duration,
@@ -90,7 +89,6 @@ impl Default for AiMonteCarlo {
         let size = BoardSize::default();
 
         Self {
-            seconds_to_move: 1,
             size,
             trees: Self::make_trees(size).unwrap(),
             seconds: Duration::from_secs(1),
@@ -216,8 +214,6 @@ impl AiMonteCarlo {
     #[allow(clippy::missing_errors_doc)]
     pub fn new(size: BoardSize, seconds: Duration) -> anyhow::Result<Self> {
         Ok(Self {
-            // Fixme???
-            seconds_to_move: 1,
             size,
             trees: Self::make_trees(size)?,
             seconds,
