@@ -46,7 +46,7 @@ impl Tree {
 
     #[allow(clippy::missing_panics_doc)]
     #[must_use]
-    pub fn monte_carlo_tree_search(&mut self, duration: Duration) -> (u64, Vec<Node>) {
+    pub fn monte_carlo_tree_search(&mut self, duration: Duration, depth: i32) -> (u64, Vec<Node>) {
         let t0 = Instant::now();
 
         let mut loops = 0;
@@ -62,7 +62,7 @@ impl Tree {
             let mut game = self.game.clone();
             let mut here = self.here;
 
-            for _depth in 0..80 {
+            for _ in 0..depth {
                 let play = if let Some(play) = game.obvious_play() {
                     game.play(&play).expect("The play should be legal!");
                     play

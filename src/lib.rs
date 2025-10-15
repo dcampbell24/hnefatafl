@@ -241,7 +241,8 @@ mod tests {
     fn monte_carlo() {
         let mut tree = Tree::new(BoardSize::_11);
         let duration = Duration::from_secs(1);
-        let (loops, _plays) = tree.monte_carlo_tree_search(duration);
+        let depth = 80;
+        let (loops, _plays) = tree.monte_carlo_tree_search(duration, depth);
         println!("{loops}");
     }
 
@@ -250,7 +251,8 @@ mod tests {
     fn monte_carlo_long() {
         let mut tree = Tree::new(BoardSize::_11);
         let duration = Duration::from_secs(10);
-        let (loops, _plays) = tree.monte_carlo_tree_search(duration);
+        let depth = 80;
+        let (loops, _plays) = tree.monte_carlo_tree_search(duration, depth);
         println!("{loops}");
     }
 
