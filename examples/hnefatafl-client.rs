@@ -25,7 +25,7 @@ use hnefatafl_copenhagen::{
     COPYRIGHT, Id, LONG_VERSION, SERVER_PORT, VERSION_ID,
     accounts::Email,
     ai::{AI, AiMonteCarlo, GenerateMove},
-    board::{self, BoardSize},
+    board::{Board, BoardSize},
     client::{Size, Theme, User},
     draw::Draw,
     game::{Game, TimeUnix},
@@ -1492,10 +1492,7 @@ impl<'a> Client {
                                     panic!("there should be a valid board size");
                                 };
 
-                                let board = match board_size {
-                                    BoardSize::_11 => board::board_11x11(),
-                                    BoardSize::_13 => board::board_13x13(),
-                                };
+                                let board = Board::new(board_size);
 
                                 let mut game = Game {
                                     attacker_time: timed.clone(),

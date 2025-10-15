@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     Id,
-    board::{self, BoardSize},
+    board::{Board, BoardSize},
     game::{Game, PreviousBoards},
     glicko::Rating,
     play::{PlayRecordTimed, Plays},
@@ -87,11 +87,7 @@ impl ArchivedGameHandle {
     #[must_use]
     #[allow(clippy::missing_panics_doc)]
     pub fn new(game: &ArchivedGame) -> ArchivedGameHandle {
-        let mut board = match game.board_size {
-            BoardSize::_11 => board::board_11x11(),
-            BoardSize::_13 => board::board_13x13(),
-        };
-
+        let mut board = Board::new(game.board_size);
         let mut boards = Tree::new(game.board_size);
         let mut turn = Role::default();
 
@@ -204,10 +200,7 @@ impl ServerGame {
             TimeSettings::UnTimed => Plays::PlayRecords(vec![None]),
         };
 
-        let board = match game.board_size {
-            BoardSize::_11 => board::board_11x11(),
-            BoardSize::_13 => board::board_13x13(),
-        };
+        let board = Board::new(game.board_size);
 
         Self {
             id: game.id,

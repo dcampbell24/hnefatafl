@@ -15,7 +15,7 @@ use wasm_bindgen::prelude::wasm_bindgen;
 
 use crate::{
     ai::{AI, AiBanal},
-    board::{Board, BoardSize, board_11x11, board_13x13},
+    board::{Board, BoardSize},
     message::{COMMANDS, Message},
     play::{Captures, Plae, Play, PlayRecordTimed, Plays, Vertex},
     role::Role,
@@ -74,8 +74,8 @@ impl Default for PreviousBoards {
         let hasher = FxBuildHasher;
         let mut boards = FxHashSet::with_capacity_and_hasher(128, hasher);
 
-        boards.insert(board_11x11());
-        boards.insert(board_13x13());
+        boards.insert(Board::new(BoardSize::_11));
+        boards.insert(Board::new(BoardSize::_13));
         Self(boards)
     }
 }
@@ -481,19 +481,13 @@ impl Game {
         let mut ai: Box<dyn AI> = Box::new(AiBanal);
 
         match message {
-            Message::BoardSize(size) => match size {
-                11 => {
-                    *self = Game::default();
-                    self.board = board_11x11();
-                    Ok(Some(String::new()))
-                }
-                13 => {
-                    *self = Game::default();
-                    self.board = board_13x13();
-                    Ok(Some(String::new()))
-                }
-                _ => Err(anyhow::Error::msg("the board size must be 11 or 13")),
-            },
+            Message::BoardSize(size) => {
+                *self = Game {
+                    board: Board::new(BoardSize::try_from(size)?),
+                    ..Game::default()
+                };
+                Ok(Some(String::new()))
+            }
             Message::Empty => Ok(None),
             Message::FinalStatus => Ok(Some(format!("{}", self.status))),
             Message::GenerateMove => {
@@ -563,12 +557,9 @@ impl Game {
             Message::Quit => exit(0),
             Message::ShowBoard => Ok(Some(self.board.to_string())),
             Message::TimeSettings(time_settings) => {
-                self.board = match self.board.size() {
-                    BoardSize::_11 => board_11x11(),
-                    BoardSize::_13 => board_13x13(),
-                };
-
+                self.board = Board::new(self.board.size());
                 self.plays = Plays::new(&time_settings);
+
                 match time_settings {
                     TimeSettings::Timed(time) => {
                         self.attacker_time = TimeSettings::Timed(time);

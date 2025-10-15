@@ -8,7 +8,7 @@ use rand::Rng;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    board::{BoardSize, board_11x11, board_13x13},
+    board::{Board, BoardSize},
     game::Game,
     play::{Plae, Plays},
     status::Status,
@@ -153,10 +153,7 @@ impl Tree {
 
     #[must_use]
     pub fn new(board_size: BoardSize) -> Self {
-        let board = match board_size {
-            BoardSize::_11 => board_11x11(),
-            BoardSize::_13 => board_13x13(),
-        };
+        let board = Board::new(board_size);
 
         let game = Game {
             board,

@@ -1,5 +1,5 @@
 use crate::{
-    board::{Board, BoardSize, board_11x11, board_13x13},
+    board::{Board, BoardSize},
     role::Role,
 };
 
@@ -96,17 +96,12 @@ impl Tree {
 
     #[must_use]
     pub fn new(board_size: BoardSize) -> Self {
-        let board = match board_size {
-            BoardSize::_11 => board_11x11(),
-            BoardSize::_13 => board_13x13(),
-        };
-
         Self {
             node: 0,
             next_child: 0,
             arena: vec![Node {
                 index: 0,
-                board,
+                board: Board::new(board_size),
                 turn: Role::Attacker,
                 parent: None,
                 children: Vec::new(),
