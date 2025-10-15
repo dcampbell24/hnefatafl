@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- How we serialize previous boards and therefore the game (breaking change).
 - hnefatafl-client: use postcard instead of ron for the user config file
   (breaking, but it is not important).
 - Make the engine faster.

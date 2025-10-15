@@ -1823,7 +1823,7 @@ impl Server {
 
         let game = &server_game.game;
         let Ok(board) = ron::ser::to_string(game) else {
-            panic!("we should be able to serialize the board")
+            panic!("we should be able to serialize the game")
         };
         let texts = &server_game.texts;
         let Ok(texts) = ron::ser::to_string(&texts) else {
@@ -2206,7 +2206,7 @@ mod tests {
         assert_eq!(buf, "= challenge_requested 0\n");
         buf.clear();
 
-        // Todo: "join_game_pending 0\n" should not be allowed!
+        // Fixme: "join_game_pending 0\n" should not be allowed!
         tcp_1.write_all(b"join_game 0\n")?;
         reader_1.read_line(&mut buf)?;
         assert_eq!(

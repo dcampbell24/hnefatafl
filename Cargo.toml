@@ -29,7 +29,7 @@ anyhow = "1"
 chrono = "0.4"
 clap = { version ="4", features = ["derive"] }
 clap_mangen = "0.2"
-crypto-bigint = { version = "0.6", features = ["serde"] }
+crypto-bigint = { version = "0.6", features = ["alloc", "serde"] }
 csv = "1"
 dirs = "6"
 env_logger = "0.11"
