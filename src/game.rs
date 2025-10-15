@@ -72,7 +72,7 @@ pub struct PreviousBoards(pub FxHashSet<Board>);
 impl Default for PreviousBoards {
     fn default() -> Self {
         let hasher = FxBuildHasher;
-        let mut boards = FxHashSet::with_capacity_and_hasher(128, hasher);
+        let mut boards = FxHashSet::with_capacity_and_hasher(64, hasher);
 
         boards.insert(Board::new(BoardSize::_11));
         boards.insert(Board::new(BoardSize::_13));
