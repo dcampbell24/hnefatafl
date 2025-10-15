@@ -35,6 +35,10 @@ struct Args {
     #[arg(default_value_t = 8, long)]
     seconds: u64,
 
+    /// How deep in the game tree to go with Monte Carlo
+    #[arg(default_value_t = 80, long)]
+    depth: i32,
+
     /// Listen for HTP drivers on host and port
     #[arg(long, value_name = "host:port")]
     tcp: Option<String>,
@@ -45,9 +49,9 @@ fn main() -> anyhow::Result<()> {
     let seconds = Duration::from_secs(args.seconds);
 
     if let Some(address) = args.tcp {
-        play_tcp(&address, args.display_game, seconds)?;
+        play_tcp(&address, args.display_game, seconds, args.depth)?;
     } else if args.ai {
-        play_ai(args.display_game, seconds)?;
+        play_ai(args.display_game, seconds, args.depth)?;
     } else {
         play(args.display_game)?;
     }
@@ -106,10 +110,10 @@ fn play(display_game: bool) -> anyhow::Result<()> {
     }
 }
 
-fn play_ai(display_game: bool, seconds: Duration) -> anyhow::Result<()> {
+fn play_ai(display_game: bool, seconds: Duration, depth: i32) -> anyhow::Result<()> {
     let mut buffer = String::new();
     let mut game = Game::default();
-    let mut ai = AiMonteCarlo::new(game.board.size(), seconds)?;
+    let mut ai = AiMonteCarlo::new(game.board.size(), seconds, depth)?;
 
     if display_game {
         clear_screen()?;
@@ -139,9 +143,15 @@ fn play_ai(display_game: bool, seconds: Duration) -> anyhow::Result<()> {
     }
 }
 
-fn play_tcp(address: &str, display_game: bool, seconds: Duration) -> anyhow::Result<()> {
+fn play_tcp(
+    address: &str,
+    display_game: bool,
+    seconds: Duration,
+    depth: i32,
+) -> anyhow::Result<()> {
     let mut game = Game::default();
-    let mut ai: Box<dyn AI + 'static> = Box::new(AiMonteCarlo::new(game.board.size(), seconds)?);
+    let mut ai: Box<dyn AI + 'static> =
+        Box::new(AiMonteCarlo::new(game.board.size(), seconds, depth)?);
     let mut stream = TcpStream::connect(address)?;
     println!("connected to {address} ...");
 

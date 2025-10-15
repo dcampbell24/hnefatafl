@@ -86,6 +86,10 @@ struct Args {
     #[arg(default_value_t = 8, long)]
     seconds: u64,
 
+    /// How deep in the game tree to go with Monte Carlo
+    #[arg(default_value_t = 80, long)]
+    depth: i32,
+
     /// Make the window size tiny
     #[arg(long)]
     tiny_window: bool,
@@ -2888,7 +2892,7 @@ fn estimate_score() -> impl Stream<Item = Message> {
                     let node = handle_error(rx.recv());
                     let mut game = Game::from(node.clone());
                     let seconds = Duration::from_secs(args.seconds);
-                    let mut ai = AiMonteCarlo::new(game.board.size(), seconds)
+                    let mut ai = AiMonteCarlo::new(game.board.size(), seconds, args.depth)
                         .expect("you should be able to create an AI");
 
                     let generate_move = ai.generate_move(&mut game);
