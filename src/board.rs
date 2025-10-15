@@ -302,6 +302,14 @@ impl TryFrom<[&str; 13]> for Board {
 }
 
 impl Board {
+    #[must_use]
+    pub fn new(board_size: BoardSize) -> Self {
+        match board_size {
+            BoardSize::_11 => board_11x11(),
+            BoardSize::_13 => board_13x13(),
+        }
+    }
+
     fn able_to_move(&self, play_from: &Vertex) -> bool {
         if let Some(vertex) = play_from.up()
             && self.get(&vertex) == Space::Empty
@@ -1309,7 +1317,7 @@ impl TryFrom<usize> for BoardSize {
 
 #[must_use]
 #[allow(clippy::missing_panics_doc)]
-pub fn board_11x11() -> Board {
+fn board_11x11() -> Board {
     let spaces: Vec<Space> = STARTING_POSITION_11X11
         .iter()
         .flat_map(|space| space.chars().map(|ch| ch.try_into().unwrap()))
@@ -1320,7 +1328,7 @@ pub fn board_11x11() -> Board {
 
 #[must_use]
 #[allow(clippy::missing_panics_doc)]
-pub fn board_13x13() -> Board {
+fn board_13x13() -> Board {
     let spaces: Vec<Space> = STARTING_POSITION_13X13
         .iter()
         .flat_map(|space| space.chars().map(|ch| ch.try_into().unwrap()))
