@@ -1072,7 +1072,7 @@ impl Board {
         status: &Status,
         turn: &Role,
         previous_boards: &PreviousBoards,
-    ) -> Result<Board, InvalidMove> {
+    ) -> Result<(Board, BoardCompact), InvalidMove> {
         let size = self.size();
 
         if *status != Status::Ongoing {
@@ -1136,11 +1136,16 @@ impl Board {
         board.set(&play.from, Space::Empty);
         board.set(&play.to, space_from);
 
-        if turn == &Role::Defender && previous_boards.0.contains(&PreviousBoard::from(&board)) {
+        // It tries to move a piece which isn't there resulting in no change.
+        // It is in the starting state not the board state.
+        let board_compact = previous_boards.set(&play.from, &play.to, &space_from);
+
+        println!("board_compact: {board_compact}");
+        if turn == &Role::Defender && previous_boards.boards.contains(&board_compact) {
             return Err(InvalidMove::RepeatMove);
         }
 
-        Ok(board)
+        Ok((board, board_compact))
     }
 
     #[must_use]
@@ -1191,8 +1196,15 @@ impl Board {
         turn: &Role,
         previous_boards: &mut PreviousBoards,
     ) -> anyhow::Result<(Vec<Vertex>, Status)> {
-        let (board, captures, status) = self.play_internal(play, status, turn, previous_boards)?;
-        previous_boards.0.insert(PreviousBoard::from(&board));
+        // Fixed?
+        if previous_boards.last_insert.is_none() {
+            previous_boards.last_insert = Some(BoardCompact::from(&*self));
+        }
+
+        let (board, board_compact, captures, status) =
+            self.play_internal(play, status, turn, previous_boards)?;
+
+        previous_boards.boards.insert(board_compact);
         *self = board;
 
         Ok((captures, status))
@@ -1207,7 +1219,7 @@ impl Board {
         status: &Status,
         turn: &Role,
         previous_boards: &PreviousBoards,
-    ) -> anyhow::Result<(Board, Vec<Vertex>, Status)> {
+    ) -> anyhow::Result<(Board, BoardCompact, Vec<Vertex>, Status)> {
         if *status != Status::Ongoing {
             return Err(anyhow::Error::msg(
                 "play: the game has to be ongoing to play",
@@ -1215,12 +1227,26 @@ impl Board {
         }
 
         let play = match play {
-            Plae::AttackerResigns => return Ok((self.clone(), Vec::new(), Status::DefenderWins)),
-            Plae::DefenderResigns => return Ok((self.clone(), Vec::new(), Status::AttackerWins)),
+            Plae::AttackerResigns => {
+                return Ok((
+                    self.clone(),
+                    previous_boards.last_insert(),
+                    Vec::new(),
+                    Status::DefenderWins,
+                ));
+            }
+            Plae::DefenderResigns => {
+                return Ok((
+                    self.clone(),
+                    previous_boards.last_insert(),
+                    Vec::new(),
+                    Status::AttackerWins,
+                ));
+            }
             Plae::Play(play) => play,
         };
 
-        let mut board = self.legal_move(play, status, turn, previous_boards)?;
+        let (mut board, board_compact) = self.legal_move(play, status, turn, previous_boards)?;
         let space_from = self.get(&play.from);
         let role_from = space_from.role();
         let mut captures = Vec::new();
@@ -1228,28 +1254,28 @@ impl Board {
         board.captures_shield_wall(role_from, &play.to, &mut captures);
 
         if self.on_exit_square(&play.to) {
-            return Ok((board, captures, Status::DefenderWins));
+            return Ok((board, board_compact, captures, Status::DefenderWins));
         }
 
         if board.capture_the_king(role_from, &play.to, &mut captures) {
-            return Ok((board, captures, Status::AttackerWins));
+            return Ok((board, board_compact, captures, Status::AttackerWins));
         }
 
         if board.exit_forts() {
-            return Ok((board, captures, Status::DefenderWins));
+            return Ok((board, board_compact, captures, Status::DefenderWins));
         }
 
         if board.flood_fill_attacker_wins() {
-            return Ok((board, captures, Status::AttackerWins));
+            return Ok((board, board_compact, captures, Status::AttackerWins));
         }
 
         if board.no_attacker_pieces_left() {
-            return Ok((board, captures, Status::DefenderWins));
+            return Ok((board, board_compact, captures, Status::DefenderWins));
         }
 
         // Todo: Is a draw possible, how?
 
-        Ok((board, captures, Status::Ongoing))
+        Ok((board, board_compact, captures, Status::Ongoing))
     }
 
     fn set(&mut self, vertex: &Vertex, space: Space) {
@@ -1450,89 +1476,140 @@ fn on_restricted_square<T>(spaces: &[T], vertex: &Vertex) -> bool {
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
-pub enum PreviousBoard {
-    Size11(PreviousBoard11),
-    Size13(PreviousBoard13),
+pub enum BoardCompact {
+    Size11(BoardCompact11),
+    Size13(BoardCompact13),
 }
 
-impl PreviousBoard {
+impl BoardCompact {
     #[must_use]
     pub fn new(board_size: BoardSize) -> Self {
         match board_size {
-            BoardSize::_11 => PreviousBoard::Size11(PreviousBoard11::default()),
-            BoardSize::_13 => PreviousBoard::Size13(PreviousBoard13::default()),
+            BoardSize::_11 => BoardCompact::Size11(BoardCompact11::default()),
+            BoardSize::_13 => BoardCompact::Size13(BoardCompact13::default()),
         }
     }
 }
 
-impl Default for PreviousBoard {
+impl Default for BoardCompact {
     fn default() -> Self {
-        Self::Size11(PreviousBoard11::default())
+        Self::Size11(BoardCompact11::default())
     }
 }
 
-impl From<&Board> for PreviousBoard {
+impl fmt::Display for BoardCompact {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            BoardCompact::Size11(board) => {
+                writeln!(f, "attackers:")?;
+                for y in 0..11 {
+                    write!(f, r#"""#)?;
+
+                    for x in 0..11 {
+                        if board.attackers >> ((y * 11) + x) & 1 == 1 {
+                            write!(f, "X")?;
+                        } else {
+                            write!(f, ".")?;
+                        }
+                    }
+
+                    writeln!(f, r#"""#)?;
+                }
+
+                writeln!(f, "defenders:")?;
+                for y in 0..11 {
+                    write!(f, r#"""#)?;
+
+                    for x in 0..11 {
+                        if board.defenders >> ((y * 11) + x) & 1 == 1 {
+                            write!(f, "O")?;
+                        } else {
+                            write!(f, ".")?;
+                        }
+                    }
+
+                    writeln!(f, r#"""#)?;
+                }
+
+                writeln!(f, "king:")?;
+                for y in 0..11 {
+                    write!(f, r#"""#)?;
+
+                    for x in 0..11 {
+                        if board.king >> ((y * 11) + x) & 1 == 1 {
+                            write!(f, "K")?;
+                        } else {
+                            write!(f, ".")?;
+                        }
+                    }
+
+                    writeln!(f, r#"""#)?;
+                }
+            }
+            BoardCompact::Size13(_) => {
+                todo!()
+            }
+        }
+
+        Ok(())
+    }
+}
+
+impl From<&Board> for BoardCompact {
     fn from(board: &Board) -> Self {
         match board.spaces.len() {
-            BOARD_SIZE_11 => PreviousBoard::Size11(PreviousBoard11::from(board)),
-            BOARD_SIZE_13 => PreviousBoard::Size13(PreviousBoard13::from(board)),
+            BOARD_SIZE_11 => BoardCompact::Size11(BoardCompact11::from(board)),
+            BOARD_SIZE_13 => BoardCompact::Size13(BoardCompact13::from(board)),
             _ => unreachable!(),
         }
     }
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
-pub struct PreviousBoard11 {
+pub struct BoardCompact11 {
     pub attackers: u128,
     pub defenders: u128,
     pub king: u128,
 }
 
-impl PreviousBoard11 {
-    #[must_use]
-    pub fn empty() -> Self {
-        PreviousBoard11 {
+impl From<&Board> for BoardCompact11 {
+    fn from(board: &Board) -> Self {
+        let mut board_compact = BoardCompact11 {
             attackers: 0,
             defenders: 0,
             king: 0,
-        }
-    }
-}
-
-impl From<&Board> for PreviousBoard11 {
-    fn from(board: &Board) -> Self {
-        let mut previous_board = PreviousBoard11::empty();
+        };
 
         for (space, i) in board.spaces.iter().zip(0u32..) {
             let mask = 1 << i;
             match space {
-                Space::Attacker => previous_board.attackers |= mask,
-                Space::Defender => previous_board.defenders |= mask,
+                Space::Attacker => board_compact.attackers |= mask,
+                Space::Defender => board_compact.defenders |= mask,
                 Space::Empty => {}
-                Space::King => previous_board.king |= mask,
+                Space::King => board_compact.king |= mask,
             }
         }
 
-        previous_board
+        board_compact
     }
 }
 
-impl Default for PreviousBoard11 {
+impl Default for BoardCompact11 {
     fn default() -> Self {
         Self::from(&board_11x11())
     }
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
-pub struct PreviousBoard13 {
+pub struct BoardCompact13 {
     pub attackers: U256,
     pub defenders: U256,
     pub king: U256,
 }
 
-impl From<&Board> for PreviousBoard13 {
+impl From<&Board> for BoardCompact13 {
     fn from(board: &Board) -> Self {
-        let mut previous_board = PreviousBoard13 {
+        let mut board_compact = BoardCompact13 {
             attackers: U256::ZERO,
             defenders: U256::ZERO,
             king: U256::ZERO,
@@ -1543,18 +1620,18 @@ impl From<&Board> for PreviousBoard13 {
                 .overflowing_shl(i)
                 .expect("this should be a valid U256");
             match space {
-                Space::Attacker => previous_board.attackers |= mask,
-                Space::Defender => previous_board.defenders |= mask,
+                Space::Attacker => board_compact.attackers |= mask,
+                Space::Defender => board_compact.defenders |= mask,
                 Space::Empty => {}
-                Space::King => previous_board.king |= mask,
+                Space::King => board_compact.king |= mask,
             }
         }
 
-        previous_board
+        board_compact
     }
 }
 
-impl Default for PreviousBoard13 {
+impl Default for BoardCompact13 {
     fn default() -> Self {
         Self::from(&board_13x13())
     }
@@ -1562,7 +1639,7 @@ impl Default for PreviousBoard13 {
 
 #[cfg(test)]
 mod tests {
-    use crate::board::{Board, PreviousBoard, PreviousBoard11};
+    use crate::board::{Board, BoardCompact, BoardCompact11};
 
     #[test]
     fn king() -> anyhow::Result<()> {
@@ -1581,13 +1658,16 @@ mod tests {
         ];
 
         let board = Board::try_from(board)?;
-        let previous_board_1 = PreviousBoard::from(&board);
+        let board_compact_1 = BoardCompact::from(&board);
 
-        let mut previous_board_2 = PreviousBoard11::empty();
-        previous_board_2.king = 1;
-        let previous_board_2 = PreviousBoard::Size11(previous_board_2);
+        let board_compact_2 = BoardCompact11 {
+            attackers: 0,
+            defenders: 0,
+            king: 1,
+        };
+        let board_compact_2 = BoardCompact::Size11(board_compact_2);
 
-        assert_eq!(previous_board_1, previous_board_2);
+        assert_eq!(board_compact_1, board_compact_2);
 
         Ok(())
     }

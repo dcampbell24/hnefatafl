@@ -8,6 +8,7 @@ use std::{
 };
 
 use chrono::Utc;
+use crypto_bigint::U256;
 use rustc_hash::{FxBuildHasher, FxHashSet};
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "js")]
@@ -15,7 +16,7 @@ use wasm_bindgen::prelude::wasm_bindgen;
 
 use crate::{
     ai::{AI, AiBanal},
-    board::{Board, BoardSize, PreviousBoard},
+    board::{Board, BoardCompact, BoardSize},
     message::{COMMANDS, Message},
     play::{Captures, Plae, Play, PlayRecordTimed, Plays, Vertex},
     role::Role,
@@ -32,7 +33,6 @@ pub struct Game {
     pub ai: AiBanal,
     pub board: Board,
     pub plays: Plays,
-    pub previous_board: PreviousBoard,
     pub previous_boards: PreviousBoards,
     pub status: Status,
     pub time: TimeUnix,
@@ -53,8 +53,6 @@ pub struct Game {
     pub board: Board,
     #[wasm_bindgen(skip)]
     pub plays: Plays,
-    #[wasm_bindgen(skip)]
-    pub previous_board: PreviousBoard,
     #[wasm_bindgen(skip)]
     pub previous_boards: PreviousBoards,
     #[wasm_bindgen(skip)]
@@ -105,7 +103,6 @@ impl Game {
     pub fn new(board_size: BoardSize) -> Game {
         Game {
             board: Board::new(board_size),
-            previous_board: PreviousBoard::new(board_size),
             previous_boards: PreviousBoards::new(board_size),
             ..Game::default()
         }
@@ -330,7 +327,6 @@ impl Game {
     pub fn new(board_size: BoardSize) -> Game {
         Game {
             board: Board::new(board_size),
-            previous_board: PreviousBoard::new(board_size),
             previous_boards: PreviousBoards::new(board_size),
             ..Game::default()
         }
@@ -636,16 +632,93 @@ pub struct LegalMoves {
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
-pub struct PreviousBoards(pub FxHashSet<PreviousBoard>);
+pub struct PreviousBoards {
+    pub boards: FxHashSet<BoardCompact>,
+    pub last_insert: Option<BoardCompact>,
+}
 
 impl PreviousBoards {
-    fn new(board_size: BoardSize) -> Self {
+    /// # Panics
+    ///
+    /// If there is no last insert.
+    #[must_use]
+    pub fn last_insert(&self) -> BoardCompact {
+        let Some(board) = &self.last_insert else {
+            panic!("there should be at least one last insert")
+        };
+
+        board.clone()
+    }
+
+    #[must_use]
+    pub fn new(board_size: BoardSize) -> Self {
         let hasher = FxBuildHasher;
         // Fixme?
         let mut boards = FxHashSet::with_capacity_and_hasher(128, hasher);
 
-        boards.insert(PreviousBoard::new(board_size));
-        Self(boards)
+        let last_insert = BoardCompact::new(board_size);
+        boards.insert(last_insert.clone());
+        Self {
+            boards,
+            last_insert: Some(last_insert),
+        }
+    }
+
+    #[allow(clippy::cast_possible_truncation)]
+    #[must_use]
+    pub fn set(&self, from: &Vertex, to: &Vertex, space: &Space) -> BoardCompact {
+        let mut board = self.last_insert();
+
+        match &mut board {
+            BoardCompact::Size11(board) => {
+                let index_from = from.y * 11 + from.x;
+                let mut mask_from = 1 << index_from;
+                mask_from = !mask_from;
+
+                let index_to = to.y * 11 + to.x;
+                let mask_to = 1 << index_to;
+                match space {
+                    Space::Attacker => {
+                        board.attackers &= mask_from;
+                        board.attackers |= mask_to;
+                    }
+                    Space::Defender => {
+                        board.defenders &= mask_from;
+                        board.defenders |= mask_to;
+                    }
+                    Space::Empty => unreachable!(),
+                    Space::King => {
+                        board.king &= mask_from;
+                        board.king |= mask_to;
+                    }
+                }
+            }
+            BoardCompact::Size13(board) => {
+                let index_from = from.y * 13 + from.x;
+                let mut mask_from = U256::ONE.shl(index_from as u32);
+                mask_from = !mask_from;
+
+                let index_to = to.y * 13 + to.x;
+                let mask_to = U256::ONE.shl(index_to as u32);
+                match space {
+                    Space::Attacker => {
+                        board.attackers = board.attackers.bitand(&mask_from);
+                        board.attackers = board.attackers.bitor(&mask_to);
+                    }
+                    Space::Defender => {
+                        board.defenders = board.defenders.bitand(&mask_from);
+                        board.defenders = board.defenders.bitor(&mask_to);
+                    }
+                    Space::Empty => unreachable!(),
+                    Space::King => {
+                        board.king = board.king.bitand(&mask_from);
+                        board.king = board.king.bitor(&mask_to);
+                    }
+                }
+            }
+        }
+
+        board
     }
 }
 
