@@ -69,14 +69,20 @@ pub struct Game {
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct PreviousBoards(pub FxHashSet<Board>);
 
-impl Default for PreviousBoards {
-    fn default() -> Self {
+impl PreviousBoards {
+    #[must_use]
+    pub fn new(board_size: BoardSize) -> Self {
         let hasher = FxBuildHasher;
         let mut boards = FxHashSet::with_capacity_and_hasher(64, hasher);
 
-        boards.insert(Board::new(BoardSize::_11));
-        boards.insert(Board::new(BoardSize::_13));
+        boards.insert(Board::new(board_size));
         Self(boards)
+    }
+}
+
+impl Default for PreviousBoards {
+    fn default() -> Self {
+        Self::new(BoardSize::default())
     }
 }
 
@@ -144,6 +150,42 @@ impl Game {
 }
 
 impl Game {
+    #[must_use]
+    pub fn new_game(board_size: BoardSize, time_settings: Option<TimeSettings>) -> Self {
+        let board = Board::new(board_size);
+        let previous_boards = PreviousBoards::new(board_size);
+
+        if let Some(time_settings) = time_settings {
+            let mut game = Self {
+                board,
+                plays: Plays::new(&time_settings),
+                previous_boards,
+                ..Self::default()
+            };
+
+            match time_settings {
+                TimeSettings::Timed(time) => {
+                    game.attacker_time = TimeSettings::Timed(time);
+                    game.defender_time = TimeSettings::Timed(time);
+                    game.time = TimeUnix::default();
+                }
+                TimeSettings::UnTimed => {
+                    game.attacker_time = TimeSettings::UnTimed;
+                    game.defender_time = TimeSettings::UnTimed;
+                    game.time = TimeUnix::UnTimed;
+                }
+            }
+
+            game
+        } else {
+            Self {
+                board,
+                previous_boards,
+                ..Self::default()
+            }
+        }
+    }
+
     #[must_use]
     pub fn all_legal_moves(&self) -> LegalMoves {
         let size = self.board.size();
@@ -525,7 +567,6 @@ impl Game {
     /// # Errors
     ///
     /// If the command is illegal or invalid.
-    #[allow(clippy::missing_panics_doc)]
     #[allow(clippy::too_many_lines)]
     pub fn update(&mut self, message: Message) -> anyhow::Result<Option<String>> {
         // Fixme: use monte carlo?
@@ -533,10 +574,8 @@ impl Game {
 
         match message {
             Message::BoardSize(size) => {
-                *self = Game {
-                    board: Board::new(BoardSize::try_from(size)?),
-                    ..Game::default()
-                };
+                let board_size = BoardSize::try_from(size)?;
+                *self = Self::new_game(board_size, None);
                 Ok(Some(String::new()))
             }
             Message::Empty => Ok(None),
@@ -608,22 +647,7 @@ impl Game {
             Message::Quit => exit(0),
             Message::ShowBoard => Ok(Some(self.board.to_string())),
             Message::TimeSettings(time_settings) => {
-                self.board = Board::new(self.board.size());
-                self.plays = Plays::new(&time_settings);
-
-                match time_settings {
-                    TimeSettings::Timed(time) => {
-                        self.attacker_time = TimeSettings::Timed(time);
-                        self.defender_time = TimeSettings::Timed(time);
-                        self.time = TimeUnix::default();
-                    }
-                    TimeSettings::UnTimed => {
-                        self.attacker_time = TimeSettings::UnTimed;
-                        self.defender_time = TimeSettings::UnTimed;
-                        self.time = TimeUnix::UnTimed;
-                    }
-                }
-
+                *self = Self::new_game(self.board.size(), Some(time_settings));
                 Ok(Some(String::new()))
             }
             Message::Version => {
