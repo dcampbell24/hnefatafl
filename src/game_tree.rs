@@ -8,7 +8,7 @@ use rand::Rng;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    board::{Board, BoardSize},
+    board::BoardSize,
     game::Game,
     play::{Plae, Plays},
     status::Status,
@@ -153,12 +153,8 @@ impl Tree {
 
     #[must_use]
     pub fn new(board_size: BoardSize) -> Self {
-        let board = Board::new(board_size);
-
-        let game = Game {
-            board,
-            ..Game::default()
-        };
+        // Fixme: time_settings?
+        let game = Game::new_game(board_size, None);
 
         let hash = game.calculate_hash();
         let mut arena = HashMap::new();
