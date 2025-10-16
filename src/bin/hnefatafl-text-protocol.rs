@@ -32,11 +32,11 @@ struct Args {
     display_game: bool,
 
     /// How many seconds to run Monte Carlo loops
-    #[arg(default_value_t = 8, long)]
+    #[arg(default_value_t = 10, long)]
     seconds: u64,
 
     /// How deep in the game tree to go with Monte Carlo
-    #[arg(default_value_t = 80, long)]
+    #[arg(default_value_t = 20, long)]
     depth: i32,
 
     /// Listen for HTP drivers on host and port
