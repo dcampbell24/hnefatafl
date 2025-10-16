@@ -10,7 +10,7 @@ profile-games:
 .PHONY: profile-monte-carlo
 profile-monte-carlo:
 	echo '1' | sudo tee /proc/sys/kernel/perf_event_paranoid
-	samply record cargo test monte_carlo --profile profiling -- --ignored
+	samply record cargo test monte_carlo_long --profile profiling -- --ignored
 
 .PHONY: logs
 logs:

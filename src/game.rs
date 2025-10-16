@@ -219,6 +219,62 @@ impl Game {
 
     #[allow(clippy::missing_panics_doc)]
     #[must_use]
+    pub fn kings_legal_moves(&self) -> (Vertex, Vec<Vertex>) {
+        let size = self.board.size();
+        let board_size_usize = size.into();
+        let kings_position = self
+            .board
+            .find_the_king()
+            .expect("The king must still be on the board.");
+
+        let mut vertexes_to = Vec::new();
+        for y in 0..board_size_usize {
+            let vertex_to = Vertex {
+                size,
+                x: kings_position.x,
+                y,
+            };
+            let play = Play {
+                role: self.turn,
+                from: kings_position,
+                to: vertex_to,
+            };
+
+            if self
+                .board
+                .legal_move(&play, &self.status, &self.turn, &self.previous_boards)
+                .is_ok()
+            {
+                vertexes_to.push(vertex_to);
+            }
+        }
+
+        for x in 0..board_size_usize {
+            let vertex_to = Vertex {
+                size,
+                x,
+                y: kings_position.y,
+            };
+            let play = Play {
+                role: self.turn,
+                from: kings_position,
+                to: vertex_to,
+            };
+
+            if self
+                .board
+                .legal_move(&play, &self.status, &self.turn, &self.previous_boards)
+                .is_ok()
+            {
+                vertexes_to.push(vertex_to);
+            }
+        }
+
+        (kings_position, vertexes_to)
+    }
+
+    #[allow(clippy::missing_panics_doc)]
+    #[must_use]
     pub fn all_legal_plays(&self) -> Vec<Plae> {
         let moves = self.all_legal_moves();
 
@@ -308,20 +364,15 @@ impl Game {
                 }
             }
             Role::Defender => {
-                let kings_position = self
-                    .board
-                    .find_the_king()
-                    .expect("The king must still be on the board.");
+                let (kings_position, move_to) = self.kings_legal_moves();
 
-                if let Some(plays) = self.all_legal_moves().moves.get(&kings_position) {
-                    for play in plays {
-                        if self.board.on_exit_square(play) {
-                            return Some(Plae::Play(Play {
-                                role: Role::Defender,
-                                from: kings_position,
-                                to: *play,
-                            }));
-                        }
+                for play in move_to {
+                    if self.board.on_exit_square(&play) {
+                        return Some(Plae::Play(Play {
+                            role: Role::Defender,
+                            from: kings_position,
+                            to: play,
+                        }));
                     }
                 }
             }
