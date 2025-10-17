@@ -2029,40 +2029,27 @@ impl<'a> Client {
             self.game.as_mut().expect("you should have a game by now")
         };
 
-        // Fixme: Should use play!
-        match role {
-            Some(role) => match game.read_line(&format!("play {role} {from} {to}\n")) {
-                Ok(vertexes) => {
-                    if let Some(vertexes) = vertexes {
-                        for vertex in vertexes.split_ascii_whitespace() {
-                            let Ok(vertex) = Vertex::from_str(vertex) else {
-                                panic!("this should be a valid vertex");
-                            };
-                            self.captures.insert(vertex);
-                        }
+        let role = if let Some(role) = role {
+            Role::from_str(role).expect("there should be a valid role")
+        } else {
+            game.turn
+        };
+
+        match game.read_line(&format!("play {role} {from} {to}\n")) {
+            Ok(vertexes) => {
+                if let Some(vertexes) = vertexes {
+                    for vertex in vertexes.split_ascii_whitespace() {
+                        let vertex =
+                            Vertex::from_str(vertex).expect("this should be a valid vertex");
+
+                        self.captures.insert(vertex);
                     }
                 }
-                Err(error) => {
-                    error!("{error}");
-                    exit(1)
-                }
-            },
-            None => match game.read_line(&format!("play {} {from} {to}\n", game.turn)) {
-                Ok(vertexes) => {
-                    if let Some(vertexes) = vertexes {
-                        for vertex in vertexes.split_ascii_whitespace() {
-                            let Ok(vertex) = Vertex::from_str(vertex) else {
-                                panic!("this should be a valid vertex");
-                            };
-                            self.captures.insert(vertex);
-                        }
-                    }
-                }
-                Err(error) => {
-                    error!("{error}");
-                    exit(1)
-                }
-            },
+            }
+            Err(error) => {
+                error!("{error}");
+                exit(1)
+            }
         }
 
         if let Some(handle) = &mut self.archived_game_handle {
