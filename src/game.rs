@@ -5,6 +5,7 @@ use std::{
     hash::{DefaultHasher, Hash, Hasher},
     process::exit,
     str::FromStr,
+    time::Duration,
 };
 
 use chrono::Utc;
@@ -14,7 +15,7 @@ use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::wasm_bindgen;
 
 use crate::{
-    ai::{AI, AiBanal},
+    ai::{AI, AiMonteCarlo},
     board::{Board, BoardSize},
     message::{COMMANDS, Message},
     play::{Captures, Plae, Play, PlayRecordTimed, Plays, Vertex},
@@ -28,8 +29,6 @@ use crate::{
 #[cfg(not(feature = "js"))]
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct Game {
-    #[serde(skip)]
-    pub ai: AiBanal,
     pub board: Board,
     pub plays: Plays,
     pub previous_boards: PreviousBoards,
@@ -45,9 +44,6 @@ pub struct Game {
 #[allow(clippy::unsafe_derive_deserialize)]
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct Game {
-    #[serde(skip)]
-    #[wasm_bindgen(skip)]
-    pub ai: AiBanal,
     #[wasm_bindgen(skip)]
     pub board: Board,
     #[wasm_bindgen(skip)]
@@ -569,8 +565,7 @@ impl Game {
     /// If the command is illegal or invalid.
     #[allow(clippy::too_many_lines)]
     pub fn update(&mut self, message: Message) -> anyhow::Result<Option<String>> {
-        // Fixme: use monte carlo?
-        let mut ai: Box<dyn AI> = Box::new(AiBanal);
+        let mut ai = AiMonteCarlo::new(self, Duration::from_secs(10), 20)?;
 
         match message {
             Message::BoardSize(size) => {
