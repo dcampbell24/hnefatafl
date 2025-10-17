@@ -565,8 +565,6 @@ impl Game {
     /// If the command is illegal or invalid.
     #[allow(clippy::too_many_lines)]
     pub fn update(&mut self, message: Message) -> anyhow::Result<Option<String>> {
-        let mut ai = AiMonteCarlo::new(self, Duration::from_secs(10), 20)?;
-
         match message {
             Message::BoardSize(size) => {
                 let board_size = BoardSize::try_from(size)?;
@@ -576,6 +574,7 @@ impl Game {
             Message::Empty => Ok(None),
             Message::FinalStatus => Ok(Some(format!("{}", self.status))),
             Message::GenerateMove => {
+                let mut ai = AiMonteCarlo::new(self, Duration::from_secs(10), 20)?;
                 let generate_move = ai.generate_move(self);
                 if generate_move.play.is_some() {
                     Ok(Some(generate_move.to_string()))
