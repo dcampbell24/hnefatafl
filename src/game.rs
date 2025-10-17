@@ -582,11 +582,8 @@ impl Game {
             Message::FinalStatus => Ok(Some(format!("{}", self.status))),
             Message::GenerateMove => {
                 let generate_move = ai.generate_move(self);
-                if let Some(play) = generate_move.play {
-                    Ok(Some(format!(
-                        "{play}, score: {}, delay milliseconds: {}",
-                        generate_move.score, generate_move.delay_milliseconds
-                    )))
+                if generate_move.play.is_some() {
+                    Ok(Some(generate_move.to_string()))
                 } else {
                     Err(anyhow::Error::msg("failed to generate move"))
                 }
