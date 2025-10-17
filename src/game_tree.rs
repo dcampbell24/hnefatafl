@@ -47,9 +47,12 @@ impl Tree {
     #[allow(clippy::missing_panics_doc)]
     #[must_use]
     pub fn monte_carlo_tree_search(&mut self, duration: Duration, depth: i32) -> (u64, Vec<Node>) {
+        // Doesn't seem to do much...
+        /*
         if self.game.previous_boards.0.len() == 1 {
-            // Fixme: handle the first move special!
+
         }
+        */
 
         let t0 = Instant::now();
 
