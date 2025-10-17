@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Handle previous boards correctly in archived games.
 - Hnefatafl Text Protocol: generate_move
 
 ## [4.1.1] - 2025-09-23

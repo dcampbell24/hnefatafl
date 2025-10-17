@@ -39,7 +39,7 @@ use hnefatafl_copenhagen::{
     space::Space,
     status::Status,
     time::{Time, TimeSettings},
-    tree::Node,
+    tree::{Node, Tree},
     utils::{self, data_file},
 };
 use iced::Color;
@@ -276,7 +276,7 @@ struct Client {
     #[serde(skip)]
     estimate_score: bool,
     #[serde(skip)]
-    estimate_score_tx: Option<mpsc::Sender<Node>>,
+    estimate_score_tx: Option<mpsc::Sender<Tree>>,
     #[serde(skip)]
     captures: HashSet<Vertex>,
     #[serde(skip)]
@@ -458,8 +458,7 @@ impl<'a> Client {
                 possible_moves = Some(game.all_legal_moves());
             }
         } else if let Some(handle) = &self.archived_game_handle {
-            let node = handle.boards.here();
-            let game = Game::from(node);
+            let game = Game::from(&handle.boards);
             possible_moves = Some(game.all_legal_moves());
         }
 
@@ -1015,9 +1014,8 @@ impl<'a> Client {
                         .as_ref()
                         .expect("we should have a game handle now");
 
-                    let node = handle.boards.here();
                     self.estimate_score = true;
-                    self.send_estimate_score(node);
+                    self.send_estimate_score(handle.boards.clone());
                 }
             }
             Message::EstimateScoreConnected(tx) => self.estimate_score_tx = Some(tx),
@@ -2020,13 +2018,18 @@ impl<'a> Client {
     fn handle_play(&mut self, role: Option<&str>, from: &str, to: &str) {
         self.captures = HashSet::new();
 
-        let game = if let Some(handle) = &mut self.archived_game_handle {
-            let node = handle.boards.here();
-            &mut Game::from(node)
+        let mut game_handle = None;
+        if let Some(handle) = &mut self.archived_game_handle {
+            game_handle = Some(Game::from(&handle.boards));
+        }
+
+        let game = if let Some(game) = &mut game_handle {
+            game
         } else {
             self.game.as_mut().expect("you should have a game by now")
         };
 
+        // Fixme: Should use play!
         match role {
             Some(role) => match game.read_line(&format!("play {role} {from} {to}\n")) {
                 Ok(vertexes) => {
@@ -2794,14 +2797,14 @@ impl<'a> Client {
         );
     }
 
-    fn send_estimate_score(&mut self, node: Node) {
+    fn send_estimate_score(&mut self, tree: Tree) {
         handle_error(
             self.estimate_score_tx
                 .as_mut()
                 .unwrap_or_else(|| {
-                    panic!("error sending {node:?}: you should have a tx available by now")
+                    panic!("error sending {tree:?}: you should have a tx available by now")
                 })
-                .send(node),
+                .send(tree),
         );
     }
 }
@@ -2819,7 +2822,7 @@ enum Message {
     EmailEveryone,
     EmailReset,
     EstimateScore,
-    EstimateScoreConnected(mpsc::Sender<Node>),
+    EstimateScoreConnected(mpsc::Sender<Tree>),
     EstimateScoreDisplay((Node, GenerateMove)),
     FocusPrevious,
     FocusNext,
@@ -2889,16 +2892,16 @@ fn estimate_score() -> impl Stream<Item = Message> {
 
             thread::spawn(move || {
                 loop {
-                    let node = handle_error(rx.recv());
-                    let mut game = Game::from(node.clone());
+                    let tree = handle_error(rx.recv());
+                    let mut game = Game::from(&tree);
                     let seconds = Duration::from_secs(args.seconds);
-                    let mut ai = AiMonteCarlo::new(game.board.size(), seconds, args.depth)
+                    let mut ai = AiMonteCarlo::new(&game, seconds, args.depth)
                         .expect("you should be able to create an AI");
 
                     let generate_move = ai.generate_move(&mut game);
 
                     if let Err(error) = executor::block_on(
-                        sender.send(Message::EstimateScoreDisplay((node, generate_move))),
+                        sender.send(Message::EstimateScoreDisplay((tree.here(), generate_move))),
                     ) {
                         error!("failed to send channel: {error}");
                         exit(1);
