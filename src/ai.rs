@@ -87,11 +87,11 @@ pub struct AiMonteCarlo {
 
 impl Default for AiMonteCarlo {
     fn default() -> Self {
-        let size = BoardSize::default();
+        let game = Game::default();
 
         Self {
-            size,
-            trees: Self::make_trees(size).unwrap(),
+            size: game.board.size(),
+            trees: Self::make_trees(&game).unwrap(),
             duration: Duration::from_secs(1),
             depth: 80,
         }
@@ -202,22 +202,22 @@ impl AI for AiMonteCarlo {
 }
 
 impl AiMonteCarlo {
-    fn make_trees(size: BoardSize) -> anyhow::Result<Vec<Tree>> {
+    fn make_trees(game: &Game) -> anyhow::Result<Vec<Tree>> {
         let count = std::thread::available_parallelism()?.get();
         let mut trees = Vec::with_capacity(count);
 
         for _ in 0..count {
-            trees.push(Tree::new(size));
+            trees.push(Tree::new(game.clone()));
         }
 
         Ok(trees)
     }
 
     #[allow(clippy::missing_errors_doc)]
-    pub fn new(size: BoardSize, duration: Duration, depth: i32) -> anyhow::Result<Self> {
+    pub fn new(game: &Game, duration: Duration, depth: i32) -> anyhow::Result<Self> {
         Ok(Self {
-            size,
-            trees: Self::make_trees(size)?,
+            size: game.board.size(),
+            trees: Self::make_trees(game)?,
             duration,
             depth,
         })

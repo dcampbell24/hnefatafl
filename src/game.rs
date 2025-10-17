@@ -22,7 +22,7 @@ use crate::{
     space::Space,
     status::Status,
     time::TimeSettings,
-    tree::Node,
+    tree::Tree,
 };
 
 #[cfg(not(feature = "js"))]
@@ -689,10 +689,14 @@ impl Game {
     }
 }
 
-impl From<Node> for Game {
-    fn from(node: Node) -> Self {
+impl From<&Tree> for Game {
+    fn from(tree: &Tree) -> Self {
+        let node = tree.here();
+        let previous_boards = tree.previous_boards();
+
         Self {
             board: node.board,
+            previous_boards,
             status: Status::Ongoing,
             turn: node.turn,
             ..Default::default()

@@ -113,7 +113,7 @@ fn play(display_game: bool) -> anyhow::Result<()> {
 fn play_ai(display_game: bool, seconds: Duration, depth: i32) -> anyhow::Result<()> {
     let mut buffer = String::new();
     let mut game = Game::default();
-    let mut ai = AiMonteCarlo::new(game.board.size(), seconds, depth)?;
+    let mut ai = AiMonteCarlo::new(&game, seconds, depth)?;
 
     if display_game {
         clear_screen()?;
@@ -150,8 +150,7 @@ fn play_tcp(
     depth: i32,
 ) -> anyhow::Result<()> {
     let mut game = Game::default();
-    let mut ai: Box<dyn AI + 'static> =
-        Box::new(AiMonteCarlo::new(game.board.size(), seconds, depth)?);
+    let mut ai: Box<dyn AI + 'static> = Box::new(AiMonteCarlo::new(&game, seconds, depth)?);
     let mut stream = TcpStream::connect(address)?;
     println!("connected to {address} ...");
 

@@ -1,5 +1,6 @@
 use crate::{
     board::{Board, BoardSize},
+    game::PreviousBoards,
     role::Role,
 };
 
@@ -108,6 +109,20 @@ impl Tree {
             }],
         }
     }
+
+    #[must_use]
+    pub fn previous_boards(&self) -> PreviousBoards {
+        let mut node = &self.here();
+        let mut previous_boards = PreviousBoards::new(node.board.size());
+        previous_boards.0.insert(node.board.clone());
+
+        while let Some(parent) = node.parent {
+            node = &self.arena[parent];
+            previous_boards.0.insert(node.board.clone());
+        }
+
+        previous_boards
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -117,10 +132,4 @@ pub struct Node {
     pub turn: Role,
     parent: Option<usize>,
     children: Vec<usize>,
-}
-
-#[derive(Clone, Debug)]
-pub struct Here {
-    pub node: Board,
-    pub turn: Role,
 }

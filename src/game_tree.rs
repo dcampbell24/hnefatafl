@@ -47,6 +47,10 @@ impl Tree {
     #[allow(clippy::missing_panics_doc)]
     #[must_use]
     pub fn monte_carlo_tree_search(&mut self, duration: Duration, depth: i32) -> (u64, Vec<Node>) {
+        if self.game.previous_boards.0.len() == 1 {
+            // Fixme: handle the first move special!
+        }
+
         let t0 = Instant::now();
 
         let mut loops = 0;
@@ -152,16 +156,13 @@ impl Tree {
     }
 
     #[must_use]
-    pub fn new(board_size: BoardSize) -> Self {
-        // Fixme: time_settings?
-        let game = Game::new_game(board_size, None);
-
+    pub fn new(game: Game) -> Self {
         let hash = game.calculate_hash();
         let mut arena = HashMap::new();
         arena.insert(
             hash,
             Node {
-                board_size,
+                board_size: game.board.size(),
                 play: None,
                 score: 0.0,
                 count: 0.0,
