@@ -1,6 +1,5 @@
 use std::{
     borrow::Cow,
-    collections::HashMap,
     fmt,
     hash::{DefaultHasher, Hash, Hasher},
     process::exit,
@@ -9,7 +8,7 @@ use std::{
 };
 
 use chrono::Utc;
-use rustc_hash::{FxBuildHasher, FxHashSet};
+use rustc_hash::{FxBuildHasher, FxHashMap, FxHashSet};
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "js")]
 use wasm_bindgen::prelude::wasm_bindgen;
@@ -190,7 +189,7 @@ impl Game {
         let mut possible_vertexes = Vec::new();
         let mut legal_moves = LegalMoves {
             role: self.turn,
-            moves: HashMap::new(),
+            moves: FxHashMap::default(),
         };
 
         for y in 0..board_size_usize {
@@ -698,7 +697,7 @@ impl From<&Tree> for Game {
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct LegalMoves {
     pub role: Role,
-    pub moves: HashMap<Vertex, Vec<Vertex>>,
+    pub moves: FxHashMap<Vertex, Vec<Vertex>>,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
