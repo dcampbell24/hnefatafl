@@ -886,7 +886,11 @@ impl<'a> Client {
             );
         }
 
-        user_area = user_area.push(self.texting(texts));
+        if self.archived_game_handle.is_some() {
+            user_area = user_area.push(self.texting(texts, false));
+        } else {
+            user_area = user_area.push(self.texting(texts, true));
+        }
 
         let user_area = container(user_area)
             .padding(PADDING)
@@ -946,7 +950,11 @@ impl<'a> Client {
         ])
     }
 
-    fn texting(&'a self, messages: &'a VecDeque<String>) -> Container<'a, Message> {
+    fn texting(
+        &'a self,
+        messages: &'a VecDeque<String>,
+        enable_texting: bool,
+    ) -> Container<'a, Message> {
         let text_input = text_input(&format!("{}…", t!("message")), &self.text_input)
             .on_input(Message::TextChanged)
             .on_paste(Message::TextChanged)
@@ -958,7 +966,13 @@ impl<'a> Client {
             texting = texting.push(text(message).shaping(text::Shaping::Advanced));
         }
 
-        container(column![text_input, scrollable(texting)].spacing(SPACING))
+        let mut text_box = Column::new().spacing(SPACING);
+        if enable_texting {
+            text_box = text_box.push(text_input);
+        }
+        text_box = text_box.push(scrollable(texting));
+
+        container(text_box)
             .padding(PADDING)
             .style(container::bordered_box)
     }
@@ -1066,10 +1080,7 @@ impl<'a> Client {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
-                | Screen::GameReview
                 | Screen::Users => {
-                    self.heat_map = None;
-                    self.heat_map_display = false;
                     self.screen = Screen::Games;
                     self.text_input = String::new();
                 }
@@ -1088,6 +1099,11 @@ impl<'a> Client {
                     self.screen = Screen::Games;
                 }
                 Screen::Games => self.send("logout\n".to_string()),
+                Screen::GameReview => {
+                    self.heat_map = None;
+                    self.heat_map_display = false;
+                    self.screen = Screen::Login;
+                }
                 Screen::Login => self.send("quit\n".to_string()),
             },
             Message::LocaleSelected(locale) => {
@@ -1306,6 +1322,7 @@ impl<'a> Client {
                     if let Some(string) = string.first() {
                         if string.len() <= 16 {
                             self.text_input = string.to_ascii_lowercase();
+                            self.username = self.text_input.clone();
                         }
                     } else {
                         self.text_input = String::new();
@@ -2149,7 +2166,7 @@ impl<'a> Client {
         };
 
         let games = self.games();
-        let texting = self.texting(texts).padding(PADDING);
+        let texting = self.texting(texts, true).padding(PADDING);
         let users = self.users(true);
 
         let user_area = scrollable(column![games, users, texting]);
@@ -2602,29 +2619,7 @@ impl<'a> Client {
                 let top = row![create_game, users, account_setting, website, quit].spacing(SPACING);
                 let user_area = self.user_area(false);
 
-                let mut review_game = button(
-                    text(self.strings["Review Game"].as_str()).shaping(text::Shaping::Advanced),
-                );
-                if self.archived_game_selected.is_some() {
-                    review_game = review_game.on_press(Message::ReviewGame);
-                }
-
-                let archived_games = if let Some(archived_games) = &self.archived_games_filtered {
-                    archived_games.clone()
-                } else {
-                    self.archived_games.clone()
-                };
-
-                let review_game_pick = pick_list(
-                    archived_games,
-                    self.archived_game_selected.clone(),
-                    Message::ArchivedGameSelected,
-                )
-                .text_shaping(text::Shaping::Advanced);
-
-                let review_game = row![review_game, review_game_pick].spacing(SPACING);
-
-                column![theme, username, review_game, top, user_area]
+                column![theme, username, top, user_area]
                     .padding(PADDING)
                     .spacing(SPACING)
                     .into()
@@ -2704,6 +2699,35 @@ impl<'a> Client {
                     error_persistent = text(error_);
                 }
 
+                let mut review_game = button(
+                    text(self.strings["Review Game"].as_str()).shaping(text::Shaping::Advanced),
+                );
+                if self.archived_game_selected.is_some() {
+                    review_game = review_game.on_press(Message::ReviewGame);
+                }
+
+                let archived_games = if let Some(archived_games) = &self.archived_games_filtered {
+                    archived_games.clone()
+                } else {
+                    self.archived_games.clone()
+                };
+
+                let my_games = checkbox(t!("My Games Only"), self.my_games_only)
+                    .size(32)
+                    .text_shaping(text::Shaping::Advanced)
+                    .on_toggle(Message::MyGamesOnly);
+
+                let review_game = row![review_game, my_games].spacing(SPACING);
+
+                let review_game_pick = pick_list(
+                    archived_games,
+                    self.archived_game_selected.clone(),
+                    Message::ArchivedGameSelected,
+                )
+                .text_shaping(text::Shaping::Advanced);
+
+                let review_game_pick = row![review_game_pick].spacing(SPACING);
+
                 let locale = [
                     Locale::English,
                     Locale::Chinese,
@@ -2734,6 +2758,8 @@ impl<'a> Client {
                     password,
                     show_password,
                     buttons,
+                    review_game,
+                    review_game_pick,
                     locale,
                     error,
                     error_persistent
