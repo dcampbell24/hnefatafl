@@ -1068,6 +1068,8 @@ impl<'a> Client {
                 | Screen::GameNew
                 | Screen::GameReview
                 | Screen::Users => {
+                    self.heat_map = None;
+                    self.heat_map_display = false;
                     self.screen = Screen::Games;
                     self.text_input = String::new();
                 }
