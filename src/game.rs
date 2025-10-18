@@ -184,6 +184,10 @@ impl Game {
     pub fn all_legal_moves(&self) -> LegalMoves {
         let size = self.board.size();
         let board_size_usize = size.into();
+        let vec_capacity = match size {
+            BoardSize::_11 => 20,
+            BoardSize::_13 => 24,
+        };
 
         let mut possible_vertexes = Vec::new();
         let mut legal_moves = LegalMoves {
@@ -201,7 +205,7 @@ impl Game {
         }
 
         for vertex_from in possible_vertexes {
-            let mut vertexes_to = Vec::new();
+            let mut vertexes_to = Vec::with_capacity(vec_capacity);
 
             for y in 0..board_size_usize {
                 let vertex_to = Vertex {
