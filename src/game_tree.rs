@@ -47,7 +47,7 @@ impl Tree {
     #[allow(clippy::missing_panics_doc)]
     #[must_use]
     pub fn monte_carlo_tree_search(&mut self, duration: Duration, depth: i32) -> (u64, Vec<Node>) {
-        // Doesn't seem to do much...
+        // Doesn't seem to do much... and makes the overall search slower, about 5%.
         /*
         if self.game.previous_boards.0.len() == 1 {
 
