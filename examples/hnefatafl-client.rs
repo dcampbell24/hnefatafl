@@ -358,7 +358,7 @@ struct Client {
     #[serde(skip)]
     password: String,
     #[serde(skip)]
-    password_no_save: bool,
+    password_ends_with_whitespace: bool,
     #[serde(skip)]
     password_show: bool,
     #[serde(skip)]
@@ -1233,7 +1233,7 @@ impl<'a> Client {
             }
             Message::PasswordChanged(password) => {
                 let (password, ends_with_whitespace) = utils::split_whitespace_password(&password);
-                self.password_no_save = ends_with_whitespace;
+                self.password_ends_with_whitespace = ends_with_whitespace;
                 if password.len() <= 32 {
                     self.password = password;
                 }
@@ -2324,7 +2324,7 @@ impl<'a> Client {
                     text(self.strings["Change Password"].as_str()).shaping(text::Shaping::Advanced),
                 );
 
-                if !self.password_no_save {
+                if !self.password_ends_with_whitespace {
                     change_password_button = change_password_button.on_press(Message::TextSend);
                 }
 
@@ -2682,14 +2682,14 @@ impl<'a> Client {
 
                 let mut login =
                     button(text(self.strings["Login"].as_str()).shaping(text::Shaping::Advanced));
-                if !self.password_no_save {
+                if !self.password_ends_with_whitespace {
                     login = login.on_press(Message::TextSendLogin);
                 }
 
                 let mut create_account = button(
                     text(self.strings["Create Account"].as_str()).shaping(text::Shaping::Advanced),
                 );
-                if !self.text_input.is_empty() && !self.password_no_save {
+                if !self.text_input.is_empty() && !self.password_ends_with_whitespace {
                     create_account = create_account.on_press(Message::TextSendCreateAccount);
                 }
 
