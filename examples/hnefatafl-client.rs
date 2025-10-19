@@ -171,7 +171,7 @@ fn init_client() -> Client {
             Ok(client) => client,
             Err(err) => {
                 error = Some(format!(
-                    "error parsing the ron file {}: {err}",
+                    "error parsing the postcard file {}: {err}",
                     user_config_file.display()
                 ));
                 Client::default()
@@ -313,7 +313,7 @@ struct Client {
     heat_map_display: bool,
     #[serde(default)]
     locale_selected: Locale,
-    #[serde(skip)]
+    #[serde(default)]
     my_games_only: bool,
     #[serde(skip)]
     my_turn: bool,
@@ -339,7 +339,7 @@ struct Client {
     screen: Screen,
     #[serde(skip)]
     screen_size: Size,
-    #[serde(skip)]
+    #[serde(default)]
     sound_muted: bool,
     #[serde(skip)]
     spectators: Vec<String>,
@@ -1139,6 +1139,7 @@ impl<'a> Client {
                 }
 
                 self.my_games_only = selected;
+                handle_error(self.save_client());
             }
             Message::OpenUrl(string) => open_url(&string),
             Message::GameNew => {
@@ -1262,7 +1263,10 @@ impl<'a> Client {
                     self.game_id, game.turn
                 ));
             }
-            Message::SoundMuted(muted) => self.sound_muted = muted,
+            Message::SoundMuted(muted) => {
+                self.sound_muted = muted;
+                handle_error(self.save_client());
+            }
             Message::StreamConnected(tx) => self.tx = Some(tx),
             Message::RatedSelected(rated) => {
                 self.game_settings.rated = if rated { Rated::Yes } else { Rated::No };
