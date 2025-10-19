@@ -159,7 +159,7 @@ fn init_client() -> Client {
     let user_config_file_postcard = data_file(USER_CONFIG_FILE_POSTCARD);
     let user_config_file_ron = data_file(USER_CONFIG_FILE_RON);
     let mut error = None;
-    let client_postcard = match &fs::read(&user_config_file_postcard) {
+    let archived_games: Vec<ArchivedGame> = match &fs::read(&user_config_file_postcard) {
         Ok(bytes) => match postcard::from_bytes(bytes) {
             Ok(client) => client,
             Err(err) => {
@@ -167,7 +167,7 @@ fn init_client() -> Client {
                     "error parsing the postcard file {}: {err}, ",
                     user_config_file_postcard.display()
                 ));
-                Client::default()
+                Vec::new()
             }
         },
         Err(err) => {
@@ -175,7 +175,7 @@ fn init_client() -> Client {
                 "error opening the file {}: {err}, ",
                 user_config_file_postcard.display()
             ));
-            Client::default()
+            Vec::new()
         }
     };
 
@@ -213,7 +213,7 @@ fn init_client() -> Client {
         }
     };
 
-    client.archived_games = client_postcard.archived_games;
+    client.archived_games = archived_games;
 
     if error.is_some() {
         client.error_persistent = error;
@@ -2836,12 +2836,7 @@ impl<'a> Client {
     }
 
     fn save_client_postcard(&self) -> anyhow::Result<()> {
-        let client = Client {
-            archived_games: self.archived_games.clone(),
-            ..Client::default()
-        };
-
-        let postcard_bytes = postcard::to_allocvec(&client)?;
+        let postcard_bytes = postcard::to_allocvec(&self.archived_games)?;
         if !postcard_bytes.is_empty() {
             let mut file = File::create(data_file(USER_CONFIG_FILE_POSTCARD))?;
             file.write_all(&postcard_bytes)?;
