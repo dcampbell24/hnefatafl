@@ -931,6 +931,22 @@ role:
   is-RU: ᚼᛚᚢᛐᚡᛂᚱᚴ
   sv-SE: roll
 
+save password:
+  en-US: save password
+  zh-CN: 保存密码
+  es: guardar contraseña
+  ar: حفظ كلمة المرور
+  id: simpan kata sandi
+  pt-BR: salvar senha
+  pt-PT: guardar senha
+  fr: enregistrer le mot de passe
+  ja: パスワードを保存する
+  ru: сохранить пароль
+  de: Passwort speichern
+  is-IS: vista lykilorð
+  is-RU: ᚡᛁᛋᛐᛆ ᛚᛣᚴᛁᛚᚮᚱᚧ
+  sv-SE: spara lösenord
+
 show password:
   en-US: show password
   zh-CN: 显示密码
