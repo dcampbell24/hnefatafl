@@ -89,7 +89,7 @@ struct Args {
 
     /// How deep in the game tree to go with Monte Carlo
     #[arg(default_value_t = 20, long)]
-    depth: i32,
+    depth: u8,
 
     /// Make the window size tiny
     #[arg(long)]

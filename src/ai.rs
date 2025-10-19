@@ -82,7 +82,7 @@ pub struct AiMonteCarlo {
     pub size: BoardSize,
     pub trees: Vec<Tree>,
     duration: Duration,
-    depth: i32,
+    depth: u8,
 }
 
 impl Default for AiMonteCarlo {
@@ -214,7 +214,7 @@ impl AiMonteCarlo {
     }
 
     #[allow(clippy::missing_errors_doc)]
-    pub fn new(game: &Game, duration: Duration, depth: i32) -> anyhow::Result<Self> {
+    pub fn new(game: &Game, duration: Duration, depth: u8) -> anyhow::Result<Self> {
         Ok(Self {
             size: game.board.size(),
             trees: Self::make_trees(game)?,
