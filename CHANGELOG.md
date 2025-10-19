@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- hnefatafl-client: the option to save your password.
 - hnefatafl-client: save "My Games Only" and "Muted".
 - hnefatafl-client: monte carlo heat map to replay games.
 - hnefatafl-client: save the archived games as a postcard file.

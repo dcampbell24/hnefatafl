@@ -355,10 +355,12 @@ struct Client {
     now: i64,
     #[serde(skip)]
     now_diff: i64,
-    #[serde(skip)]
+    #[serde(default)]
     password: String,
     #[serde(skip)]
     password_ends_with_whitespace: bool,
+    #[serde(default)]
+    password_save: bool,
     #[serde(skip)]
     password_show: bool,
     #[serde(skip)]
@@ -1238,9 +1240,11 @@ impl<'a> Client {
                     self.password = password;
                 }
             }
-            Message::PasswordShow(show_password) => {
-                self.password_show = show_password;
+            Message::PasswordSave(save_password) => {
+                self.password_save = save_password;
+                handle_error(self.save_client_ron());
             }
+            Message::PasswordShow(show_password) => self.password_show = show_password,
             Message::PlayDraw => {
                 let game = self.game.as_ref().expect("you should have a game by now");
                 self.send(format!("request_draw {} {}\n", self.game_id, game.turn));
@@ -1758,7 +1762,6 @@ impl<'a> Client {
                 match self.screen {
                     Screen::AccountSettings => {
                         self.send(format!("change_password {}\n", self.password));
-                        self.password.clear();
                     }
                     Screen::EmailEveryone => {
                         // subject == self.text_input
@@ -1810,7 +1813,6 @@ impl<'a> Client {
                         self.password,
                     ));
                     self.username = username;
-                    self.password.clear();
                 }
                 self.text_input.clear();
                 self.archived_game_reset();
@@ -1837,7 +1839,6 @@ impl<'a> Client {
                     self.username = username;
                 }
 
-                self.password.clear();
                 self.text_input.clear();
                 self.archived_game_reset();
                 handle_error(self.save_client_ron());
@@ -2680,6 +2681,11 @@ impl<'a> Client {
                     .text_shaping(text::Shaping::Advanced)
                     .on_toggle(Message::PasswordShow);
 
+                // Fixme: make a translation.
+                let save_password = checkbox(t!("save password"), self.password_save)
+                    .text_shaping(text::Shaping::Advanced)
+                    .on_toggle(Message::PasswordSave);
+
                 let mut login =
                     button(text(self.strings["Login"].as_str()).shaping(text::Shaping::Advanced));
                 if !self.password_ends_with_whitespace {
@@ -2802,7 +2808,7 @@ impl<'a> Client {
                 column![
                     username,
                     password,
-                    show_password,
+                    row![show_password, save_password].spacing(SPACING),
                     buttons,
                     review_game,
                     review_game_pick,
@@ -2839,7 +2845,12 @@ impl<'a> Client {
     }
 
     fn save_client_postcard(&self) -> anyhow::Result<()> {
-        let postcard_bytes = postcard::to_allocvec(&self)?;
+        let client = Client {
+            archived_games: self.archived_games.clone(),
+            ..Client::default()
+        };
+
+        let postcard_bytes = postcard::to_allocvec(&client)?;
         if !postcard_bytes.is_empty() {
             let mut file = File::create(data_file(USER_CONFIG_FILE_POSTCARD))?;
             file.write_all(&postcard_bytes)?;
@@ -2849,10 +2860,18 @@ impl<'a> Client {
     }
 
     fn save_client_ron(&self) -> anyhow::Result<()> {
+        let password = if self.password_save {
+            self.password.clone()
+        } else {
+            String::new()
+        };
+
         let client = Client {
             archived_games: Vec::new(),
             locale_selected: self.locale_selected,
             my_games_only: self.my_games_only,
+            password,
+            password_save: self.password_save,
             sound_muted: self.sound_muted,
             theme: self.theme,
             username: self.username.clone(),
@@ -2921,6 +2940,7 @@ enum Message {
     MyGamesOnly(bool),
     OpenUrl(String),
     PasswordChanged(String),
+    PasswordSave(bool),
     PasswordShow(bool),
     PlayDraw,
     PlayDrawDecision(Draw),
