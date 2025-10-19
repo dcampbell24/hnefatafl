@@ -46,7 +46,6 @@ pub struct Account {
     pub pending_games: HashSet<Id>,
 }
 
-// Fixme: move logged in / out into different vectors.
 impl fmt::Display for Account {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if self.logged_in.is_some() {
