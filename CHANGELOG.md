@@ -11,13 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - hnefatafl-client: save "My Games Only" and "Muted".
 - hnefatafl-client: monte carlo heat map to replay games.
-- hnefatafl-client: save the archived games.
+- hnefatafl-client: save the archived games as a postcard file.
 - hnefatafl-text-protocol: display seconds left.
 
 ### Changed
 
 - hnefatafl-client: make it so you can review games without logging in.
-- hnefatafl-client: use postcard in addition to ron for the user config file.
 - Make the engine faster.
 
 ### Fixed
