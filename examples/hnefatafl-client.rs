@@ -10,7 +10,7 @@ use std::{
     f64,
     fmt::{self, Write as fmt_write},
     fs::{self, File},
-    io::{BufRead, BufReader, ErrorKind, Write},
+    io::{BufRead, BufReader, Write},
     net::{Shutdown, TcpStream},
     process::exit,
     str::{FromStr, SplitAsciiWhitespace},
@@ -64,7 +64,8 @@ use log::{debug, error, info, trace};
 use rust_i18n::t;
 use serde::{Deserialize, Serialize};
 
-const USER_CONFIG_FILE: &str = "hnefatafl.postcard";
+const USER_CONFIG_FILE_POSTCARD: &str = "hnefatafl.postcard";
+const USER_CONFIG_FILE_RON: &str = "hnefatafl.ron";
 
 const PADDING: u16 = 10;
 const SPACING: Pixels = Pixels(10.0);
@@ -164,31 +165,64 @@ fn i18n_buttons() -> HashMap<String, String> {
 }
 
 fn init_client() -> Client {
-    let user_config_file = data_file(USER_CONFIG_FILE);
+    let user_config_file_postcard = data_file(USER_CONFIG_FILE_POSTCARD);
+    let user_config_file_ron = data_file(USER_CONFIG_FILE_RON);
     let mut error = None;
-    let mut client: Client = match &fs::read(&user_config_file) {
+    let client_postcard = match &fs::read(&user_config_file_postcard) {
         Ok(bytes) => match postcard::from_bytes(bytes) {
             Ok(client) => client,
             Err(err) => {
                 error = Some(format!(
-                    "error parsing the postcard file {}: {err}",
-                    user_config_file.display()
+                    "error parsing the postcard file {}: {err}, ",
+                    user_config_file_postcard.display()
                 ));
                 Client::default()
             }
         },
         Err(err) => {
-            if err.kind() == ErrorKind::NotFound {
-                Client::default()
-            } else {
-                error = Some(format!(
-                    "error opening the file {}: {err}",
-                    user_config_file.display()
-                ));
-                Client::default()
-            }
+            error = Some(format!(
+                "error opening the file {}: {err}, ",
+                user_config_file_postcard.display()
+            ));
+            Client::default()
         }
     };
+
+    let mut client: Client = match &fs::read_to_string(&user_config_file_ron) {
+        Ok(string) => match ron::from_str(string) {
+            Ok(client) => client,
+            Err(err) => {
+                let e = format!(
+                    "error parsing the ron file {}: {err}",
+                    user_config_file_ron.display()
+                );
+
+                if let Some(error) = &mut error {
+                    error.push_str(&e);
+                } else {
+                    error = Some(e);
+                }
+
+                Client::default()
+            }
+        },
+        Err(err) => {
+            let e = format!(
+                "error opening the file {}: {err}",
+                user_config_file_ron.display()
+            );
+
+            if let Some(error) = &mut error {
+                error.push_str(&e);
+            } else {
+                error = Some(e);
+            }
+
+            Client::default()
+        }
+    };
+
+    client.archived_games = client_postcard.archived_games;
 
     if error.is_some() {
         client.error_persistent = error;
@@ -994,13 +1028,13 @@ impl<'a> Client {
                 archived_games.reverse();
                 self.archived_games = archived_games;
                 self.archived_games_filtered = None;
-                handle_error(self.save_client());
+                handle_error(self.save_client_postcard());
             }
             Message::ArchivedGamesGet => self.send("archived_games\n".to_string()),
             Message::ArchivedGameSelected(game) => self.archived_game_selected = Some(game),
             Message::ChangeTheme(theme) => {
                 self.theme = theme;
-                handle_error(self.save_client());
+                handle_error(self.save_client_ron());
             }
             Message::BoardSizeSelected(size) => self.game_settings.board_size = Some(size),
             Message::ConnectedTo(address) => self.connected_to = address,
@@ -1121,7 +1155,7 @@ impl<'a> Client {
                 }
 
                 self.locale_selected = locale;
-                handle_error(self.save_client());
+                handle_error(self.save_client_ron());
             }
             Message::MyGamesOnly(selected) => {
                 if selected {
@@ -1139,7 +1173,7 @@ impl<'a> Client {
                 }
 
                 self.my_games_only = selected;
-                handle_error(self.save_client());
+                handle_error(self.save_client_ron());
             }
             Message::OpenUrl(string) => open_url(&string),
             Message::GameNew => {
@@ -1265,7 +1299,7 @@ impl<'a> Client {
             }
             Message::SoundMuted(muted) => {
                 self.sound_muted = muted;
-                handle_error(self.save_client());
+                handle_error(self.save_client_ron());
             }
             Message::StreamConnected(tx) => self.tx = Some(tx),
             Message::RatedSelected(rated) => {
@@ -1780,7 +1814,7 @@ impl<'a> Client {
                 }
                 self.text_input.clear();
                 self.archived_game_reset();
-                handle_error(self.save_client());
+                handle_error(self.save_client_ron());
             }
             Message::TextSendLogin => {
                 if !self.connected_tcp {
@@ -1806,7 +1840,7 @@ impl<'a> Client {
                 self.password.clear();
                 self.text_input.clear();
                 self.archived_game_reset();
-                handle_error(self.save_client());
+                handle_error(self.save_client_ron());
             }
             Message::Tick => {
                 self.counter = self.counter.wrapping_add(1);
@@ -2804,11 +2838,31 @@ impl<'a> Client {
         self.play_to_previous = None;
     }
 
-    fn save_client(&self) -> anyhow::Result<()> {
+    fn save_client_postcard(&self) -> anyhow::Result<()> {
         let postcard_bytes = postcard::to_allocvec(&self)?;
         if !postcard_bytes.is_empty() {
-            let mut file = File::create(data_file(USER_CONFIG_FILE))?;
+            let mut file = File::create(data_file(USER_CONFIG_FILE_POSTCARD))?;
             file.write_all(&postcard_bytes)?;
+        }
+
+        Ok(())
+    }
+
+    fn save_client_ron(&self) -> anyhow::Result<()> {
+        let client = Client {
+            archived_games: Vec::new(),
+            locale_selected: self.locale_selected,
+            my_games_only: self.my_games_only,
+            sound_muted: self.sound_muted,
+            theme: self.theme,
+            username: self.username.clone(),
+            ..Client::default()
+        };
+
+        let ron_string = ron::ser::to_string_pretty(&client, ron::ser::PrettyConfig::new())?;
+        if !ron_string.is_empty() {
+            let mut file = File::create(data_file(USER_CONFIG_FILE_RON))?;
+            file.write_all(ron_string.as_bytes())?;
         }
 
         Ok(())

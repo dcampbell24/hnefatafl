@@ -12,7 +12,7 @@ pub enum Size {
     Giant,
 }
 
-#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Copy, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 pub enum Theme {
     #[default]
     Dark,
