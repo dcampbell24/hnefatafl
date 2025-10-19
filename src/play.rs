@@ -52,7 +52,6 @@ impl fmt::Display for Plae {
 }
 
 impl Plae {
-    // Todo: can the player resign?
     /// # Errors
     ///
     /// If you try to convert an illegal character or you don't get vertex-vertex.
