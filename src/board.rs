@@ -1241,8 +1241,6 @@ impl Board {
             return Ok((board, captures, Status::DefenderWins));
         }
 
-        // Todo: Is a draw possible, how?
-
         Ok((board, captures, Status::Ongoing))
     }
 

@@ -2206,7 +2206,7 @@ mod tests {
         assert_eq!(buf, "= challenge_requested 0\n");
         buf.clear();
 
-        // Todo: "join_game_pending 0\n" should not be allowed!
+        // Fixme: "join_game_pending 0\n" should not be allowed!
         tcp_1.write_all(b"join_game 0\n")?;
         reader_1.read_line(&mut buf)?;
         assert_eq!(
