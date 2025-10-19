@@ -104,54 +104,44 @@ fn i18n_buttons() -> HashMap<String, String> {
     let mut strings = HashMap::new();
 
     strings.insert("Login".to_string(), t!("Login").to_string());
-
     strings.insert(
         "Create Account".to_string(),
         t!("Create Account").to_string(),
     );
-
     strings.insert(
         "Reset Password".to_string(),
         t!("Reset Password").to_string(),
     );
-
     strings.insert("Leave".to_string(), t!("Leave").to_string());
     strings.insert("Quit".to_string(), t!("Quit").to_string());
     strings.insert("Dark".to_string(), t!("Dark").to_string());
     strings.insert("Light".to_string(), t!("Light").to_string());
     strings.insert("Create Game".to_string(), t!("Create Game").to_string());
     strings.insert("Users".to_string(), t!("Users").to_string());
-
     strings.insert(
         "Account Settings".to_string(),
         t!("Account Settings").to_string(),
     );
-
     strings.insert("Rules".to_string(), t!("Rules").to_string());
     strings.insert("Reset Email".to_string(), t!("Reset Email").to_string());
-
     strings.insert(
         "Change Password".to_string(),
         t!("Change Password").to_string(),
     );
-
     strings.insert(
         "Delete Account".to_string(),
         t!("Delete Account").to_string(),
     );
-
     strings.insert(
         "REALLY DELETE ACCOUNT".to_string(),
         t!("REALLY DELETE ACCOUNT").to_string(),
     );
-
     strings.insert("New Game".to_string(), t!("New Game").to_string());
     strings.insert("Accept".to_string(), t!("Accept").to_string());
     strings.insert("Decline".to_string(), t!("Decline").to_string());
     strings.insert("Watch".to_string(), t!("Watch").to_string());
     strings.insert("Join".to_string(), t!("Join").to_string());
     strings.insert("Resume".to_string(), t!("Resume").to_string());
-
     strings.insert("Resign".to_string(), t!("Resign").to_string());
     strings.insert("Request Draw".to_string(), t!("Request Draw").to_string());
     strings.insert("Accept Draw".to_string(), t!("Accept Draw").to_string());
@@ -160,6 +150,7 @@ fn i18n_buttons() -> HashMap<String, String> {
         "Get Archived Games".to_string(),
         t!("Get Archived Games").to_string(),
     );
+    strings.insert("Heat Map".to_string(), t!("Heat Map").to_string());
 
     strings
 }
@@ -891,8 +882,9 @@ impl<'a> Client {
                 heat_map = heat_map.on_toggle(Message::HeatMap);
             }
 
-            // Fixme: translate Heat Map.
-            let mut heat_map_text = button(text("Heat Map").shaping(text::Shaping::Advanced));
+            let mut heat_map_text =
+                button(text(self.strings["Heat Map"].as_str()).shaping(text::Shaping::Advanced));
+
             if !self.estimate_score {
                 heat_map_text = heat_map_text.on_press(Message::EstimateScore);
             }
