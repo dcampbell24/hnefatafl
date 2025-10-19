@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The default AI and AI used for generate_move is MonteCarlo.
 - hnefatafl-client: make it so you can review games without logging in.
 - Make the engine faster.
 
