@@ -2681,7 +2681,6 @@ impl<'a> Client {
                     .text_shaping(text::Shaping::Advanced)
                     .on_toggle(Message::PasswordShow);
 
-                // Fixme: make a translation.
                 let save_password = checkbox(t!("save password"), self.password_save)
                     .text_shaping(text::Shaping::Advanced)
                     .on_toggle(Message::PasswordSave);
