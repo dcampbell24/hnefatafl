@@ -1007,6 +1007,7 @@ impl<'a> Client {
             Message::DeleteAccount => {
                 if self.delete_account {
                     self.send("delete_account\n".to_string());
+                    self.screen = Screen::Login;
                 } else {
                     self.delete_account = true;
                 }
@@ -1098,13 +1099,18 @@ impl<'a> Client {
                     self.send(format!("leave_game {}\n", self.game_id));
                     self.screen = Screen::Games;
                 }
-                Screen::Games => self.send("logout\n".to_string()),
+                Screen::Games => {
+                    self.send("quit\n".to_string());
+                    self.connected_tcp = false;
+                    self.text_input = self.username.clone();
+                    self.screen = Screen::Login;
+                }
                 Screen::GameReview => {
                     self.heat_map = None;
                     self.heat_map_display = false;
                     self.screen = Screen::Login;
                 }
-                Screen::Login => self.send("quit\n".to_string()),
+                Screen::Login => exit(0),
             },
             Message::LocaleSelected(locale) => {
                 rust_i18n::set_locale(&locale.txt());
@@ -2539,34 +2545,12 @@ impl<'a> Client {
                 game_display.push(buttons).into()
             }
             Screen::Games => {
-                let mut theme = if self.theme == Theme::Light {
-                    row![
-                        button(
-                            text(self.strings["Dark"].as_str()).shaping(text::Shaping::Advanced)
-                        )
-                        .on_press(Message::ChangeTheme(Theme::Dark)),
-                        button(
-                            text(self.strings["Light"].as_str()).shaping(text::Shaping::Advanced)
-                        ),
-                    ]
-                } else {
-                    row![
-                        button(
-                            text(self.strings["Dark"].as_str()).shaping(text::Shaping::Advanced)
-                        ),
-                        button(
-                            text(self.strings["Light"].as_str()).shaping(text::Shaping::Advanced)
-                        )
-                        .on_press(Message::ChangeTheme(Theme::Light)),
-                    ]
-                };
+                let mut email_everyone = Row::new().spacing(SPACING);
 
                 if self.email_everyone {
-                    let email_everyone = button("Email Everyone").on_press(Message::EmailEveryone);
-                    theme = theme.push(email_everyone);
+                    email_everyone = email_everyone
+                        .push(button("Email Everyone").on_press(Message::EmailEveryone));
                 }
-
-                let theme = theme.spacing(SPACING);
 
                 let username = row![
                     text!("{}: {}", t!("username"), &self.username)
@@ -2613,13 +2597,13 @@ impl<'a> Client {
                         ));
 
                 let quit =
-                    button(text(self.strings["Quit"].as_str()).shaping(text::Shaping::Advanced))
+                    button(text(self.strings["Leave"].as_str()).shaping(text::Shaping::Advanced))
                         .on_press(Message::Leave);
 
                 let top = row![create_game, users, account_setting, website, quit].spacing(SPACING);
                 let user_area = self.user_area(false);
 
-                column![theme, username, top, user_area]
+                column![email_everyone, username, top, user_area]
                     .padding(PADDING)
                     .spacing(SPACING)
                     .into()
@@ -2753,6 +2737,30 @@ impl<'a> Client {
                         .text_shaping(text::Shaping::Advanced),
                 ];
 
+                let theme = if self.theme == Theme::Light {
+                    row![
+                        button(
+                            text(self.strings["Dark"].as_str()).shaping(text::Shaping::Advanced)
+                        )
+                        .on_press(Message::ChangeTheme(Theme::Dark)),
+                        button(
+                            text(self.strings["Light"].as_str()).shaping(text::Shaping::Advanced)
+                        ),
+                    ]
+                    .spacing(SPACING)
+                } else {
+                    row![
+                        button(
+                            text(self.strings["Dark"].as_str()).shaping(text::Shaping::Advanced)
+                        ),
+                        button(
+                            text(self.strings["Light"].as_str()).shaping(text::Shaping::Advanced)
+                        )
+                        .on_press(Message::ChangeTheme(Theme::Light)),
+                    ]
+                    .spacing(SPACING)
+                };
+
                 column![
                     username,
                     password,
@@ -2761,6 +2769,7 @@ impl<'a> Client {
                     review_game,
                     review_game_pick,
                     locale,
+                    theme,
                     error,
                     error_persistent
                 ]
@@ -2931,103 +2940,99 @@ fn pass_messages() -> impl Stream<Item = Message> {
     stream::channel(
         100,
         move |mut sender: iced::futures::channel::mpsc::Sender<Message>| async move {
-            let (tx, rx) = mpsc::channel();
-
-            if let Err(error) = sender.send(Message::StreamConnected(tx)).await {
-                error!("failed to send channel: {error}");
-                exit(1);
-            }
-
             let mut args = Args::parse();
             args.host.push_str(SERVER_PORT);
             let address = args.host;
 
             thread::spawn(move || {
-                loop {
-                    let message = handle_error(rx.recv());
-                    let message_trim = message.trim();
+                'start_over: loop {
+                    let (tx, rx) = mpsc::channel();
 
-                    match message_trim {
-                        "quit" => exit(0),
-                        "tcp_connect" => break,
-                        _ => {}
+                    if let Err(error) =
+                        executor::block_on(sender.send(Message::StreamConnected(tx)))
+                    {
+                        error!("failed to send channel: {error}");
+                        exit(1);
                     }
-                }
 
-                let mut tcp_stream = handle_error(TcpStream::connect(&address));
-                let mut reader = BufReader::new(handle_error(tcp_stream.try_clone()));
-                info!("connected to {address} ...");
-
-                thread::spawn(move || {
                     loop {
                         let message = handle_error(rx.recv());
                         let message_trim = message.trim();
 
-                        if message_trim == "ping" {
-                            trace!("<- {message_trim}");
-                        } else {
-                            debug!("<- {message_trim}");
-                        }
-
-                        if message_trim != "quit" {
-                            handle_error(tcp_stream.write_all(message.as_bytes()));
-                        }
-
-                        if message_trim == "delete_account"
-                            || message_trim == "logout"
-                            || message_trim == "quit"
-                        {
-                            #[cfg(not(target_os = "redox"))]
-                            tcp_stream
-                                .shutdown(Shutdown::Both)
-                                .expect("shutdown call failed");
-
-                            exit(0);
+                        if message_trim == "tcp_connect" {
+                            break;
                         }
                     }
-                });
 
-                let mut buffer = String::new();
-                handle_error(executor::block_on(
-                    sender.send(Message::ConnectedTo(address.to_string())),
-                ));
+                    let mut tcp_stream = handle_error(TcpStream::connect(&address));
+                    let mut reader = BufReader::new(handle_error(tcp_stream.try_clone()));
+                    info!("connected to {address} ...");
 
-                loop {
-                    let bytes = handle_error(reader.read_line(&mut buffer));
-                    if bytes > 0 {
-                        let buffer_trim = buffer.trim();
-                        let buffer_trim_vec: Vec<_> =
-                            buffer_trim.split_ascii_whitespace().collect();
+                    thread::spawn(move || {
+                        loop {
+                            let message = handle_error(rx.recv());
+                            let message_trim = message.trim();
 
-                        if buffer_trim_vec[1] == "display_users"
-                            || buffer_trim_vec[1] == "display_games"
-                            || buffer_trim_vec[1] == "ping"
-                        {
-                            trace!("-> {buffer_trim}");
-                        } else {
-                            debug!("-> {buffer_trim}");
+                            if message_trim == "ping" {
+                                trace!("<- {message_trim}");
+                            } else {
+                                debug!("<- {message_trim}");
+                            }
+
+                            if message_trim == "quit" {
+                                tcp_stream
+                                    .shutdown(Shutdown::Both)
+                                    .expect("shutdown call failed");
+
+                                return;
+                            }
+
+                            handle_error(tcp_stream.write_all(message.as_bytes()));
                         }
+                    });
 
-                        handle_error(executor::block_on(
-                            sender.send(Message::TextReceived(buffer.clone())),
-                        ));
+                    let mut buffer = String::new();
+                    handle_error(executor::block_on(
+                        sender.send(Message::ConnectedTo(address.to_string())),
+                    ));
 
-                        if buffer_trim_vec[1] == "archived_games" {
-                            let length = handle_error(buffer_trim_vec[2].parse());
-                            let mut buf = vec![0; length];
-                            handle_error(reader.read_exact(&mut buf));
-                            let archived_games: Vec<ArchivedGame> =
-                                handle_error(postcard::from_bytes(&buf));
+                    loop {
+                        let bytes = handle_error(reader.read_line(&mut buffer));
+                        if bytes > 0 {
+                            let buffer_trim = buffer.trim();
+                            let buffer_trim_vec: Vec<_> =
+                                buffer_trim.split_ascii_whitespace().collect();
+
+                            if buffer_trim_vec[1] == "display_users"
+                                || buffer_trim_vec[1] == "display_games"
+                                || buffer_trim_vec[1] == "ping"
+                            {
+                                trace!("-> {buffer_trim}");
+                            } else {
+                                debug!("-> {buffer_trim}");
+                            }
 
                             handle_error(executor::block_on(
-                                sender.send(Message::ArchivedGames(archived_games)),
+                                sender.send(Message::TextReceived(buffer.clone())),
                             ));
-                        }
 
-                        buffer.clear();
-                    } else {
-                        info!("the TCP stream has closed");
-                        exit(0);
+                            if buffer_trim_vec[1] == "archived_games" {
+                                let length = handle_error(buffer_trim_vec[2].parse());
+                                let mut buf = vec![0; length];
+                                handle_error(reader.read_exact(&mut buf));
+                                let archived_games: Vec<ArchivedGame> =
+                                    handle_error(postcard::from_bytes(&buf));
+
+                                handle_error(executor::block_on(
+                                    sender.send(Message::ArchivedGames(archived_games)),
+                                ));
+                            }
+
+                            buffer.clear();
+                        } else {
+                            info!("the TCP stream has closed");
+                            continue 'start_over;
+                        }
                     }
                 }
             });
