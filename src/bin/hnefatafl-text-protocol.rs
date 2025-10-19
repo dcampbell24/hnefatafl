@@ -37,7 +37,7 @@ struct Args {
 
     /// How deep in the game tree to go with Monte Carlo
     #[arg(default_value_t = 20, long)]
-    depth: i32,
+    depth: u8,
 
     /// Listen for HTP drivers on host and port
     #[arg(long, value_name = "host:port")]
@@ -110,7 +110,7 @@ fn play(display_game: bool) -> anyhow::Result<()> {
     }
 }
 
-fn play_ai(display_game: bool, seconds: Duration, depth: i32) -> anyhow::Result<()> {
+fn play_ai(display_game: bool, seconds: Duration, depth: u8) -> anyhow::Result<()> {
     let mut buffer = String::new();
     let mut game = Game::default();
     let mut ai = AiMonteCarlo::new(&game, seconds, depth)?;
@@ -143,12 +143,7 @@ fn play_ai(display_game: bool, seconds: Duration, depth: i32) -> anyhow::Result<
     }
 }
 
-fn play_tcp(
-    address: &str,
-    display_game: bool,
-    seconds: Duration,
-    depth: i32,
-) -> anyhow::Result<()> {
+fn play_tcp(address: &str, display_game: bool, seconds: Duration, depth: u8) -> anyhow::Result<()> {
     let mut game = Game::default();
     let mut ai: Box<dyn AI + 'static> = Box::new(AiMonteCarlo::new(&game, seconds, depth)?);
     let mut stream = TcpStream::connect(address)?;
