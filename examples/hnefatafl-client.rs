@@ -983,20 +983,20 @@ impl<'a> Client {
         messages: &'a VecDeque<String>,
         enable_texting: bool,
     ) -> Container<'a, Message> {
-        let text_input = text_input(&format!("{}…", t!("message")), &self.text_input)
-            .on_input(Message::TextChanged)
-            .on_paste(Message::TextChanged)
-            .on_submit(Message::TextSend);
+        let text_input = if enable_texting {
+            text_input(&format!("{}…", t!("message")), &self.text_input)
+                .on_input(Message::TextChanged)
+                .on_paste(Message::TextChanged)
+                .on_submit(Message::TextSend)
+        } else {
+            text_input(&format!("{}…", t!("message")), "")
+        };
+
+        let mut text_box = column![text_input].spacing(SPACING);
 
         let mut texting = Column::new();
-
         for message in messages {
             texting = texting.push(text(message).shaping(text::Shaping::Advanced));
-        }
-
-        let mut text_box = Column::new().spacing(SPACING);
-        if enable_texting {
-            text_box = text_box.push(text_input);
         }
         text_box = text_box.push(scrollable(texting));
 
