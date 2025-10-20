@@ -151,6 +151,7 @@ fn i18n_buttons() -> HashMap<String, String> {
         t!("Get Archived Games").to_string(),
     );
     strings.insert("Heat Map".to_string(), t!("Heat Map").to_string());
+    strings.insert("Join Discord".to_string(), t!("Join Discord").to_string());
 
     strings
 }
@@ -2698,16 +2699,6 @@ impl<'a> Client {
                         reset_password.on_press(Message::ResetPassword(self.text_input.clone()));
                 }
 
-                let website = button("https://hnefatafl.org")
-                    .on_press(Message::OpenUrl("https://hnefatafl.org".to_string()));
-
-                let quit =
-                    button(text(self.strings["Quit"].as_str()).shaping(text::Shaping::Advanced))
-                        .on_press(Message::Leave);
-
-                let buttons =
-                    row![login, create_account, reset_password, website, quit].spacing(SPACING);
-
                 let mut error = text("");
                 if let Some(error_) = &self.error {
                     error = text(error_);
@@ -2736,7 +2727,8 @@ impl<'a> Client {
                     .text_shaping(text::Shaping::Advanced)
                     .on_toggle(Message::MyGamesOnly);
 
-                let review_game = row![review_game, my_games].spacing(SPACING);
+                let buttons_1 = row![login, create_account, reset_password, review_game, my_games]
+                    .spacing(SPACING);
 
                 let review_game_pick = pick_list(
                     archived_games,
@@ -2772,7 +2764,7 @@ impl<'a> Client {
                         .text_shaping(text::Shaping::Advanced),
                 ];
 
-                let theme = if self.theme == Theme::Light {
+                let mut buttons_2 = if self.theme == Theme::Light {
                     row![
                         button(
                             text(self.strings["Dark"].as_str()).shaping(text::Shaping::Advanced)
@@ -2796,15 +2788,29 @@ impl<'a> Client {
                     .spacing(SPACING)
                 };
 
+                let discord = button(text(self.strings["Join Discord"].as_str())).on_press(
+                    Message::OpenUrl("https://discord.gg/h56CAHEBXd".to_string()),
+                );
+
+                let website = button("https://hnefatafl.org")
+                    .on_press(Message::OpenUrl("https://hnefatafl.org".to_string()));
+
+                let quit =
+                    button(text(self.strings["Quit"].as_str()).shaping(text::Shaping::Advanced))
+                        .on_press(Message::Leave);
+
+                buttons_2 = buttons_2.push(discord);
+                buttons_2 = buttons_2.push(website);
+                buttons_2 = buttons_2.push(quit);
+
                 column![
                     username,
                     password,
                     row![show_password, save_password].spacing(SPACING),
-                    buttons,
-                    review_game,
+                    buttons_1,
                     review_game_pick,
                     locale,
-                    theme,
+                    buttons_2,
                     error,
                     error_persistent
                 ]
