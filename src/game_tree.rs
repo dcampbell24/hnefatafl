@@ -4,7 +4,7 @@ use std::{
     time::{Duration, Instant},
 };
 
-use rand::Rng;
+use rand::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -55,8 +55,9 @@ impl Tree {
         */
 
         let t0 = Instant::now();
-
+        let mut rng = rand::thread_rng();
         let mut loops = 0;
+
         loop {
             let t1 = Instant::now();
             let elapsed_time = t1 - t0;
@@ -75,7 +76,7 @@ impl Tree {
                     play
                 } else {
                     let plays = game.all_legal_plays();
-                    let index = rand::thread_rng().gen_range(0..plays.len());
+                    let index = rng.gen_range(0..plays.len());
                     let play = plays[index].clone();
                     game.play(&play).expect("The play should be legal!");
                     play
