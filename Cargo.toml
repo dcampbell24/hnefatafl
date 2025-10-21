@@ -34,7 +34,8 @@ dirs = "6"
 env_logger = "0.11"
 log = "0.4"
 postcard = { version = "1", features = ["alloc"] }
-rand = "0.8"
+old_rand = { package = "rand", version = "0.8" }
+rand = { version = "0.9", features = ["os_rng"] }
 rayon = "1"
 ron = { version = "0.11", features = ["integer128"] }
 rustc-hash = "2"

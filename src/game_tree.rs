@@ -55,7 +55,7 @@ impl Tree {
         */
 
         let t0 = Instant::now();
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
         let mut loops = 0;
 
         loop {
@@ -76,7 +76,7 @@ impl Tree {
                     play
                 } else {
                     let plays = game.all_legal_plays();
-                    let index = rng.gen_range(0..plays.len());
+                    let index = rng.random_range(0..plays.len());
                     let play = plays[index].clone();
                     game.play(&play).expect("The play should be legal!");
                     play
