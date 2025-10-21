@@ -125,17 +125,16 @@ suspicious = "deny"
 
 multiple_crate_versions = { level = "allow", priority = 1 }
 
+[profile.release]
+panic = "abort"
+
 [profile.bench]
 inherits = "release"
 panic = "unwind"
 
 [profile.profiling]
-inherits = "release"
+inherits = "bench"
 debug = true
-panic = "unwind"
-
-[profile.release]
-panic = "abort"
 
 # To update the icon cache: rm ~/.cache/icon-cache.kcache
 # Then log out and in.
