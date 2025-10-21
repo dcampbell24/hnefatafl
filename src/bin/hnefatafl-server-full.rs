@@ -12,8 +12,6 @@ use std::{
     time::Duration,
 };
 
-use std::fmt::Write as _;
-
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use chrono::{Local, Utc};
 use clap::{CommandFactory, Parser, command};
@@ -42,9 +40,11 @@ use lettre::{
     transport::smtp::authentication::Credentials,
 };
 use log::{debug, error, info};
+use old_rand::rngs::OsRng;
 use password_hash::SaltString;
-use rand::{random, rngs::OsRng};
+use rand::random;
 use serde::{Deserialize, Serialize};
+use std::fmt::Write as _;
 
 const ACTIVE_GAMES_FILE: &str = "hnefatafl-games-active.postcard";
 const ARCHIVED_GAMES_FILE: &str = "hnefatafl-games.ron";
@@ -2119,7 +2119,7 @@ mod tests {
         let password = "A".to_string();
         let ctx = Argon2::default();
 
-        let salt = SaltString::generate(&mut OsRng);
+        let salt = SaltString::generate(&mut old_rand::rngs::OsRng);
         let password_hash = ctx
             .hash_password(password.as_bytes(), &salt)
             .unwrap()
