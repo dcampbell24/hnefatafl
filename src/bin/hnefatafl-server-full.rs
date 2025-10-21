@@ -2119,7 +2119,7 @@ mod tests {
         let password = "A".to_string();
         let ctx = Argon2::default();
 
-        let salt = SaltString::generate(&mut old_rand::rngs::OsRng);
+        let salt = SaltString::generate(&mut OsRng);
         let password_hash = ctx
             .hash_password(password.as_bytes(), &salt)
             .unwrap()
