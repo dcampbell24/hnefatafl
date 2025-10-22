@@ -2,6 +2,7 @@ use std::{
     io::{self, BufRead, BufReader, Write},
     net::TcpStream,
     thread,
+    time::Duration,
 };
 
 use anyhow::Error;
@@ -203,7 +204,7 @@ fn handle_messages(
     io_on: bool,
 ) -> anyhow::Result<()> {
     let mut game = Game::default();
-    let mut ai = choose_ai(ai)?;
+    let mut ai = choose_ai(ai, &game)?;
 
     if io_on {
         println!("{game}\n");
@@ -257,10 +258,14 @@ fn handle_messages(
     }
 }
 
-fn choose_ai(ai: &str) -> anyhow::Result<Box<dyn AI>> {
+fn choose_ai(ai: &str, game: &Game) -> anyhow::Result<Box<dyn AI>> {
     match ai {
         "banal" => Ok(Box::new(AiBanal)),
-        "monte-carlo" => Ok(Box::new(AiMonteCarlo::default())),
+        "monte-carlo" => Ok(Box::new(AiMonteCarlo::new(
+            game,
+            Duration::from_secs(10),
+            20,
+        )?)),
         _ => Err(anyhow::Error::msg("you didn't choose a valid AI")),
     }
 }
