@@ -533,10 +533,10 @@ impl Game {
                             &self.turn,
                             &self.previous_boards,
                         ) {
-                            match self.turn {
-                                Role::Attacker => self.status = Status::DefenderWins,
-                                Role::Roleless => {}
-                                Role::Defender => self.status = Status::AttackerWins,
+                            self.status = match self.turn {
+                                Role::Attacker => Status::DefenderWins,
+                                Role::Roleless => unreachable!(),
+                                Role::Defender => Status::AttackerWins,
                             }
                         }
                     }
