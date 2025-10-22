@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- cargo update, update the version of rand used by the main project.
 - hnefatafl-client: Make the missing files messages nicer.
 - hnefatafl-client: display "Archived Games" over the archived games when none
   is selected.
