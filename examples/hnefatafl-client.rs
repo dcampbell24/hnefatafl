@@ -2734,8 +2734,7 @@ impl<'a> Client {
                     self.archived_game_selected.clone(),
                     Message::ArchivedGameSelected,
                 )
-                // Fixme: translate.
-                .placeholder("Archived Games")
+                .placeholder(t!("Archived Games"))
                 .text_shaping(text::Shaping::Advanced);
 
                 let review_game_pick = row![review_game_pick].spacing(SPACING);
