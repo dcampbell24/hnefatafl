@@ -192,8 +192,21 @@ Delete Account:
   is-RU: ᛂᛣᚧᛆ ᚱᛂᛁᚴᚿᛁᚿᚵᛁ
   sv-SE: Ta bort konto
 
-Estimate Score:
-  en-US: Estimate Score
+Error opening the file:
+  en-US: Error opening the file
+  zh-CN: 打开文件时出错
+  es: Error al abrir el archivo
+  ar: خطأ في فتح الملف
+  id: Terjadi kesalahan saat membuka file
+  pt-BR: Erro ao abrir o arquivo
+  pt-PT: Erro ao abrir o ficheiro
+  fr: Erreur lors de l'ouverture du fichier
+  ja: ファイルを開くときにエラーが発生しました
+  ru: Ошибка открытия файла
+  de: Fehler beim Öffnen der Datei
+  is-IS: Villa við að opna skrána
+  is-RU: ᚡᛁᛚᛚᛆ ᚡᛁᚧ ᛆᚧ ᚮᛔᚿᛆ ᛋᚴᚱᚨᚿᛆ
+  sv-SE: Det gick inte att öppna filen
 
 Get Archived Games:
   en-US: Get Archived Games
@@ -386,6 +399,22 @@ New Game:
   is-IS: Nýr leikur
   is-RU: ᚿᛨᚱ ᛚᛂᛁᚴᚢᚱ
   sv-SE: Nytt spel
+
+Unable to find Archived Games file:
+  en-US: Unable to find Archived Games file
+  zh-CN: 无法找到存档游​​戏文件
+  es: No se puede encontrar el archivo de juegos archivados
+  ar: تعذر العثور على ملف الألعاب المؤرشفة
+  id: Tidak dapat menemukan file Game yang Diarsipkan
+  pt-BR: Não foi possível encontrar o arquivo de jogos arquivados
+  pt-PT: Não foi possível encontrar o ficheiro de jogos arquivados
+  fr: Impossible de trouver le fichier des jeux archivés
+  ja: アーカイブされたゲームファイルが見つかりません
+  ru: Не удалось найти файл архивных игр
+  de: Die Datei „Archivierte Spiele“ konnte nicht gefunden werden
+  is-IS: Finn ekki skrá úr skjalasafni leikja
+  is-RU: ᚠᛁᚿᚿ ᛂᚴᚴᛁ ᛋᚴᚱᚨ ᚤᚱ ᛋᚴᛃᛆᛚᛆᛋᛆᚠᚿᛁ ᛚᛂᛁᚴᛃᛆ
+  sv-SE: Det gick inte att hitta filen med arkiverade spel
 
 Quit:
   en-US: Quit

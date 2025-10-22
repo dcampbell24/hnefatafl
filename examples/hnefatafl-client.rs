@@ -160,33 +160,6 @@ fn init_client() -> Client {
     let user_config_file_postcard = data_file(USER_CONFIG_FILE_POSTCARD);
     let user_config_file_ron = data_file(USER_CONFIG_FILE_RON);
     let mut error = Vec::new();
-    let archived_games: Vec<ArchivedGame> = match &fs::read(&user_config_file_postcard) {
-        Ok(bytes) => match postcard::from_bytes(bytes) {
-            Ok(client) => client,
-            Err(err) => {
-                error.push(format!(
-                    "Error parsing the postcard file {}: {err}",
-                    user_config_file_postcard.display()
-                ));
-                Vec::new()
-            }
-        },
-        Err(err) => {
-            if err.kind() == ErrorKind::NotFound {
-                error.push(format!(
-                    "Unable to find Archived Games file: {}",
-                    user_config_file_postcard.display()
-                ));
-                Vec::new()
-            } else {
-                error.push(format!(
-                    "Error opening the file {}: {err}",
-                    user_config_file_postcard.display()
-                ));
-                Vec::new()
-            }
-        }
-    };
 
     let mut client: Client = match &fs::read_to_string(&user_config_file_ron) {
         Ok(string) => match ron::from_str(string) {
@@ -208,7 +181,7 @@ fn init_client() -> Client {
                 Client::default()
             } else {
                 error.push(format!(
-                    "Error opening the ron file {}: {err}",
+                    "Error opening the file {}: {err}",
                     user_config_file_ron.display()
                 ));
                 Client::default()
@@ -216,13 +189,42 @@ fn init_client() -> Client {
         }
     };
 
-    client.archived_games = archived_games;
-    client.error_persistent = error;
-
     rust_i18n::set_locale(&client.locale_selected.txt());
-
     client.strings = i18n_buttons();
     client.text_input = client.username.clone();
+
+    let archived_games: Vec<ArchivedGame> = match &fs::read(&user_config_file_postcard) {
+        Ok(bytes) => match postcard::from_bytes(bytes) {
+            Ok(client) => client,
+            Err(err) => {
+                error.push(format!(
+                    "Error parsing the postcard file {}: {err}",
+                    user_config_file_postcard.display()
+                ));
+                Vec::new()
+            }
+        },
+        Err(err) => {
+            if err.kind() == ErrorKind::NotFound {
+                error.push(format!(
+                    "{}: {}",
+                    t!("Unable to find Archived Games file"),
+                    user_config_file_postcard.display()
+                ));
+                Vec::new()
+            } else {
+                error.push(format!(
+                    "{} {}: {err}",
+                    t!("Error opening the file"),
+                    user_config_file_postcard.display()
+                ));
+                Vec::new()
+            }
+        }
+    };
+
+    client.archived_games = archived_games;
+    client.error_persistent = error;
 
     client
 }
