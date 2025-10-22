@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- hnefatafl-client: Make the missing files messages nicer.
+- hnefatafl-client: display "Archived Games" over the archived games when none
+  is selected.
+
 ## [4.2.0] - 2025-09-23
 
 ### Added

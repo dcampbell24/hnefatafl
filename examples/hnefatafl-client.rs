@@ -1,8 +1,8 @@
 // Don't open the terminal on Windows.
 #![windows_subsystem = "windows"]
 
-use std::io::Cursor;
 use std::io::Read;
+use std::io::{Cursor, ErrorKind};
 
 use std::time::Duration;
 use std::{
@@ -159,24 +159,32 @@ fn i18n_buttons() -> HashMap<String, String> {
 fn init_client() -> Client {
     let user_config_file_postcard = data_file(USER_CONFIG_FILE_POSTCARD);
     let user_config_file_ron = data_file(USER_CONFIG_FILE_RON);
-    let mut error = None;
+    let mut error = Vec::new();
     let archived_games: Vec<ArchivedGame> = match &fs::read(&user_config_file_postcard) {
         Ok(bytes) => match postcard::from_bytes(bytes) {
             Ok(client) => client,
             Err(err) => {
-                error = Some(format!(
-                    "error parsing the postcard file {}: {err}, ",
+                error.push(format!(
+                    "Error parsing the postcard file {}: {err}",
                     user_config_file_postcard.display()
                 ));
                 Vec::new()
             }
         },
         Err(err) => {
-            error = Some(format!(
-                "error opening the file {}: {err}, ",
-                user_config_file_postcard.display()
-            ));
-            Vec::new()
+            if err.kind() == ErrorKind::NotFound {
+                error.push(format!(
+                    "Unable to find Archived Games file: {}",
+                    user_config_file_postcard.display()
+                ));
+                Vec::new()
+            } else {
+                error.push(format!(
+                    "Error opening the file {}: {err}",
+                    user_config_file_postcard.display()
+                ));
+                Vec::new()
+            }
         }
     };
 
@@ -184,41 +192,32 @@ fn init_client() -> Client {
         Ok(string) => match ron::from_str(string) {
             Ok(client) => client,
             Err(err) => {
-                let e = format!(
-                    "error parsing the ron file {}: {err}",
+                error.push(format!(
+                    "Error parsing the ron file {}: {err}",
                     user_config_file_ron.display()
-                );
-
-                if let Some(error) = &mut error {
-                    error.push_str(&e);
-                } else {
-                    error = Some(e);
-                }
-
+                ));
                 Client::default()
             }
         },
         Err(err) => {
-            let e = format!(
-                "error opening the file {}: {err}",
-                user_config_file_ron.display()
-            );
-
-            if let Some(error) = &mut error {
-                error.push_str(&e);
+            if err.kind() == ErrorKind::NotFound {
+                error.push(format!(
+                    "Unable to find User Configuration file: {}",
+                    user_config_file_ron.display()
+                ));
+                Client::default()
             } else {
-                error = Some(e);
+                error.push(format!(
+                    "Error opening the ron file {}: {err}",
+                    user_config_file_ron.display()
+                ));
+                Client::default()
             }
-
-            Client::default()
         }
     };
 
     client.archived_games = archived_games;
-
-    if error.is_some() {
-        client.error_persistent = error;
-    }
+    client.error_persistent = error;
 
     rust_i18n::set_locale(&client.locale_selected.txt());
 
@@ -324,7 +323,7 @@ struct Client {
     #[serde(skip)]
     error_email: Option<String>,
     #[serde(skip)]
-    error_persistent: Option<String>,
+    error_persistent: Vec<String>,
     #[serde(skip)]
     game: Option<Game>,
     #[serde(skip)]
@@ -2704,9 +2703,9 @@ impl<'a> Client {
                     error = text(error_);
                 }
 
-                let mut error_persistent = text("");
-                if let Some(error_) = &self.error_persistent {
-                    error_persistent = text(error_);
+                let mut error_persistent = Column::new();
+                for error in &self.error_persistent {
+                    error_persistent = error_persistent.push(text(error));
                 }
 
                 let mut review_game = button(
@@ -2735,6 +2734,8 @@ impl<'a> Client {
                     self.archived_game_selected.clone(),
                     Message::ArchivedGameSelected,
                 )
+                // Fixme: translate.
+                .placeholder("Archived Games")
                 .text_shaping(text::Shaping::Advanced);
 
                 let review_game_pick = row![review_game_pick].spacing(SPACING);
