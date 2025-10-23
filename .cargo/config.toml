@@ -1,5 +1,5 @@
 [build]
-# rustflags = ["-C", "target-cpu=native"]
+# rustflags = ["-C", "target-cpu=native", "-C", "target-feature=-avx"]
 
 [target.aarch64-unknown-linux-gnu]
 linker = "clang"
