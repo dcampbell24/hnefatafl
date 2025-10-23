@@ -564,7 +564,10 @@ impl<'a> Client {
                 }
 
                 if self.captures.contains(&vertex) {
-                    txt = text("X").size(piece_size).center();
+                    txt = text("🗙")
+                        .size(piece_size)
+                        .shaping(text::Shaping::Advanced)
+                        .center();
                 }
 
                 if let Some((heat_map_from, heat_map_to)) = &heat_map

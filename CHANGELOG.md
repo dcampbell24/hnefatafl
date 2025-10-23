@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- hnefatafl-client: Use an 🗙 instead of an X to mark a piece captured.
+
 ## [4.2.2] - 2025-10-22
 
 ### Changed
