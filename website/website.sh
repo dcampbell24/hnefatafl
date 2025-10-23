@@ -13,7 +13,7 @@ Sitemap: https://hnefatafl.org/sitemap.xml
 EOF
 
 mkdir --parents /var/www/html/binaries/debian/
-cp ../../hnefatafl-copenhagen_4.2.0-1_amd64.deb /var/www/html/binaries/debian/
+cp ../../hnefatafl-copenhagen_4.2.2-1_amd64.deb /var/www/html/binaries/debian/
 
 mkdir --parents /var/www/html/binaries/nsis/
 cp ../../hnefatafl-client-installer.exe /var/www/html/binaries/nsis/
