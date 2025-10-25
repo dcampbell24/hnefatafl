@@ -44,6 +44,83 @@ impl Tree {
         );
     }
 
+    /*
+        #[allow(clippy::missing_panics_doc)]
+        #[must_use]
+        pub fn basic_tree_search(&mut self, duration: Duration, depth: u8) -> (u64, Vec<Node>) {
+            let t0 = Instant::now();
+            let mut rng = rand::rng();
+            let mut loops = 0;
+
+            loop {
+                let t1 = Instant::now();
+                let elapsed_time = t1 - t0;
+
+                if duration < elapsed_time {
+                    break;
+                }
+                loops += 1;
+
+                let mut here = self.here;
+
+                for _ in 0..depth {
+                    let plays = game.all_legal_plays();
+                    for play in plays {
+                        let mut game = self.game.clone();
+                        game.play(&play).expect("The play should be legal!");
+
+                        let child_index = game.calculate_hash();
+                        if let Some(node) = self.arena.get_mut(&child_index) {
+                            node.count += 1.0;
+                        } else {
+                            self.insert_child(child_index, here, play);
+                        }
+                        here = child_index;
+
+
+                        match game.status {
+                            Status::AttackerWins => {
+                                let node = self
+                                    .arena
+                                    .get_mut(&here)
+                                    .expect("The hashmap should have the node.");
+
+                                node.score += 1.0;
+                            }
+                            Status::DefenderWins => {
+                                let node = self
+                                    .arena
+                                    .get_mut(&here)
+                                    .expect("The hashmap should have the node.");
+
+                                node.score -= 1.0;
+                            }
+                            Status::Draw => {
+                                // Do something...
+                            }
+                            Status::Ongoing => {
+                                // Keep going.
+                            }
+                        }
+                    }
+                }
+            }
+
+            for node in self.arena.values_mut() {
+                node.score /= node.count;
+                node.count = 1.0;
+            }
+
+            let children = &self.arena[&self.here].children;
+            (
+                loops,
+                children
+                    .iter()
+                    .map(|child| self.arena[child].clone())
+                    .collect::<Vec<_>>(),
+            )
+        }
+    */
     #[allow(clippy::missing_panics_doc)]
     #[must_use]
     pub fn monte_carlo_tree_search(&mut self, duration: Duration, depth: u8) -> (u64, Vec<Node>) {
