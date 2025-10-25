@@ -77,6 +77,84 @@ impl AI for AiBanal {
     }
 }
 
+pub struct AiBasic {
+    pub size: BoardSize,
+    pub tree: Tree,
+    _duration: Duration,
+    _depth: u8,
+}
+
+impl AiBasic {
+    #[must_use]
+    pub fn new(game: &Game, duration: Duration, depth: u8) -> Self {
+        Self {
+            size: game.board.size(),
+            tree: Tree::new(game.clone()),
+            _duration: duration,
+            _depth: depth,
+        }
+    }
+}
+
+/*
+impl AI for AiBasic {
+    fn generate_move(&mut self, game: &mut Game) -> GenerateMove {
+            let mut generate_move = GenerateMove {
+            play: None,
+            score: 0.0,
+            delay_milliseconds: 0,
+            loops: 0,
+            heat_map: HeatMap::default(),
+        };
+
+        if game.status != Status::Ongoing {
+            return generate_move;
+        }
+
+        let mut nodes: Vec<_> = self.tree.  .values().collect();
+        nodes.sort_by(|a, b| a.score.total_cmp(&b.score));
+
+        let turn = game.turn;
+        let node = match turn {
+            Role::Attacker => nodes.last().unwrap(),
+            Role::Defender => nodes.first().unwrap(),
+            Role::Roleless => unreachable!(),
+        };
+
+        let play = node.play.as_ref().unwrap();
+        match game.play(play) {
+            Ok(_captures) => {}
+            Err(_) => {
+                return generate_move;
+            }
+        }
+
+        let here_tree = Tree::from(game.clone());
+        for tree in &mut self.trees {
+            *tree = here_tree.clone();
+        }
+
+        let t1 = Utc::now().timestamp_millis();
+        let delay_milliseconds = t1 - t0;
+        let heat_map = HeatMap::from(&nodes);
+
+        GenerateMove {
+            play: node.play.clone(),
+            score: node.score,
+            delay_milliseconds,
+            loops: loops_total,
+            heat_map,
+        }
+    }
+
+    fn play(&mut self, game: &mut Game, play: &Plae) -> anyhow::Result<()> {
+        game.play(play)?;
+        self.tree = Tree::new(game.clone());
+
+        Ok(())
+    }
+}
+*/
 #[derive(Clone, Debug)]
 pub struct AiMonteCarlo {
     pub size: BoardSize,
