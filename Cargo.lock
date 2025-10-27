@@ -1829,6 +1829,7 @@ dependencies = [
  "thiserror 2.0.17",
  "wasm-bindgen",
  "webbrowser",
+ "winit",
 ]
 
 [[package]]
@@ -6336,8 +6337,3 @@ dependencies = [
  "syn",
  "winnow",
 ]
-
-[[patch.unused]]
-name = "winit"
-version = "0.30.12"
-source = "git+https://github.com/dcampbell24/winit.git?branch=fix-android#2f0f45f1889591a6b06dee0cc027ff95be4f5fae"
