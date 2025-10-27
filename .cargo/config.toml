@@ -5,12 +5,15 @@
 linker = "clang"
 rustflags = ["-C", "link-arg=-fuse-ld=/usr/bin/mold", "-C", "link-arg=-Wl,--no-rosegment"]
 
-[target.x86_64-unknown-linux-gnu]
-linker = "clang"
-rustflags = ["-C", "link-arg=-fuse-ld=/usr/bin/mold", "-C", "link-arg=-Wl,--no-rosegment"]
+[target.aarch64-linux-android]
+linker = "aarch64-linux-android29-clang"
 
 [target.wasm32-unknown-unknown]
 rustflags = ['--cfg', 'getrandom_backend="wasm_js"']
+
+[target.x86_64-unknown-linux-gnu]
+linker = "clang"
+rustflags = ["-C", "link-arg=-fuse-ld=/usr/bin/mold", "-C", "link-arg=-Wl,--no-rosegment"]
 
 [profile.release]
 lto = "thin"
