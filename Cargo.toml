@@ -14,11 +14,6 @@ keywords = ["board-game", "copenhagen", "hnefatafl", "tafl"]
 categories = ["game-engines", "games", "wasm"]
 default-run = "hnefatafl-server-full"
 
-[target.'cfg(all(target_arch = "aarch64", target_os = "linux", target_env = "android"))'.dev-dependencies.winit]
-git = "https://github.com/iced-rs/winit.git"
-rev = "05b8ff17a06562f0a10bb46e6eaacbe2a95cb5ed"
-features = ["android-native-activity"]
-
 [dev-dependencies]
 criterion = { version = "0.7", features = ["html_reports"] }
 futures = "0.3"
