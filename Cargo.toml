@@ -14,8 +14,8 @@ keywords = ["board-game", "copenhagen", "hnefatafl", "tafl"]
 categories = ["game-engines", "games", "wasm"]
 default-run = "hnefatafl-server-full"
 
-[target.'cfg(all(target_arch = "aarch64", target_os = "linux", target_env = "android"))'.dev-dependencies]
-android-activity = { version = "0.6.0", features = ["native-activity"] }
+[patch.crates-io]
+winit = { version = "0.30.8", git = "https://github.com/dcampbell24/winit.git", branch = "fix-android" }
 
 [dev-dependencies]
 criterion = { version = "0.7", features = ["html_reports"] }
