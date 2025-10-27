@@ -1800,7 +1800,6 @@ checksum = "dfa686283ad6dd069f105e5ab091b04c62850d3e4cf5d67debad1933f55023df"
 name = "hnefatafl-copenhagen"
 version = "4.2.2"
 dependencies = [
- "android-activity",
  "anyhow",
  "argon2",
  "chrono",
@@ -6337,3 +6336,8 @@ dependencies = [
  "syn",
  "winnow",
 ]
+
+[[patch.unused]]
+name = "winit"
+version = "0.30.12"
+source = "git+https://github.com/dcampbell24/winit.git?branch=fix-android#2f0f45f1889591a6b06dee0cc027ff95be4f5fae"
