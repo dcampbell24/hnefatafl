@@ -56,6 +56,9 @@ lettre = { version = "0.11", optional = true }
 old_rand = { package = "rand", version = "0.8", optional = true }
 password-hash = { version = "0.5", optional = true }
 
+[target.'cfg(android)'.dependencies]
+android-activity = { version = "0.6", features = ["native-activity"] }
+
 [features]
 default = ["server"]
 js = ["dep:wasm-bindgen", "getrandom/wasm_js"]
