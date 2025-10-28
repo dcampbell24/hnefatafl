@@ -23,7 +23,7 @@ webbrowser = { version = "1", features = ["hardened"] }
 [dev-dependencies.iced]
 git = "https://github.com/iced-rs/iced"
 features = ["smol"]
-revision = "d5608162def4688052c75e43f5d1b04268af4d06"
+rev = "d5608162def4688052c75e43f5d1b04268af4d06"
 
 [dependencies]
 anyhow = "1"
