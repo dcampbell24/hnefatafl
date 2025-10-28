@@ -47,7 +47,8 @@ and run a client:
 RUST_LOG=hnefatafl_client=debug cargo run --release --example hnefatafl-client -- --host localhost
 ```
 
-If you are running on Linux you'll need some dependencies as [described] on the website.
+If you are running on Linux, you'll need some dependencies as [described] on the
+website.
 
 [Rust]: https://rust-lang.org/learn/get-started/
 [described]: https://hnefatafl.org/install.html#dependencies-linux
