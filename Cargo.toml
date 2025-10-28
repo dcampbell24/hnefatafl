@@ -17,9 +17,16 @@ default-run = "hnefatafl-server-full"
 [dev-dependencies]
 criterion = { version = "0.7", features = ["html_reports"] }
 futures = "0.3"
-iced = { git = "https://github.com/iced-rs/iced", features = ["smol", "wgpu", "crisp", "web-colors", "thread-pool", "linux-theme-detection"], default-features = false }
 rodio = "0.21"
 webbrowser = { version = "1", features = ["hardened"] }
+
+[target.'cfg(all(target_arch = "aarch64", target_platform = "linux", target_env = "android"))'.dev-dependencies]
+android-activity = { version = "0.6.0", features = ["native-activity"] }
+
+[dev-dependencies.iced]
+git = "https://github.com/iced-rs/iced"
+features = ["smol", "wgpu", "crisp", "web-colors", "thread-pool", "linux-theme-detection"]
+default-features = false
 
 [dependencies]
 anyhow = "1"
