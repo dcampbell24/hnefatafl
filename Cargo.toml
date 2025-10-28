@@ -20,7 +20,7 @@ futures = "0.3"
 rodio = "0.21"
 webbrowser = { version = "1", features = ["hardened"] }
 
-[target.'cfg(all(target_arch = "aarch64", target_platform = "linux", target_env = "android"))'.dev-dependencies]
+[target.'cfg(target_os = "android")'.dev-dependencies]
 android-activity = { version = "0.6.0", features = ["native-activity"] }
 
 [dev-dependencies.iced]
