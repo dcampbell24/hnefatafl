@@ -17,9 +17,13 @@ default-run = "hnefatafl-server-full"
 [dev-dependencies]
 criterion = { version = "0.7", features = ["html_reports"] }
 futures = "0.3"
-iced = { git = "https://github.com/iced-rs/iced", features = ["smol"] }
 rodio = "0.21"
 webbrowser = { version = "1", features = ["hardened"] }
+
+[dev-dependencies.iced]
+git = "https://github.com/iced-rs/iced"
+features = ["smol"]
+revision = "d5608162def4688052c75e43f5d1b04268af4d06"
 
 [dependencies]
 anyhow = "1"
