@@ -23,10 +23,16 @@ webbrowser = { version = "1", features = ["hardened"] }
 [target.'cfg(target_os = "android")'.dev-dependencies]
 android-activity = { version = "0.6.0", features = ["native-activity"] }
 
-[dev-dependencies.iced]
+[target.'cfg(target_os = "android")'.dev-dependencies.iced]
 git = "https://github.com/iced-rs/iced"
 features = ["smol", "wgpu", "crisp", "web-colors", "thread-pool", "linux-theme-detection"]
 default-features = false
+revision = "d5608162def4688052c75e43f5d1b04268af4d06"
+
+[target.'cfg(not(target_os = "android"))'.dev-dependencies.iced]
+git = "https://github.com/iced-rs/iced"
+features = ["smol"]
+revision = "d5608162def4688052c75e43f5d1b04268af4d06"
 
 [dependencies]
 anyhow = "1"
