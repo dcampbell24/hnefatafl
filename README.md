@@ -44,7 +44,7 @@ cargo run --release
 and run a client:
 
 ```sh
-RUST_LOG=hnefatafl_client=info cargo run --release --example hnefatafl-client -- --host localhost
+RUST_LOG=hnefatafl_client=debug cargo run --release --example hnefatafl-client -- --host localhost
 ```
 
 If you are running on Linux you'll need some dependencies as [described] on the website.
