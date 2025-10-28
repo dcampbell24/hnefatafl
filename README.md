@@ -32,18 +32,21 @@ cd hnefatafl
 Then you can run the engine with:
 
 ```sh
+# --release is optional
 cargo run --release --bin hnefatafl-text-protocol -- --display-game
 ```
 
 or you can start a local server:
 
 ```sh
+# --release is optional
 cargo run --release
 ```
 
 and run a client:
 
 ```sh
+# --release is optional
 RUST_LOG=hnefatafl_client=debug cargo run --release --example hnefatafl-client -- --host localhost
 ```
 
