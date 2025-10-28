@@ -51,15 +51,15 @@ RUST_LOG=hnefatafl_client=debug cargo run --release --example hnefatafl-client -
 ```
 
 If you are running on Linux, you'll need some dependencies as [described] on the
-website.
+[website].
+
+## [Website]
+
+You can also get the [rules] and more information about [downloading]
+the software on the website.
 
 [Rust]: https://rust-lang.org/learn/get-started/
 [described]: https://hnefatafl.org/install.html#dependencies-linux
-
-## Website
-
-See the [website] for the [rules] and information about [downloading] the software.
-
 [website]: https://hnefatafl.org
 [rules]: https://hnefatafl.org/rules.html
 [downloading]: https://hnefatafl.org/install.htm
