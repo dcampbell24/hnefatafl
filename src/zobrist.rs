@@ -1,4 +1,4 @@
-use std::hash::Hasher;
+use std::hash::{BuildHasher, Hasher};
 
 use rand::{TryRngCore, rngs::OsRng};
 
@@ -8,11 +8,20 @@ use crate::{
     space::Space,
 };
 
+#[derive(Clone, Debug, Default)]
 pub struct ZobristHasher {
     /// Bits representing piece placement.
     table: Vec<[u64; 3]>,
     /// The current hash.
     hash: u64,
+}
+
+impl BuildHasher for ZobristHasher {
+    type Hasher = ZobristHasher;
+
+    fn build_hasher(&self) -> Self::Hasher {
+        self.clone()
+    }
 }
 
 impl ZobristHasher {
@@ -33,7 +42,9 @@ impl ZobristHasher {
             ]);
         }
 
-        Ok(Self { table, hash: 0 })
+        let hasher = ZobristHasher { table, hash: 0 };
+
+        Ok(hasher)
     }
 }
 
