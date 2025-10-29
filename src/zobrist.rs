@@ -14,37 +14,32 @@ pub struct ZobristHasher {
     table: Vec<[u64; 3]>,
     /// The current hash.
     hash: u64,
+    /// The size of the board
+    size: BoardSize,
 }
 
 impl BuildHasher for ZobristHasher {
     type Hasher = ZobristHasher;
 
     fn build_hasher(&self) -> Self::Hasher {
-        self.clone()
-    }
-}
-
-impl ZobristHasher {
-    /// # Errors
-    ///
-    /// If it fails generating a random number.
-    pub fn new(board_size: BoardSize) -> anyhow::Result<Self> {
         let mut rng = OsRng;
-        let size = usize::from(board_size);
+        let size = usize::from(self.size);
         let size_2 = size * size;
 
         let mut table: Vec<[u64; 3]> = Vec::with_capacity(size_2);
         for _ in 0..size_2 {
             table.push([
-                rng.try_next_u64()?,
-                rng.try_next_u64()?,
-                rng.try_next_u64()?,
+                rng.try_next_u64().unwrap(),
+                rng.try_next_u64().unwrap(),
+                rng.try_next_u64().unwrap(),
             ]);
         }
 
-        let hasher = ZobristHasher { table, hash: 0 };
-
-        Ok(hasher)
+        Self {
+            table,
+            hash: 0,
+            size: self.size,
+        }
     }
 }
 
