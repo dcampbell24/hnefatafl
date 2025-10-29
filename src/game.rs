@@ -198,7 +198,7 @@ impl Game {
         for y in 0..board_size_usize {
             for x in 0..board_size_usize {
                 let vertex = Vertex { size, x, y };
-                if self.board.get(&vertex).role() == legal_moves.role {
+                if Role::from(self.board.get(&vertex)) == legal_moves.role {
                     possible_vertexes.push(vertex);
                 }
             }
@@ -497,7 +497,7 @@ impl Game {
                     }
                 }
                 Plae::Play(play) => {
-                    let piece_role = self.board.get(&play.from).role();
+                    let piece_role = Role::from(self.board.get(&play.from));
                     if piece_role != play.role {
                         return Err(anyhow::Error::msg(format!(
                             "play: you are trying to move {piece_role}, but it's {}'s turn",

@@ -39,26 +39,27 @@ impl fmt::Display for Space {
     }
 }
 
-impl Space {
-    #[must_use]
-    pub fn role(&self) -> Role {
-        match self {
-            Self::Attacker => Role::Attacker,
-            Self::Defender | Self::King => Role::Defender,
-            Self::Empty => Role::Roleless,
+impl From<Space> for Role {
+    fn from(space: Space) -> Self {
+        match space {
+            Space::Attacker => Role::Attacker,
+            Space::Defender | Space::King => Role::Defender,
+            Space::Empty => Role::Roleless,
         }
     }
+}
 
-    /// # Panics
-    ///
-    /// If you take the index of an empty space.
-    #[must_use]
-    pub fn index(&self) -> usize {
-        match self {
-            Self::Attacker => 0,
-            Self::Defender => 1,
-            Self::King => 2,
-            Self::Empty => panic!("we should not take the index of an empty space"),
+impl TryFrom<Space> for usize {
+    type Error = anyhow::Error;
+
+    fn try_from(space: Space) -> Result<usize, anyhow::Error> {
+        match space {
+            Space::Attacker => Ok(0),
+            Space::Defender => Ok(1),
+            Space::King => Ok(2),
+            Space::Empty => Err(anyhow::Error::msg(
+                "we should not try to get a usize for an empty space",
+            )),
         }
     }
 }

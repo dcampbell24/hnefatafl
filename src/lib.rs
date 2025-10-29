@@ -38,6 +38,7 @@ pub mod status;
 pub mod time;
 pub mod tree;
 pub mod utils;
+pub mod zobrist;
 
 pub type Id = u128;
 
