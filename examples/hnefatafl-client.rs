@@ -575,7 +575,7 @@ impl<'a> Client {
                 {
                     if let Some(vertex_from) = self.play_from.as_ref() {
                         let space = board.get(vertex_from);
-                        let turn = space.role();
+                        let turn = Role::from(space);
                         if let Some(heat_map_to) = heat_map_to.get(&(turn, *vertex_from)) {
                             let heat = heat_map_to[y * board_size_usize + x];
 
