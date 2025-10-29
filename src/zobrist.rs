@@ -1,20 +1,21 @@
+use std::hash::Hasher;
+
 use rand::{TryRngCore, rngs::OsRng};
 
 use crate::{
     board::{Board, BoardSize},
     play::Vertex,
-    role::Role,
     space::Space,
 };
 
-pub struct ZobristTable {
+pub struct ZobristHasher {
     /// Bits representing piece placement.
     table: Vec<[u64; 3]>,
-    /// Bits to use used when it's the defender's move.
-    defender_to_move: u64,
+    /// The current hash.
+    hash: u64,
 }
 
-impl ZobristTable {
+impl ZobristHasher {
     /// # Errors
     ///
     /// If it fails generating a random number.
@@ -32,23 +33,21 @@ impl ZobristTable {
             ]);
         }
 
-        Ok(Self {
-            table,
-            defender_to_move: rng.try_next_u64()?,
-        })
+        Ok(Self { table, hash: 0 })
+    }
+}
+
+impl Hasher for ZobristHasher {
+    fn finish(&self) -> u64 {
+        self.hash
     }
 
-    #[allow(clippy::missing_panics_doc)]
-    #[must_use]
-    pub fn hash(&self, board: &Board, turn: Role) -> u64 {
-        let mut hash = 0u64;
-
-        if turn == Role::Defender {
-            hash ^= self.defender_to_move;
-        }
-
+    fn write(&mut self, board: &[u8]) {
+        self.hash = 0u64;
+        let board = Board::from(board);
         let board_size = board.size();
         let board_size_usize = usize::from(board_size);
+
         for y in 0..board_size_usize {
             for x in 0..board_size_usize {
                 let vertex = Vertex {
@@ -62,11 +61,9 @@ impl ZobristTable {
                     let i = y * board_size_usize + x;
                     let j = usize::try_from(space).unwrap();
 
-                    hash ^= self.table[i][j];
+                    self.hash ^= self.table[i][j];
                 }
             }
         }
-
-        hash
     }
 }

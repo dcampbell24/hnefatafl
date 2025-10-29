@@ -1260,6 +1260,32 @@ impl Board {
     }
 }
 
+/* Fixme: it's slower than not using it.
+impl std::hash::Hash for Board {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        let mut bytes = Vec::new();
+
+        for space in &self.spaces {
+            bytes.push(u8::from(space));
+        }
+
+        state.write(&bytes);
+    }
+}
+*/
+
+impl From<&[u8]> for Board {
+    fn from(board: &[u8]) -> Self {
+        let mut spaces = Vec::with_capacity(board.len());
+
+        for space in board {
+            spaces.push(Space::from(space));
+        }
+
+        Board { spaces }
+    }
+}
+
 #[derive(
     Clone, Copy, Debug, Default, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize,
 )]
