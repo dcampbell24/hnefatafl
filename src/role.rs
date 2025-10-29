@@ -2,8 +2,6 @@ use std::{fmt, str::FromStr};
 
 use serde::{Deserialize, Serialize};
 
-// use crate::role::Role;
-
 #[derive(
     Clone, Copy, Debug, Default, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize,
 )]
@@ -31,18 +29,6 @@ impl fmt::Display for Role {
             Role::Attacker => write!(f, "attacker"),
             Role::Defender => write!(f, "defender"),
             Role::Roleless => write!(f, "roleless"),
-        }
-    }
-}
-
-impl TryFrom<&Role> for Role {
-    type Error = anyhow::Error;
-
-    fn try_from(role: &Role) -> anyhow::Result<Self> {
-        match role {
-            Role::Attacker => Ok(Self::Attacker),
-            Role::Roleless => Err(anyhow::Error::msg("the piece must be attacker or defender")),
-            Role::Defender => Ok(Self::Defender),
         }
     }
 }

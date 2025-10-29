@@ -49,6 +49,29 @@ impl From<Space> for Role {
     }
 }
 
+impl From<&u8> for Space {
+    fn from(space: &u8) -> Self {
+        match space {
+            0 => Space::Attacker,
+            1 => Space::Defender,
+            2 => Space::Empty,
+            3 => Space::King,
+            _ => unreachable!(),
+        }
+    }
+}
+
+impl From<&Space> for u8 {
+    fn from(space: &Space) -> Self {
+        match space {
+            Space::Attacker => 0,
+            Space::Defender => 1,
+            Space::Empty => 2,
+            Space::King => 3,
+        }
+    }
+}
+
 impl TryFrom<Space> for usize {
     type Error = anyhow::Error;
 
