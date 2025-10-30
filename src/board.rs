@@ -351,7 +351,7 @@ impl Board {
         for y in 0..board_size_usize {
             for x in 0..board_size_usize {
                 let vertex_from = Vertex { size, x, y };
-                if self.get(&vertex_from).role() != *turn {
+                if Role::from(self.get(&vertex_from)) != *turn {
                     continue;
                 }
 
@@ -430,11 +430,11 @@ impl Board {
         if let Some(right_1) = over(play_to) {
             let space = self.get(&right_1);
             if space != Space::King
-                && space.role() == role_from.opposite()
+                && Role::from(space) == role_from.opposite()
                 && let Some(right_2) = over(&right_1)
                 && ((on_restricted_square(&self.spaces, &right_2)
                     && self.get(&right_2) != Space::King)
-                    || self.get(&right_2).role() == role_from)
+                    || Role::from(self.get(&right_2)) == role_from)
                 && self.set_if_not_king(&right_1, Space::Empty)
             {
                 captures.push(right_1);
@@ -460,7 +460,7 @@ impl Board {
                 x: x_1,
                 y: board_size_usize - 1,
             };
-            if self.get(&vertex_1).role() == role_from
+            if Role::from(self.get(&vertex_1)) == role_from
                 || on_restricted_square(&self.spaces, &vertex_1)
             {
                 let mut count = 0;
@@ -481,8 +481,8 @@ impl Board {
                         x: x_2,
                         y: board_size_usize - 2,
                     };
-                    let role_2 = self.get(&vertex_2).role();
-                    let role_3 = self.get(&vertex_3).role();
+                    let role_2 = Role::from(self.get(&vertex_2));
+                    let role_3 = Role::from(self.get(&vertex_3));
                     if role_2 == role_from.opposite() && role_3 == role_from {
                         count += 1;
                     } else {
@@ -496,7 +496,7 @@ impl Board {
                     x: finish,
                     y: board_size_usize - 1,
                 };
-                let role = self.get(&vertex).role();
+                let role = Role::from(self.get(&vertex));
                 if count > 1
                     && (role == role_from || on_restricted_square(&self.spaces, &vertex))
                     && (vertex_to
@@ -529,7 +529,7 @@ impl Board {
         // top row
         for x_1 in 0..board_size_usize {
             let vertex_1 = Vertex { size, x: x_1, y: 0 };
-            if self.get(&vertex_1).role() == role_from
+            if Role::from(self.get(&vertex_1)) == role_from
                 || on_restricted_square(&self.spaces, &vertex_1)
             {
                 let mut count = 0;
@@ -542,8 +542,8 @@ impl Board {
                 for x_2 in start..board_size_usize {
                     let vertex_2 = Vertex { size, x: x_2, y: 0 };
                     let vertex_3 = Vertex { size, x: x_2, y: 1 };
-                    let role_2 = self.get(&vertex_2).role();
-                    let role_3 = self.get(&vertex_3).role();
+                    let role_2 = Role::from(self.get(&vertex_2));
+                    let role_3 = Role::from(self.get(&vertex_3));
                     if role_2 == role_from.opposite() && role_3 == role_from {
                         count += 1;
                     } else {
@@ -557,7 +557,7 @@ impl Board {
                     x: finish,
                     y: 0,
                 };
-                let role = self.get(&vertex).role();
+                let role = Role::from(self.get(&vertex));
                 if count > 1
                     && (role == role_from || on_restricted_square(&self.spaces, &vertex))
                     && (vertex_to
@@ -586,7 +586,7 @@ impl Board {
         // left row
         for y_1 in 0..board_size_usize {
             let vertex_1 = Vertex { size, x: 0, y: y_1 };
-            if self.get(&vertex_1).role() == role_from
+            if Role::from(self.get(&vertex_1)) == role_from
                 || on_restricted_square(&self.spaces, &vertex_1)
             {
                 let mut count = 0;
@@ -599,8 +599,8 @@ impl Board {
                 for y_2 in start..board_size_usize {
                     let vertex_2 = Vertex { size, x: 0, y: y_2 };
                     let vertex_3 = Vertex { size, x: 1, y: y_2 };
-                    let role_2 = self.get(&vertex_2).role();
-                    let role_3 = self.get(&vertex_3).role();
+                    let role_2 = Role::from(self.get(&vertex_2));
+                    let role_3 = Role::from(self.get(&vertex_3));
                     if role_2 == role_from.opposite() && role_3 == role_from {
                         count += 1;
                     } else {
@@ -614,7 +614,7 @@ impl Board {
                     x: 0,
                     y: finish,
                 };
-                let role = self.get(&vertex).role();
+                let role = Role::from(self.get(&vertex));
                 if count > 1
                     && (role == role_from || on_restricted_square(&self.spaces, &vertex))
                     && (vertex_to
@@ -647,7 +647,7 @@ impl Board {
                 x: board_size_usize - 1,
                 y: y_1,
             };
-            if self.get(&vertex_1).role() == role_from
+            if Role::from(self.get(&vertex_1)) == role_from
                 || on_restricted_square(&self.spaces, &vertex_1)
             {
                 let mut count = 0;
@@ -668,8 +668,8 @@ impl Board {
                         x: board_size_usize - 2,
                         y: y_2,
                     };
-                    let role_2 = self.get(&vertex_2).role();
-                    let role_3 = self.get(&vertex_3).role();
+                    let role_2 = Role::from(self.get(&vertex_2));
+                    let role_3 = Role::from(self.get(&vertex_3));
                     if role_2 == role_from.opposite() && role_3 == role_from {
                         count += 1;
                     } else {
@@ -683,7 +683,7 @@ impl Board {
                     x: board_size_usize - 1,
                     y: finish,
                 };
-                let role = self.get(&vertex).role();
+                let role = Role::from(self.get(&vertex));
                 if count > 1
                     && (role == role_from || on_restricted_square(&self.spaces, &vertex))
                     && (vertex_to
@@ -879,7 +879,7 @@ impl Board {
                 while !stack.is_empty() {
                     if let Some(vertex) = stack.pop() {
                         let space = self.get(&vertex);
-                        if space == Space::Empty || space.role() == Role::Defender {
+                        if space == Space::Empty || Role::from(space) == Role::Defender {
                             if !expand_flood_fill(vertex.up(), &mut already_checked, &mut stack) {
                                 return false;
                             }
@@ -900,7 +900,7 @@ impl Board {
                 for y in 0..board_size_usize {
                     for x in 0..board_size_usize {
                         let vertex = Vertex { size, x, y };
-                        if self.get(&vertex).role() == Role::Defender
+                        if Role::from(self.get(&vertex)) == Role::Defender
                             && !already_checked.contains(&vertex)
                         {
                             return false;
@@ -925,7 +925,7 @@ impl Board {
         'outer: for y in 0..board_size_usize {
             for x in 0..board_size_usize {
                 let vertex = Vertex { size, x, y };
-                if self.get(&vertex).role() == Role::Attacker {
+                if Role::from(self.get(&vertex)) == Role::Attacker {
                     count += 1;
                 }
 
@@ -980,21 +980,21 @@ impl Board {
                         stack.push((vertex, Direction::UpDown));
                         already_checked.insert(vertex);
                     }
-                } else if space.role() == Role::Attacker {
+                } else if Role::from(space) == Role::Attacker {
                     return false;
                 } else if direction == Direction::UpDown {
                     let mut vertex_1 = false;
                     let mut vertex_2 = false;
 
                     if let Some(vertex) = vertex.up() {
-                        if self.get(&vertex).role() == Role::Defender {
+                        if Role::from(self.get(&vertex)) == Role::Defender {
                             vertex_1 = true;
                         }
                     } else {
                         vertex_1 = true;
                     }
                     if let Some(vertex) = vertex.down() {
-                        if self.get(&vertex).role() == Role::Defender {
+                        if Role::from(self.get(&vertex)) == Role::Defender {
                             vertex_2 = true;
                         }
                     } else {
@@ -1009,14 +1009,14 @@ impl Board {
                     let mut vertex_2 = false;
 
                     if let Some(vertex) = vertex.right() {
-                        if self.get(&vertex).role() == Role::Defender {
+                        if Role::from(self.get(&vertex)) == Role::Defender {
                             vertex_1 = true;
                         }
                     } else {
                         vertex_1 = true;
                     }
                     if let Some(vertex) = vertex.left() {
-                        if self.get(&vertex).role() == Role::Defender {
+                        if Role::from(self.get(&vertex)) == Role::Defender {
                             vertex_2 = true;
                         }
                     } else {
@@ -1074,7 +1074,7 @@ impl Board {
         }
 
         let space_from = self.get(&play.from);
-        let role_from = space_from.role();
+        let role_from = Role::from(space_from);
 
         if role_from == Role::Roleless {
             return Err(InvalidMove::Role);
@@ -1145,7 +1145,7 @@ impl Board {
         for y in 0..board_size_usize {
             for x in 0..board_size_usize {
                 let v = Vertex { size, x, y };
-                if self.get(&v).role() == Role::Attacker {
+                if Role::from(self.get(&v)) == Role::Attacker {
                     return false;
                 }
             }
@@ -1216,7 +1216,7 @@ impl Board {
 
         let mut board = self.legal_move(play, status, turn, previous_boards)?;
         let space_from = self.get(&play.from);
-        let role_from = space_from.role();
+        let role_from = Role::from(space_from);
         let mut captures = Vec::new();
         board.captures(&play.to, role_from, &mut captures);
         board.captures_shield_wall(role_from, &play.to, &mut captures);
@@ -1257,6 +1257,32 @@ impl Board {
             self.set(vertex, space);
             true
         }
+    }
+}
+
+/* Fixme: it's slower than not using it.
+impl std::hash::Hash for Board {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        let mut bytes = Vec::new();
+
+        for space in &self.spaces {
+            bytes.push(u8::from(space));
+        }
+
+        state.write(&bytes);
+    }
+}
+*/
+
+impl From<&[u8]> for Board {
+    fn from(board: &[u8]) -> Self {
+        let mut spaces = Vec::with_capacity(board.len());
+
+        for space in board {
+            spaces.push(Space::from(space));
+        }
+
+        Board { spaces }
     }
 }
 

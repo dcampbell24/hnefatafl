@@ -6,19 +6,12 @@
 <body>
     <h1>Copenhagen Hnefatafl</h1>
     <script type="module">
-        import init, { Game, EnglishToRunes } from '../pkg/hnefatafl_copenhagen.js';
+        import init, { Game } from '../pkg/hnefatafl_copenhagen.js';
 
         init().then(() => {
             const game = new Game();
-            const output_1 = game.read_line_js("show_board");
-            console.log(output_1);
-
-            const word = "To whom it may concern,\nI am David.\n\nDavid\n";
-            console.log(word);
-
-            const dictionary = new EnglishToRunes();
-            const runes = dictionary.translate_js(word)
-            console.log(runes);
+            const output = game.read_line_js("show_board");
+            console.log(output);
         });
     </script>
 </body>
