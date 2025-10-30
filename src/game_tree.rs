@@ -37,6 +37,7 @@ impl Tree {
                 board_size,
                 play: Some(play),
                 score: 0.0,
+                score_running: 0,
                 count: 1.0,
                 parent: Some(parent_index),
                 children: Vec::new(),
@@ -44,83 +45,85 @@ impl Tree {
         );
     }
 
-    /*
-        #[allow(clippy::missing_panics_doc)]
-        #[must_use]
-        pub fn basic_tree_search(&mut self, duration: Duration, depth: u8) -> (u64, Vec<Node>) {
-            let t0 = Instant::now();
-            let mut rng = rand::rng();
-            let mut loops = 0;
+    #[allow(clippy::missing_panics_doc)]
+    #[must_use]
+    pub fn basic_tree_search(&mut self, duration: Duration, depth: u8) -> (u64, Vec<Node>) {
+        let t0 = Instant::now();
+        let mut loops = 0;
 
-            loop {
-                let t1 = Instant::now();
-                let elapsed_time = t1 - t0;
+        loop {
+            let t1 = Instant::now();
+            let elapsed_time = t1 - t0;
 
-                if duration < elapsed_time {
-                    break;
-                }
-                loops += 1;
+            if duration < elapsed_time {
+                break;
+            }
+            loops += 1;
 
-                let mut here = self.here;
+            let mut here = self.here;
 
-                for _ in 0..depth {
-                    let plays = game.all_legal_plays();
-                    for play in plays {
-                        let mut game = self.game.clone();
-                        game.play(&play).expect("The play should be legal!");
+            for _ in 0..depth {
+                let plays = self.game.all_legal_plays();
+                for play in plays {
+                    let mut game = self.game.clone();
+                    game.play(&play).expect("The play should be legal!");
 
-                        let child_index = game.calculate_hash();
-                        if let Some(node) = self.arena.get_mut(&child_index) {
-                            node.count += 1.0;
-                        } else {
-                            self.insert_child(child_index, here, play);
+                    let child_index = game.calculate_hash();
+                    if let Some(node) = self.arena.get_mut(&child_index) {
+                        node.count += 1.0;
+                    } else {
+                        self.insert_child(child_index, here, play);
+                    }
+                    here = child_index;
+
+                    match game.status {
+                        Status::AttackerWins => {
+                            let node = self
+                                .arena
+                                .get_mut(&here)
+                                .expect("The hashmap should have the node.");
+
+                            node.score += 1.0;
                         }
-                        here = child_index;
+                        Status::DefenderWins => {
+                            let node = self
+                                .arena
+                                .get_mut(&here)
+                                .expect("The hashmap should have the node.");
 
+                            node.score -= 1.0;
+                        }
+                        Status::Draw => unreachable!(),
+                        Status::Ongoing => {
+                            let captured = game.board.captured();
+                            let node = self
+                                .arena
+                                .get_mut(&here)
+                                .expect("The hashmap should have the node.");
 
-                        match game.status {
-                            Status::AttackerWins => {
-                                let node = self
-                                    .arena
-                                    .get_mut(&here)
-                                    .expect("The hashmap should have the node.");
-
-                                node.score += 1.0;
-                            }
-                            Status::DefenderWins => {
-                                let node = self
-                                    .arena
-                                    .get_mut(&here)
-                                    .expect("The hashmap should have the node.");
-
-                                node.score -= 1.0;
-                            }
-                            Status::Draw => {
-                                // Do something...
-                            }
-                            Status::Ongoing => {
-                                // Keep going.
-                            }
+                            node.score_running -= i64::from(captured.attacker);
+                            node.score_running += i64::from(captured.defender);
                         }
                     }
                 }
             }
-
-            for node in self.arena.values_mut() {
-                node.score /= node.count;
-                node.count = 1.0;
-            }
-
-            let children = &self.arena[&self.here].children;
-            (
-                loops,
-                children
-                    .iter()
-                    .map(|child| self.arena[child].clone())
-                    .collect::<Vec<_>>(),
-            )
         }
-    */
+
+        for node in self.arena.values_mut() {
+            node.score /= node.count;
+            node.count = 1.0;
+        }
+
+        let children = &self.arena[&self.here].children;
+        (
+            loops,
+            children
+                .iter()
+                .map(|child| self.arena[child].clone())
+                .collect::<Vec<_>>(),
+        )
+    }
+
     #[allow(clippy::missing_panics_doc)]
     #[must_use]
     pub fn monte_carlo_tree_search(&mut self, duration: Duration, depth: u8) -> (u64, Vec<Node>) {
@@ -210,10 +213,7 @@ impl Tree {
 
                         break;
                     }
-                    Status::Draw => {
-                        // Add zero.
-                        break;
-                    }
+                    Status::Draw => unreachable!(),
                     Status::Ongoing => {
                         // Keep going.
                     }
@@ -246,6 +246,7 @@ impl Tree {
                 board_size: game.board.size(),
                 play: None,
                 score: 0.0,
+                score_running: 0,
                 count: 0.0,
                 parent: None,
                 children: Vec::new(),
@@ -288,6 +289,7 @@ impl From<Game> for Tree {
                 board_size: game.board.size(),
                 play: play.clone(),
                 score: 0.0,
+                score_running: 0,
                 count: 0.0,
                 parent: None,
                 children: Vec::new(),
@@ -307,6 +309,7 @@ pub struct Node {
     pub board_size: BoardSize,
     pub play: Option<Plae>,
     pub score: f64,
+    pub score_running: i64,
     pub count: f64,
     parent: Option<u64>,
     children: Vec<u64>,

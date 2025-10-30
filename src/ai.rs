@@ -95,11 +95,10 @@ impl AiBasic {
         }
     }
 }
-
 /*
 impl AI for AiBasic {
     fn generate_move(&mut self, game: &mut Game) -> GenerateMove {
-            let mut generate_move = GenerateMove {
+        let mut generate_move = GenerateMove {
             play: None,
             score: 0.0,
             delay_milliseconds: 0,
@@ -111,7 +110,7 @@ impl AI for AiBasic {
             return generate_move;
         }
 
-        let mut nodes: Vec<_> = self.tree.  .values().collect();
+        let mut nodes: Vec<_> = self.tree.values().collect();
         nodes.sort_by(|a, b| a.score.total_cmp(&b.score));
 
         let turn = game.turn;

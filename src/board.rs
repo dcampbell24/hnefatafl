@@ -1336,9 +1336,9 @@ fn board_13x13() -> Board {
 }
 
 pub struct Captured {
-    attacker: u8,
-    defender: u8,
-    king: bool,
+    pub attacker: u8,
+    pub defender: u8,
+    pub king: bool,
 }
 
 impl Captured {
