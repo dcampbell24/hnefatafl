@@ -11,33 +11,58 @@
 
 ![Opening Game](website/src/screenshots/opening_game.png)
 
-An [engine] similar to the [Go Text Protocol], a [client], and a [server].
+An [engine] similar to the [Go Text Protocol], a [client], and a [server]. For
+help on how to use the engine see the module [documentation].
 
 [engine]: https://github.com/dcampbell24/hnefatafl/blob/main/src/bin/hnefatafl-text-protocol.rs
 [Go Text Protocol]: https://www.lysator.liu.se/~gunnar/gtp/gtp2-spec-draft2/gtp2-spec.html
 [client]: https://github.com/dcampbell24/hnefatafl/blob/main/examples/hnefatafl-client.rs
 [server]: https://github.com/dcampbell24/hnefatafl/blob/main/src/bin/hnefatafl-server-full.rs
+[documentation]: https://docs.rs/hnefatafl-copenhagen/latest/hnefatafl_copenhagen/message/enum.Message.html
 
-## [Use the Engine]
+## Building and Running
 
-[Use the Engine]: https://docs.rs/hnefatafl-copenhagen/latest/hnefatafl_copenhagen/message/enum.Message.html
+First you need to install [Rust]. Then:
 
-## Website
+```sh
+git clone https://github.com/dcampbell24/hnefatafl.git
+cd hnefatafl
+```
 
-See the [website](https://hnefatafl.org/) for more information about downloading
-and building the software.
+Then you can run the engine with:
 
-## Rules
+```sh
+# --release is optional
+cargo run --release --bin hnefatafl-text-protocol -- --display-game
+```
 
-See the [Rules](https://hnefatafl.org/rules.html) for how to play.
+or you can start a local server:
 
-## Icon
+```sh
+# --release is optional
+cargo run --release
+```
 
-The [icon] used for the flathub version of the hnefatafl-client was created by
-Marvin T. [@marvintubat123].
+and run a client:
 
-[icon]: https://raw.githubusercontent.com/dcampbell24/hnefatafl/refs/heads/main/icons/king.svg
-[@marvintubat123]: https://www.freelancer.com/u/marvintubat123
+```sh
+# --release is optional
+RUST_LOG=hnefatafl_client=debug cargo run --release --example hnefatafl-client -- --host localhost
+```
+
+If you are running on Linux, you'll need some dependencies as [described] on the
+[website].
+
+## [Website]
+
+You can also get the [rules] and more information about [downloading]
+the software on the website.
+
+[Rust]: https://rust-lang.org/learn/get-started/
+[described]: https://hnefatafl.org/install.html#dependencies-linux
+[website]: https://hnefatafl.org
+[rules]: https://hnefatafl.org/rules.html
+[downloading]: https://hnefatafl.org/install.htm
 
 ## Packaging Status
 
@@ -55,11 +80,10 @@ Marvin T. [@marvintubat123].
 [flathub.org]: https://flathub.org/apps/org.hnefatafl.hnefatafl_client
 [npm]: https://www.npmjs.com/package/hnefatafl-copenhagen
 
-## Contributors
+## Icon
 
-[![rocks]][rocks-link]
+The [icon] used for the flathub version of the hnefatafl-client was created by
+Marvin T. [@marvintubat123].
 
-[rocks]: https://contrib.rocks/image?repo=dcampbell24/hnefatafl
-[rocks-link]: https://github.com/dcampbell24/hnefatafl/graphs/contributors
-
-Made with [contrib.rocks](https://contrib.rocks).
+[icon]: https://raw.githubusercontent.com/dcampbell24/hnefatafl/refs/heads/main/icons/king.svg
+[@marvintubat123]: https://www.freelancer.com/u/marvintubat123
