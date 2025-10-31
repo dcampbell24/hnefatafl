@@ -99,8 +99,8 @@ Marvin T. [@marvintubat123].
 Licensed under either of the [Apache License] or the [MIT license] at your option.
 
 Unless you explicitly state otherwise, any contribution intentionally submitted
-for inclusion in Wild by you, as defined in the Apache-2.0 license, shall be
-dual licensed as above, without any additional terms or conditions.
+for inclusion in this software by you, as defined in the Apache-2.0 license,
+shall be dual licensed as above, without any additional terms or conditions.
 
 [Apache License]: LICENSE-APACHE
 [MIT license]: LICENSE-MIT
