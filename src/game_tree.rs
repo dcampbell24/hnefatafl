@@ -1,10 +1,10 @@
 use std::{
-    collections::HashMap,
     fmt,
     time::{Duration, Instant},
 };
 
 use rand::prelude::*;
+use rustc_hash::FxHashMap;
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -18,7 +18,7 @@ use crate::{
 pub struct Tree {
     here: u64,
     pub game: Game,
-    arena: HashMap<u64, Node>,
+    arena: FxHashMap<u64, Node>,
 }
 
 impl Tree {
@@ -162,7 +162,7 @@ impl Tree {
     #[must_use]
     pub fn new(game: Game) -> Self {
         let hash = game.calculate_hash();
-        let mut arena = HashMap::new();
+        let mut arena = FxHashMap::default();
         arena.insert(
             hash,
             Node {
@@ -185,7 +185,7 @@ impl Tree {
 
 impl From<Game> for Tree {
     fn from(game: Game) -> Self {
-        let mut arena = HashMap::new();
+        let mut arena = FxHashMap::default();
 
         let play = match &game.plays {
             Plays::PlayRecords(plays) => {
