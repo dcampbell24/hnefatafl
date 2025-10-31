@@ -7,7 +7,8 @@ use clap::{self, Parser};
 
 use hnefatafl_copenhagen::game::Game;
 use hnefatafl_copenhagen::status::Status;
-use hnefatafl_copenhagen::{read_response, write_command};
+use hnefatafl_copenhagen::utils::clear_screen;
+use hnefatafl_copenhagen::{SERVER_PORT, read_response, write_command};
 
 /// A Hnefatafl Copenhagen Server
 ///
@@ -16,18 +17,16 @@ use hnefatafl_copenhagen::{read_response, write_command};
 #[derive(Parser, Debug)]
 #[command(version, about)]
 struct Args {
-    /// Displays the game
-    #[arg(long)]
-    display_game: bool,
-
     /// Listen for HTP drivers on host and port
-    #[arg(default_value = "localhost:8000", index = 1, value_name = "host:port")]
-    host_port: String,
+    #[arg(default_value = "localhost", index = 1, value_name = "host")]
+    host: String,
 }
 
 fn main() -> anyhow::Result<()> {
     let args = Args::parse();
-    start(&args.host_port, args.display_game)
+    let mut address = args.host;
+    address.push_str(SERVER_PORT);
+    start(&address)
 }
 
 struct Htp {
@@ -36,33 +35,32 @@ struct Htp {
 }
 
 impl Htp {
-    fn start(&mut self, display_game: bool) -> anyhow::Result<()> {
+    fn start(&mut self) -> anyhow::Result<()> {
         let mut attacker_reader = BufReader::new(self.attacker_connection.try_clone()?);
         let mut defender_reader = BufReader::new(self.defender_connection.try_clone()?);
 
         let mut game = Game::default();
 
-        for i in 1..10_000 {
-            println!("\n*** turn {} ***", 2 * i - 1);
+        loop {
             write_command("generate_move attacker\n", &mut self.attacker_connection)?;
             let attacker_move = read_response(&mut attacker_reader)?;
             game.read_line(&attacker_move)?;
             write_command(&attacker_move, &mut self.defender_connection)?;
 
+            clear_screen()?;
             println!("{game}");
+
             if game.status != Status::Ongoing {
                 break;
             }
 
-            println!("\n*** turn {} ***", 2 * i);
             write_command("generate_move defender\n", &mut self.defender_connection)?;
             let defender_move = read_response(&mut defender_reader)?;
             game.read_line(&defender_move)?;
             write_command(&defender_move, &mut self.attacker_connection)?;
 
-            if display_game {
-                println!("{game}");
-            }
+            clear_screen()?;
+            println!("{game}");
 
             if game.status != Status::Ongoing {
                 break;
@@ -76,7 +74,7 @@ impl Htp {
     }
 }
 
-fn start(address: &str, display_game: bool) -> anyhow::Result<()> {
+fn start(address: &str) -> anyhow::Result<()> {
     let listener = TcpListener::bind(address)?;
     println!("listening on {address} ...");
 
@@ -93,7 +91,7 @@ fn start(address: &str, display_game: bool) -> anyhow::Result<()> {
                 defender_connection: stream,
             };
 
-            thread::spawn(move || game.start(display_game));
+            thread::spawn(move || game.start());
         }
     }
 
