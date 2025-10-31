@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- hnefatafl-server-full: only do one write when writing archived games.
+
 ### Changed
 
 - hnefatafl-client: Use an 🗙 instead of an X to mark a piece captured.

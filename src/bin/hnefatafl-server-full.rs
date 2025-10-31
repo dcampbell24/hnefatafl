@@ -436,7 +436,8 @@ impl Server {
         let game = ArchivedGame::new(game, attacker.rating.clone(), defender.rating.clone());
 
         let archived_games_file = data_file(ARCHIVED_GAMES_FILE);
-        let game_string = ron::ser::to_string(&game)?;
+        let mut game_string = ron::ser::to_string(&game)?;
+        game_string.push('\n');
 
         let mut file = OpenOptions::new()
             .create(true)
@@ -444,7 +445,6 @@ impl Server {
             .open(archived_games_file)?;
 
         file.write_all(game_string.as_bytes())?;
-        file.write_all("\n".as_bytes())?;
 
         self.archived_games.push(game);
 
