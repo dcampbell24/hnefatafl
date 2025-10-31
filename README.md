@@ -64,6 +64,12 @@ the software on the website.
 [rules]: https://hnefatafl.org/rules.html
 [downloading]: https://hnefatafl.org/install.htm
 
+## Discord
+
+Click to join our [Discord server].
+
+[Discord Server]: https://discord.gg/h56CAHEBXd
+
 ## Packaging Status
 
 [AUR] (client)  
@@ -87,3 +93,14 @@ Marvin T. [@marvintubat123].
 
 [icon]: https://raw.githubusercontent.com/dcampbell24/hnefatafl/refs/heads/main/icons/king.svg
 [@marvintubat123]: https://www.freelancer.com/u/marvintubat123
+
+## License
+
+Licensed under either of [Apache License], Version 2.0 or [MIT license] at your option.
+
+Unless you explicitly state otherwise, any contribution intentionally submitted
+for inclusion in Wild by you, as defined in the Apache-2.0 license, shall be
+dual licensed as above, without any additional terms or conditions.
+
+[Apache License]: LICENSE-APACHE
+[MIT license]: LICENSE-MIT
