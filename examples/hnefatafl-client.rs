@@ -62,6 +62,10 @@ use iced::{
 };
 use log::{debug, error, info, trace};
 use rust_i18n::t;
+#[cfg(target_os = "android")]
+use rustls::ClientConfig;
+#[cfg(target_os = "android")]
+use rustls_platform_verifier::ConfigVerifierExt;
 use serde::{Deserialize, Serialize};
 
 const USER_CONFIG_FILE_POSTCARD: &str = "hnefatafl.postcard";
@@ -364,6 +368,9 @@ struct Client {
     play_to_previous: Option<Vertex>,
     #[serde(skip)]
     request_draw: bool,
+    #[cfg(target_os = "android")]
+    #[serde(skip)]
+    _rustls_platform_verifier: TlsVerifier,
     #[serde(skip)]
     screen: Screen,
     #[serde(skip)]
@@ -2974,6 +2981,22 @@ enum Message {
     TimeMinutes(String),
     Users,
     WindowResized((f32, f32)),
+}
+
+#[cfg(target_os = "android")]
+#[derive(Debug)]
+struct TlsVerifier {
+    _inner: ClientConfig,
+}
+
+#[cfg(target_os = "android")]
+impl Default for TlsVerifier {
+    fn default() -> Self {
+        TlsVerifier {
+            _inner: ClientConfig::with_platform_verifier()
+                .expect("we should be able to get the rustls platform verifier"),
+        }
+    }
 }
 
 fn estimate_score() -> impl Stream<Item = Message> {

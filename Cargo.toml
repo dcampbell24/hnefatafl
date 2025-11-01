@@ -22,6 +22,8 @@ webbrowser = { version = "1", features = ["hardened"] }
 
 [target.'cfg(target_os = "android")'.dev-dependencies]
 android-activity = { version = "0.6.0", features = ["native-activity"] }
+rustls = "0.23"
+rustls-platform-verifier = "0.6"
 
 [target.'cfg(target_os = "android")'.dev-dependencies.iced]
 git = "https://github.com/dcampbell24/iced"
@@ -51,7 +53,6 @@ rand = "0.9"
 rayon = "1"
 ron = { version = "0.11", features = ["integer128"] }
 rustc-hash = "2"
-rustls-platform-verifier = "0.6"
 rust-i18n = "3"
 serde = { version = "1", features = ["derive"] }
 thiserror = "2"
