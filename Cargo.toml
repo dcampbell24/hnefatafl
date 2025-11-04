@@ -24,12 +24,14 @@ webbrowser = { version = "1", features = ["hardened"] }
 android-activity = { version = "0.6.0", features = ["native-activity"] }
 
 [target.'cfg(target_os = "android")'.dev-dependencies.iced]
-git = "https://github.com/iced-rs/iced"
+git = "https://github.com/dcampbell24/iced"
+branch = "fix-android"
 features = ["smol", "wgpu", "crisp", "web-colors", "thread-pool", "linux-theme-detection"]
 default-features = false
 
 [target.'cfg(not(target_os = "android"))'.dev-dependencies.iced]
-git = "https://github.com/iced-rs/iced"
+git = "https://github.com/dcampbell24/iced"
+branch = "fix-android"
 features = ["smol"]
 
 [dependencies]
@@ -45,7 +47,7 @@ dirs = "6"
 env_logger = "0.11"
 log = "0.4"
 postcard = { version = "1", features = ["alloc"] }
-rand = { version = "0.9", features = ["os_rng"] }
+rand = "0.9"
 rayon = "1"
 ron = { version = "0.11", features = ["integer128"] }
 rustc-hash = "2"

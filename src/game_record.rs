@@ -1,4 +1,6 @@
-use std::{collections::HashSet, fmt, io::Cursor, str::FromStr};
+use std::{fmt, io::Cursor, str::FromStr};
+
+use rustc_hash::FxHashSet;
 
 use crate::{
     play::{Play, Vertex},
@@ -15,7 +17,7 @@ struct Record {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct Captures(pub HashSet<Vertex>);
+pub struct Captures(pub FxHashSet<Vertex>);
 
 impl fmt::Display for Captures {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -62,7 +64,7 @@ pub fn game_records_from_path(string: &str) -> anyhow::Result<Vec<(usize, GameRe
                     let play = Play { role, from, to };
 
                     if vertex_1_captures.get(1).is_some() {
-                        let mut captures = HashSet::new();
+                        let mut captures = FxHashSet::default();
                         for capture in vertex_1_captures.into_iter().skip(1) {
                             let vertex = Vertex::from_str(capture)?;
                             if !captures.contains(&vertex) {

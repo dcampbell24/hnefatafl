@@ -1,7 +1,6 @@
 use std::{
     io::{self, BufReader},
     net::TcpStream,
-    process::{Command, ExitStatus},
     time::Duration,
 };
 
@@ -9,11 +8,13 @@ use clap::command;
 use clap::{self, Parser};
 
 use hnefatafl_copenhagen::{
+    SERVER_PORT,
     ai::{AI, AiMonteCarlo},
     game::Game,
     play::Plae,
     read_response,
     status::Status,
+    utils::clear_screen,
     write_command,
 };
 
@@ -39,8 +40,8 @@ struct Args {
     #[arg(default_value_t = 20, long)]
     depth: u8,
 
-    /// Listen for HTP drivers on host and port
-    #[arg(long, value_name = "host:port")]
+    /// Listen for HTP drivers on host
+    #[arg(long, value_name = "host")]
     tcp: Option<String>,
 }
 
@@ -48,7 +49,8 @@ fn main() -> anyhow::Result<()> {
     let args = Args::parse();
     let seconds = Duration::from_secs(args.seconds);
 
-    if let Some(address) = args.tcp {
+    if let Some(mut address) = args.tcp {
+        address.push_str(SERVER_PORT);
         play_tcp(&address, args.display_game, seconds, args.depth)?;
     } else if args.ai {
         play_ai(args.display_game, seconds, args.depth)?;
@@ -57,19 +59,6 @@ fn main() -> anyhow::Result<()> {
     }
 
     Ok(())
-}
-
-fn clear_screen() -> anyhow::Result<ExitStatus> {
-    #[cfg(not(any(target_family = "unix", target_family = "windows")))]
-    return Ok(1);
-
-    #[cfg(target_family = "unix")]
-    let exit_status = Command::new("clear").status()?;
-
-    #[cfg(target_family = "windows")]
-    let exit_status = Command::new("cls").status()?;
-
-    Ok(exit_status)
 }
 
 fn play(display_game: bool) -> anyhow::Result<()> {

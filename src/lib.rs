@@ -1,5 +1,4 @@
 use std::{
-    collections::HashSet,
     fmt,
     io::{BufRead, BufReader, Write},
     net::TcpStream,
@@ -10,6 +9,7 @@ use game::Game;
 use game_record::{Captures, game_records_from_path};
 use log::error;
 use play::Plae;
+use rustc_hash::FxHashSet;
 use status::Status;
 
 use crate::{game_record::GameRecord, play::Plays};
@@ -167,7 +167,7 @@ fn play_game(i: usize, record: &GameRecord) -> Result<(usize, Game), anyhow::Err
     };
 
     for (play, captures_1) in record.clone().plays {
-        let mut captures_2 = HashSet::new();
+        let mut captures_2 = FxHashSet::default();
         let play = Plae::Play(play);
         let captures = game.play(&play)?;
 

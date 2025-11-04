@@ -1,6 +1,6 @@
-use std::{collections::HashMap, fmt, str::FromStr};
+use std::{fmt, str::FromStr};
 
-use rustc_hash::{FxBuildHasher, FxHashSet};
+use rustc_hash::{FxBuildHasher, FxHashMap, FxHashSet};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
@@ -1412,7 +1412,7 @@ pub enum InvalidMove {
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct LegalMoves {
     pub role: Role,
-    pub moves: HashMap<Vertex, Vec<Vertex>>,
+    pub moves: FxHashMap<Vertex, Vec<Vertex>>,
 }
 
 #[must_use]
