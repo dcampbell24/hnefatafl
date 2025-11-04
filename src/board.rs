@@ -185,7 +185,7 @@ impl fmt::Debug for Board {
 impl fmt::Display for Board {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let board_size: usize = self.size().into();
-        let mut letters = " ".repeat(3).to_string();
+        let mut letters = " ".repeat(3).clone();
         letters.push_str(&BOARD_LETTERS[..board_size]);
         let bar = "─".repeat(board_size);
 

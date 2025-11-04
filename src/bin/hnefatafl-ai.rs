@@ -71,7 +71,7 @@ fn main() -> anyhow::Result<()> {
     let mut username = "ai-".to_string();
     username.push_str(&args.username);
 
-    let mut address = args.host.to_string();
+    let mut address = args.host.clone();
     address.push_str(PORT);
 
     let mut buf = String::new();
