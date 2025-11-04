@@ -1,7 +1,8 @@
-use std::{collections::HashMap, fmt, sync::mpsc::channel, time::Duration};
+use std::{fmt, sync::mpsc::channel, time::Duration};
 
 use chrono::Utc;
 use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
+use rustc_hash::FxHashMap;
 
 use crate::{
     board::BoardSize,
@@ -202,7 +203,7 @@ impl AI for AiMonteCarlo {
         });
 
         let mut loops_total = 0;
-        let mut nodes_master = HashMap::new();
+        let mut nodes_master = FxHashMap::default();
         while let Ok((loops, nodes)) = rx.recv() {
             loops_total += loops;
             for mut node in nodes {

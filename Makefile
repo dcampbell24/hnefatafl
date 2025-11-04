@@ -44,3 +44,8 @@ html-client:
 	sudo cp html-client/index.html /var/www/html/index.html
 	sudo mkdir --parent /var/www/html/pkg
 	sudo cp -r pkg /var/www/html
+
+.PHONY: android
+android:
+	set ANDROID_NDK ${HOME}/Android/Sdk/ndk \
+	cargo build --example hnefatafl-client --target aarch64-linux-android --no-default-features

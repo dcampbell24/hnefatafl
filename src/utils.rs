@@ -1,8 +1,24 @@
-use std::{env, io::Write, path::PathBuf};
+#[cfg(target_family = "unix")]
+use std::process::Command;
+use std::{env, io::Write, path::PathBuf, process::ExitStatus};
 
 use chrono::Utc;
 use env_logger::Builder;
 use log::LevelFilter;
+
+#[allow(clippy::missing_errors_doc)]
+pub fn clear_screen() -> anyhow::Result<ExitStatus> {
+    #[cfg(not(any(target_family = "unix", target_family = "windows")))]
+    return Ok(1);
+
+    #[cfg(target_family = "unix")]
+    let exit_status = Command::new("clear").status()?;
+
+    #[cfg(target_family = "windows")]
+    let exit_status = Command::new("cls").status()?;
+
+    Ok(exit_status)
+}
 
 #[must_use]
 pub fn data_file(file: &str) -> PathBuf {
