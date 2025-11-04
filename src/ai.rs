@@ -81,8 +81,8 @@ impl AI for AiBanal {
 pub struct AiBasic {
     pub size: BoardSize,
     pub tree: Tree,
-    _duration: Duration,
-    _depth: u8,
+    duration: Duration,
+    depth: u8,
 }
 
 impl AiBasic {
@@ -91,15 +91,15 @@ impl AiBasic {
         Self {
             size: game.board.size(),
             tree: Tree::new(game.clone()),
-            _duration: duration,
-            _depth: depth,
+            duration,
+            depth,
         }
     }
 }
-/*
+
 impl AI for AiBasic {
     fn generate_move(&mut self, game: &mut Game) -> GenerateMove {
-        let mut generate_move = GenerateMove {
+        let generate_move = GenerateMove {
             play: None,
             score: 0.0,
             delay_milliseconds: 0,
@@ -111,7 +111,8 @@ impl AI for AiBasic {
             return generate_move;
         }
 
-        let mut nodes: Vec<_> = self.tree.values().collect();
+        let t0 = Utc::now().timestamp_millis();
+        let (loops, mut nodes) = self.tree.basic_tree_search(self.duration, self.depth);
         nodes.sort_by(|a, b| a.score.total_cmp(&b.score));
 
         let turn = game.turn;
@@ -130,19 +131,17 @@ impl AI for AiBasic {
         }
 
         let here_tree = Tree::from(game.clone());
-        for tree in &mut self.trees {
-            *tree = here_tree.clone();
-        }
+        self.tree = here_tree.clone();
 
         let t1 = Utc::now().timestamp_millis();
         let delay_milliseconds = t1 - t0;
-        let heat_map = HeatMap::from(&nodes);
+        let heat_map = HeatMap::from(&nodes.iter().collect());
 
         GenerateMove {
             play: node.play.clone(),
             score: node.score,
             delay_milliseconds,
-            loops: loops_total,
+            loops,
             heat_map,
         }
     }
@@ -154,7 +153,7 @@ impl AI for AiBasic {
         Ok(())
     }
 }
-*/
+
 #[derive(Clone, Debug)]
 pub struct AiMonteCarlo {
     pub size: BoardSize,

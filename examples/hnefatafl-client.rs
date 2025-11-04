@@ -715,7 +715,7 @@ impl<'a> Client {
                 row![
                     text(attacker).shaping(text::Shaping::Advanced),
                     text(attacker_rating).center(),
-                    text(captured.defender().to_string()).shaping(text::Shaping::Advanced)
+                    text(captured.defender().clone()).shaping(text::Shaping::Advanced)
                 ]
                 .spacing(SPACING),
                 row![
@@ -734,7 +734,7 @@ impl<'a> Client {
                 row![
                     text(defender).shaping(text::Shaping::Advanced),
                     text(defender_rating).center(),
-                    text(captured.attacker().to_string()).shaping(text::Shaping::Advanced)
+                    text(captured.attacker().clone()).shaping(text::Shaping::Advanced)
                 ]
                 .spacing(SPACING),
                 row![
@@ -785,7 +785,7 @@ impl<'a> Client {
                 watching = true;
             }
 
-            let mut spectator = spectator.to_string();
+            let mut spectator = spectator.clone();
             if let Some(user) = self.users.get(&spectator) {
                 let _ok = write!(spectator, " ({})", user.rating.to_string_rounded());
             }
@@ -1804,7 +1804,7 @@ impl<'a> Client {
                 }
 
                 if !self.text_input.trim().is_empty() {
-                    let username = self.text_input.to_string();
+                    let username = self.text_input.clone();
                     self.send(format!(
                         "{VERSION_ID} create_account {username} {}\n",
                         self.password,
@@ -1830,7 +1830,7 @@ impl<'a> Client {
                     ));
                     self.username = username;
                 } else {
-                    let username = self.text_input.to_string();
+                    let username = self.text_input.clone();
 
                     self.send(format!("{VERSION_ID} login {username} {}\n", self.password));
                     self.username = username;
@@ -3068,7 +3068,7 @@ fn pass_messages() -> impl Stream<Item = Message> {
 
                     let mut buffer = String::new();
                     handle_error(executor::block_on(
-                        sender.send(Message::ConnectedTo(address.to_string())),
+                        sender.send(Message::ConnectedTo(address.clone())),
                     ));
 
                     loop {
