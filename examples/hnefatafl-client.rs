@@ -622,11 +622,7 @@ impl<'a> Client {
                 column = column.push(button_);
             }
 
-            column = column.push(
-                text(letters[x])
-                    .size(letter_size)
-                    .align_x(Horizontal::Center),
-            );
+            column = column.push(text(letter).size(letter_size));
             game_display = game_display.push(column);
         }
 
