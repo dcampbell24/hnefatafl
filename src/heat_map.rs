@@ -39,12 +39,12 @@ impl Ord for Heat {
         match self {
             Self::Ranked(rank) => match other {
                 Self::Ranked(rank_other) => rank.cmp(rank_other),
-                Self::Score(_) => Ordering::Less,
-                Self::UnRanked => Ordering::Greater,
+                Self::Score(_) | Self::UnRanked => Ordering::Greater,
             },
             Self::Score(score) => match other {
-                Self::Ranked(_) | Self::UnRanked => Ordering::Greater,
+                Self::Ranked(_) => Ordering::Less,
                 Self::Score(score_other) => score.total_cmp(score_other),
+                Self::UnRanked => Ordering::Greater,
             },
             Self::UnRanked => match other {
                 Self::Ranked(_) | Self::Score(_) => Ordering::Less,
@@ -109,10 +109,12 @@ impl HeatMap {
             let min_max = match role {
                 Role::Attacker => *self.spaces[key]
                     .iter()
+                    .filter(|heat| **heat != Heat::UnRanked)
                     .max_by(|a, b| Heat::cmp(a, b))
                     .expect("there is at least one value"),
                 Role::Defender => *self.spaces[key]
                     .iter()
+                    .filter(|heat| **heat != Heat::UnRanked)
                     .min_by(|a, b| Heat::cmp(a, b))
                     .expect("there is at least one value"),
                 Role::Roleless => unreachable!(),
@@ -252,11 +254,24 @@ impl fmt::Display for HeatMap {
 
         for ((role, vertex), board) in &self.spaces {
             writeln!(f, "vertex: {vertex}, role: {role}")?;
-            writeln!(
-                f,
-                "A       B       C       D       E       F       G       H       I       J       K       L       M"
-            )?;
+
+            match self.board_size {
+                BoardSize::_11 => writeln!(
+                    f,
+                    "   A       B       C       D       E       F       G       H       I       J       K"
+                )?,
+                BoardSize::_13 => writeln!(
+                    f,
+                    "   A       B       C       D       E       F       G       H       I       J       K       L       M"
+                )?,
+            }
+
             for y in 0..board_size {
+                match self.board_size {
+                    BoardSize::_11 => write!(f, "{:02} ", 11 - y)?,
+                    BoardSize::_13 => write!(f, "{:02} ", 13 - y)?,
+                }
+
                 for x in 0..board_size {
                     let score = board[y * board_size + x];
                     if let Heat::Score(score) = score {
