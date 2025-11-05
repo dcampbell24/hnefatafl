@@ -1933,7 +1933,6 @@ checksum = "dfa686283ad6dd069f105e5ab091b04c62850d3e4cf5d67debad1933f55023df"
 name = "hnefatafl-copenhagen"
 version = "4.2.2"
 dependencies = [
- "android-activity",
  "anyhow",
  "argon2",
  "chrono",
@@ -2129,7 +2128,7 @@ dependencies = [
 [[package]]
 name = "iced"
 version = "0.14.0-dev"
-source = "git+https://github.com/dcampbell24/iced?branch=fix-android#f6c3b6db76e8ddee48dabc567da866cdb65c4457"
+source = "git+https://github.com/iced-rs/iced#ea614387f4d94960911b0a7d8ce25c02edb470c5"
 dependencies = [
  "iced_core",
  "iced_debug",
@@ -2144,7 +2143,7 @@ dependencies = [
 [[package]]
 name = "iced_core"
 version = "0.14.0-dev"
-source = "git+https://github.com/dcampbell24/iced?branch=fix-android#f6c3b6db76e8ddee48dabc567da866cdb65c4457"
+source = "git+https://github.com/iced-rs/iced#ea614387f4d94960911b0a7d8ce25c02edb470c5"
 dependencies = [
  "bitflags 2.10.0",
  "bytes",
@@ -2161,7 +2160,7 @@ dependencies = [
 [[package]]
 name = "iced_debug"
 version = "0.14.0-dev"
-source = "git+https://github.com/dcampbell24/iced?branch=fix-android#f6c3b6db76e8ddee48dabc567da866cdb65c4457"
+source = "git+https://github.com/iced-rs/iced#ea614387f4d94960911b0a7d8ce25c02edb470c5"
 dependencies = [
  "iced_core",
  "iced_futures",
@@ -2171,7 +2170,7 @@ dependencies = [
 [[package]]
 name = "iced_futures"
 version = "0.14.0-dev"
-source = "git+https://github.com/dcampbell24/iced?branch=fix-android#f6c3b6db76e8ddee48dabc567da866cdb65c4457"
+source = "git+https://github.com/iced-rs/iced#ea614387f4d94960911b0a7d8ce25c02edb470c5"
 dependencies = [
  "futures",
  "iced_core",
@@ -2185,7 +2184,7 @@ dependencies = [
 [[package]]
 name = "iced_graphics"
 version = "0.14.0-dev"
-source = "git+https://github.com/dcampbell24/iced?branch=fix-android#f6c3b6db76e8ddee48dabc567da866cdb65c4457"
+source = "git+https://github.com/iced-rs/iced#ea614387f4d94960911b0a7d8ce25c02edb470c5"
 dependencies = [
  "bitflags 2.10.0",
  "bytemuck",
@@ -2203,7 +2202,7 @@ dependencies = [
 [[package]]
 name = "iced_program"
 version = "0.14.0-dev"
-source = "git+https://github.com/dcampbell24/iced?branch=fix-android#f6c3b6db76e8ddee48dabc567da866cdb65c4457"
+source = "git+https://github.com/iced-rs/iced#ea614387f4d94960911b0a7d8ce25c02edb470c5"
 dependencies = [
  "iced_graphics",
  "iced_runtime",
@@ -2212,7 +2211,7 @@ dependencies = [
 [[package]]
 name = "iced_renderer"
 version = "0.14.0-dev"
-source = "git+https://github.com/dcampbell24/iced?branch=fix-android#f6c3b6db76e8ddee48dabc567da866cdb65c4457"
+source = "git+https://github.com/iced-rs/iced#ea614387f4d94960911b0a7d8ce25c02edb470c5"
 dependencies = [
  "iced_graphics",
  "iced_tiny_skia",
@@ -2224,11 +2223,10 @@ dependencies = [
 [[package]]
 name = "iced_runtime"
 version = "0.14.0-dev"
-source = "git+https://github.com/dcampbell24/iced?branch=fix-android#f6c3b6db76e8ddee48dabc567da866cdb65c4457"
+source = "git+https://github.com/iced-rs/iced#ea614387f4d94960911b0a7d8ce25c02edb470c5"
 dependencies = [
  "bytes",
  "iced_core",
- "iced_debug",
  "iced_futures",
  "raw-window-handle",
  "thiserror 2.0.17",
@@ -2237,7 +2235,7 @@ dependencies = [
 [[package]]
 name = "iced_tiny_skia"
 version = "0.14.0-dev"
-source = "git+https://github.com/dcampbell24/iced?branch=fix-android#f6c3b6db76e8ddee48dabc567da866cdb65c4457"
+source = "git+https://github.com/iced-rs/iced#ea614387f4d94960911b0a7d8ce25c02edb470c5"
 dependencies = [
  "bytemuck",
  "cosmic-text",
@@ -2253,7 +2251,7 @@ dependencies = [
 [[package]]
 name = "iced_wgpu"
 version = "0.14.0-dev"
-source = "git+https://github.com/dcampbell24/iced?branch=fix-android#f6c3b6db76e8ddee48dabc567da866cdb65c4457"
+source = "git+https://github.com/iced-rs/iced#ea614387f4d94960911b0a7d8ce25c02edb470c5"
 dependencies = [
  "bitflags 2.10.0",
  "bytemuck",
@@ -2272,7 +2270,7 @@ dependencies = [
 [[package]]
 name = "iced_widget"
 version = "0.14.0-dev"
-source = "git+https://github.com/dcampbell24/iced?branch=fix-android#f6c3b6db76e8ddee48dabc567da866cdb65c4457"
+source = "git+https://github.com/iced-rs/iced#ea614387f4d94960911b0a7d8ce25c02edb470c5"
 dependencies = [
  "iced_renderer",
  "log",
@@ -2285,7 +2283,7 @@ dependencies = [
 [[package]]
 name = "iced_winit"
 version = "0.14.0-dev"
-source = "git+https://github.com/dcampbell24/iced?branch=fix-android#f6c3b6db76e8ddee48dabc567da866cdb65c4457"
+source = "git+https://github.com/iced-rs/iced#ea614387f4d94960911b0a7d8ce25c02edb470c5"
 dependencies = [
  "iced_debug",
  "iced_program",
