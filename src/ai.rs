@@ -112,17 +112,9 @@ impl AI for AiBasic {
         }
 
         let t0 = Utc::now().timestamp_millis();
-        let (loops, mut nodes) = self.tree.basic_tree_search(self.duration, self.depth);
-        nodes.sort_by(|a, b| a.score.total_cmp(&b.score));
+        let (loops, node) = self.tree.basic_tree_search(self.duration, self.depth);
 
-        let turn = game.turn;
-        let node = match turn {
-            Role::Attacker => nodes.last().unwrap(),
-            Role::Defender => nodes.first().unwrap(),
-            Role::Roleless => unreachable!(),
-        };
-
-        let play = node.play.as_ref().unwrap();
+        let play = &node.play;
         match game.play(play) {
             Ok(_captures) => {}
             Err(_) => {
@@ -135,10 +127,10 @@ impl AI for AiBasic {
 
         let t1 = Utc::now().timestamp_millis();
         let delay_milliseconds = t1 - t0;
-        let heat_map = HeatMap::from(&nodes.iter().collect());
+        let heat_map = HeatMap::from(&node);
 
         GenerateMove {
-            play: node.play.clone(),
+            play: Some(node.play),
             score: node.score,
             delay_milliseconds,
             loops,

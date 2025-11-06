@@ -2,7 +2,7 @@ use std::{cmp::Ordering, collections::HashMap, fmt};
 
 use crate::{
     board::BoardSize,
-    game_tree::Node,
+    game_tree::{Node, NodeLight},
     play::{Plae, Vertex},
     role::Role,
 };
@@ -193,6 +193,46 @@ impl HeatMap {
             board_size,
             spaces: HashMap::new(),
         }
+    }
+}
+
+impl From<&NodeLight> for HeatMap {
+    #[allow(clippy::float_cmp)]
+    fn from(node: &NodeLight) -> Self {
+        let mut heat_map = HeatMap::new(node.board_size);
+
+        match &node.play {
+            Plae::AttackerResigns | Plae::DefenderResigns => {}
+            Plae::Play(play) => {
+                let board_index: usize = (&play.to).into();
+
+                heat_map
+                    .spaces
+                    .entry((play.role, play.from))
+                    .and_modify(|board| {
+                        let score = board
+                            .get_mut(board_index)
+                            .expect("The board should contain this space.");
+
+                        debug_assert_eq!(*score, Heat::UnRanked);
+                        *score = Heat::Score(node.score);
+                    })
+                    .or_insert({
+                        let size: usize = play.from.size.into();
+                        let mut board = vec![Heat::default(); size * size];
+
+                        let score = board
+                            .get_mut(board_index)
+                            .expect("The board should contain this space.");
+
+                        *score = Heat::Score(node.score);
+
+                        board
+                    });
+            }
+        }
+
+        heat_map
     }
 }
 

@@ -46,11 +46,10 @@ impl Tree {
 
     #[allow(clippy::missing_panics_doc)]
     #[must_use]
-    pub fn basic_tree_search(&mut self, duration: Duration, _depth: u8) -> (u64, Vec<Node>) {
+    pub fn basic_tree_search(&mut self, duration: Duration, _depth: u8) -> (u64, NodeLight) {
+        let mut child = None;
         let t0 = Instant::now();
         let mut loops = 0;
-        // Fixme:
-        // let mut here = self.here;
 
         for _ in 0..1 {
             let t1 = Instant::now();
@@ -62,64 +61,44 @@ impl Tree {
 
             let plays = self.game.all_legal_plays();
             loops += u64::try_from(plays.len()).expect("a usize should fit in a u64");
+            let mut children = Vec::with_capacity(plays.len());
 
             for play in plays {
                 let mut game = self.game.clone();
                 game.play(&play).expect("The play should be legal!");
 
-                let child_index = game.calculate_hash();
-                if let Some(node) = self.arena.get_mut(&child_index) {
-                    node.count += 1.0;
-                } else {
-                    self.insert_child(child_index, self.here, play);
-                }
-                // here = child_index;
+                let mut node = NodeLight {
+                    board_size: game.board.size(),
+                    play: play.clone(),
+                    score: 0.0,
+                };
 
                 match game.status {
-                    Status::AttackerWins => {
-                        let node = self
-                            .arena
-                            .get_mut(&child_index)
-                            .expect("The hashmap should have the node.");
-
-                        node.score += f64::INFINITY;
-                    }
-                    Status::DefenderWins => {
-                        let node = self
-                            .arena
-                            .get_mut(&child_index)
-                            .expect("The hashmap should have the node.");
-
-                        node.score -= f64::INFINITY;
-                    }
+                    Status::AttackerWins => node.score += f64::INFINITY,
+                    Status::DefenderWins => node.score -= f64::INFINITY,
                     Status::Draw => unreachable!(),
                     Status::Ongoing => {
                         let captured = game.board.captured();
-                        let node = self
-                            .arena
-                            .get_mut(&child_index)
-                            .expect("The hashmap should have the node.");
-
                         node.score -= f64::from(captured.attacker);
                         node.score += f64::from(captured.defender);
                     }
                 }
+
+                children.push(node);
             }
+
+            child = match self.game.turn {
+                crate::role::Role::Attacker => children
+                    .into_iter()
+                    .max_by(|a, b| a.score.total_cmp(&b.score)),
+                crate::role::Role::Defender => children
+                    .into_iter()
+                    .min_by(|a, b| a.score.total_cmp(&b.score)),
+                crate::role::Role::Roleless => unreachable!(),
+            };
         }
 
-        for node in self.arena.values_mut() {
-            node.score /= node.count;
-            node.count = 1.0;
-        }
-
-        let children = &self.arena[&self.here].children;
-        (
-            loops,
-            children
-                .iter()
-                .map(|child| self.arena[child].clone())
-                .collect::<Vec<_>>(),
-        )
+        (loops, child.expect("there should be a child"))
     }
 
     #[allow(clippy::missing_panics_doc)]
@@ -321,5 +300,18 @@ impl fmt::Display for Node {
         } else {
             write!(f, "play: None")
         }
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct NodeLight {
+    pub board_size: BoardSize,
+    pub play: Plae,
+    pub score: f64,
+}
+
+impl fmt::Display for NodeLight {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "play: {}, score: {}", self.play, self.score,)
     }
 }
