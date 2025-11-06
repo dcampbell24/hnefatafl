@@ -535,10 +535,7 @@ impl<'a> Client {
                     Space::Defender => text("♙"),
                 };
 
-                txt = txt
-                    .size(piece_size)
-                    .shaping(text::Shaping::Advanced)
-                    .center();
+                txt = txt.size(piece_size).center();
 
                 if let (Some(from), Some(to)) = (&self.play_from_previous, &self.play_to_previous) {
                     let x_diff = from.x as i128 - to.x as i128;
@@ -556,18 +553,12 @@ impl<'a> Client {
                     }
 
                     if (y, x) == (from.y, from.x) {
-                        txt = text(arrow)
-                            .size(piece_size)
-                            .shaping(text::Shaping::Advanced)
-                            .center();
+                        txt = text(arrow).size(piece_size).center();
                     }
                 }
 
                 if self.captures.contains(&vertex) {
-                    txt = text("🗙")
-                        .size(piece_size)
-                        .shaping(text::Shaping::Advanced)
-                        .center();
+                    txt = text("🗙").size(piece_size).center();
                 }
 
                 if let Some((heat_map_from, heat_map_to)) = &heat_map
@@ -591,7 +582,6 @@ impl<'a> Client {
 
                                 txt = text(txt_char)
                                     .size(piece_size)
-                                    .shaping(text::Shaping::Advanced)
                                     .center()
                                     .color(Color::from_rgba(0.0, 0.0, 0.0, heat.into()));
                             }
@@ -709,14 +699,14 @@ impl<'a> Client {
         let attacker = container(
             column![
                 row![
-                    text(attacker).shaping(text::Shaping::Advanced),
+                    text(attacker),
                     text(attacker_rating).center(),
-                    text(captured.defender().clone()).shaping(text::Shaping::Advanced)
+                    text(captured.defender().clone()),
                 ]
                 .spacing(SPACING),
                 row![
                     text(attacker_time).size(35).center(),
-                    text("🗡").shaping(text::Shaping::Advanced).size(35).center(),
+                    text("🗡").size(35).center(),
                 ]
                 .spacing(SPACING),
             ]
@@ -728,17 +718,14 @@ impl<'a> Client {
         let defender = container(
             column![
                 row![
-                    text(defender).shaping(text::Shaping::Advanced),
+                    text(defender),
                     text(defender_rating).center(),
-                    text(captured.attacker().clone()).shaping(text::Shaping::Advanced)
+                    text(captured.attacker().clone()),
                 ]
                 .spacing(SPACING),
                 row![
                     text(defender_time).size(35).center(),
-                    text("⛨")
-                        .shaping(text::Shaping::Advanced)
-                        .size(35.0)
-                        .center(),
+                    text("⛨").size(35.0).center(),
                 ]
                 .spacing(SPACING),
             ]
@@ -752,19 +739,14 @@ impl<'a> Client {
         let sub_second = self.now_diff % 1_000;
         let seconds = self.now_diff / 1_000;
 
-        let mut user_area =
-            column![text!("#{game_id} {}", &self.username).shaping(text::Shaping::Advanced)]
-                .spacing(SPACING);
+        let mut user_area = column![text!("#{game_id} {}", &self.username)].spacing(SPACING);
 
         let is_rated = match self.game_settings.rated {
             Rated::No => t!("no"),
             Rated::Yes => t!("yes"),
         };
 
-        user_area = user_area.push(
-            text!("{}: {play} {}: {is_rated}", t!("move"), t!("rated"),)
-                .shaping(text::Shaping::Advanced),
-        );
+        user_area = user_area.push(text!("{}: {play} {}: {is_rated}", t!("move"), t!("rated")));
 
         match self.screen_size {
             Size::Tiny | Size::Small | Size::Medium | Size::Large => {
@@ -788,12 +770,10 @@ impl<'a> Client {
             spectators = spectators.push(text(spectator));
         }
 
-        let resign = button(text(self.strings["Resign"].as_str()).shaping(text::Shaping::Advanced))
-            .on_press(Message::PlayResign);
+        let resign = button(text(self.strings["Resign"].as_str())).on_press(Message::PlayResign);
 
         let request_draw =
-            button(text(self.strings["Request Draw"].as_str()).shaping(text::Shaping::Advanced))
-                .on_press(Message::PlayDraw);
+            button(text(self.strings["Request Draw"].as_str())).on_press(Message::PlayDraw);
 
         if !watching {
             if self.my_turn {
@@ -815,11 +795,8 @@ impl<'a> Client {
                 let row = if self.request_draw {
                     column![
                         row![
-                            button(
-                                text(self.strings["Accept Draw"].as_str())
-                                    .shaping(text::Shaping::Advanced)
-                            )
-                            .on_press(Message::PlayDrawDecision(Draw::Accept)),
+                            button(text(self.strings["Accept Draw"].as_str()))
+                                .on_press(Message::PlayDrawDecision(Draw::Accept)),
                         ]
                         .spacing(SPACING)
                     ]
@@ -831,39 +808,31 @@ impl<'a> Client {
         }
 
         let muted = checkbox(t!("Muted"), self.sound_muted)
-            .text_shaping(text::Shaping::Advanced)
             .on_toggle(Message::SoundMuted)
             .size(32);
 
-        let leave = button(text(self.strings["Leave"].as_str()).shaping(text::Shaping::Advanced))
-            .on_press(Message::Leave);
+        let leave = button(text(self.strings["Leave"].as_str())).on_press(Message::Leave);
 
         user_area = user_area.push(row![muted, leave].spacing(SPACING));
 
         match status {
             Status::AttackerWins => {
-                user_area =
-                    user_area.push(text(t!("Attacker wins!")).shaping(text::Shaping::Advanced));
+                user_area = user_area.push(text(t!("Attacker wins!")));
             }
             Status::Draw => {
-                user_area =
-                    user_area.push(text(t!("It's a draw.")).shaping(text::Shaping::Advanced));
+                user_area = user_area.push(text(t!("It's a draw.")));
             }
             Status::Ongoing => {}
             Status::DefenderWins => {
-                user_area =
-                    user_area.push(text(t!("Defender wins!")).shaping(text::Shaping::Advanced));
+                user_area = user_area.push(text(t!("Defender wins!")));
             }
         }
 
-        let spectator = column![
-            text!(
-                "👥 ({}) {}: {seconds:01}.{sub_second:03} s",
-                self.spectators.len(),
-                t!("lag"),
-            )
-            .shaping(text::Shaping::Advanced)
-        ];
+        let spectator = column![text!(
+            "👥 ({}) {}: {seconds:01}.{sub_second:03} s",
+            self.spectators.len(),
+            t!("lag"),
+        )];
 
         if self.spectators.is_empty() {
             user_area = user_area.push(spectator);
@@ -883,8 +852,7 @@ impl<'a> Client {
                 heat_map = heat_map.on_toggle(Message::HeatMap);
             }
 
-            let mut heat_map_text =
-                button(text(self.strings["Heat Map"].as_str()).shaping(text::Shaping::Advanced));
+            let mut heat_map_text = button(text(self.strings["Heat Map"].as_str()));
 
             if !self.estimate_score {
                 heat_map_text = heat_map_text.on_press(Message::EstimateScore);
@@ -892,23 +860,22 @@ impl<'a> Client {
 
             user_area = user_area.push(row![heat_map, heat_map_text]);
 
-            let mut left_all = button(text("⏮").shaping(text::Shaping::Advanced));
-            let mut left = button(text("⏪").shaping(text::Shaping::Advanced));
+            let mut left_all = button(text("⏮"));
+            let mut left = button(text("⏪"));
             if handle.play > 0 {
                 left_all = left_all.on_press(Message::ReviewGameBackwardAll);
                 left = left.on_press(Message::ReviewGameBackward);
             }
 
-            let mut right = button(text("⏩").center().shaping(text::Shaping::Advanced));
-            let mut right_all = button(text("⏭").center().shaping(text::Shaping::Advanced));
+            let mut right = button(text("⏩").center());
+            let mut right_all = button(text("⏭").center());
             if handle.boards.has_children() {
                 right = right.on_press(Message::ReviewGameForward);
                 right_all = right_all.on_press(Message::ReviewGameForwardAll);
             }
 
             let child_number = text(handle.boards.next_child);
-            let child_right = button(text("⏩").center().shaping(text::Shaping::Advanced))
-                .on_press(Message::ReviewGameChildNext);
+            let child_right = button(text("⏩").center()).on_press(Message::ReviewGameChildNext);
 
             user_area = user_area.push(
                 row![left_all, left, right, right_all, child_right, child_number].spacing(SPACING),
@@ -997,7 +964,7 @@ impl<'a> Client {
 
         let mut texting = Column::new();
         for message in messages {
-            texting = texting.push(text(message).shaping(text::Shaping::Advanced));
+            texting = texting.push(text(message));
         }
         text_box = text_box.push(scrollable(texting));
 
@@ -1977,19 +1944,19 @@ impl<'a> Client {
             game_ids = game_ids.push(text(id));
 
             attackers = if let Some(attacker) = &game.attacker {
-                attackers.push(text(attacker).shaping(text::Shaping::Advanced))
+                attackers.push(text(attacker))
             } else {
-                attackers.push(text(t!("none")).shaping(text::Shaping::Advanced))
+                attackers.push(text(t!("none")))
             };
             defenders = if let Some(defender) = &game.defender {
-                defenders.push(text(defender).shaping(text::Shaping::Advanced))
+                defenders.push(text(defender))
             } else {
-                defenders.push(text(t!("none")).shaping(text::Shaping::Advanced))
+                defenders.push(text(t!("none")))
             };
 
             let rating: bool = game.rated.into();
             let rating = if rating { t!("yes") } else { t!("no") };
-            ratings = ratings.push(text(rating).shaping(text::Shaping::Advanced));
+            ratings = ratings.push(text(rating));
 
             timings = timings.push(text(game.timed.to_string()));
             sizes = sizes.push(text(game.board_size.to_string()));
@@ -2001,13 +1968,11 @@ impl<'a> Client {
                     || Some(&self.username) == game.defender.as_ref())
             {
                 buttons_row = buttons_row.push(
-                    button(text(self.strings["Watch"].as_str()).shaping(text::Shaping::Advanced))
-                        .on_press(Message::GameWatch(id)),
+                    button(text(self.strings["Watch"].as_str())).on_press(Message::GameWatch(id)),
                 );
             } else if game.attacker.is_none() || game.defender.is_none() {
                 buttons_row = buttons_row.push(
-                    button(text(self.strings["Join"].as_str()).shaping(text::Shaping::Advanced))
-                        .on_press(Message::GameJoin(id)),
+                    button(text(self.strings["Join"].as_str())).on_press(Message::GameJoin(id)),
                 );
             }
 
@@ -2015,8 +1980,7 @@ impl<'a> Client {
                 || game.defender.as_ref() == Some(&self.username)
             {
                 buttons_row = buttons_row.push(
-                    button(text(self.strings["Resume"].as_str()).shaping(text::Shaping::Advanced))
-                        .on_press(Message::GameResume(id)),
+                    button(text(self.strings["Resume"].as_str())).on_press(Message::GameResume(id)),
                 );
             }
 
@@ -2025,42 +1989,42 @@ impl<'a> Client {
 
         let game_id = t!("ID");
         let game_ids = column![
-            text(game_id.to_string()).shaping(text::Shaping::Advanced),
+            text(game_id.to_string()),
             text("-".repeat(game_id.chars().count())),
             game_ids
         ]
         .padding(PADDING);
         let attacker = t!("attacker");
         let attackers = column![
-            text(attacker.to_string()).shaping(text::Shaping::Advanced),
+            text(attacker.to_string()),
             text("-".repeat(attacker.chars().count())),
             attackers
         ]
         .padding(PADDING);
         let defender = t!("defender");
         let defenders = column![
-            text(defender.to_string()).shaping(text::Shaping::Advanced),
+            text(defender.to_string()),
             text("-".repeat(defender.chars().count())),
             defenders
         ]
         .padding(PADDING);
         let rated = t!("rated");
         let ratings = column![
-            text(rated.to_string()).shaping(text::Shaping::Advanced),
+            text(rated.to_string()),
             text("-".repeat(rated.chars().count())),
             ratings
         ]
         .padding(PADDING);
         let timed = t!("timed");
         let timings = column![
-            text(timed.to_string()).shaping(text::Shaping::Advanced),
+            text(timed.to_string()),
             text("-".repeat(timed.chars().count())),
             timings
         ]
         .padding(PADDING);
         let size = t!("size");
         let sizes = column![
-            text(size.to_string()).shaping(text::Shaping::Advanced),
+            text(size.to_string()),
             text("-".repeat(size.chars().count())),
             sizes
         ]
@@ -2149,7 +2113,7 @@ impl<'a> Client {
         for user in self.users_sorted() {
             if logged_in == user.logged_in {
                 ratings = ratings.push(text(user.rating.to_string_rounded()));
-                usernames = usernames.push(text(user.name).shaping(text::Shaping::Advanced));
+                usernames = usernames.push(text(user.name));
                 wins = wins.push(text(user.wins));
                 losses = losses.push(text(user.losses));
                 draws = draws.push(text(user.draws));
@@ -2158,35 +2122,35 @@ impl<'a> Client {
 
         let rating = t!("rating");
         let ratings = column![
-            text(rating.to_string()).shaping(text::Shaping::Advanced),
+            text(rating.to_string()),
             text("-".repeat(rating.chars().count())),
             ratings
         ]
         .padding(PADDING);
         let username = t!("username");
         let usernames = column![
-            text(username.to_string()).shaping(text::Shaping::Advanced),
+            text(username.to_string()),
             text("-".repeat(username.chars().count())),
             usernames
         ]
         .padding(PADDING);
         let win = t!("wins");
         let wins = column![
-            text(win.to_string()).shaping(text::Shaping::Advanced),
+            text(win.to_string()),
             text("-".repeat(win.chars().count())),
             wins
         ]
         .padding(PADDING);
         let loss = t!("losses");
         let losses = column![
-            text(loss.to_string()).shaping(text::Shaping::Advanced),
+            text(loss.to_string()),
             text("-".repeat(loss.chars().count())),
             losses
         ]
         .padding(PADDING);
         let draw = t!("draws");
         let draws = column![
-            text(draw.to_string()).shaping(text::Shaping::Advanced),
+            text(draw.to_string()),
             text("-".repeat(draw.chars().count())),
             draws
         ]
@@ -2238,14 +2202,12 @@ impl<'a> Client {
                         t!("connected to"),
                         &self.connected_to,
                         t!("via")
-                    )
-                    .shaping(text::Shaping::Advanced),
-                    text!("{}: {}", t!("username"), &self.username)
-                        .shaping(text::Shaping::Advanced),
-                    text!("{}: {rating}", t!("rating")).shaping(text::Shaping::Advanced),
-                    text!("{}: {wins}", t!("wins")).shaping(text::Shaping::Advanced),
-                    text!("{}: {losses}", t!("losses")).shaping(text::Shaping::Advanced),
-                    text!("{}: {draws}", t!("draws")).shaping(text::Shaping::Advanced),
+                    ),
+                    text!("{}: {}", t!("username"), &self.username),
+                    text!("{}: {rating}", t!("rating")),
+                    text!("{}: {wins}", t!("wins")),
+                    text!("{}: {losses}", t!("losses")),
+                    text!("{}: {draws}", t!("draws")),
                 ]
                 .padding(PADDING)
                 .spacing(SPACING);
@@ -2253,31 +2215,24 @@ impl<'a> Client {
                 if let Some(email) = &self.email {
                     let mut row = Row::new();
                     if email.verified {
-                        row = row.push(
-                            text!(
-                                "{}: [{}] {} ",
-                                t!("email address"),
-                                t!("verified"),
-                                email.address,
-                            )
-                            .shaping(text::Shaping::Advanced),
-                        );
+                        row = row.push(text!(
+                            "{}: [{}] {} ",
+                            t!("email address"),
+                            t!("verified"),
+                            email.address,
+                        ));
                         columns = columns.push(row);
                     } else {
-                        row = row.push(
-                            text!(
-                                "{}: [{}] {} ",
-                                t!("email address"),
-                                t!("unverified"),
-                                email.address,
-                            )
-                            .shaping(text::Shaping::Advanced),
-                        );
+                        row = row.push(text!(
+                            "{}: [{}] {} ",
+                            t!("email address"),
+                            t!("unverified"),
+                            email.address,
+                        ));
                         columns = columns.push(row);
 
                         let mut row = Row::new();
-                        row = row
-                            .push(text!("{}: ", t!("email code")).shaping(text::Shaping::Advanced));
+                        row = row.push(text!("{}: ", t!("email code")));
                         row = row.push(
                             text_input("", &self.text_input)
                                 .on_input(Message::TextChanged)
@@ -2288,8 +2243,7 @@ impl<'a> Client {
                     }
                 } else {
                     let mut row = Row::new();
-                    row = row
-                        .push(text!("{}: ", t!("email address")).shaping(text::Shaping::Advanced));
+                    row = row.push(text!("{}: ", t!("email address")));
                     row = row.push(
                         text_input("", &self.text_input)
                             .on_input(Message::TextChanged)
@@ -2298,25 +2252,20 @@ impl<'a> Client {
                     );
 
                     columns = columns.push(row);
-                    columns = columns.push(row![
-                        text!("{}: ", t!("email code")).shaping(text::Shaping::Advanced)
-                    ]);
+                    columns = columns.push(row![text!("{}: ", t!("email code"))]);
                 }
 
                 columns = columns.push(row![
-                    button(
-                        text(self.strings["Reset Email"].as_str()).shaping(text::Shaping::Advanced)
-                    )
-                    .on_press(Message::EmailReset)
+                    button(text(self.strings["Reset Email"].as_str()))
+                        .on_press(Message::EmailReset)
                 ]);
 
                 if let Some(error) = &self.error_email {
                     columns = columns.push(row![text!("error: {error}")]);
                 }
 
-                let mut change_password_button = button(
-                    text(self.strings["Change Password"].as_str()).shaping(text::Shaping::Advanced),
-                );
+                let mut change_password_button =
+                    button(text(self.strings["Change Password"].as_str()));
 
                 if !self.password_ends_with_whitespace {
                     change_password_button = change_password_button.on_press(Message::TextSend);
@@ -2335,32 +2284,23 @@ impl<'a> Client {
 
                 columns = columns.push(
                     checkbox(t!("show password"), self.password_show)
-                        .text_shaping(text::Shaping::Advanced)
                         .on_toggle(Message::PasswordShow),
                 );
 
                 if self.delete_account {
                     columns = columns.push(
-                        button(
-                            text(self.strings["REALLY DELETE ACCOUNT"].as_str())
-                                .shaping(text::Shaping::Advanced),
-                        )
-                        .on_press(Message::DeleteAccount),
+                        button(text(self.strings["REALLY DELETE ACCOUNT"].as_str()))
+                            .on_press(Message::DeleteAccount),
                     );
                 } else {
                     columns = columns.push(
-                        button(
-                            text(self.strings["Delete Account"].as_str())
-                                .shaping(text::Shaping::Advanced),
-                        )
-                        .on_press(Message::DeleteAccount),
+                        button(text(self.strings["Delete Account"].as_str()))
+                            .on_press(Message::DeleteAccount),
                     );
                 }
 
-                columns = columns.push(
-                    button(text(self.strings["Leave"].as_str()).shaping(text::Shaping::Advanced))
-                        .on_press(Message::Leave),
-                );
+                columns = columns
+                    .push(button(text(self.strings["Leave"].as_str())).on_press(Message::Leave));
 
                 columns.into()
             }
@@ -2407,33 +2347,26 @@ impl<'a> Client {
                     Role::Attacker,
                     self.game_settings.role_selected,
                     Message::RoleSelected,
-                )
-                .text_shaping(text::Shaping::Advanced);
+                );
 
                 let defender = radio(
                     format!("{},", t!("defender")),
                     Role::Defender,
                     self.game_settings.role_selected,
                     Message::RoleSelected,
-                )
-                .text_shaping(text::Shaping::Advanced);
+                );
 
                 let rated = checkbox(t!("rated"), self.game_settings.rated.into())
-                    .on_toggle(Message::RatedSelected)
-                    .text_shaping(text::Shaping::Advanced);
+                    .on_toggle(Message::RatedSelected);
 
-                let mut new_game = button(
-                    text(self.strings["New Game"].as_str()).shaping(text::Shaping::Advanced),
-                );
+                let mut new_game = button(text(self.strings["New Game"].as_str()));
                 if self.game_settings.role_selected.is_some()
                     && self.game_settings.board_size.is_some()
                 {
                     new_game = new_game.on_press(Message::GameSubmit);
                 }
 
-                let leave =
-                    button(text(self.strings["Leave"].as_str()).shaping(text::Shaping::Advanced))
-                        .on_press(Message::Leave);
+                let leave = button(text(self.strings["Leave"].as_str())).on_press(Message::Leave);
 
                 let size_11x11 = radio(
                     "11x11",
@@ -2454,65 +2387,54 @@ impl<'a> Client {
                         format!("{}:", t!("timed")),
                         self.game_settings.timed.clone().into()
                     )
-                    .text_shaping(text::Shaping::Advanced)
                     .on_toggle(Message::TimeCheckbox)
                 ]
                 .spacing(SPACING);
 
-                let row_1 = row![
-                    text!("{}:", t!("role")).shaping(text::Shaping::Advanced),
-                    attacker,
-                    defender,
-                    rated,
-                ]
-                .padding(PADDING)
-                .spacing(SPACING);
+                let row_1 = row![text!("{}:", t!("role")), attacker, defender, rated,]
+                    .padding(PADDING)
+                    .spacing(SPACING);
 
-                let row_2 = row![
-                    text!("{}:", t!("board size")).shaping(text::Shaping::Advanced),
-                    size_11x11,
-                    size_13x13,
-                    time,
-                ]
-                .padding(PADDING)
-                .spacing(SPACING);
+                let row_2 = row![text!("{}:", t!("board size")), size_11x11, size_13x13, time,]
+                    .padding(PADDING)
+                    .spacing(SPACING);
 
                 let mut row_3 = Row::new().spacing(SPACING).padding(PADDING);
                 let mut row_4 = Row::new().spacing(SPACING).padding(PADDING);
 
                 if let TimeSettings::Timed(_) = self.game_settings.timed {
-                    row_3 = row_3.push(text(t!("days")).shaping(text::Shaping::Advanced));
+                    row_3 = row_3.push(text(t!("days")));
                     row_3 = row_3.push(
                         text_input("0", &self.game_settings.time_days)
                             .on_input(Message::TimeDays)
                             .on_paste(Message::TimeDays),
                     );
-                    row_3 = row_3.push(text(t!("hours")).shaping(text::Shaping::Advanced));
+                    row_3 = row_3.push(text(t!("hours")));
                     row_3 = row_3.push(
                         text_input("0", &self.game_settings.time_hours)
                             .on_input(Message::TimeHours)
                             .on_paste(Message::TimeHours),
                     );
-                    row_3 = row_3.push(text(t!("minutes")).shaping(text::Shaping::Advanced));
+                    row_3 = row_3.push(text(t!("minutes")));
                     row_3 = row_3.push(
                         text_input("15", &self.game_settings.time_minutes)
                             .on_input(Message::TimeMinutes)
                             .on_paste(Message::TimeMinutes),
                     );
 
-                    row_4 = row_4.push(text(t!("add hours")).shaping(text::Shaping::Advanced));
+                    row_4 = row_4.push(text(t!("add hours")));
                     row_4 = row_4.push(
                         text_input("0", &self.game_settings.time_add_hours)
                             .on_input(Message::TimeAddHours)
                             .on_paste(Message::TimeAddHours),
                     );
-                    row_4 = row_4.push(text(t!("add minutes")).shaping(text::Shaping::Advanced));
+                    row_4 = row_4.push(text(t!("add minutes")));
                     row_4 = row_4.push(
                         text_input("0", &self.game_settings.time_add_minutes)
                             .on_input(Message::TimeAddMinutes)
                             .on_paste(Message::TimeAddMinutes),
                     );
-                    row_4 = row_4.push(text(t!("add seconds")).shaping(text::Shaping::Advanced));
+                    row_4 = row_4.push(text(t!("add seconds")));
                     row_4 = row_4.push(
                         text_input("10", &self.game_settings.time_add_seconds)
                             .on_input(Message::TimeAddSeconds)
@@ -2528,8 +2450,7 @@ impl<'a> Client {
                 let mut game_display = Column::new().padding(PADDING);
 
                 if let Some(game) = self.games_light.0.get(&self.game_id) {
-                    game_display =
-                        game_display.push(text(game.to_string()).shaping(text::Shaping::Advanced));
+                    game_display = game_display.push(text(game.to_string()));
 
                     if game.attacker.is_some() && game.defender.is_some() {
                         buttons_live = true;
@@ -2537,39 +2458,20 @@ impl<'a> Client {
                 }
 
                 let mut buttons = if self.challenger {
-                    row![
-                        button(
-                            text(self.strings["Leave"].as_str()).shaping(text::Shaping::Advanced)
-                        )
-                        .on_press(Message::Leave)
-                    ]
+                    row![button(text(self.strings["Leave"].as_str())).on_press(Message::Leave)]
                 } else if buttons_live {
                     row![
-                        button(
-                            text(self.strings["Accept"].as_str()).shaping(text::Shaping::Advanced)
-                        )
-                        .on_press(Message::GameAccept(self.game_id)),
-                        button(
-                            text(self.strings["Decline"].as_str()).shaping(text::Shaping::Advanced)
-                        )
-                        .on_press(Message::GameDecline(self.game_id)),
-                        button(
-                            text(self.strings["Leave"].as_str()).shaping(text::Shaping::Advanced)
-                        )
-                        .on_press(Message::Leave),
+                        button(text(self.strings["Accept"].as_str()))
+                            .on_press(Message::GameAccept(self.game_id)),
+                        button(text(self.strings["Decline"].as_str()))
+                            .on_press(Message::GameDecline(self.game_id)),
+                        button(text(self.strings["Leave"].as_str())).on_press(Message::Leave),
                     ]
                 } else {
                     row![
-                        button(
-                            text(self.strings["Accept"].as_str()).shaping(text::Shaping::Advanced)
-                        ),
-                        button(
-                            text(self.strings["Decline"].as_str()).shaping(text::Shaping::Advanced)
-                        ),
-                        button(
-                            text(self.strings["Leave"].as_str()).shaping(text::Shaping::Advanced)
-                        )
-                        .on_press(Message::Leave),
+                        button(text(self.strings["Accept"].as_str())),
+                        button(text(self.strings["Decline"].as_str())),
+                        button(text(self.strings["Leave"].as_str())).on_press(Message::Leave),
                     ]
                 };
                 buttons = buttons.padding(PADDING).spacing(SPACING);
@@ -2584,11 +2486,8 @@ impl<'a> Client {
                         .push(button("Email Everyone").on_press(Message::EmailEveryone));
                 }
 
-                let username = row![
-                    text!("{}: {}", t!("username"), &self.username)
-                        .shaping(text::Shaping::Advanced)
-                ]
-                .spacing(SPACING);
+                let username =
+                    row![text!("{}: {}", t!("username"), &self.username)].spacing(SPACING);
 
                 let username = container(username)
                     .padding(PADDING / 2)
@@ -2596,41 +2495,26 @@ impl<'a> Client {
 
                 let my_games = checkbox(t!("My Games Only"), self.my_games_only)
                     .size(32)
-                    .text_shaping(text::Shaping::Advanced)
                     .on_toggle(Message::MyGamesOnly);
 
-                let get_archived_games = button(
-                    text(self.strings["Get Archived Games"].as_str())
-                        .shaping(text::Shaping::Advanced),
-                )
-                .on_press(Message::ArchivedGamesGet);
+                let get_archived_games = button(text(self.strings["Get Archived Games"].as_str()))
+                    .on_press(Message::ArchivedGamesGet);
 
                 let username = row![username, get_archived_games, my_games].spacing(SPACING);
 
-                let create_game = button(
-                    text(self.strings["Create Game"].as_str()).shaping(text::Shaping::Advanced),
-                )
-                .on_press(Message::GameNew);
+                let create_game =
+                    button(text(self.strings["Create Game"].as_str())).on_press(Message::GameNew);
 
-                let users =
-                    button(text(self.strings["Users"].as_str()).shaping(text::Shaping::Advanced))
-                        .on_press(Message::Users);
+                let users = button(text(self.strings["Users"].as_str())).on_press(Message::Users);
 
-                let account_setting = button(
-                    text(self.strings["Account Settings"].as_str())
-                        .shaping(text::Shaping::Advanced),
-                )
-                .on_press(Message::AccountSettings);
+                let account_setting = button(text(self.strings["Account Settings"].as_str()))
+                    .on_press(Message::AccountSettings);
 
-                let website =
-                    button(text(self.strings["Rules"].as_str()).shaping(text::Shaping::Advanced))
-                        .on_press(Message::OpenUrl(
-                            "https://hnefatafl.org/rules.html".to_string(),
-                        ));
+                let website = button(text(self.strings["Rules"].as_str())).on_press(
+                    Message::OpenUrl("https://hnefatafl.org/rules.html".to_string()),
+                );
 
-                let quit =
-                    button(text(self.strings["Leave"].as_str()).shaping(text::Shaping::Advanced))
-                        .on_press(Message::Leave);
+                let quit = button(text(self.strings["Leave"].as_str())).on_press(Message::Leave);
 
                 let top = row![create_game, users, account_setting, website, quit].spacing(SPACING);
                 let user_area = self.user_area(false);
@@ -2642,9 +2526,7 @@ impl<'a> Client {
             }
             Screen::Login => {
                 let username = row![
-                    text!("{}:", t!("username"))
-                        .shaping(text::Shaping::Advanced)
-                        .size(20),
+                    text!("{}:", t!("username")).size(20),
                     text_input("", &self.text_input)
                         .on_input(Message::TextChanged)
                         .on_paste(Message::TextChanged),
@@ -2656,9 +2538,7 @@ impl<'a> Client {
                     .style(container::bordered_box);
 
                 let password = row![
-                    text!("{}:", t!("password"))
-                        .shaping(text::Shaping::Advanced)
-                        .size(20),
+                    text!("{}:", t!("password")).size(20),
                     text_input("", &self.password)
                         .secure(!self.password_show)
                         .on_input(Message::PasswordChanged)
@@ -2671,29 +2551,22 @@ impl<'a> Client {
                     .style(container::bordered_box);
 
                 let show_password = checkbox(t!("show password"), self.password_show)
-                    .text_shaping(text::Shaping::Advanced)
                     .on_toggle(Message::PasswordShow);
 
                 let save_password = checkbox(t!("save password"), self.password_save)
-                    .text_shaping(text::Shaping::Advanced)
                     .on_toggle(Message::PasswordSave);
 
-                let mut login =
-                    button(text(self.strings["Login"].as_str()).shaping(text::Shaping::Advanced));
+                let mut login = button(text(self.strings["Login"].as_str()));
                 if !self.password_ends_with_whitespace {
                     login = login.on_press(Message::TextSendLogin);
                 }
 
-                let mut create_account = button(
-                    text(self.strings["Create Account"].as_str()).shaping(text::Shaping::Advanced),
-                );
+                let mut create_account = button(text(self.strings["Create Account"].as_str()));
                 if !self.text_input.is_empty() && !self.password_ends_with_whitespace {
                     create_account = create_account.on_press(Message::TextSendCreateAccount);
                 }
 
-                let mut reset_password = button(
-                    text(self.strings["Reset Password"].as_str()).shaping(text::Shaping::Advanced),
-                );
+                let mut reset_password = button(text(self.strings["Reset Password"].as_str()));
                 if !self.text_input.is_empty() {
                     reset_password =
                         reset_password.on_press(Message::ResetPassword(self.text_input.clone()));
@@ -2709,9 +2582,7 @@ impl<'a> Client {
                     error_persistent = error_persistent.push(text(error));
                 }
 
-                let mut review_game = button(
-                    text(self.strings["Review Game"].as_str()).shaping(text::Shaping::Advanced),
-                );
+                let mut review_game = button(text(self.strings["Review Game"].as_str()));
                 if self.archived_game_selected.is_some() {
                     review_game = review_game.on_press(Message::ReviewGame);
                 }
@@ -2724,7 +2595,6 @@ impl<'a> Client {
 
                 let my_games = checkbox(t!("My Games Only"), self.my_games_only)
                     .size(32)
-                    .text_shaping(text::Shaping::Advanced)
                     .on_toggle(Message::MyGamesOnly);
 
                 let buttons_1 = row![login, create_account, reset_password, review_game, my_games]
@@ -2735,8 +2605,7 @@ impl<'a> Client {
                     self.archived_game_selected.clone(),
                     Message::ArchivedGameSelected,
                 )
-                .placeholder(t!("Archived Games"))
-                .text_shaping(text::Shaping::Advanced);
+                .placeholder(t!("Archived Games"));
 
                 let review_game_pick = row![review_game_pick].spacing(SPACING);
 
@@ -2758,33 +2627,22 @@ impl<'a> Client {
                 ];
 
                 let locale = row![
-                    text!("{}: ", t!("locale"))
-                        .shaping(text::Shaping::Advanced)
-                        .size(20),
-                    pick_list(locale, Some(self.locale_selected), Message::LocaleSelected)
-                        .text_shaping(text::Shaping::Advanced),
+                    text!("{}: ", t!("locale")).size(20),
+                    pick_list(locale, Some(self.locale_selected), Message::LocaleSelected),
                 ];
 
                 let mut buttons_2 = if self.theme == Theme::Light {
                     row![
-                        button(
-                            text(self.strings["Dark"].as_str()).shaping(text::Shaping::Advanced)
-                        )
-                        .on_press(Message::ChangeTheme(Theme::Dark)),
-                        button(
-                            text(self.strings["Light"].as_str()).shaping(text::Shaping::Advanced)
-                        ),
+                        button(text(self.strings["Dark"].as_str()))
+                            .on_press(Message::ChangeTheme(Theme::Dark)),
+                        button(text(self.strings["Light"].as_str())),
                     ]
                     .spacing(SPACING)
                 } else {
                     row![
-                        button(
-                            text(self.strings["Dark"].as_str()).shaping(text::Shaping::Advanced)
-                        ),
-                        button(
-                            text(self.strings["Light"].as_str()).shaping(text::Shaping::Advanced)
-                        )
-                        .on_press(Message::ChangeTheme(Theme::Light)),
+                        button(text(self.strings["Dark"].as_str())),
+                        button(text(self.strings["Light"].as_str()))
+                            .on_press(Message::ChangeTheme(Theme::Light)),
                     ]
                     .spacing(SPACING)
                 };
@@ -2796,9 +2654,7 @@ impl<'a> Client {
                 let website = button("https://hnefatafl.org")
                     .on_press(Message::OpenUrl("https://hnefatafl.org".to_string()));
 
-                let quit =
-                    button(text(self.strings["Quit"].as_str()).shaping(text::Shaping::Advanced))
-                        .on_press(Message::Leave);
+                let quit = button(text(self.strings["Quit"].as_str())).on_press(Message::Leave);
 
                 buttons_2 = buttons_2.push(discord);
                 buttons_2 = buttons_2.push(website);
@@ -2820,15 +2676,12 @@ impl<'a> Client {
                 .into()
             }
             Screen::Users => scrollable(column![
-                text(t!("logged in")).shaping(text::Shaping::Advanced),
+                text(t!("logged in")),
                 self.users(true),
-                text(t!("logged out")).shaping(text::Shaping::Advanced),
+                text(t!("logged out")),
                 self.users(false),
-                row![
-                    button(text(self.strings["Leave"].as_str()).shaping(text::Shaping::Advanced))
-                        .on_press(Message::Leave)
-                ]
-                .padding(PADDING),
+                row![button(text(self.strings["Leave"].as_str())).on_press(Message::Leave)]
+                    .padding(PADDING),
             ])
             .spacing(SPACING)
             .into(),
