@@ -70,7 +70,7 @@ Click to join our [Discord server].
 
 [Discord Server]: https://discord.gg/h56CAHEBXd
 
-## Packaging Status
+## [Packaging Status](https://repology.org/project/hnefatafl-copenhagen/versions)
 
 [AUR] (client)  
 [crates.io] (AI, engine, server)  
