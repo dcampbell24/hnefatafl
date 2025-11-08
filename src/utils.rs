@@ -1,3 +1,4 @@
+#[cfg(any(target_family = "unix", target_family = "windows"))]
 use std::process::Command;
 use std::{env, io::Write, path::PathBuf, process::ExitStatus};
 
