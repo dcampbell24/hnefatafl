@@ -46,70 +46,81 @@ impl Tree {
 
     #[allow(clippy::missing_panics_doc)]
     #[must_use]
-    pub fn basic_tree_search(&mut self, duration: Duration, _depth: u8) -> (u64, Vec<Node>) {
-        let t0 = Instant::now();
+    pub fn basic_tree_search(&mut self, _duration: Duration, _depth: u8) -> (u64, Vec<Node>) {
+        // let t0 = Instant::now();
         let mut loops = 0;
         // Fixme:
         // let mut here = self.here;
 
         for _ in 0..1 {
-            let t1 = Instant::now();
-            let elapsed_time = t1 - t0;
+            let children = if self.arena[&self.here].children.is_empty() {
+                vec![self.here]
+            } else {
+                self.arena[&self.here].children.clone()
+            };
 
-            if elapsed_time > duration {
-                break;
+            for here in &children {
+                /* Fixme:
+                let t1 = Instant::now();
+
+                let elapsed_time = t1 - t0;
+
+                if elapsed_time > duration {
+                    break;
+                }
+                */
+
+                let plays = self.game.all_legal_plays();
+                loops += u64::try_from(plays.len()).expect("a usize should fit in a u64");
+
+                for play in plays {
+                    let mut game = self.game.clone();
+                    game.play(&play).expect("The play should be legal!");
+
+                    let child_index = game.calculate_hash();
+                    if let Some(node) = self.arena.get_mut(&child_index) {
+                        node.count += 1.0;
+                    } else {
+                        self.insert_child(child_index, *here, play);
+                    }
+                    // here = child_index;
+
+                    match game.status {
+                        Status::AttackerWins => {
+                            let node = self
+                                .arena
+                                .get_mut(&child_index)
+                                .expect("The hashmap should have the node.");
+
+                            node.score += f64::INFINITY;
+                        }
+                        Status::DefenderWins => {
+                            let node = self
+                                .arena
+                                .get_mut(&child_index)
+                                .expect("The hashmap should have the node.");
+
+                            node.score -= f64::INFINITY;
+                        }
+                        Status::Draw => unreachable!(),
+                        Status::Ongoing => {
+                            let captured = game.board.captured();
+                            let node = self
+                                .arena
+                                .get_mut(&child_index)
+                                .expect("The hashmap should have the node.");
+
+                            node.score -= f64::from(captured.attacker);
+                            node.score += f64::from(captured.defender);
+                        }
+                    }
+                }
             }
 
-            let plays = self.game.all_legal_plays();
-            loops += u64::try_from(plays.len()).expect("a usize should fit in a u64");
-
-            for play in plays {
-                let mut game = self.game.clone();
-                game.play(&play).expect("The play should be legal!");
-
-                let child_index = game.calculate_hash();
-                if let Some(node) = self.arena.get_mut(&child_index) {
-                    node.count += 1.0;
-                } else {
-                    self.insert_child(child_index, self.here, play);
-                }
-                // here = child_index;
-
-                match game.status {
-                    Status::AttackerWins => {
-                        let node = self
-                            .arena
-                            .get_mut(&child_index)
-                            .expect("The hashmap should have the node.");
-
-                        node.score += f64::INFINITY;
-                    }
-                    Status::DefenderWins => {
-                        let node = self
-                            .arena
-                            .get_mut(&child_index)
-                            .expect("The hashmap should have the node.");
-
-                        node.score -= f64::INFINITY;
-                    }
-                    Status::Draw => unreachable!(),
-                    Status::Ongoing => {
-                        let captured = game.board.captured();
-                        let node = self
-                            .arena
-                            .get_mut(&child_index)
-                            .expect("The hashmap should have the node.");
-
-                        node.score -= f64::from(captured.attacker);
-                        node.score += f64::from(captured.defender);
-                    }
-                }
+            for node in self.arena.values_mut() {
+                node.score /= node.count;
+                node.count = 1.0;
             }
-        }
-
-        for node in self.arena.values_mut() {
-            node.score /= node.count;
-            node.count = 1.0;
         }
 
         let children = &self.arena[&self.here].children;
