@@ -5,6 +5,7 @@ in
 pkgs.rustPlatform.buildRustPackage rec {
   pname = manifest.name;
   version = manifest.version;
+  tag = "4.2.2";
   cargoLock = {
     lockFile = ./Cargo.lock;
     outputHashes = {
