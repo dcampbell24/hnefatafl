@@ -19,7 +19,6 @@ use crate::{
     message::{COMMANDS, Message},
     play::{Captures, Plae, Play, PlayRecordTimed, Plays, Vertex},
     role::Role,
-    space::Space,
     status::Status,
     time::TimeSettings,
     tree::Tree,
@@ -144,6 +143,67 @@ impl Game {
 }
 
 impl Game {
+    #[allow(clippy::missing_panics_doc)]
+    #[must_use]
+    pub fn alpha_beta(&self, depth: u8, mut alpha: f64, mut beta: f64) -> (Option<Plae>, f64) {
+        if depth == 0 || self.status != Status::Ongoing {
+            return (self.last_play(), self.utility());
+        }
+
+        let mut play_option = None;
+        if self.turn == Role::Attacker {
+            let mut value = -f64::INFINITY;
+            for plae in self.all_legal_plays() {
+                let mut child = self.clone();
+                child.play(&plae).expect("this play should be valid");
+                let (plae, value_2) = child.alpha_beta(depth - 1, alpha, beta);
+
+                if value_2 > value {
+                    value = value_2;
+                    play_option = plae;
+                }
+
+                if value >= beta {
+                    break;
+                }
+                alpha = f64::max(alpha, value);
+            }
+
+            (play_option, value)
+        } else {
+            let mut value = f64::INFINITY;
+            for plae in self.all_legal_plays() {
+                let mut child = self.clone();
+                child.play(&plae).expect("this play should be valid");
+                let (plae, value_2) = child.alpha_beta(depth - 1, alpha, beta);
+
+                if value_2 < value {
+                    value = value_2;
+                    play_option = plae;
+                }
+
+                if value <= alpha {
+                    break;
+                }
+                beta = f64::min(beta, value);
+            }
+
+            (play_option, value)
+        }
+    }
+
+    #[allow(clippy::missing_panics_doc)]
+    #[must_use]
+    pub fn last_play(&self) -> Option<Plae> {
+        match &self.plays {
+            Plays::PlayRecordsTimed(plaes_timed) => plaes_timed
+                .iter()
+                .map(|plae_timed| plae_timed.play.clone().unwrap())
+                .next_back(),
+            Plays::PlayRecords(plaes) => plaes.iter().map(|plae| plae.clone().unwrap()).next_back(),
+        }
+    }
+
     #[must_use]
     pub fn new_game(board_size: BoardSize, time_settings: Option<TimeSettings>) -> Self {
         let board = Board::new(board_size);
@@ -651,31 +711,21 @@ impl Game {
     }
 
     #[must_use]
-    pub fn utility(&self) -> i32 {
+    pub fn utility(&self) -> f64 {
         match self.status {
             Status::Ongoing => {}
-            Status::AttackerWins => return i32::MIN,
-            Status::Draw => return 0,
-            Status::DefenderWins => return i32::MAX,
+            Status::AttackerWins => return -f64::INFINITY,
+            Status::Draw => return 0.0,
+            Status::DefenderWins => return f64::INFINITY,
         }
 
-        let mut utility = 0;
-
-        let mut defender_left = 0;
-        let mut attacker_left = 0;
-        for space in &self.board.spaces {
-            match space {
-                Space::Attacker => attacker_left += 1,
-                Space::Empty | Space::King => {}
-                Space::Defender => defender_left += 1,
-            }
-        }
-
-        utility += defender_left * 2;
-        utility -= attacker_left;
+        let mut utility = 0.0;
+        let captured = self.board.captured();
+        utility -= f64::from(captured.attacker);
+        utility += f64::from(captured.defender);
 
         if self.exit_one() {
-            utility += 100;
+            utility += 100.0;
         }
 
         utility
@@ -685,10 +735,11 @@ impl Game {
 impl From<&Tree> for Game {
     fn from(tree: &Tree) -> Self {
         let node = tree.here();
-        let previous_boards = tree.previous_boards();
+        let (plays, previous_boards) = tree.previous_boards();
 
         Self {
             board: node.board,
+            plays,
             previous_boards,
             status: Status::Ongoing,
             turn: node.turn,
