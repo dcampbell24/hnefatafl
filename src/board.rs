@@ -714,6 +714,39 @@ impl Board {
         }
     }
 
+    #[allow(clippy::missing_panics_doc)]
+    #[must_use]
+    pub fn difference(&self, other: &Board) -> Plae {
+        let size = self.size();
+        let size_usize = size.into();
+        let mut role = None;
+        let mut from = None;
+        let mut to = None;
+
+        for y in 0..size_usize {
+            for x in 0..size_usize {
+                let vertex = Vertex { size, x, y };
+                let a = self.get(&vertex);
+                let b = other.get(&vertex);
+                if a != b {
+                    if a == Space::Empty {
+                        to = Some(vertex);
+                        role = Some(b.into());
+                    }
+                    if b == Space::Empty {
+                        from = Some(vertex);
+                    }
+                }
+            }
+        }
+
+        Plae::Play(Play {
+            role: role.unwrap(),
+            from: from.unwrap(),
+            to: to.unwrap(),
+        })
+    }
+
     #[must_use]
     pub fn find_the_king(&self) -> Option<Vertex> {
         let size = self.size();

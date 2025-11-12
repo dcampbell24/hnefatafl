@@ -1,6 +1,9 @@
+use std::collections::VecDeque;
+
 use crate::{
     board::{Board, BoardSize},
     game::PreviousBoards,
+    play::Plays,
     role::Role,
 };
 
@@ -111,17 +114,31 @@ impl Tree {
     }
 
     #[must_use]
-    pub fn previous_boards(&self) -> PreviousBoards {
+    pub fn previous_boards(&self) -> (Plays, PreviousBoards) {
         let mut node = &self.here();
         let mut previous_boards = PreviousBoards::new(node.board.size());
-        previous_boards.0.insert(node.board.clone());
+        let mut boards = VecDeque::new();
+        let mut plays = Vec::new();
 
+        previous_boards.0.insert(node.board.clone());
+        boards.push_front(node.board.clone());
         while let Some(parent) = node.parent {
             node = &self.arena[parent];
             previous_boards.0.insert(node.board.clone());
+            boards.push_front(node.board.clone());
         }
 
-        previous_boards
+        let boards: Vec<_> = boards.iter().collect();
+        for windows in boards.windows(2) {
+            let board_1 = windows[0];
+            let board_2 = windows[1];
+
+            let play = board_1.difference(board_2);
+            plays.push(Some(play));
+        }
+        let plays = Plays::PlayRecords(plays);
+
+        (plays, previous_boards)
     }
 }
 

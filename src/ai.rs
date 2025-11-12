@@ -79,19 +79,15 @@ impl AI for AiBanal {
 }
 
 pub struct AiBasic {
-    pub size: BoardSize,
-    pub tree: Tree,
-    duration: Duration,
+    _duration: Duration,
     depth: u8,
 }
 
 impl AiBasic {
     #[must_use]
-    pub fn new(game: &Game, duration: Duration, depth: u8) -> Self {
+    pub fn new(duration: Duration, depth: u8) -> Self {
         Self {
-            size: game.board.size(),
-            tree: Tree::new(game.clone()),
-            duration,
+            _duration: duration,
             depth,
         }
     }
@@ -112,43 +108,22 @@ impl AI for AiBasic {
         }
 
         let t0 = Utc::now().timestamp_millis();
-        let (loops, mut nodes) = self.tree.basic_tree_search(self.duration, self.depth);
-        nodes.sort_by(|a, b| a.score.total_cmp(&b.score));
-
-        let turn = game.turn;
-        let node = match turn {
-            Role::Attacker => nodes.last().unwrap(),
-            Role::Defender => nodes.first().unwrap(),
-            Role::Roleless => unreachable!(),
-        };
-
-        let play = node.play.as_ref().unwrap();
-        match game.play(play) {
-            Ok(_captures) => {}
-            Err(_) => {
-                return generate_move;
-            }
-        }
-
-        let here_tree = Tree::from(game.clone());
-        self.tree = here_tree.clone();
+        let (play, score) = game.alpha_beta(self.depth, -f64::INFINITY, f64::INFINITY);
 
         let t1 = Utc::now().timestamp_millis();
         let delay_milliseconds = t1 - t0;
-        let heat_map = HeatMap::from(&nodes.iter().collect());
 
         GenerateMove {
-            play: node.play.clone(),
-            score: node.score,
+            play: play.clone(),
+            score,
             delay_milliseconds,
-            loops,
-            heat_map,
+            loops: 0,
+            heat_map: HeatMap::new(game.board.size()),
         }
     }
 
     fn play(&mut self, game: &mut Game, play: &Plae) -> anyhow::Result<()> {
         game.play(play)?;
-        self.tree = Tree::new(game.clone());
 
         Ok(())
     }

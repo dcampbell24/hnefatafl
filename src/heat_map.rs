@@ -188,7 +188,8 @@ impl HeatMap {
         (spaces_from, spaces_to)
     }
 
-    fn new(board_size: BoardSize) -> Self {
+    #[must_use]
+    pub fn new(board_size: BoardSize) -> Self {
         Self {
             board_size,
             spaces: HashMap::new(),
