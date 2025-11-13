@@ -458,6 +458,131 @@ impl Game {
         false
     }
 
+    #[must_use]
+    fn get_from_to(&self, from: &Vertex, to: &Vertex) -> Option<f64> {
+        if from == to {
+            return Some(0.0);
+        }
+
+        if from.x == to.x {
+            let mut game = self.clone();
+            game.turn = Role::Defender;
+
+            if game
+                .play(&Plae::Play(Play {
+                    role: Role::Defender,
+                    from: *from,
+                    to: *to,
+                }))
+                .is_ok()
+            {
+                return Some(1.0);
+            }
+            return None;
+        }
+
+        if from.y == to.y {
+            let mut game = self.clone();
+            game.turn = Role::Defender;
+
+            if game
+                .play(&Plae::Play(Play {
+                    role: Role::Defender,
+                    from: *from,
+                    to: *to,
+                }))
+                .is_ok()
+            {
+                return Some(1.0);
+            }
+            return None;
+        }
+
+        let to_1 = Vertex {
+            size: to.size,
+            x: to.x,
+            y: from.x,
+        };
+
+        let mut game = self.clone();
+        game.turn = Role::Defender;
+
+        if game
+            .play(&Plae::Play(Play {
+                role: Role::Defender,
+                from: *from,
+                to: to_1,
+            }))
+            .is_ok()
+        {
+            game.turn = Role::Defender;
+            if game
+                .play(&Plae::Play(Play {
+                    role: Role::Defender,
+                    from: to_1,
+                    to: *to,
+                }))
+                .is_ok()
+            {
+                return Some(2.0);
+            }
+        }
+
+        let to_2 = Vertex {
+            size: to.size,
+            x: from.x,
+            y: to.y,
+        };
+
+        let mut game = self.clone();
+        game.turn = Role::Defender;
+
+        if game
+            .play(&Plae::Play(Play {
+                role: Role::Defender,
+                from: *from,
+                to: to_2,
+            }))
+            .is_ok()
+        {
+            game.turn = Role::Defender;
+            if game
+                .play(&Plae::Play(Play {
+                    role: Role::Defender,
+                    from: to_2,
+                    to: *to,
+                }))
+                .is_ok()
+            {
+                return Some(2.0);
+            }
+        }
+
+        None
+    }
+
+    #[must_use]
+    fn moves_to_escape(&self) -> Option<f64> {
+        let king = self.board.find_the_king()?;
+
+        let mut moves_option = None;
+        let exit_squares = self.board.exit_squares();
+
+        for exit_square in exit_squares {
+            if let Some(moves_2) = self.get_from_to(&king, &exit_square) {
+                if let Some(moves_1) = moves_option {
+                    if moves_2 < moves_1 {
+                        moves_option = Some(moves_2);
+                    }
+                } else {
+                    moves_option = Some(moves_2);
+                }
+            }
+        }
+
+        moves_option
+    }
+
     #[allow(clippy::missing_panics_doc)]
     #[must_use]
     pub fn obvious_play(&self) -> Option<Plae> {
@@ -722,20 +847,16 @@ impl Game {
 
     #[must_use]
     pub fn utility(&self) -> f64 {
-        match self.status {
-            Status::Ongoing => {}
-            Status::AttackerWins => return -f64::INFINITY,
-            Status::Draw => return 0.0,
-            Status::DefenderWins => return f64::INFINITY,
-        }
-
         let mut utility = 0.0;
+
         let captured = self.board.captured();
         utility -= f64::from(captured.attacker);
         utility += f64::from(captured.defender);
 
-        if self.exit_one() {
-            utility += 100.0;
+        if let Some(moves) = self.moves_to_escape() {
+            utility += 100.0 * moves;
+        } else {
+            utility += 500.0;
         }
 
         utility

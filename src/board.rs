@@ -748,6 +748,14 @@ impl Board {
     }
 
     #[must_use]
+    pub fn exit_squares(&self) -> Vec<Vertex> {
+        match self.size() {
+            BoardSize::_11 => EXIT_SQUARES_11X11.into(),
+            BoardSize::_13 => EXIT_SQUARES_13X13.into(),
+        }
+    }
+
+    #[must_use]
     pub fn find_the_king(&self) -> Option<Vertex> {
         let size = self.size();
         let board_size_usize: usize = size.into();
