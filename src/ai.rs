@@ -95,19 +95,40 @@ impl AiBasic {
 
 impl AI for AiBasic {
     fn generate_move(&mut self, game: &mut Game) -> GenerateMove {
-        let generate_move = GenerateMove {
-            play: None,
-            score: 0.0,
-            delay_milliseconds: 0,
-            loops: 0,
-            heat_map: HeatMap::default(),
-        };
+        let t0 = Utc::now().timestamp_millis();
 
         if game.status != Status::Ongoing {
-            return generate_move;
+            let t1 = Utc::now().timestamp_millis();
+            let delay_milliseconds = t1 - t0;
+
+            return GenerateMove {
+                play: None,
+                score: 0.0,
+                delay_milliseconds,
+                loops: 0,
+                heat_map: HeatMap::default(),
+            };
         }
 
-        let t0 = Utc::now().timestamp_millis();
+        if let Some(play) = game.obvious_play() {
+            let t1 = Utc::now().timestamp_millis();
+            let delay_milliseconds = t1 - t0;
+
+            let score = match game.turn {
+                Role::Attacker => f64::INFINITY,
+                Role::Defender => -f64::INFINITY,
+                Role::Roleless => unreachable!(),
+            };
+
+            return GenerateMove {
+                play: Some(play),
+                score,
+                delay_milliseconds,
+                loops: 0,
+                heat_map: HeatMap::default(),
+            };
+        }
+
         let (play, score) = game.alpha_beta(
             self.depth as usize,
             self.depth,
@@ -119,7 +140,7 @@ impl AI for AiBasic {
         let delay_milliseconds = t1 - t0;
 
         GenerateMove {
-            play: play.clone(),
+            play,
             score,
             delay_milliseconds,
             loops: 0,
@@ -129,7 +150,6 @@ impl AI for AiBasic {
 
     fn play(&mut self, game: &mut Game, play: &Plae) -> anyhow::Result<()> {
         game.play(play)?;
-
         Ok(())
     }
 }
