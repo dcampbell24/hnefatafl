@@ -145,18 +145,28 @@ impl Game {
 impl Game {
     #[allow(clippy::missing_panics_doc)]
     #[must_use]
-    pub fn alpha_beta(&self, depth: u8, mut alpha: f64, mut beta: f64) -> (Option<Plae>, f64) {
+    pub fn alpha_beta(
+        &self,
+        original_depth: usize,
+        depth: u8,
+        mut alpha: f64,
+        mut beta: f64,
+    ) -> (Option<Plae>, f64) {
         if depth == 0 || self.status != Status::Ongoing {
-            return (self.last_play(), self.utility());
+            return (
+                self.play_n(self.plays.len() - original_depth),
+                self.utility(),
+            );
         }
 
         let mut play_option = None;
+
         if self.turn == Role::Attacker {
             let mut value = -f64::INFINITY;
             for plae in self.all_legal_plays() {
                 let mut child = self.clone();
                 child.play(&plae).expect("this play should be valid");
-                let (plae, value_2) = child.alpha_beta(depth - 1, alpha, beta);
+                let (plae, value_2) = child.alpha_beta(original_depth, depth - 1, alpha, beta);
 
                 if value_2 > value {
                     value = value_2;
@@ -175,7 +185,7 @@ impl Game {
             for plae in self.all_legal_plays() {
                 let mut child = self.clone();
                 child.play(&plae).expect("this play should be valid");
-                let (plae, value_2) = child.alpha_beta(depth - 1, alpha, beta);
+                let (plae, value_2) = child.alpha_beta(original_depth, depth - 1, alpha, beta);
 
                 if value_2 < value {
                     value = value_2;
@@ -194,13 +204,13 @@ impl Game {
 
     #[allow(clippy::missing_panics_doc)]
     #[must_use]
-    pub fn last_play(&self) -> Option<Plae> {
+    pub fn play_n(&self, n: usize) -> Option<Plae> {
         match &self.plays {
             Plays::PlayRecordsTimed(plaes_timed) => plaes_timed
                 .iter()
                 .map(|plae_timed| plae_timed.play.clone().unwrap())
-                .next_back(),
-            Plays::PlayRecords(plaes) => plaes.iter().map(|plae| plae.clone().unwrap()).next_back(),
+                .nth(n),
+            Plays::PlayRecords(plaes) => plaes.iter().map(|plae| plae.clone().unwrap()).nth(n),
         }
     }
 

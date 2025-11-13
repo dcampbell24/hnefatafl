@@ -108,7 +108,12 @@ impl AI for AiBasic {
         }
 
         let t0 = Utc::now().timestamp_millis();
-        let (play, score) = game.alpha_beta(self.depth, -f64::INFINITY, f64::INFINITY);
+        let (play, score) = game.alpha_beta(
+            self.depth as usize,
+            self.depth,
+            -f64::INFINITY,
+            f64::INFINITY,
+        );
 
         let t1 = Utc::now().timestamp_millis();
         let delay_milliseconds = t1 - t0;
