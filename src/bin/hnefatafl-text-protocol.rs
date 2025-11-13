@@ -9,7 +9,7 @@ use clap::{self, Parser};
 
 use hnefatafl_copenhagen::{
     SERVER_PORT,
-    ai::{AI, AiMonteCarlo},
+    ai::{AI, AiBasic, AiMonteCarlo},
     game::Game,
     play::Plae,
     read_response,
@@ -36,9 +36,9 @@ struct Args {
     #[arg(default_value_t = 10, long)]
     seconds: u64,
 
-    /// How deep in the game tree to go with Monte Carlo
-    #[arg(default_value_t = 20, long)]
-    depth: u8,
+    /// How deep in the game tree to go with Ai
+    #[arg(long)]
+    depth: Option<u8>,
 
     /// Listen for HTP drivers on host
     #[arg(long, value_name = "host")]
@@ -99,10 +99,11 @@ fn play(display_game: bool) -> anyhow::Result<()> {
     }
 }
 
-fn play_ai(display_game: bool, seconds: Duration, depth: u8) -> anyhow::Result<()> {
+fn play_ai(display_game: bool, seconds: Duration, depth: Option<u8>) -> anyhow::Result<()> {
+    let depth = depth.unwrap_or(4);
     let mut buffer = String::new();
     let mut game = Game::default();
-    let mut ai = AiMonteCarlo::new(&game, seconds, depth)?;
+    let mut ai = AiBasic::new(seconds, depth);
 
     if display_game {
         clear_screen()?;
@@ -111,7 +112,10 @@ fn play_ai(display_game: bool, seconds: Duration, depth: u8) -> anyhow::Result<(
 
     loop {
         let generate_move = ai.generate_move(&mut game);
-        if generate_move.play.is_none() {
+
+        if let Some(play) = &generate_move.play {
+            game.play(play)?;
+        } else {
             return Err(anyhow::Error::msg("The game is already over."));
         }
 
@@ -132,7 +136,13 @@ fn play_ai(display_game: bool, seconds: Duration, depth: u8) -> anyhow::Result<(
     }
 }
 
-fn play_tcp(address: &str, display_game: bool, seconds: Duration, depth: u8) -> anyhow::Result<()> {
+fn play_tcp(
+    address: &str,
+    display_game: bool,
+    seconds: Duration,
+    depth: Option<u8>,
+) -> anyhow::Result<()> {
+    let depth = depth.unwrap_or(20);
     let mut game = Game::default();
     let mut ai: Box<dyn AI + 'static> = Box::new(AiMonteCarlo::new(&game, seconds, depth)?);
     let mut stream = TcpStream::connect(address)?;
