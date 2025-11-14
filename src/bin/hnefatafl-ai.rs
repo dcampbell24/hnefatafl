@@ -15,7 +15,7 @@ use hnefatafl_copenhagen::{
     role::Role,
     status::Status, utils,
 };
-use log::{debug, info};
+use log::{debug, info, trace};
 
 // Move 26, defender wins, corner escape, time per move 15s 2025-03-06 (hnefatafl-equi).
 
@@ -207,7 +207,7 @@ fn handle_messages(
     let mut game = Game::default();
     let mut ai = choose_ai(ai, &game)?;
 
-    info!("{game}\n");
+    debug!("{game}\n");
 
     let mut buf = String::new();
     loop {
@@ -226,12 +226,12 @@ fn handle_messages(
 
             tcp.write_all(format!("game {game_id} {play}\n").as_bytes())?;
 
-            info!("{game}");
+            debug!("{game}");
             info!(
                 "play: {play} score: {} delay milliseconds: {}",
                 generate_move.score, generate_move.delay_milliseconds
             );
-            debug!("{}", generate_move.heat_map);
+            trace!("{}", generate_move.heat_map);
 
             if game.status != Status::Ongoing {
                 return Ok(());
@@ -241,7 +241,7 @@ fn handle_messages(
             let play = Plae::try_from(words.to_vec())?;
             ai.play(&mut game, &play)?;
 
-            info!("{game}\n");
+            debug!("{game}\n");
 
             if game.status != Status::Ongoing {
                 return Ok(());
