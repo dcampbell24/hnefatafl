@@ -1,5 +1,6 @@
 use std::{
     borrow::Cow,
+    collections::{BinaryHeap, HashMap},
     fmt,
     hash::{DefaultHasher, Hash, Hasher},
     process::exit,
@@ -459,128 +460,57 @@ impl Game {
     }
 
     #[must_use]
-    fn get_from_to(&self, from: &Vertex, to: &Vertex) -> Option<f64> {
-        if from == to {
-            return Some(0.0);
-        }
+    pub fn moves_to_escape(&self) -> Option<u8> {
+        let start = self.board.find_the_king()?;
 
-        if from.x == to.x {
-            let mut game = self.clone();
-            game.turn = Role::Defender;
+        let mut priority_queue = BinaryHeap::new();
+        priority_queue.push((None, vec![start]));
 
-            if game
-                .play(&Plae::Play(Play {
-                    role: Role::Defender,
-                    from: *from,
-                    to: *to,
-                }))
-                .is_ok()
-            {
-                return Some(1.0);
+        let board_usize: usize = self.board.size().into();
+        let mut costs = vec![0; board_usize * board_usize];
+
+        let mut visited = HashMap::new();
+        visited.insert(start, (0, None));
+
+        while let Some((current_cost, current_nodes)) = priority_queue.pop() {
+            let neighbors = self.board.get_neighbors(&current_nodes, &visited);
+            let cost = costs[neighbors[0].y * board_usize + neighbors[0].x];
+            let total_cost = if let Some(current_cost) = current_cost {
+                current_cost + cost
+            } else {
+                cost
+            };
+
+            for neighbor in &neighbors {
+                if !visited.contains_key(neighbor) || total_cost < visited[neighbor].0 {
+                    let added_cost = costs[current_nodes[0].y * board_usize + current_nodes[0].x]
+                        .saturating_add(1);
+
+                    costs[neighbor.y * board_usize + neighbor.x] = added_cost;
+
+                    if self.board.exit_squares().contains(neighbor) {
+                        /* Debugging:
+                        for y in 0..board_usize {
+                            for x in 0..board_usize {
+                                print!("{:02} ", costs[y * board_usize + x])
+                            }
+                            println!();
+                        }
+                        */
+
+                        return Some(added_cost);
+                    }
+
+                    for current_node in &current_nodes {
+                        visited.insert(*neighbor, (total_cost, Some(*current_node)));
+                    }
+                }
             }
-            return None;
-        }
 
-        if from.y == to.y {
-            let mut game = self.clone();
-            game.turn = Role::Defender;
-
-            if game
-                .play(&Plae::Play(Play {
-                    role: Role::Defender,
-                    from: *from,
-                    to: *to,
-                }))
-                .is_ok()
-            {
-                return Some(1.0);
-            }
-            return None;
-        }
-
-        let to_1 = Vertex {
-            size: to.size,
-            x: to.x,
-            y: from.x,
-        };
-
-        let mut game = self.clone();
-        game.turn = Role::Defender;
-
-        if game
-            .play(&Plae::Play(Play {
-                role: Role::Defender,
-                from: *from,
-                to: to_1,
-            }))
-            .is_ok()
-        {
-            game.turn = Role::Defender;
-            if game
-                .play(&Plae::Play(Play {
-                    role: Role::Defender,
-                    from: to_1,
-                    to: *to,
-                }))
-                .is_ok()
-            {
-                return Some(2.0);
-            }
-        }
-
-        let to_2 = Vertex {
-            size: to.size,
-            x: from.x,
-            y: to.y,
-        };
-
-        let mut game = self.clone();
-        game.turn = Role::Defender;
-
-        if game
-            .play(&Plae::Play(Play {
-                role: Role::Defender,
-                from: *from,
-                to: to_2,
-            }))
-            .is_ok()
-        {
-            game.turn = Role::Defender;
-            if game
-                .play(&Plae::Play(Play {
-                    role: Role::Defender,
-                    from: to_2,
-                    to: *to,
-                }))
-                .is_ok()
-            {
-                return Some(2.0);
-            }
+            priority_queue.push((Some(total_cost), neighbors));
         }
 
         None
-    }
-
-    #[must_use]
-    fn moves_to_escape(&self) -> Option<f64> {
-        let king = self.board.find_the_king()?;
-
-        let mut moves_option = None;
-        let exit_squares = self.board.exit_squares();
-
-        for exit_square in exit_squares {
-            if let Some(moves_2) = self.get_from_to(&king, &exit_square) {
-                if let Some(moves_1) = moves_option {
-                    if moves_2 < moves_1 {
-                        moves_option = Some(moves_2);
-                    }
-                } else {
-                    moves_option = Some(moves_2);
-                }
-            }
-        }
-
-        moves_option
     }
 
     #[allow(clippy::missing_panics_doc)]
@@ -854,9 +784,10 @@ impl Game {
         utility += f64::from(captured.defender);
 
         if let Some(moves) = self.moves_to_escape() {
+            let moves: f64 = moves.into();
             utility += 100.0 * moves;
         } else {
-            utility += 500.0;
+            utility += 1_000.0;
         }
 
         utility
