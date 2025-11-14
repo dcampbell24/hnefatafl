@@ -9,12 +9,13 @@ use anyhow::Error;
 use clap::{CommandFactory, Parser, command};
 use hnefatafl_copenhagen::{
     COPYRIGHT, LONG_VERSION, VERSION_ID,
-    ai::{AI, AiBanal, AiMonteCarlo},
+    ai::{AI, AiBanal, AiBasic, AiMonteCarlo},
     game::Game,
     play::Plae,
     role::Role,
-    status::Status,
+    status::Status, utils,
 };
+use log::{debug, info};
 
 // Move 26, defender wins, corner escape, time per move 15s 2025-03-06 (hnefatafl-equi).
 
@@ -55,6 +56,7 @@ struct Args {
 
 fn main() -> anyhow::Result<()> {
     let args = Args::parse();
+    utils::init_logger(false);
 
     if args.man {
         let mut buffer: Vec<u8> = Vec::default();
@@ -106,7 +108,7 @@ fn main() -> anyhow::Result<()> {
         tcp_2.write_all(format!("join_game_pending {game_id_2}\n").as_bytes())?;
         let tcp_2_clone = tcp_2.try_clone()?;
         thread::spawn(move || {
-            handle_messages(ai_2.as_str(), &game_id_2, &mut reader_2, &mut tcp_2, true)
+            handle_messages(ai_2.as_str(), &game_id_2, &mut reader_2, &mut tcp_2)
         });
 
         let mut buffer = String::new();
@@ -118,13 +120,13 @@ fn main() -> anyhow::Result<()> {
             new_game(&mut tcp, args.role, &mut reader, &mut buf)?;
 
             let message: Vec<_> = buf.split_ascii_whitespace().collect();
-            println!("{message:?}");
+            info!("{message:?}");
             let game_id = message[3].to_string();
             buf.clear();
 
             wait_for_challenger(&mut reader, &mut buf, &mut tcp, &game_id)?;
 
-            handle_messages(args.ai.as_str(), &game_id, &mut reader, &mut tcp, true)?;
+            handle_messages(args.ai.as_str(), &game_id, &mut reader, &mut tcp)?;
         }
     }
 
@@ -140,7 +142,7 @@ fn accept_challenger(
 ) -> anyhow::Result<()> {
     wait_for_challenger(reader, buf, tcp, game_id)?;
 
-    handle_messages(ai, game_id, reader, tcp, false)?;
+    handle_messages(ai, game_id, reader, tcp)?;
     Ok(())
 }
 
@@ -183,7 +185,7 @@ fn wait_for_challenger(
 
         let message: Vec<_> = buf.split_ascii_whitespace().collect();
         if Some("challenge_requested") == message.get(1).copied() {
-            println!("{message:?}");
+            info!("{message:?}");
             buf.clear();
 
             break;
@@ -201,14 +203,11 @@ fn handle_messages(
     game_id: &str,
     reader: &mut BufReader<TcpStream>,
     tcp: &mut TcpStream,
-    io_on: bool,
 ) -> anyhow::Result<()> {
     let mut game = Game::default();
     let mut ai = choose_ai(ai, &game)?;
 
-    if io_on {
-        println!("{game}\n");
-    }
+    info!("{game}\n");
 
     let mut buf = String::new();
     loop {
@@ -223,17 +222,16 @@ fn handle_messages(
         if Some("generate_move") == message.get(2).copied() {
             let generate_move = ai.generate_move(&mut game);
             let play = generate_move.play.expect("the game must be in progress");
+            game.play(&play)?;
 
             tcp.write_all(format!("game {game_id} {play}\n").as_bytes())?;
 
-            if io_on {
-                println!("{game}");
-                println!(
-                    "play: {play} score: {} delay milliseconds: {}",
-                    generate_move.score, generate_move.delay_milliseconds
-                );
-                println!("{}", generate_move.heat_map);
-            }
+            info!("{game}");
+            info!(
+                "play: {play} score: {} delay milliseconds: {}",
+                generate_move.score, generate_move.delay_milliseconds
+            );
+            debug!("{}", generate_move.heat_map);
 
             if game.status != Status::Ongoing {
                 return Ok(());
@@ -243,9 +241,7 @@ fn handle_messages(
             let play = Plae::try_from(words.to_vec())?;
             ai.play(&mut game, &play)?;
 
-            if io_on {
-                println!("{game}\n");
-            }
+            info!("{game}\n");
 
             if game.status != Status::Ongoing {
                 return Ok(());
@@ -261,6 +257,10 @@ fn handle_messages(
 fn choose_ai(ai: &str, game: &Game) -> anyhow::Result<Box<dyn AI>> {
     match ai {
         "banal" => Ok(Box::new(AiBanal)),
+        "basic" => Ok(Box::new(AiBasic::new(
+            Duration::from_secs(10),
+            4
+        ))),
         "monte-carlo" => Ok(Box::new(AiMonteCarlo::new(
             game,
             Duration::from_secs(10),
