@@ -111,21 +111,22 @@ impl AI for AiBasic {
         }
 
         if let Some(play) = game.obvious_play() {
-            let t1 = Utc::now().timestamp_millis();
-            let delay_milliseconds = t1 - t0;
-
             let score = match game.turn {
                 Role::Attacker => f64::INFINITY,
                 Role::Defender => -f64::INFINITY,
                 Role::Roleless => unreachable!(),
             };
 
+            let heat_map = HeatMap::from((&*game, &play));
+            let t1 = Utc::now().timestamp_millis();
+            let delay_milliseconds = t1 - t0;
+
             return GenerateMove {
                 play: Some(play),
                 score,
                 delay_milliseconds,
                 loops: 0,
-                heat_map: HeatMap::default(),
+                heat_map,
             };
         }
 
@@ -136,6 +137,12 @@ impl AI for AiBasic {
             f64::INFINITY,
         );
 
+        let heat_map = if let Some(play) = &play {
+            HeatMap::from((&*game, play))
+        } else {
+            HeatMap::new(game.board.size())
+        };
+
         let t1 = Utc::now().timestamp_millis();
         let delay_milliseconds = t1 - t0;
 
@@ -144,7 +151,7 @@ impl AI for AiBasic {
             score,
             delay_milliseconds,
             loops: 0,
-            heat_map: HeatMap::new(game.board.size()),
+            heat_map,
         }
     }
 
