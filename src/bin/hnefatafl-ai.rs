@@ -13,7 +13,8 @@ use hnefatafl_copenhagen::{
     game::Game,
     play::Plae,
     role::Role,
-    status::Status, utils,
+    status::Status,
+    utils,
 };
 use log::{debug, info, trace};
 
@@ -257,10 +258,7 @@ fn handle_messages(
 fn choose_ai(ai: &str, game: &Game) -> anyhow::Result<Box<dyn AI>> {
     match ai {
         "banal" => Ok(Box::new(AiBanal)),
-        "basic" => Ok(Box::new(AiBasic::new(
-            Duration::from_secs(10),
-            4
-        ))),
+        "basic" => Ok(Box::new(AiBasic::new(Duration::from_secs(10), 4))),
         "monte-carlo" => Ok(Box::new(AiMonteCarlo::new(
             game,
             Duration::from_secs(10),
