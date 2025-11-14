@@ -2,6 +2,7 @@ use std::{cmp::Ordering, collections::HashMap, fmt};
 
 use crate::{
     board::BoardSize,
+    game::Game,
     game_tree::Node,
     play::{Plae, Vertex},
     role::Role,
@@ -194,6 +195,25 @@ impl HeatMap {
             board_size,
             spaces: HashMap::new(),
         }
+    }
+}
+
+impl From<(&Game, &Plae)> for HeatMap {
+    fn from(game_plae: (&Game, &Plae)) -> Self {
+        let (game, plae) = game_plae;
+        let board_size = game.board.size();
+        let mut heat_map = HeatMap::new(board_size);
+
+        if let Plae::Play(play) = plae {
+            let size: usize = board_size.into();
+            let board_index: usize = (&play.to).into();
+            let mut spaces = vec![Heat::default(); size * size];
+
+            spaces[board_index] = Heat::Ranked(0);
+            heat_map.spaces.insert((play.role, play.from), spaces);
+        }
+
+        heat_map
     }
 }
 
