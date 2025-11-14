@@ -1081,6 +1081,73 @@ impl Board {
     }
 
     #[must_use]
+    pub fn get_neighbors(&self, start: &Vertex) -> Vec<Vertex> {
+        let mut neighbors = Vec::new();
+        let size = self.size();
+        let board_usize = size.into();
+
+        for x in 1..start.x {
+            let index = start.x - x;
+            let vertex = Vertex {
+                size,
+                x: index,
+                y: start.y,
+            };
+
+            if self.get(&vertex) != Space::Empty {
+                break;
+            }
+
+            neighbors.push(vertex);
+        }
+
+        for x in (start.x + 1)..board_usize {
+            let vertex = Vertex {
+                size,
+                x,
+                y: start.y,
+            };
+
+            if self.get(&vertex) != Space::Empty {
+                break;
+            }
+
+            neighbors.push(vertex);
+        }
+
+        for y in 1..start.y {
+            let index = start.y - y;
+            let vertex = Vertex {
+                size,
+                x: start.x,
+                y: index,
+            };
+
+            if self.get(&vertex) != Space::Empty {
+                break;
+            }
+
+            neighbors.push(vertex);
+        }
+
+        for y in (start.y + 1)..board_usize {
+            let vertex = Vertex {
+                size,
+                x: start.x,
+                y,
+            };
+
+            if self.get(&vertex) != Space::Empty {
+                break;
+            }
+
+            neighbors.push(vertex);
+        }
+
+        neighbors
+    }
+
+    #[must_use]
     pub fn size(&self) -> BoardSize {
         let len = self.spaces.len();
 
