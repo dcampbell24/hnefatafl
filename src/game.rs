@@ -474,7 +474,13 @@ impl Game {
 
         while let Some((current_cost, current_nodes)) = priority_queue.pop() {
             let neighbors = self.board.get_neighbors(&current_nodes, &visited);
-            let cost = costs[neighbors[0].y * board_usize + neighbors[0].x];
+
+            let cost = if let Some(neighbor) = neighbors.first() {
+                costs[neighbor.y * board_usize + neighbor.x]
+            } else {
+                continue;
+            };
+
             let total_cost = if let Some(current_cost) = current_cost {
                 current_cost + cost
             } else {
