@@ -2846,7 +2846,8 @@ fn estimate_score() -> impl Stream<Item = Message> {
                     let mut ai = AiMonteCarlo::new(&game, seconds, args.depth)
                         .expect("you should be able to create an AI");
 
-                    let generate_move = ai.generate_move(&mut game);
+                    // Fixme: don't allow heat map when the game is over.
+                    let generate_move = ai.generate_move(&mut game).expect("the game is ongoing");
 
                     if let Err(error) = executor::block_on(
                         sender.send(Message::EstimateScoreDisplay((tree.here(), generate_move))),

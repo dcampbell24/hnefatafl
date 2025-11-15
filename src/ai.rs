@@ -5,7 +5,7 @@ use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
 use rustc_hash::FxHashMap;
 
 use crate::{
-    board::BoardSize,
+    board::{BoardSize, InvalidMove},
     game::Game,
     game_tree::{Node, Tree},
     heat_map::HeatMap,
@@ -15,14 +15,17 @@ use crate::{
 };
 
 pub trait AI {
-    fn generate_move(&mut self, game: &mut Game) -> GenerateMove;
+    /// # Errors
+    ///
+    /// When the game is already over.
+    fn generate_move(&mut self, game: &mut Game) -> anyhow::Result<GenerateMove>;
     #[allow(clippy::missing_errors_doc)]
     fn play(&mut self, game: &mut Game, play: &Plae) -> anyhow::Result<()>;
 }
 
 #[derive(Clone, Debug)]
 pub struct GenerateMove {
-    pub play: Option<Plae>,
+    pub play: Plae,
     pub score: f64,
     pub delay_milliseconds: i64,
     pub loops: u64,
@@ -31,15 +34,11 @@ pub struct GenerateMove {
 
 impl fmt::Display for GenerateMove {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if let Some(play) = &self.play {
-            writeln!(
-                f,
-                "{play}, score: {}, delay milliseconds: {}, loops: {}",
-                self.score, self.delay_milliseconds, self.loops
-            )
-        } else {
-            Ok(())
-        }
+        writeln!(
+            f,
+            "{}, score: {}, delay milliseconds: {}, loops: {}",
+            self.play, self.score, self.delay_milliseconds, self.loops
+        )
     }
 }
 
@@ -47,29 +46,21 @@ impl fmt::Display for GenerateMove {
 pub struct AiBanal;
 
 impl AI for AiBanal {
-    fn generate_move(&mut self, game: &mut Game) -> GenerateMove {
-        let mut generate_move = GenerateMove {
-            play: None,
-            score: 0.0,
-            delay_milliseconds: 0,
-            loops: 0,
-            heat_map: HeatMap::default(),
-        };
-
+    fn generate_move(&mut self, game: &mut Game) -> anyhow::Result<GenerateMove> {
         if game.status != Status::Ongoing {
-            return generate_move;
+            return Err(InvalidMove::GameOver.into());
         }
 
         let play = game.all_legal_plays()[0].clone();
-        match game.play(&play) {
-            Ok(_captures) => {}
-            Err(_) => {
-                return generate_move;
-            }
-        }
+        game.play(&play)?;
 
-        generate_move.play = Some(play);
-        generate_move
+        Ok(GenerateMove {
+            play,
+            score: 0.0,
+            delay_milliseconds: 0,
+            loops: 0,
+            heat_map: HeatMap::new(game.board.size()),
+        })
     }
 
     fn play(&mut self, game: &mut Game, play: &Plae) -> anyhow::Result<()> {
@@ -94,20 +85,11 @@ impl AiBasic {
 }
 
 impl AI for AiBasic {
-    fn generate_move(&mut self, game: &mut Game) -> GenerateMove {
+    fn generate_move(&mut self, game: &mut Game) -> anyhow::Result<GenerateMove> {
         let t0 = Utc::now().timestamp_millis();
 
         if game.status != Status::Ongoing {
-            let t1 = Utc::now().timestamp_millis();
-            let delay_milliseconds = t1 - t0;
-
-            return GenerateMove {
-                play: None,
-                score: 0.0,
-                delay_milliseconds,
-                loops: 0,
-                heat_map: HeatMap::default(),
-            };
+            return Err(InvalidMove::GameOver.into());
         }
 
         if let Some(play) = game.obvious_play() {
@@ -121,13 +103,13 @@ impl AI for AiBasic {
             let t1 = Utc::now().timestamp_millis();
             let delay_milliseconds = t1 - t0;
 
-            return GenerateMove {
-                play: Some(play),
+            return Ok(GenerateMove {
+                play,
                 score,
                 delay_milliseconds,
                 loops: 0,
                 heat_map,
-            };
+            });
         }
 
         let (play, score) = game.alpha_beta(
@@ -136,23 +118,20 @@ impl AI for AiBasic {
             -f64::INFINITY,
             f64::INFINITY,
         );
+        game.play(&play)?;
 
-        let heat_map = if let Some(play) = &play {
-            HeatMap::from((&*game, play))
-        } else {
-            HeatMap::new(game.board.size())
-        };
+        let heat_map = HeatMap::from((&*game, &play));
 
         let t1 = Utc::now().timestamp_millis();
         let delay_milliseconds = t1 - t0;
 
-        GenerateMove {
+        Ok(GenerateMove {
             play,
             score,
             delay_milliseconds,
             loops: 0,
             heat_map,
-        }
+        })
     }
 
     fn play(&mut self, game: &mut Game, play: &Plae) -> anyhow::Result<()> {
@@ -183,17 +162,9 @@ impl Default for AiMonteCarlo {
 }
 
 impl AI for AiMonteCarlo {
-    fn generate_move(&mut self, game: &mut Game) -> GenerateMove {
-        let generate_move = GenerateMove {
-            play: None,
-            score: 0.0,
-            delay_milliseconds: 0,
-            loops: 0,
-            heat_map: HeatMap::default(),
-        };
-
+    fn generate_move(&mut self, game: &mut Game) -> anyhow::Result<GenerateMove> {
         if game.status != Status::Ongoing {
-            return generate_move;
+            return Err(InvalidMove::GameOver.into());
         }
 
         let t0 = Utc::now().timestamp_millis();
@@ -249,12 +220,7 @@ impl AI for AiMonteCarlo {
         };
 
         let play = node.play.as_ref().unwrap();
-        match game.play(play) {
-            Ok(_captures) => {}
-            Err(_) => {
-                return generate_move;
-            }
-        }
+        game.play(play)?;
 
         let here_tree = Tree::from(game.clone());
         for tree in &mut self.trees {
@@ -265,13 +231,13 @@ impl AI for AiMonteCarlo {
         let delay_milliseconds = t1 - t0;
         let heat_map = HeatMap::from(&nodes);
 
-        GenerateMove {
-            play: node.play.clone(),
+        Ok(GenerateMove {
+            play: node.play.clone().expect("there should be a play"),
             score: node.score,
             delay_milliseconds,
             loops: loops_total,
             heat_map,
-        }
+        })
     }
 
     fn play(&mut self, game: &mut Game, play: &Plae) -> anyhow::Result<()> {
