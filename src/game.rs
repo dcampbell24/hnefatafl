@@ -470,13 +470,11 @@ impl Game {
         priority_queue.push((None, vec![start]));
 
         let mut escape_vec = EscapeVec::new(self.board.size());
-
         let mut visited = HashMap::new();
         visited.insert(start, (0, None));
 
         while let Some((current_cost, current_nodes)) = priority_queue.pop() {
             let neighbors = self.board.get_neighbors(&current_nodes, &visited);
-
             let cost = if let Some(neighbor) = neighbors.first() {
                 escape_vec.get(neighbor)
             } else {
