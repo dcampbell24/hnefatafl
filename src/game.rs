@@ -469,8 +469,7 @@ impl Game {
         let mut priority_queue = BinaryHeap::new();
         priority_queue.push((None, vec![start]));
 
-        let board_usize: usize = self.board.size().into();
-        let mut costs = vec![0; board_usize * board_usize];
+        let mut escape_vec = EscapeVec::new(self.board.size());
 
         let mut visited = HashMap::new();
         visited.insert(start, (0, None));
@@ -479,7 +478,7 @@ impl Game {
             let neighbors = self.board.get_neighbors(&current_nodes, &visited);
 
             let cost = if let Some(neighbor) = neighbors.first() {
-                costs[neighbor.y * board_usize + neighbor.x]
+                escape_vec.get(neighbor)
             } else {
                 continue;
             };
@@ -492,10 +491,9 @@ impl Game {
 
             for neighbor in &neighbors {
                 if !visited.contains_key(neighbor) || total_cost < visited[neighbor].0 {
-                    let added_cost = costs[current_nodes[0].y * board_usize + current_nodes[0].x]
-                        .saturating_add(1);
+                    let added_cost = escape_vec.get(&current_nodes[0]).saturating_add(1);
 
-                    costs[neighbor.y * board_usize + neighbor.x] = added_cost;
+                    escape_vec.set(neighbor, added_cost);
 
                     for current_node in &current_nodes {
                         visited.insert(*neighbor, (total_cost, Some(*current_node)));
@@ -506,19 +504,9 @@ impl Game {
             priority_queue.push((Some(total_cost), neighbors));
         }
 
-        /*
-        // Debugging:
-        for y in 0..board_usize {
-            for x in 0..board_usize {
-                print!("{:02} ", costs[y * board_usize + x])
-            }
-            println!();
-        }
-        */
-
         let mut utility = 0;
         for vertex in self.board.exit_squares() {
-            let moves = costs[vertex.y * board_usize + vertex.x];
+            let moves = escape_vec.get(&vertex);
 
             utility += match moves {
                 0 => 10,
@@ -803,6 +791,43 @@ impl Game {
         };
 
         utility
+    }
+}
+
+#[derive(Clone, Debug)]
+struct EscapeVec {
+    spaces: Vec<u8>,
+}
+
+impl EscapeVec {
+    fn new(board_size: BoardSize) -> Self {
+        let size: usize = board_size.into();
+
+        EscapeVec {
+            spaces: vec![0; size * size],
+        }
+    }
+
+    fn get(&self, vertex: &Vertex) -> u8 {
+        self.spaces[vertex.y * usize::from(vertex.size) + vertex.x]
+    }
+
+    fn set(&mut self, vertex: &Vertex, moves: u8) {
+        self.spaces[vertex.y * usize::from(vertex.size) + vertex.x] = moves;
+    }
+}
+
+impl fmt::Display for EscapeVec {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let board_size = if self.spaces.len() == 11 * 11 { 11 } else { 13 };
+
+        for y in 0..board_size {
+            for x in 0..board_size {
+                let moves = self.spaces[y * board_size + x];
+                write!(f, "{moves:02} ")?;
+            }
+        }
+        writeln!(f)
     }
 }
 
