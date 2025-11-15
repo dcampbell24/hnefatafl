@@ -481,7 +481,9 @@ impl Game {
                 continue;
             };
 
-            let total_cost = if let Some(current_cost) = current_cost {
+            let cost = cost.unwrap_or_default();
+
+            let total_cost = if let Some(Some(current_cost)) = current_cost {
                 current_cost + cost
             } else {
                 cost
@@ -489,7 +491,8 @@ impl Game {
 
             for neighbor in &neighbors {
                 if !visited.contains_key(neighbor) || total_cost < visited[neighbor].0 {
-                    let added_cost = escape_vec.get(&current_nodes[0]).saturating_add(1);
+                    let escape_vec_cost = escape_vec.get(&current_nodes[0]).unwrap_or_default();
+                    let added_cost = escape_vec_cost + 1;
 
                     escape_vec.set(neighbor, added_cost);
                     if self.board.exit_squares().contains(neighbor) {
@@ -502,7 +505,7 @@ impl Game {
                 }
             }
 
-            priority_queue.push((Some(total_cost), neighbors));
+            priority_queue.push((Some(Some(total_cost)), neighbors));
         }
 
         MovesToEscape::CanNotEscape
@@ -786,7 +789,7 @@ impl Game {
 
 #[derive(Clone, Debug)]
 struct EscapeVec {
-    spaces: Vec<u8>,
+    spaces: Vec<Option<u8>>,
 }
 
 impl EscapeVec {
@@ -794,16 +797,16 @@ impl EscapeVec {
         let size: usize = board_size.into();
 
         EscapeVec {
-            spaces: vec![0; size * size],
+            spaces: vec![None; size * size],
         }
     }
 
-    fn get(&self, vertex: &Vertex) -> u8 {
+    fn get(&self, vertex: &Vertex) -> Option<u8> {
         self.spaces[vertex.y * usize::from(vertex.size) + vertex.x]
     }
 
     fn set(&mut self, vertex: &Vertex, moves: u8) {
-        self.spaces[vertex.y * usize::from(vertex.size) + vertex.x] = moves;
+        self.spaces[vertex.y * usize::from(vertex.size) + vertex.x] = Some(moves);
     }
 }
 
@@ -814,7 +817,11 @@ impl fmt::Display for EscapeVec {
         for y in 0..board_size {
             for x in 0..board_size {
                 let moves = self.spaces[y * board_size + x];
-                write!(f, "{moves:02} ")?;
+                if let Some(moves) = moves {
+                    write!(f, "{moves:02} ")?;
+                } else {
+                    write!(f, "-- ")?;
+                }
             }
         }
         writeln!(f)
