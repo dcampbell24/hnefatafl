@@ -487,6 +487,8 @@ impl Game {
         priority_queue.push((None, vec![start]));
 
         let mut escape_vec = EscapeVec::new(self.board.size());
+        escape_vec.set(&start, 0);
+
         let mut visited = HashMap::new();
         visited.insert(start, (0, None));
 
