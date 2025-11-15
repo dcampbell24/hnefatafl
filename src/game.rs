@@ -492,6 +492,9 @@ impl Game {
                     let added_cost = escape_vec.get(&current_nodes[0]).saturating_add(1);
 
                     escape_vec.set(neighbor, added_cost);
+                    if self.board.exit_squares().contains(neighbor) {
+                        return MovesToEscape::Utility(added_cost);
+                    }
 
                     for current_node in &current_nodes {
                         visited.insert(*neighbor, (total_cost, Some(*current_node)));
@@ -502,18 +505,7 @@ impl Game {
             priority_queue.push((Some(total_cost), neighbors));
         }
 
-        let mut utility = 0;
-        for vertex in self.board.exit_squares() {
-            let moves = escape_vec.get(&vertex);
-
-            utility += match moves {
-                0 => 10,
-                1 => return MovesToEscape::One,
-                moves => moves,
-            }
-        }
-
-        MovesToEscape::Utility(utility)
+        MovesToEscape::CanNotEscape
     }
 
     #[allow(clippy::missing_panics_doc)]
@@ -783,8 +775,8 @@ impl Game {
         utility += f64::from(captured.defender);
 
         utility += match self.moves_to_escape() {
+            MovesToEscape::CanNotEscape => 1_000.0,
             MovesToEscape::GameOver => 0.0,
-            MovesToEscape::One => -10_000.0,
             MovesToEscape::Utility(utility) => f64::from(utility) * 100.0,
         };
 
@@ -831,8 +823,8 @@ impl fmt::Display for EscapeVec {
 
 #[derive(Clone, Debug)]
 pub enum MovesToEscape {
+    CanNotEscape,
     GameOver,
-    One,
     Utility(u8),
 }
 

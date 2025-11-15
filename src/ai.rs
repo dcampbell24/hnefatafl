@@ -93,6 +93,7 @@ impl AI for AiBasic {
         }
 
         if let Some(play) = game.obvious_play() {
+            game.play(&play)?;
             let score = match game.turn {
                 Role::Attacker => f64::INFINITY,
                 Role::Defender => -f64::INFINITY,
