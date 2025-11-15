@@ -626,6 +626,7 @@ impl<'a> Client {
         game_display
     }
 
+    // Fixme: get the real status when exploring the game tree.
     #[allow(clippy::too_many_lines)]
     fn display_game(&self) -> Element<'_, Message> {
         let mut attacker_rating = String::new();
@@ -854,7 +855,7 @@ impl<'a> Client {
 
             let mut heat_map_text = button(text(self.strings["Heat Map"].as_str()));
 
-            if !self.estimate_score {
+            if !self.estimate_score && *status == Status::Ongoing {
                 heat_map_text = heat_map_text.on_press(Message::EstimateScore);
             }
 
@@ -2846,7 +2847,6 @@ fn estimate_score() -> impl Stream<Item = Message> {
                     let mut ai = AiMonteCarlo::new(&game, seconds, args.depth)
                         .expect("you should be able to create an AI");
 
-                    // Fixme: don't allow heat map when the game is over.
                     let generate_move = ai.generate_move(&mut game).expect("the game is ongoing");
 
                     if let Err(error) = executor::block_on(

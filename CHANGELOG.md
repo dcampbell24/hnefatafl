@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Don't allow the Heat Map when the game is over.
 - Fix HeatMap sorting.
 - hnefatafl-server-full: only do one write when writing archived games.
 
