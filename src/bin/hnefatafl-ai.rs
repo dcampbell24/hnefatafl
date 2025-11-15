@@ -8,7 +8,7 @@ use std::{
 use anyhow::Error;
 use clap::{CommandFactory, Parser, command};
 use hnefatafl_copenhagen::{
-    COPYRIGHT, LONG_VERSION, VERSION_ID,
+    AI_BASIC_DEPTH, COPYRIGHT, LONG_VERSION, VERSION_ID,
     ai::{AI, AiBanal, AiBasic, AiMonteCarlo},
     game::Game,
     play::Plae,
@@ -221,16 +221,14 @@ fn handle_messages(
         let message: Vec<_> = buf.split_ascii_whitespace().collect();
 
         if Some("generate_move") == message.get(2).copied() {
-            let generate_move = ai.generate_move(&mut game);
-            let play = generate_move.play.expect("the game must be in progress");
-            game.play(&play)?;
+            let generate_move = ai.generate_move(&mut game)?;
 
-            tcp.write_all(format!("game {game_id} {play}\n").as_bytes())?;
+            tcp.write_all(format!("game {game_id} {}\n", generate_move.play).as_bytes())?;
 
             debug!("{game}");
             info!(
-                "play: {play} score: {} delay milliseconds: {}",
-                generate_move.score, generate_move.delay_milliseconds
+                "play: {} score: {} delay milliseconds: {}",
+                generate_move.play, generate_move.score, generate_move.delay_milliseconds
             );
             trace!("{}", generate_move.heat_map);
 
@@ -258,7 +256,10 @@ fn handle_messages(
 fn choose_ai(ai: &str, game: &Game) -> anyhow::Result<Box<dyn AI>> {
     match ai {
         "banal" => Ok(Box::new(AiBanal)),
-        "basic" => Ok(Box::new(AiBasic::new(Duration::from_secs(10), 4))),
+        "basic" => Ok(Box::new(AiBasic::new(
+            Duration::from_secs(10),
+            AI_BASIC_DEPTH,
+        ))),
         "monte-carlo" => Ok(Box::new(AiMonteCarlo::new(
             game,
             Duration::from_secs(10),

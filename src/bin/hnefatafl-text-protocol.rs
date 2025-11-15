@@ -8,7 +8,7 @@ use clap::command;
 use clap::{self, Parser};
 
 use hnefatafl_copenhagen::{
-    SERVER_PORT,
+    AI_BASIC_DEPTH, SERVER_PORT,
     ai::{AI, AiBasic, AiMonteCarlo},
     game::Game,
     play::Plae,
@@ -100,9 +100,10 @@ fn play(display_game: bool) -> anyhow::Result<()> {
 }
 
 fn play_ai(display_game: bool, seconds: Duration, depth: Option<u8>) -> anyhow::Result<()> {
-    let depth = depth.unwrap_or(4);
     let mut buffer = String::new();
     let mut game = Game::default();
+
+    let depth = depth.unwrap_or(AI_BASIC_DEPTH);
     let mut ai = AiBasic::new(seconds, depth);
 
     if display_game {
@@ -111,13 +112,7 @@ fn play_ai(display_game: bool, seconds: Duration, depth: Option<u8>) -> anyhow::
     }
 
     loop {
-        let generate_move = ai.generate_move(&mut game);
-
-        if let Some(play) = &generate_move.play {
-            game.play(play)?;
-        } else {
-            return Err(anyhow::Error::msg("The game is already over."));
-        }
+        let generate_move = ai.generate_move(&mut game)?;
 
         if display_game {
             clear_screen()?;
@@ -167,12 +162,8 @@ fn play_tcp(
                     }
                 }
                 "generate_move" => {
-                    let generate_move = ai.generate_move(&mut game);
-                    if let Some(play) = &generate_move.play {
-                        write_command(&format!("{play}\n"), &mut stream)?;
-                    } else {
-                        return Err(anyhow::Error::msg("The game is already over."));
-                    }
+                    let generate_move = ai.generate_move(&mut game)?;
+                    write_command(&format!("{}\n", generate_move.play), &mut stream)?;
 
                     if display_game {
                         println!("{game}");

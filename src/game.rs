@@ -16,7 +16,7 @@ use wasm_bindgen::prelude::wasm_bindgen;
 
 use crate::{
     ai::{AI, AiMonteCarlo},
-    board::{Board, BoardSize},
+    board::{Board, BoardSize, InvalidMove},
     message::{COMMANDS, Message},
     play::{Captures, Plae, Play, PlayRecordTimed, Plays, Vertex},
     role::Role,
@@ -152,10 +152,11 @@ impl Game {
         depth: u8,
         mut alpha: f64,
         mut beta: f64,
-    ) -> (Option<Plae>, f64) {
+    ) -> (Plae, f64) {
         if depth == 0 || self.status != Status::Ongoing {
             return (
-                self.play_n(self.plays.len() - original_depth),
+                self.play_n(self.plays.len() - original_depth)
+                    .expect("there should be a play"),
                 self.utility(),
             );
         }
@@ -171,7 +172,7 @@ impl Game {
 
                 if value_2 > value {
                     value = value_2;
-                    play_option = plae;
+                    play_option = Some(plae);
                 }
 
                 if value >= beta {
@@ -180,7 +181,7 @@ impl Game {
                 alpha = f64::max(alpha, value);
             }
 
-            (play_option, value)
+            (play_option.unwrap_or(Plae::DefenderResigns), value)
         } else {
             let mut value = f64::INFINITY;
             for plae in self.all_legal_plays() {
@@ -190,7 +191,7 @@ impl Game {
 
                 if value_2 < value {
                     value = value_2;
-                    play_option = plae;
+                    play_option = Some(plae);
                 }
 
                 if value <= alpha {
@@ -199,7 +200,7 @@ impl Game {
                 beta = f64::min(beta, value);
             }
 
-            (play_option, value)
+            (play_option.unwrap_or(Plae::AttackerResigns), value)
         }
     }
 
@@ -460,8 +461,10 @@ impl Game {
     }
 
     #[must_use]
-    pub fn moves_to_escape(&self) -> Option<u8> {
-        let start = self.board.find_the_king()?;
+    pub fn moves_to_escape(&self) -> MovesToEscape {
+        let Some(start) = self.board.find_the_king() else {
+            return MovesToEscape::GameOver;
+        };
 
         let mut priority_queue = BinaryHeap::new();
         priority_queue.push((None, vec![start]));
@@ -494,19 +497,6 @@ impl Game {
 
                     costs[neighbor.y * board_usize + neighbor.x] = added_cost;
 
-                    if self.board.exit_squares().contains(neighbor) {
-                        /* Debugging:
-                        for y in 0..board_usize {
-                            for x in 0..board_usize {
-                                print!("{:02} ", costs[y * board_usize + x])
-                            }
-                            println!();
-                        }
-                        */
-
-                        return Some(added_cost);
-                    }
-
                     for current_node in &current_nodes {
                         visited.insert(*neighbor, (total_cost, Some(*current_node)));
                     }
@@ -516,7 +506,28 @@ impl Game {
             priority_queue.push((Some(total_cost), neighbors));
         }
 
-        None
+        /*
+        // Debugging:
+        for y in 0..board_usize {
+            for x in 0..board_usize {
+                print!("{:02} ", costs[y * board_usize + x])
+            }
+            println!();
+        }
+        */
+
+        let mut utility = 0;
+        for vertex in self.board.exit_squares() {
+            let moves = costs[vertex.y * board_usize + vertex.x];
+
+            utility += match moves {
+                0 => 10,
+                1 => return MovesToEscape::One,
+                moves => moves,
+            }
+        }
+
+        MovesToEscape::Utility(utility)
     }
 
     #[allow(clippy::missing_panics_doc)]
@@ -677,7 +688,7 @@ impl Game {
                 }
             }
         } else {
-            Err(anyhow::Error::msg("play: the game is already over"))
+            Err(InvalidMove::GameOver.into())
         }
     }
 
@@ -708,12 +719,8 @@ impl Game {
             Message::FinalStatus => Ok(Some(format!("{}", self.status))),
             Message::GenerateMove => {
                 let mut ai = AiMonteCarlo::new(self, Duration::from_secs(10), 20)?;
-                let generate_move = ai.generate_move(self);
-                if generate_move.play.is_some() {
-                    Ok(Some(generate_move.to_string()))
-                } else {
-                    Err(anyhow::Error::msg("failed to generate move"))
-                }
+                let generate_move = ai.generate_move(self)?;
+                Ok(Some(generate_move.to_string()))
             }
             Message::KnownCommand(command) => {
                 if COMMANDS.contains(&command.as_str()) {
@@ -789,15 +796,21 @@ impl Game {
         utility -= f64::from(captured.attacker);
         utility += f64::from(captured.defender);
 
-        if let Some(moves) = self.moves_to_escape() {
-            let moves: f64 = moves.into();
-            utility += 100.0 * moves;
-        } else {
-            utility += 1_000.0;
-        }
+        utility += match self.moves_to_escape() {
+            MovesToEscape::GameOver => 0.0,
+            MovesToEscape::One => -10_000.0,
+            MovesToEscape::Utility(utility) => f64::from(utility) * 100.0,
+        };
 
         utility
     }
+}
+
+#[derive(Clone, Debug)]
+pub enum MovesToEscape {
+    GameOver,
+    One,
+    Utility(u8),
 }
 
 impl From<&Tree> for Game {

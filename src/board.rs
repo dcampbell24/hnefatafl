@@ -1192,7 +1192,7 @@ impl Board {
         let size = self.size();
 
         if *status != Status::Ongoing {
-            return Err(InvalidMove::Ongoing);
+            return Err(InvalidMove::GameOver);
         }
 
         let space_from = self.get(&play.from);
@@ -1499,12 +1499,12 @@ enum Direction {
 
 #[derive(Error, Debug)]
 pub enum InvalidMove {
+    #[error("play: the game is already over")]
+    GameOver,
     #[error("play: you have to play through empty locations")]
     Empty,
     #[error("play: you have to change location")]
     Location,
-    #[error("play: the game has to be ongoing to play")]
-    Ongoing,
     #[error("play: you already reached that position")]
     RepeatMove,
     #[error("play: only the king may move to a restricted square")]
