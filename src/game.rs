@@ -835,7 +835,19 @@ impl fmt::Display for EscapeVec {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let board_size = if self.spaces.len() == 11 * 11 { 11 } else { 13 };
 
+        match board_size {
+            11 => writeln!(f, "   A  B  C  D  E  F  G  H  I  J  K")?,
+            13 => writeln!(f, "   A  B  C  D  E  F  G  H  I  J  K  L  M")?,
+            _ => unreachable!(),
+        }
+
         for y in 0..board_size {
+            match board_size {
+                11 => write!(f, "{:02} ", 11 - y)?,
+                13 => write!(f, "{:02} ", 13 - y)?,
+                _ => unreachable!(),
+            }
+
             for x in 0..board_size {
                 let moves = self.spaces[y * board_size + x];
                 if let Some(moves) = moves {
