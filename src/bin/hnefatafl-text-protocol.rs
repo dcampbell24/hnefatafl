@@ -117,8 +117,6 @@ fn play_ai(display_game: bool, seconds: Duration, depth: Option<u8>) -> anyhow::
         if display_game {
             clear_screen()?;
             println!("{game}\n");
-        } else {
-            println!("{}", generate_move.heat_map);
         }
 
         println!("= {generate_move}");

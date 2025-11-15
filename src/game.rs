@@ -152,12 +152,15 @@ impl Game {
         depth: u8,
         mut alpha: f64,
         mut beta: f64,
-    ) -> (Plae, f64) {
+    ) -> (Plae, f64, EscapeVec) {
         if depth == 0 || self.status != Status::Ongoing {
+            let (utility, escape_vec) = self.utility();
+
             return (
                 self.play_n(self.plays.len() - original_depth)
                     .expect("there should be a play"),
-                self.utility(),
+                utility,
+                escape_vec,
             );
         }
 
@@ -165,14 +168,17 @@ impl Game {
 
         if self.turn == Role::Attacker {
             let mut value = -f64::INFINITY;
+            let mut escape_vec = EscapeVec::new(self.board.size());
             for plae in self.all_legal_plays() {
                 let mut child = self.clone();
                 child.play(&plae).expect("this play should be valid");
-                let (plae, value_2) = child.alpha_beta(original_depth, depth - 1, alpha, beta);
+                let (plae, value_2, escape_vec_2) =
+                    child.alpha_beta(original_depth, depth - 1, alpha, beta);
 
                 if value_2 > value {
                     value = value_2;
                     play_option = Some(plae);
+                    escape_vec = escape_vec_2;
                 }
 
                 if value >= beta {
@@ -181,17 +187,24 @@ impl Game {
                 alpha = f64::max(alpha, value);
             }
 
-            (play_option.unwrap_or(Plae::DefenderResigns), value)
+            (
+                play_option.unwrap_or(Plae::DefenderResigns),
+                value,
+                escape_vec,
+            )
         } else {
             let mut value = f64::INFINITY;
+            let mut escape_vec = EscapeVec::new(self.board.size());
             for plae in self.all_legal_plays() {
                 let mut child = self.clone();
                 child.play(&plae).expect("this play should be valid");
-                let (plae, value_2) = child.alpha_beta(original_depth, depth - 1, alpha, beta);
+                let (plae, value_2, escape_vec_2) =
+                    child.alpha_beta(original_depth, depth - 1, alpha, beta);
 
                 if value_2 < value {
                     value = value_2;
                     play_option = Some(plae);
+                    escape_vec = escape_vec_2;
                 }
 
                 if value <= alpha {
@@ -200,7 +213,11 @@ impl Game {
                 beta = f64::min(beta, value);
             }
 
-            (play_option.unwrap_or(Plae::AttackerResigns), value)
+            (
+                play_option.unwrap_or(Plae::AttackerResigns),
+                value,
+                escape_vec,
+            )
         }
     }
 
@@ -461,9 +478,9 @@ impl Game {
     }
 
     #[must_use]
-    pub fn moves_to_escape(&self) -> MovesToEscape {
+    pub fn moves_to_escape(&self) -> (MovesToEscape, EscapeVec) {
         let Some(start) = self.board.find_the_king() else {
-            return MovesToEscape::GameOver;
+            return (MovesToEscape::GameOver, EscapeVec::new(self.board.size()));
         };
 
         let mut priority_queue = BinaryHeap::new();
@@ -496,7 +513,7 @@ impl Game {
 
                     escape_vec.set(neighbor, added_cost);
                     if self.board.exit_squares().contains(neighbor) {
-                        return MovesToEscape::Utility(added_cost);
+                        return (MovesToEscape::Utility(added_cost), escape_vec);
                     }
 
                     for current_node in &current_nodes {
@@ -508,7 +525,7 @@ impl Game {
             priority_queue.push((Some(Some(total_cost)), neighbors));
         }
 
-        MovesToEscape::CanNotEscape
+        (MovesToEscape::CanNotEscape, escape_vec)
     }
 
     #[allow(clippy::missing_panics_doc)]
@@ -770,25 +787,27 @@ impl Game {
     }
 
     #[must_use]
-    pub fn utility(&self) -> f64 {
+    pub fn utility(&self) -> (f64, EscapeVec) {
         let mut utility = 0.0;
 
         let captured = self.board.captured();
         utility -= f64::from(captured.attacker);
         utility += f64::from(captured.defender);
 
-        utility += match self.moves_to_escape() {
+        let (moves_to_escape, escape_vec) = self.moves_to_escape();
+
+        utility += match moves_to_escape {
             MovesToEscape::CanNotEscape => 1_000.0,
             MovesToEscape::GameOver => 0.0,
             MovesToEscape::Utility(utility) => f64::from(utility) * 100.0,
         };
 
-        utility
+        (utility, escape_vec)
     }
 }
 
 #[derive(Clone, Debug)]
-struct EscapeVec {
+pub struct EscapeVec {
     spaces: Vec<Option<u8>>,
 }
 
@@ -823,6 +842,7 @@ impl fmt::Display for EscapeVec {
                     write!(f, "-- ")?;
                 }
             }
+            writeln!(f)?;
         }
         writeln!(f)
     }
