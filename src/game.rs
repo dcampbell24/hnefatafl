@@ -475,12 +475,12 @@ impl Game {
 
         while let Some((current_cost, current_nodes)) = priority_queue.pop() {
             let neighbors = self.board.get_neighbors(&current_nodes, &visited);
+
             let cost = if let Some(neighbor) = neighbors.first() {
                 escape_vec.get(neighbor)
             } else {
                 continue;
             };
-
             let cost = cost.unwrap_or_default();
 
             let total_cost = if let Some(Some(current_cost)) = current_cost {
