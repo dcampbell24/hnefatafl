@@ -113,12 +113,16 @@ impl AI for AiBasic {
             });
         }
 
-        let (play, score) = game.alpha_beta(
+        let (play, score, _escape_vec) = game.alpha_beta(
             self.depth as usize,
             self.depth,
             -f64::INFINITY,
             f64::INFINITY,
         );
+
+        // Debugging:
+        // println!("{escape_vec}");
+
         game.play(&play)?;
 
         let heat_map = HeatMap::from((&*game, &play));
