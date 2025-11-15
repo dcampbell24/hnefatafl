@@ -93,7 +93,7 @@ Copyright (c) 2025 David Lawrence Campbell
 Licensed under the MIT license or the Apache-2.0 license"
 );
 
-pub const AI_BASIC_DEPTH: u8 = 3;
+pub const AI_BASIC_DEPTH: u8 = 4;
 
 pub fn handle_error<T, E: fmt::Display>(result: Result<T, E>) -> T {
     match result {
