@@ -5,7 +5,7 @@ use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
 use rustc_hash::FxHashMap;
 
 use crate::{
-    board::{BoardSize, InvalidMove},
+    board::InvalidMove,
     game::Game,
     game_tree::{Node, Tree},
     heat_map::HeatMap,
@@ -20,7 +20,10 @@ pub trait AI {
     /// When the game is already over.
     fn generate_move(&mut self, game: &mut Game) -> anyhow::Result<GenerateMove>;
     #[allow(clippy::missing_errors_doc)]
-    fn play(&mut self, game: &mut Game, play: &Plae) -> anyhow::Result<()>;
+    fn play(&mut self, game: &mut Game, play: &Plae) -> anyhow::Result<()> {
+        game.play(play)?;
+        Ok(())
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -61,11 +64,6 @@ impl AI for AiBanal {
             loops: 0,
             heat_map: HeatMap::new(game.board.size()),
         })
-    }
-
-    fn play(&mut self, game: &mut Game, play: &Plae) -> anyhow::Result<()> {
-        game.play(play)?;
-        Ok(())
     }
 }
 
@@ -113,7 +111,7 @@ impl AI for AiBasic {
             });
         }
 
-        let (play, score, _escape_vec) = game.alpha_beta(
+        let (play, score, escape_vec) = game.alpha_beta(
             self.depth as usize,
             self.depth,
             -f64::INFINITY,
@@ -121,7 +119,9 @@ impl AI for AiBasic {
         );
 
         // Debugging:
-        // println!("{escape_vec}");
+        if let Some(escape_vec) = escape_vec {
+            println!("{escape_vec}");
+        }
 
         game.play(&play)?;
 
@@ -138,28 +138,17 @@ impl AI for AiBasic {
             heat_map,
         })
     }
-
-    fn play(&mut self, game: &mut Game, play: &Plae) -> anyhow::Result<()> {
-        game.play(play)?;
-        Ok(())
-    }
 }
 
 #[derive(Clone, Debug)]
 pub struct AiMonteCarlo {
-    pub size: BoardSize,
-    pub trees: Vec<Tree>,
     duration: Duration,
     depth: u8,
 }
 
 impl Default for AiMonteCarlo {
     fn default() -> Self {
-        let game = Game::default();
-
         Self {
-            size: game.board.size(),
-            trees: Self::make_trees(&game).unwrap(),
             duration: Duration::from_secs(1),
             depth: 80,
         }
@@ -173,19 +162,17 @@ impl AI for AiMonteCarlo {
         }
 
         let t0 = Utc::now().timestamp_millis();
-
-        for tree in &mut self.trees {
-            *tree = Tree::from(game.clone());
-        }
-
+        let mut trees = AiMonteCarlo::make_trees(game)?;
         let (tx, rx) = channel();
-        self.trees.par_iter_mut().for_each_with(tx, |tx, tree| {
+
+        trees.par_iter_mut().for_each_with(tx, |tx, tree| {
             let nodes = tree.monte_carlo_tree_search(self.duration, self.depth);
             tx.send(nodes).unwrap();
         });
 
         let mut loops_total = 0;
         let mut nodes_master = FxHashMap::default();
+
         while let Ok((loops, nodes)) = rx.recv() {
             loops_total += loops;
             for mut node in nodes {
@@ -228,7 +215,7 @@ impl AI for AiMonteCarlo {
         game.play(play)?;
 
         let here_tree = Tree::from(game.clone());
-        for tree in &mut self.trees {
+        for tree in &mut trees {
             *tree = here_tree.clone();
         }
 
@@ -244,16 +231,6 @@ impl AI for AiMonteCarlo {
             heat_map,
         })
     }
-
-    fn play(&mut self, game: &mut Game, play: &Plae) -> anyhow::Result<()> {
-        game.play(play)?;
-        let tree_game = Tree::from(game.clone());
-        for tree in &mut self.trees {
-            *tree = tree_game.clone();
-        }
-
-        Ok(())
-    }
 }
 
 impl AiMonteCarlo {
@@ -268,13 +245,8 @@ impl AiMonteCarlo {
         Ok(trees)
     }
 
-    #[allow(clippy::missing_errors_doc)]
-    pub fn new(game: &Game, duration: Duration, depth: u8) -> anyhow::Result<Self> {
-        Ok(Self {
-            size: game.board.size(),
-            trees: Self::make_trees(game)?,
-            duration,
-            depth,
-        })
+    #[must_use]
+    pub fn new(duration: Duration, depth: u8) -> Self {
+        Self { duration, depth }
     }
 }

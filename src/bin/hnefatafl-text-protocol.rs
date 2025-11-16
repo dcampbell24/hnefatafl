@@ -137,7 +137,7 @@ fn play_tcp(
 ) -> anyhow::Result<()> {
     let depth = depth.unwrap_or(20);
     let mut game = Game::default();
-    let mut ai: Box<dyn AI + 'static> = Box::new(AiMonteCarlo::new(&game, seconds, depth)?);
+    let mut ai: Box<dyn AI> = Box::new(AiMonteCarlo::new(seconds, depth));
     let mut stream = TcpStream::connect(address)?;
     println!("connected to {address} ...");
 

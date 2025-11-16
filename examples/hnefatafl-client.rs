@@ -21,6 +21,7 @@ use std::{
 use chrono::{Local, Utc};
 use clap::{CommandFactory, Parser, command};
 use futures::{SinkExt, executor};
+use hnefatafl_copenhagen::ai::AiBasic;
 use hnefatafl_copenhagen::{
     COPYRIGHT, Id, LONG_VERSION, SERVER_PORT, VERSION_ID,
     accounts::Email,
@@ -83,11 +84,15 @@ struct Args {
     #[arg(default_value = "hnefatafl.org", long)]
     host: String,
 
-    /// How many seconds to run Monte Carlo loops
+    /// What AI to use for Heat Map
+    #[arg(default_value = "monte-carlo", long)]
+    ai: String,
+
+    /// How many seconds to run AI loops for
     #[arg(default_value_t = 10, long)]
     seconds: u64,
 
-    /// How deep in the game tree to go with Monte Carlo
+    /// How deep in the game tree to go with the AI
     #[arg(default_value_t = 20, long)]
     depth: u8,
 
@@ -2840,13 +2845,19 @@ fn estimate_score() -> impl Stream<Item = Message> {
             }
 
             thread::spawn(move || {
+                let seconds = Duration::from_secs(args.seconds);
+                let mut ai: Box<dyn AI> = match args.ai.as_str() {
+                    "monte-carlo" => Box::new(AiMonteCarlo::new(seconds, args.depth)),
+                    "basic" => Box::new(AiBasic::new(seconds, args.depth)),
+                    _ => {
+                        error!("you must pass either monte-carlo or basic to --ai");
+                        exit(1);
+                    }
+                };
+
                 loop {
                     let tree = handle_error(rx.recv());
                     let mut game = Game::from(&tree);
-                    let seconds = Duration::from_secs(args.seconds);
-                    let mut ai = AiMonteCarlo::new(&game, seconds, args.depth)
-                        .expect("you should be able to create an AI");
-
                     let generate_move = ai.generate_move(&mut game).expect("the game is ongoing");
 
                     if let Err(error) = executor::block_on(
