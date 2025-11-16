@@ -289,8 +289,8 @@ impl fmt::Display for HeatMap {
 
             for y in 0..board_size {
                 match self.board_size {
-                    BoardSize::_11 => write!(f, "{:02} ", 11 - y)?,
-                    BoardSize::_13 => write!(f, "{:02} ", 13 - y)?,
+                    BoardSize::_11 => write!(f, "{:2} ", 11 - y)?,
+                    BoardSize::_13 => write!(f, "{:2} ", 13 - y)?,
                 }
 
                 for x in 0..board_size {

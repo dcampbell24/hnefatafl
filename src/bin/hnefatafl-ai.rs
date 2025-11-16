@@ -206,7 +206,7 @@ fn handle_messages(
     tcp: &mut TcpStream,
 ) -> anyhow::Result<()> {
     let mut game = Game::default();
-    let mut ai = choose_ai(ai, &game)?;
+    let mut ai = choose_ai(ai)?;
 
     debug!("{game}\n");
 
@@ -253,18 +253,14 @@ fn handle_messages(
     }
 }
 
-fn choose_ai(ai: &str, game: &Game) -> anyhow::Result<Box<dyn AI>> {
+fn choose_ai(ai: &str) -> anyhow::Result<Box<dyn AI>> {
     match ai {
         "banal" => Ok(Box::new(AiBanal)),
         "basic" => Ok(Box::new(AiBasic::new(
             Duration::from_secs(10),
             AI_BASIC_DEPTH,
         ))),
-        "monte-carlo" => Ok(Box::new(AiMonteCarlo::new(
-            game,
-            Duration::from_secs(10),
-            20,
-        )?)),
+        "monte-carlo" => Ok(Box::new(AiMonteCarlo::new(Duration::from_secs(10), 20))),
         _ => Err(anyhow::Error::msg("you didn't choose a valid AI")),
     }
 }

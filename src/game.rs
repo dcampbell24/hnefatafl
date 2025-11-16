@@ -152,15 +152,37 @@ impl Game {
         depth: u8,
         mut alpha: f64,
         mut beta: f64,
-    ) -> (Plae, f64, EscapeVec) {
-        if depth == 0 || self.status != Status::Ongoing {
+    ) -> (Plae, f64, Option<EscapeVec>) {
+        // Fixme!
+        match self.status {
+            Status::AttackerWins => {
+                return (
+                    self.play_n(self.plays.len() - (original_depth + usize::from(depth)))
+                        .expect("there should be a play"),
+                    f64::INFINITY,
+                    None,
+                );
+            }
+            Status::DefenderWins => {
+                return (
+                    self.play_n(self.plays.len() - (original_depth + usize::from(depth)))
+                        .expect("there should be a play"),
+                    -f64::INFINITY,
+                    None,
+                );
+            }
+            Status::Draw => unreachable!(),
+            Status::Ongoing => {}
+        }
+
+        if depth == 0 {
             let (utility, escape_vec) = self.utility();
 
             return (
                 self.play_n(self.plays.len() - original_depth)
                     .expect("there should be a play"),
                 utility,
-                escape_vec,
+                Some(escape_vec),
             );
         }
 
@@ -168,7 +190,7 @@ impl Game {
 
         if self.turn == Role::Attacker {
             let mut value = -f64::INFINITY;
-            let mut escape_vec = EscapeVec::new(self.board.size());
+            let mut escape_vec = None;
             for plae in self.all_legal_plays() {
                 let mut child = self.clone();
                 child.play(&plae).expect("this play should be valid");
@@ -194,7 +216,7 @@ impl Game {
             )
         } else {
             let mut value = f64::INFINITY;
-            let mut escape_vec = EscapeVec::new(self.board.size());
+            let mut escape_vec = None;
             for plae in self.all_legal_plays() {
                 let mut child = self.clone();
                 child.play(&plae).expect("this play should be valid");
@@ -718,7 +740,7 @@ impl Game {
             Message::Empty => Ok(None),
             Message::FinalStatus => Ok(Some(format!("{}", self.status))),
             Message::GenerateMove => {
-                let mut ai = AiMonteCarlo::new(self, Duration::from_secs(10), 20)?;
+                let mut ai = AiMonteCarlo::new(Duration::from_secs(10), 20);
                 let generate_move = ai.generate_move(self)?;
                 Ok(Some(generate_move.to_string()))
             }
@@ -843,8 +865,8 @@ impl fmt::Display for EscapeVec {
 
         for y in 0..board_size {
             match board_size {
-                11 => write!(f, "{:02} ", 11 - y)?,
-                13 => write!(f, "{:02} ", 13 - y)?,
+                11 => write!(f, "{:2} ", 11 - y)?,
+                13 => write!(f, "{:2} ", 13 - y)?,
                 _ => unreachable!(),
             }
 
