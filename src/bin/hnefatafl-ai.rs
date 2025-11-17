@@ -7,7 +7,8 @@ use std::{
 use anyhow::Error;
 use clap::{CommandFactory, Parser, command};
 use hnefatafl_copenhagen::{
-    COPYRIGHT, LONG_VERSION, VERSION_ID,
+    COPYRIGHT, LONG_VERSION, MONTE_CARLO_DEPTH, MONTE_CARLO_SECONDS, VERSION_ID,
+    ai::AI,
     game::Game,
     play::Plae,
     role::Role,
@@ -85,6 +86,7 @@ fn main() -> anyhow::Result<()> {
     buf.clear();
 
     if let Some(ai_2) = args.challenger {
+        let ai_2 = choose_ai(&ai_2, Some(MONTE_CARLO_SECONDS), Some(MONTE_CARLO_DEPTH))?;
         new_game(&mut tcp, args.role, &mut reader, &mut buf)?;
 
         let message: Vec<_> = buf.split_ascii_whitespace().collect();
@@ -92,9 +94,10 @@ fn main() -> anyhow::Result<()> {
         buf.clear();
 
         let game_id_2 = game_id.clone();
-        let ai = args.ai;
         let tcp_clone = tcp.try_clone()?;
-        thread::spawn(move || accept_challenger(&ai, &mut reader, &mut buf, &mut tcp, &game_id));
+
+        let ai = choose_ai(&args.ai, Some(MONTE_CARLO_SECONDS), Some(MONTE_CARLO_DEPTH))?;
+        thread::spawn(move || accept_challenger(ai, &mut reader, &mut buf, &mut tcp, &game_id));
 
         let mut buf_2 = String::new();
         let mut tcp_2 = TcpStream::connect(address)?;
@@ -106,9 +109,7 @@ fn main() -> anyhow::Result<()> {
 
         tcp_2.write_all(format!("join_game_pending {game_id_2}\n").as_bytes())?;
         let tcp_2_clone = tcp_2.try_clone()?;
-        thread::spawn(move || {
-            handle_messages(ai_2.as_str(), &game_id_2, &mut reader_2, &mut tcp_2)
-        });
+        thread::spawn(move || handle_messages(ai_2, &game_id_2, &mut reader_2, &mut tcp_2));
 
         let mut buffer = String::new();
         io::stdin().read_line(&mut buffer)?;
@@ -125,7 +126,8 @@ fn main() -> anyhow::Result<()> {
 
             wait_for_challenger(&mut reader, &mut buf, &mut tcp, &game_id)?;
 
-            handle_messages(args.ai.as_str(), &game_id, &mut reader, &mut tcp)?;
+            let ai = choose_ai(&args.ai, Some(MONTE_CARLO_SECONDS), Some(MONTE_CARLO_DEPTH))?;
+            handle_messages(ai, &game_id, &mut reader, &mut tcp)?;
         }
     }
 
@@ -133,7 +135,7 @@ fn main() -> anyhow::Result<()> {
 }
 
 fn accept_challenger(
-    ai: &str,
+    ai: Box<dyn AI>,
     reader: &mut BufReader<TcpStream>,
     buf: &mut String,
     tcp: &mut TcpStream,
@@ -198,13 +200,12 @@ fn wait_for_challenger(
 }
 
 fn handle_messages(
-    ai: &str,
+    mut ai: Box<dyn AI>,
     game_id: &str,
     reader: &mut BufReader<TcpStream>,
     tcp: &mut TcpStream,
 ) -> anyhow::Result<()> {
     let mut game = Game::default();
-    let mut ai = choose_ai(ai)?;
 
     debug!("{game}\n");
 

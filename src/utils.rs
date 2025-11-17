@@ -7,22 +7,34 @@ use env_logger::Builder;
 use log::LevelFilter;
 
 use crate::{
-    AI_BASIC_DEPTH,
+    MONTE_CARLO_DEPTH, MONTE_CARLO_SECONDS,
     ai::{AI, AiBanal, AiBasic, AiMonteCarlo},
 };
 
 /// # Errors
 ///
 /// If you don't choose banal, basic, or monte-carlo.
-pub fn choose_ai(ai: &str) -> anyhow::Result<Box<dyn AI>> {
+pub fn choose_ai(ai: &str, seconds: Option<u64>, depth: Option<u8>) -> anyhow::Result<Box<dyn AI>> {
     match ai {
         "banal" => Ok(Box::new(AiBanal)),
-        "basic" => Ok(Box::new(AiBasic::new(
-            Duration::from_secs(10),
-            AI_BASIC_DEPTH,
-        ))),
-        "monte-carlo" => Ok(Box::new(AiMonteCarlo::new(Duration::from_secs(10), 20))),
-        _ => Err(anyhow::Error::msg("you didn't choose a valid AI")),
+        "basic" => {
+            let seconds = seconds.unwrap_or(10);
+            let depth = depth.unwrap_or(4);
+
+            Ok(Box::new(AiBasic::new(Duration::from_secs(seconds), depth)))
+        }
+        "monte-carlo" => {
+            let seconds = seconds.unwrap_or(MONTE_CARLO_SECONDS);
+            let depth = depth.unwrap_or(MONTE_CARLO_DEPTH);
+
+            Ok(Box::new(AiMonteCarlo::new(
+                Duration::from_secs(seconds),
+                depth,
+            )))
+        }
+        _ => Err(anyhow::Error::msg(
+            "you must pass banal, basic, or monte-carlo to --ai",
+        )),
     }
 }
 

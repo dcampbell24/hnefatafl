@@ -14,7 +14,7 @@ use crate::{
     status::Status,
 };
 
-pub trait AI {
+pub trait AI: Send {
     /// # Errors
     ///
     /// When the game is already over.
