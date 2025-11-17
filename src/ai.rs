@@ -76,17 +76,13 @@ impl AI for AiBanal {
 }
 
 pub struct AiBasic {
-    _duration: Duration,
     depth: u8,
 }
 
 impl AiBasic {
     #[must_use]
-    pub fn new(duration: Duration, depth: u8) -> Self {
-        Self {
-            _duration: duration,
-            depth,
-        }
+    pub fn new(depth: u8) -> Self {
+        Self { depth }
     }
 }
 

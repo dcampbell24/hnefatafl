@@ -31,7 +31,7 @@ struct Args {
     #[arg(long)]
     display_game: bool,
 
-    /// How many seconds to run the AI loops for
+    /// How many seconds to run the monte-carlo AI
     #[arg(long)]
     seconds: Option<u64>,
 
