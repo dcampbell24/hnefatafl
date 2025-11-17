@@ -27,14 +27,16 @@ const PORT: &str = ":49152";
 #[derive(Parser, Debug)]
 #[command(long_version = LONG_VERSION, about = "Copenhagen Hnefatafl AI")]
 struct Args {
+    /// Choose your username
     #[arg(long)]
     username: String,
 
-    #[arg(long)]
+    /// Pass a password
+    #[arg(default_value = "", long)]
     password: String,
 
-    /// attacker or defender
-    #[arg(long)]
+    /// Set the role as attacker or defender
+    #[arg(default_value_t = Role::Attacker, long)]
     role: Role,
 
     /// Connect to the HTP server at host
