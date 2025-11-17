@@ -1,10 +1,30 @@
 #[cfg(any(target_family = "unix", target_family = "windows"))]
 use std::process::Command;
-use std::{env, io::Write, path::PathBuf, process::ExitStatus};
+use std::{env, io::Write, path::PathBuf, process::ExitStatus, time::Duration};
 
 use chrono::Utc;
 use env_logger::Builder;
 use log::LevelFilter;
+
+use crate::{
+    AI_BASIC_DEPTH,
+    ai::{AI, AiBanal, AiBasic, AiMonteCarlo},
+};
+
+/// # Errors
+///
+/// If you don't choose banal, basic, or monte-carlo.
+pub fn choose_ai(ai: &str) -> anyhow::Result<Box<dyn AI>> {
+    match ai {
+        "banal" => Ok(Box::new(AiBanal)),
+        "basic" => Ok(Box::new(AiBasic::new(
+            Duration::from_secs(10),
+            AI_BASIC_DEPTH,
+        ))),
+        "monte-carlo" => Ok(Box::new(AiMonteCarlo::new(Duration::from_secs(10), 20))),
+        _ => Err(anyhow::Error::msg("you didn't choose a valid AI")),
+    }
+}
 
 #[allow(clippy::missing_errors_doc)]
 pub fn clear_screen() -> anyhow::Result<ExitStatus> {

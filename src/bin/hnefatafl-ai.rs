@@ -2,19 +2,17 @@ use std::{
     io::{self, BufRead, BufReader, Write},
     net::TcpStream,
     thread,
-    time::Duration,
 };
 
 use anyhow::Error;
 use clap::{CommandFactory, Parser, command};
 use hnefatafl_copenhagen::{
-    AI_BASIC_DEPTH, COPYRIGHT, LONG_VERSION, VERSION_ID,
-    ai::{AI, AiBanal, AiBasic, AiMonteCarlo},
+    COPYRIGHT, LONG_VERSION, VERSION_ID,
     game::Game,
     play::Plae,
     role::Role,
     status::Status,
-    utils,
+    utils::{self, choose_ai},
 };
 use log::{debug, info, trace};
 
@@ -247,17 +245,5 @@ fn handle_messages(
         }
 
         buf.clear();
-    }
-}
-
-fn choose_ai(ai: &str) -> anyhow::Result<Box<dyn AI>> {
-    match ai {
-        "banal" => Ok(Box::new(AiBanal)),
-        "basic" => Ok(Box::new(AiBasic::new(
-            Duration::from_secs(10),
-            AI_BASIC_DEPTH,
-        ))),
-        "monte-carlo" => Ok(Box::new(AiMonteCarlo::new(Duration::from_secs(10), 20))),
-        _ => Err(anyhow::Error::msg("you didn't choose a valid AI")),
     }
 }

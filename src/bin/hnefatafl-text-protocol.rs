@@ -1,20 +1,19 @@
 use std::{
     io::{self, BufReader},
     net::TcpStream,
-    time::Duration,
 };
 
 use clap::command;
 use clap::{self, Parser};
 
 use hnefatafl_copenhagen::{
-    AI_BASIC_DEPTH, SERVER_PORT,
-    ai::{AI, AiBasic, AiMonteCarlo},
+    SERVER_PORT,
+    ai::AI,
     game::Game,
     play::Plae,
     read_response,
     status::Status,
-    utils::clear_screen,
+    utils::{choose_ai, clear_screen},
     write_command,
 };
 
@@ -24,9 +23,9 @@ use hnefatafl_copenhagen::{
 #[derive(Parser, Debug)]
 #[command(version, about)]
 struct Args {
-    /// Play the game with AI
+    /// Choose an AI to play as
     #[arg(long)]
-    ai: bool,
+    ai: Option<String>,
 
     /// Displays the game
     #[arg(long)]
@@ -47,13 +46,20 @@ struct Args {
 
 fn main() -> anyhow::Result<()> {
     let args = Args::parse();
-    let seconds = Duration::from_secs(args.seconds);
 
     if let Some(mut address) = args.tcp {
         address.push_str(SERVER_PORT);
-        play_tcp(&address, args.display_game, seconds, args.depth)?;
-    } else if args.ai {
-        play_ai(args.display_game, seconds, args.depth)?;
+
+        let ai = match args.ai {
+            Some(ai) => choose_ai(&ai)?,
+            None => choose_ai("monte-carlo")?,
+        };
+
+        play_tcp(ai, &address, args.display_game)?;
+    } else if let Some(ai) = args.ai {
+        let ai = choose_ai(&ai)?;
+
+        play_ai(ai, args.display_game)?;
     } else {
         play(args.display_game)?;
     }
@@ -99,12 +105,9 @@ fn play(display_game: bool) -> anyhow::Result<()> {
     }
 }
 
-fn play_ai(display_game: bool, seconds: Duration, depth: Option<u8>) -> anyhow::Result<()> {
+fn play_ai(mut ai: Box<dyn AI>, display_game: bool) -> anyhow::Result<()> {
     let mut buffer = String::new();
     let mut game = Game::default();
-
-    let depth = depth.unwrap_or(AI_BASIC_DEPTH);
-    let mut ai = AiBasic::new(seconds, depth);
 
     if display_game {
         clear_screen()?;
@@ -129,15 +132,8 @@ fn play_ai(display_game: bool, seconds: Duration, depth: Option<u8>) -> anyhow::
     }
 }
 
-fn play_tcp(
-    address: &str,
-    display_game: bool,
-    seconds: Duration,
-    depth: Option<u8>,
-) -> anyhow::Result<()> {
-    let depth = depth.unwrap_or(20);
+fn play_tcp(mut ai: Box<dyn AI>, address: &str, display_game: bool) -> anyhow::Result<()> {
     let mut game = Game::default();
-    let mut ai: Box<dyn AI> = Box::new(AiMonteCarlo::new(seconds, depth));
     let mut stream = TcpStream::connect(address)?;
     println!("connected to {address} ...");
 
