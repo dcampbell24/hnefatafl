@@ -148,6 +148,7 @@ assets = [
     ["hnefatafl-ai.1.gz", "usr/share/man/man1/", "644"],
     ["hnefatafl-client.1.gz", "usr/share/man/man1/", "644"],
     ["hnefatafl-server-full.1.gz", "usr/share/man/man1/", "644"],
+    ["hnefatafl-text-protocol.1.gz", "usr/share/man/man1/", "644"],
     ["icons/king_16x16.png", "usr/share/icons/hicolor/16x16/apps/org.hnefatafl.hnefatafl_client.png", "644"],
     ["icons/king_22x22.png", "usr/share/icons/hicolor/22x22/apps/org.hnefatafl.hnefatafl_client.png", "644"],
     ["icons/king_24x24.png", "usr/share/icons/hicolor/24x24/apps/org.hnefatafl.hnefatafl_client.png", "644"],
@@ -163,6 +164,7 @@ assets = [
     ["target/release/examples/hnefatafl-client", "usr/games/", "755"],
     ["target/release/hnefatafl-ai", "usr/games/", "755"],
     ["target/release/hnefatafl-server-full", "usr/games/", "755"],
+    ["target/release/hnefatafl-text-protocol", "usr/games/", "755"],
 ]
 changelog = "packages/changelog"
 section = "games"
