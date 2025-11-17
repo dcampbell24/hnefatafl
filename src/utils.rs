@@ -7,7 +7,6 @@ use env_logger::Builder;
 use log::LevelFilter;
 
 use crate::{
-    MONTE_CARLO_DEPTH, MONTE_CARLO_SECONDS,
     ai::{AI, AiBanal, AiBasic, AiMonteCarlo},
 };
 
@@ -23,8 +22,8 @@ pub fn choose_ai(ai: &str, seconds: Option<u64>, depth: Option<u8>) -> anyhow::R
             Ok(Box::new(AiBasic::new(depth)))
         }
         "monte-carlo" => {
-            let seconds = seconds.unwrap_or(MONTE_CARLO_SECONDS);
-            let depth = depth.unwrap_or(MONTE_CARLO_DEPTH);
+            let seconds = seconds.unwrap_or(10);
+            let depth = depth.unwrap_or(20);
 
             Ok(Box::new(AiMonteCarlo::new(
                 Duration::from_secs(seconds),

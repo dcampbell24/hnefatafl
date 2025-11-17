@@ -93,9 +93,6 @@ Copyright (c) 2025 David Lawrence Campbell
 Licensed under the MIT license or the Apache-2.0 license"
 );
 
-pub const MONTE_CARLO_SECONDS: u64 = 10;
-pub const MONTE_CARLO_DEPTH: u8 = 20;
-
 pub fn handle_error<T, E: fmt::Display>(result: Result<T, E>) -> T {
     match result {
         Ok(value) => value,
