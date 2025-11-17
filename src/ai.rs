@@ -91,6 +91,8 @@ impl AI for AiBasic {
         }
 
         if let Some(play) = game.obvious_play() {
+            println!("1 turn: {} play: {play}", game.turn);
+
             game.play(&play)?;
             let score = match game.turn {
                 Role::Attacker => f64::INFINITY,
@@ -114,6 +116,7 @@ impl AI for AiBasic {
         let (play, score, escape_vec) = game.alpha_beta(
             self.depth as usize,
             self.depth,
+            None,
             -f64::INFINITY,
             f64::INFINITY,
         );
@@ -123,6 +126,16 @@ impl AI for AiBasic {
             println!("{escape_vec}");
         }
 
+        let play = match play {
+            Some(play) => play,
+            None => match &game.turn {
+                Role::Attacker => Plae::AttackerResigns,
+                Role::Defender => Plae::DefenderResigns,
+                Role::Roleless => unreachable!(),
+            },
+        };
+
+        println!("2 turn: {} play: {play}", game.turn);
         game.play(&play)?;
 
         let heat_map = HeatMap::from((&*game, &play));
