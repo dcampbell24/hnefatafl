@@ -18,10 +18,9 @@ pub fn choose_ai(ai: &str, seconds: Option<u64>, depth: Option<u8>) -> anyhow::R
     match ai {
         "banal" => Ok(Box::new(AiBanal)),
         "basic" => {
-            let seconds = seconds.unwrap_or(10);
             let depth = depth.unwrap_or(4);
 
-            Ok(Box::new(AiBasic::new(Duration::from_secs(seconds), depth)))
+            Ok(Box::new(AiBasic::new(depth)))
         }
         "monte-carlo" => {
             let seconds = seconds.unwrap_or(MONTE_CARLO_SECONDS);

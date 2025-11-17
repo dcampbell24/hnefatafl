@@ -83,7 +83,7 @@ struct Args {
     #[arg(default_value = "monte-carlo", long)]
     ai: String,
 
-    /// How many seconds to run AI loops for
+    /// How many seconds to run the monte-carlo AI
     #[arg(long)]
     seconds: Option<u64>,
 
