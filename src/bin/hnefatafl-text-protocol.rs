@@ -31,9 +31,9 @@ struct Args {
     #[arg(long)]
     display_game: bool,
 
-    /// How many seconds to run Monte Carlo loops
-    #[arg(default_value_t = 10, long)]
-    seconds: u64,
+    /// How many seconds to run the AI loops for
+    #[arg(long)]
+    seconds: Option<u64>,
 
     /// How deep in the game tree to go with Ai
     #[arg(long)]
@@ -51,13 +51,13 @@ fn main() -> anyhow::Result<()> {
         address.push_str(SERVER_PORT);
 
         let ai = match args.ai {
-            Some(ai) => choose_ai(&ai)?,
-            None => choose_ai("monte-carlo")?,
+            Some(ai) => choose_ai(&ai, args.seconds, args.depth)?,
+            None => choose_ai("monte-carlo", args.seconds, args.depth)?,
         };
 
         play_tcp(ai, &address, args.display_game)?;
     } else if let Some(ai) = args.ai {
-        let ai = choose_ai(&ai)?;
+        let ai = choose_ai(&ai, args.seconds, args.depth)?;
 
         play_ai(ai, args.display_game)?;
     } else {
