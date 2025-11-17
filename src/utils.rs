@@ -6,9 +6,7 @@ use chrono::Utc;
 use env_logger::Builder;
 use log::LevelFilter;
 
-use crate::{
-    ai::{AI, AiBanal, AiBasic, AiMonteCarlo},
-};
+use crate::ai::{AI, AiBanal, AiBasic, AiMonteCarlo};
 
 /// # Errors
 ///
