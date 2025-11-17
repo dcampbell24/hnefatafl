@@ -150,23 +150,21 @@ impl Game {
         &self,
         original_depth: usize,
         depth: u8,
+        mut play_option: Option<Plae>,
         mut alpha: f64,
         mut beta: f64,
-    ) -> (Plae, f64, Option<EscapeVec>) {
-        // Fixme!
+    ) -> (Option<Plae>, f64, Option<EscapeVec>) {
         match self.status {
             Status::AttackerWins => {
                 return (
-                    self.play_n(self.plays.len() - (original_depth + usize::from(depth)))
-                        .expect("there should be a play"),
+                    self.play_n(self.plays.len() - original_depth + usize::from(depth) - 1),
                     f64::INFINITY,
                     None,
                 );
             }
             Status::DefenderWins => {
                 return (
-                    self.play_n(self.plays.len() - (original_depth + usize::from(depth)))
-                        .expect("there should be a play"),
+                    self.play_n(self.plays.len() - original_depth - 1),
                     -f64::INFINITY,
                     None,
                 );
@@ -179,14 +177,11 @@ impl Game {
             let (utility, escape_vec) = self.utility();
 
             return (
-                self.play_n(self.plays.len() - original_depth)
-                    .expect("there should be a play"),
+                self.play_n(self.plays.len() - original_depth),
                 utility,
                 Some(escape_vec),
             );
         }
-
-        let mut play_option = None;
 
         if self.turn == Role::Attacker {
             let mut value = -f64::INFINITY;
@@ -194,52 +189,54 @@ impl Game {
             for plae in self.all_legal_plays() {
                 let mut child = self.clone();
                 child.play(&plae).expect("this play should be valid");
-                let (plae, value_2, escape_vec_2) =
-                    child.alpha_beta(original_depth, depth - 1, alpha, beta);
+                let (play_option_2, value_2, escape_vec_2) =
+                    child.alpha_beta(original_depth, depth - 1, Some(plae.clone()), alpha, beta);
 
                 if value_2 > value {
                     value = value_2;
-                    play_option = Some(plae);
-                    escape_vec = escape_vec_2;
+                    play_option.clone_from(&play_option_2);
+                    escape_vec.clone_from(&escape_vec_2);
                 }
 
                 if value >= beta {
                     break;
                 }
-                alpha = f64::max(alpha, value);
+
+                if value > alpha {
+                    alpha = value;
+                    play_option = play_option_2;
+                    escape_vec = escape_vec_2;
+                }
             }
 
-            (
-                play_option.unwrap_or(Plae::DefenderResigns),
-                value,
-                escape_vec,
-            )
+            (play_option, value, escape_vec)
         } else {
             let mut value = f64::INFINITY;
             let mut escape_vec = None;
             for plae in self.all_legal_plays() {
                 let mut child = self.clone();
                 child.play(&plae).expect("this play should be valid");
-                let (plae, value_2, escape_vec_2) =
-                    child.alpha_beta(original_depth, depth - 1, alpha, beta);
+                let (play_option_2, value_2, escape_vec_2) =
+                    child.alpha_beta(original_depth, depth - 1, Some(plae.clone()), alpha, beta);
 
                 if value_2 < value {
                     value = value_2;
-                    play_option = Some(plae);
-                    escape_vec = escape_vec_2;
+                    play_option.clone_from(&play_option_2);
+                    escape_vec.clone_from(&escape_vec_2);
                 }
 
                 if value <= alpha {
                     break;
                 }
-                beta = f64::min(beta, value);
+
+                if value < beta {
+                    beta = value;
+                    play_option = play_option_2;
+                    escape_vec = escape_vec_2;
+                }
             }
 
-            (
-                play_option.unwrap_or(Plae::AttackerResigns),
-                value,
-                escape_vec,
-            )
+            (play_option, value, escape_vec)
         }
     }
 
