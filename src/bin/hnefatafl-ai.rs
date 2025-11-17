@@ -226,10 +226,7 @@ fn handle_messages(
             tcp.write_all(format!("game {game_id} {}\n", generate_move.play).as_bytes())?;
 
             debug!("{game}");
-            info!(
-                "play: {} score: {} delay milliseconds: {}",
-                generate_move.play, generate_move.score, generate_move.delay_milliseconds
-            );
+            info!("{generate_move}");
             trace!("{}", generate_move.heat_map);
 
             if game.status != Status::Ongoing {
