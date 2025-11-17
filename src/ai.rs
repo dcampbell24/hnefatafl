@@ -6,7 +6,7 @@ use rustc_hash::FxHashMap;
 
 use crate::{
     board::InvalidMove,
-    game::Game,
+    game::{EscapeVec, Game},
     game_tree::{Node, Tree},
     heat_map::HeatMap,
     play::Plae,
@@ -33,6 +33,7 @@ pub struct GenerateMove {
     pub delay_milliseconds: i64,
     pub loops: u64,
     pub heat_map: HeatMap,
+    pub escape_vec: Option<EscapeVec>,
 }
 
 impl fmt::Display for GenerateMove {
@@ -41,7 +42,13 @@ impl fmt::Display for GenerateMove {
             f,
             "{}, score: {}, delay milliseconds: {}, loops: {}",
             self.play, self.score, self.delay_milliseconds, self.loops
-        )
+        )?;
+
+        if let Some(escape_vec) = &self.escape_vec {
+            write!(f, "escape_vec:\n\n{escape_vec}")?;
+        }
+
+        Ok(())
     }
 }
 
@@ -63,6 +70,7 @@ impl AI for AiBanal {
             delay_milliseconds: 0,
             loops: 0,
             heat_map: HeatMap::new(game.board.size()),
+            escape_vec: None,
         })
     }
 }
@@ -110,6 +118,7 @@ impl AI for AiBasic {
                 delay_milliseconds,
                 loops: 0,
                 heat_map,
+                escape_vec: None,
             });
         }
 
@@ -120,11 +129,6 @@ impl AI for AiBasic {
             -f64::INFINITY,
             f64::INFINITY,
         );
-
-        // Debugging:
-        if let Some(escape_vec) = escape_vec {
-            println!("{escape_vec}");
-        }
 
         let play = match play {
             Some(play) => play,
@@ -149,6 +153,7 @@ impl AI for AiBasic {
             delay_milliseconds,
             loops: 0,
             heat_map,
+            escape_vec,
         })
     }
 }
@@ -242,6 +247,7 @@ impl AI for AiMonteCarlo {
             delay_milliseconds,
             loops: loops_total,
             heat_map,
+            escape_vec: None,
         })
     }
 }

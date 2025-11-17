@@ -877,7 +877,8 @@ impl fmt::Display for EscapeVec {
             }
             writeln!(f)?;
         }
-        writeln!(f)
+
+        Ok(())
     }
 }
 
