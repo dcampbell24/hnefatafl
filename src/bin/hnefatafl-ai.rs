@@ -27,11 +27,11 @@ const PORT: &str = ":49152";
 #[derive(Parser, Debug)]
 #[command(long_version = LONG_VERSION, about = "Copenhagen Hnefatafl AI")]
 struct Args {
-    /// Choose your username
+    /// Enter your username
     #[arg(long)]
     username: String,
 
-    /// Pass a password
+    /// Enter your password
     #[arg(default_value = "", long)]
     password: String,
 
