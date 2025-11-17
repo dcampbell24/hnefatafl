@@ -3,16 +3,19 @@
 export RUST_MIN_STACK=67108864
 
 cargo run --release --bin hnefatafl-ai -- --man --username "" --password "" --role "attacker"
+cargo run --release --bin hnefatafl-text-protocol -- --man
 cargo run --release --example hnefatafl-client -- --man
 cargo run --release -- --man
 
 gzip --no-name --best hnefatafl-ai.1
+gzip --no-name --best hnefatafl-text-protocol.1
 gzip --no-name --best hnefatafl-client.1
 gzip --no-name --best hnefatafl-server-full.1
 
 PACKAGE=$(cargo deb)
 
 rm hnefatafl-ai.1.gz
+rm hnefatafl-text-protocol.1.gz
 rm hnefatafl-client.1.gz
 rm hnefatafl-server-full.1.gz
 

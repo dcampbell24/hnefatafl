@@ -1,13 +1,12 @@
 use std::{
-    io::{self, BufReader},
+    io::{self, BufReader, Write},
     net::TcpStream,
 };
 
-use clap::command;
-use clap::{self, Parser};
+use clap::{self, CommandFactory, Parser, command};
 
 use hnefatafl_copenhagen::{
-    SERVER_PORT,
+    COPYRIGHT, SERVER_PORT,
     ai::AI,
     game::Game,
     play::Plae,
@@ -42,10 +41,28 @@ struct Args {
     /// Listen for HTP drivers on host
     #[arg(long)]
     host: Option<String>,
+
+    /// Build the manpage
+    #[arg(long)]
+    man: bool,
 }
 
 fn main() -> anyhow::Result<()> {
     let args = Args::parse();
+
+    if args.man {
+        let mut buffer: Vec<u8> = Vec::default();
+        let cmd = Args::command()
+            .name("hnefatafl-text-protocol")
+            .long_version(None);
+        let man = clap_mangen::Man::new(cmd).date("2025-11-17");
+
+        man.render(&mut buffer)?;
+        write!(buffer, "{COPYRIGHT}")?;
+
+        std::fs::write("hnefatafl-text-protocol.1", buffer)?;
+        return Ok(());
+    }
 
     if let Some(mut address) = args.host {
         address.push_str(SERVER_PORT);
