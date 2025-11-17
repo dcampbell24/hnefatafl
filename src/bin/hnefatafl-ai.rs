@@ -7,7 +7,7 @@ use std::{
 use anyhow::Error;
 use clap::{CommandFactory, Parser, command};
 use hnefatafl_copenhagen::{
-    COPYRIGHT, LONG_VERSION, MONTE_CARLO_DEPTH, MONTE_CARLO_SECONDS, VERSION_ID,
+    COPYRIGHT, LONG_VERSION, VERSION_ID,
     ai::AI,
     game::Game,
     play::Plae,
@@ -88,7 +88,7 @@ fn main() -> anyhow::Result<()> {
     buf.clear();
 
     if let Some(ai_2) = args.challenger {
-        let ai_2 = choose_ai(&ai_2, Some(MONTE_CARLO_SECONDS), Some(MONTE_CARLO_DEPTH))?;
+        let ai_2 = choose_ai(&ai_2, None, None)?;
         new_game(&mut tcp, args.role, &mut reader, &mut buf)?;
 
         let message: Vec<_> = buf.split_ascii_whitespace().collect();
@@ -98,7 +98,7 @@ fn main() -> anyhow::Result<()> {
         let game_id_2 = game_id.clone();
         let tcp_clone = tcp.try_clone()?;
 
-        let ai = choose_ai(&args.ai, Some(MONTE_CARLO_SECONDS), Some(MONTE_CARLO_DEPTH))?;
+        let ai = choose_ai(&args.ai, None, None)?;
         thread::spawn(move || accept_challenger(ai, &mut reader, &mut buf, &mut tcp, &game_id));
 
         let mut buf_2 = String::new();
@@ -128,7 +128,7 @@ fn main() -> anyhow::Result<()> {
 
             wait_for_challenger(&mut reader, &mut buf, &mut tcp, &game_id)?;
 
-            let ai = choose_ai(&args.ai, Some(MONTE_CARLO_SECONDS), Some(MONTE_CARLO_DEPTH))?;
+            let ai = choose_ai(&args.ai, None, None)?;
             handle_messages(ai, &game_id, &mut reader, &mut tcp)?;
         }
     }
