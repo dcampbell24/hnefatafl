@@ -40,14 +40,14 @@ struct Args {
     depth: Option<u8>,
 
     /// Listen for HTP drivers on host
-    #[arg(long, value_name = "host")]
-    tcp: Option<String>,
+    #[arg(long)]
+    host: Option<String>,
 }
 
 fn main() -> anyhow::Result<()> {
     let args = Args::parse();
 
-    if let Some(mut address) = args.tcp {
+    if let Some(mut address) = args.host {
         address.push_str(SERVER_PORT);
 
         let ai = match args.ai {
