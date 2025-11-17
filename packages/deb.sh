@@ -2,7 +2,7 @@
 
 export RUST_MIN_STACK=67108864
 
-cargo run --release --bin hnefatafl-ai -- --man --username "" --password "" --role "attacker"
+cargo run --release --bin hnefatafl-ai -- --man --username ""
 cargo run --release --bin hnefatafl-text-protocol -- --man
 cargo run --release --example hnefatafl-client -- --man
 cargo run --release -- --man
