@@ -47,6 +47,14 @@ struct Args {
     #[arg(default_value = "monte-carlo", long)]
     ai: String,
 
+    /// How many seconds to run the monte-carlo AI
+    #[arg(long)]
+    seconds: Option<u64>,
+
+    /// How deep in the game tree to go with Ai
+    #[arg(long)]
+    depth: Option<u8>,
+
     /// Challenge the AI with AI CHALLENGER
     #[arg(long)]
     challenger: Option<String>,
@@ -88,7 +96,7 @@ fn main() -> anyhow::Result<()> {
     buf.clear();
 
     if let Some(ai_2) = args.challenger {
-        let ai_2 = choose_ai(&ai_2, None, None)?;
+        let ai_2 = choose_ai(&ai_2, args.seconds, args.depth)?;
         new_game(&mut tcp, args.role, &mut reader, &mut buf)?;
 
         let message: Vec<_> = buf.split_ascii_whitespace().collect();
@@ -98,7 +106,7 @@ fn main() -> anyhow::Result<()> {
         let game_id_2 = game_id.clone();
         let tcp_clone = tcp.try_clone()?;
 
-        let ai = choose_ai(&args.ai, None, None)?;
+        let ai = choose_ai(&args.ai, args.seconds, args.depth)?;
         thread::spawn(move || accept_challenger(ai, &mut reader, &mut buf, &mut tcp, &game_id));
 
         let mut buf_2 = String::new();
@@ -128,7 +136,7 @@ fn main() -> anyhow::Result<()> {
 
             wait_for_challenger(&mut reader, &mut buf, &mut tcp, &game_id)?;
 
-            let ai = choose_ai(&args.ai, None, None)?;
+            let ai = choose_ai(&args.ai, args.seconds, args.depth)?;
             handle_messages(ai, &game_id, &mut reader, &mut tcp)?;
         }
     }
