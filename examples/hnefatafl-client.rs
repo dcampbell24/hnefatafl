@@ -45,7 +45,6 @@ use iced::{
     Element, Event, Pixels, Subscription, Task,
     alignment::{Horizontal, Vertical},
     event,
-    font::Font,
     futures::Stream,
     keyboard::{self, Key, key::Named},
     stream,
@@ -266,8 +265,7 @@ fn main() -> anyhow::Result<()> {
             icon: Some(icon::from_rgba(king, 256, 256)?),
             ..window::Settings::default()
         })
-        .theme(Client::theme)
-        .default_font(Font::MONOSPACE);
+        .theme(Client::theme);
 
     // For screenshots.
     if args.tiny_window {
