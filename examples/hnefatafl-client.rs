@@ -38,11 +38,10 @@ use hnefatafl_copenhagen::{
     tree::{Node, Tree},
     utils::{self, choose_ai, data_file},
 };
-use iced::Color;
 #[cfg(target_os = "linux")]
 use iced::window::settings::PlatformSpecific;
 use iced::{
-    Element, Event, Pixels, Subscription, Task,
+    Color, Element, Event, Font, Pixels, Subscription, Task,
     alignment::{Horizontal, Vertical},
     event,
     futures::Stream,
@@ -590,7 +589,9 @@ impl<'a> Client {
                     }
                 }
 
-                let mut button_ = button(txt).width(board_dimension).height(board_dimension);
+                let mut button_ = button(txt.font(Font::MONOSPACE))
+                    .width(board_dimension)
+                    .height(board_dimension);
 
                 if let Some(legal_moves) = &possible_moves {
                     if let Some(vertex_from) = self.play_from.as_ref() {
