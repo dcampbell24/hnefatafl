@@ -58,6 +58,7 @@ use log::{debug, error, info, trace};
 use rust_i18n::t;
 use serde::{Deserialize, Serialize};
 
+const CHESS_FONT: Font = Font::with_name("Chess Alpha");
 const USER_CONFIG_FILE_POSTCARD: &str = "hnefatafl.postcard";
 const USER_CONFIG_FILE_RON: &str = "hnefatafl.ron";
 
@@ -264,6 +265,7 @@ fn main() -> anyhow::Result<()> {
             icon: Some(icon::from_rgba(king, 256, 256)?),
             ..window::Settings::default()
         })
+        .font(include_bytes!("./Alpha.ttf").as_slice())
         .theme(Client::theme);
 
     // For screenshots.
@@ -589,7 +591,7 @@ impl<'a> Client {
                     }
                 }
 
-                let mut button_ = button(txt.font(Font::MONOSPACE))
+                let mut button_ = button(txt.font(CHESS_FONT))
                     .width(board_dimension)
                     .height(board_dimension);
 
