@@ -714,9 +714,8 @@ impl Board {
         }
     }
 
-    #[allow(clippy::missing_panics_doc)]
     #[must_use]
-    pub fn difference(&self, other: &Board) -> Plae {
+    pub fn difference(&self, other: &Board) -> Option<Plae> {
         let size = self.size();
         let size_usize = size.into();
         let mut role = None;
@@ -740,11 +739,11 @@ impl Board {
             }
         }
 
-        Plae::Play(Play {
-            role: role.unwrap(),
-            from: from.unwrap(),
-            to: to.unwrap(),
-        })
+        if let (Some(role), Some(from), Some(to)) = (role, from, to) {
+            Some(Plae::Play(Play { role, from, to }))
+        } else {
+            None
+        }
     }
 
     #[must_use]

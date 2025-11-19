@@ -122,6 +122,7 @@ impl Tree {
 
         previous_boards.0.insert(node.board.clone());
         boards.push_front(node.board.clone());
+
         while let Some(parent) = node.parent {
             node = &self.arena[parent];
             previous_boards.0.insert(node.board.clone());
@@ -134,10 +135,10 @@ impl Tree {
             let board_2 = windows[1];
 
             let play = board_1.difference(board_2);
-            plays.push(Some(play));
+            plays.push(play);
         }
-        let plays = Plays::PlayRecords(plays);
 
+        let plays = Plays::PlayRecords(plays);
         (plays, previous_boards)
     }
 }
