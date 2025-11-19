@@ -265,7 +265,7 @@ fn main() -> anyhow::Result<()> {
             icon: Some(icon::from_rgba(king, 256, 256)?),
             ..window::Settings::default()
         })
-        .font(include_bytes!("./Alpha.ttf").as_slice())
+        .font(include_bytes!("./Alpha.otf").as_slice())
         .theme(Client::theme);
 
     // For screenshots.
