@@ -58,7 +58,7 @@ use log::{debug, error, info, trace};
 use rust_i18n::t;
 use serde::{Deserialize, Serialize};
 
-const CHESS_FONT: Font = Font::with_name("Chess Alpha");
+const CHESS_FONT: Font = Font::with_name("ChessAlpha");
 const USER_CONFIG_FILE_POSTCARD: &str = "hnefatafl.postcard";
 const USER_CONFIG_FILE_RON: &str = "hnefatafl.ron";
 
@@ -591,7 +591,7 @@ impl<'a> Client {
                     }
                 }
 
-                let mut button_ = button(txt.font(CHESS_FONT))
+                let mut button_ = button(txt.font(Font::MONOSPACE).font(CHESS_FONT))
                     .width(board_dimension)
                     .height(board_dimension);
 
