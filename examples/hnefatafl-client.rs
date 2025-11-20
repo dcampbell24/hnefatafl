@@ -1968,42 +1968,42 @@ impl<'a> Client {
         let game_id = t!("ID");
         let game_ids = column![
             text(game_id.to_string()),
-            text("-".repeat(game_id.chars().count())),
+            text("-".repeat(game_id.chars().count())).font(Font::MONOSPACE),
             game_ids
         ]
         .padding(PADDING);
         let attacker = t!("attacker");
         let attackers = column![
             text(attacker.to_string()),
-            text("-".repeat(attacker.chars().count())),
+            text("-".repeat(attacker.chars().count())).font(Font::MONOSPACE),
             attackers
         ]
         .padding(PADDING);
         let defender = t!("defender");
         let defenders = column![
             text(defender.to_string()),
-            text("-".repeat(defender.chars().count())),
+            text("-".repeat(defender.chars().count())).font(Font::MONOSPACE),
             defenders
         ]
         .padding(PADDING);
         let rated = t!("rated");
         let ratings = column![
             text(rated.to_string()),
-            text("-".repeat(rated.chars().count())),
+            text("-".repeat(rated.chars().count())).font(Font::MONOSPACE),
             ratings
         ]
         .padding(PADDING);
         let timed = t!("timed");
         let timings = column![
             text(timed.to_string()),
-            text("-".repeat(timed.chars().count())),
+            text("-".repeat(timed.chars().count())).font(Font::MONOSPACE),
             timings
         ]
         .padding(PADDING);
         let size = t!("size");
         let sizes = column![
             text(size.to_string()),
-            text("-".repeat(size.chars().count())),
+            text("-".repeat(size.chars().count())).font(Font::MONOSPACE),
             sizes
         ]
         .padding(PADDING);
@@ -2101,35 +2101,35 @@ impl<'a> Client {
         let rating = t!("rating");
         let ratings = column![
             text(rating.to_string()),
-            text("-".repeat(rating.chars().count())),
+            text("-".repeat(rating.chars().count())).font(Font::MONOSPACE),
             ratings
         ]
         .padding(PADDING);
         let username = t!("username");
         let usernames = column![
             text(username.to_string()),
-            text("-".repeat(username.chars().count())),
+            text("-".repeat(username.chars().count())).font(Font::MONOSPACE),
             usernames
         ]
         .padding(PADDING);
         let win = t!("wins");
         let wins = column![
             text(win.to_string()),
-            text("-".repeat(win.chars().count())),
+            text("-".repeat(win.chars().count())).font(Font::MONOSPACE),
             wins
         ]
         .padding(PADDING);
         let loss = t!("losses");
         let losses = column![
             text(loss.to_string()),
-            text("-".repeat(loss.chars().count())),
+            text("-".repeat(loss.chars().count())).font(Font::MONOSPACE),
             losses
         ]
         .padding(PADDING);
         let draw = t!("draws");
         let draws = column![
             text(draw.to_string()),
-            text("-".repeat(draw.chars().count())),
+            text("-".repeat(draw.chars().count())).font(Font::MONOSPACE),
             draws
         ]
         .padding(PADDING);
