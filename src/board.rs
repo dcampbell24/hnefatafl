@@ -1284,6 +1284,13 @@ impl Board {
 
     #[inline]
     #[must_use]
+    pub fn on_restricted_square(&self, vertex: &Vertex) -> bool {
+        (self.spaces.len() == 11 * 11 && RESTRICTED_SQUARES_11X11.contains(vertex))
+            || (self.spaces.len() == 13 * 13 && RESTRICTED_SQUARES_13X13.contains(vertex))
+    }
+
+    #[inline]
+    #[must_use]
     fn on_throne(&self, vertex: &Vertex) -> bool {
         let board_size: usize = self.size().into();
 
