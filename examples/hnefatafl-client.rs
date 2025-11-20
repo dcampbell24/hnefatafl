@@ -465,13 +465,8 @@ impl<'a> Client {
         let letters: Vec<_> = BOARD_LETTERS[..board_size_usize].chars().collect();
         let mut game_display = Row::new().spacing(2);
         let possible_moves = self.possible_moves();
-        let mut column = column![text(" ").size(d.letter_size)].spacing(d.spacing);
 
-        for i in 0..board_size_usize {
-            let i = board_size_usize - i;
-            column = column.push(text!("{i:2}").size(d.letter_size).align_y(Vertical::Center));
-        }
-        game_display = game_display.push(column);
+        game_display = game_display.push(numbers(d.letter_size, d.spacing, board_size_usize));
 
         for (x, letter) in letters.iter().enumerate() {
             let mut column = Column::new().spacing(2).align_x(Horizontal::Center);
@@ -592,13 +587,7 @@ impl<'a> Client {
             game_display = game_display.push(column);
         }
 
-        let mut column = column![text(" ").size(d.letter_size)].spacing(d.spacing);
-        for i in 0..board_size_usize {
-            let i = board_size_usize - i;
-            column = column.push(text!("{i:2}").size(d.letter_size).align_y(Vertical::Center));
-        }
-
-        game_display = game_display.push(column);
+        game_display = game_display.push(numbers(d.letter_size, d.spacing, board_size_usize));
         game_display
     }
 
@@ -2817,7 +2806,6 @@ enum Message {
     WindowResized((f32, f32)),
 }
 
-
 #[derive(Clone, Debug)]
 struct Dimensions {
     board_dimension: u32,
@@ -2850,6 +2838,21 @@ impl Dimensions {
             spacing,
         }
     }
+}
+
+fn numbers<'a>(letter_size: u32, spacing: u32, board_size: usize) -> Column<'a, Message> {
+    let mut column = column![text(" ").size(letter_size)].spacing(spacing);
+
+    for i in 0..board_size {
+        let i = board_size - i;
+        column = column.push(
+            text!("{i:2}")
+                .size(letter_size)
+                .align_y(Vertical::Center),
+        );
+    }
+
+    column
 }
 
 fn estimate_score() -> impl Stream<Item = Message> {
