@@ -24,7 +24,7 @@ use hnefatafl_copenhagen::{
     board::{Board, BoardSize},
     client::{Size, Theme, User},
     draw::Draw,
-    game::{Game, TimeUnix},
+    game::{Game, LegalMoves, TimeUnix},
     glicko::{CONFIDENCE_INTERVAL_95, Rating},
     heat_map::{Heat, HeatMap},
     locale::Locale,
@@ -41,7 +41,7 @@ use hnefatafl_copenhagen::{
 #[cfg(target_os = "linux")]
 use iced::window::settings::PlatformSpecific;
 use iced::{
-    Color, Element, Event, Font, Pixels, Subscription, Task,
+    Alignment, Color, Element, Event, Font, Pixels, Subscription, Task,
     alignment::{Horizontal, Vertical},
     event,
     futures::Stream,
@@ -58,7 +58,7 @@ use log::{debug, error, info, trace};
 use rust_i18n::t;
 use serde::{Deserialize, Serialize};
 
-const CHESS_FONT: Font = Font::with_name("ChessAlpha");
+const CHESS_FONT: Font = Font::with_name("Chess Alpha");
 const USER_CONFIG_FILE_POSTCARD: &str = "hnefatafl.postcard";
 const USER_CONFIG_FILE_RON: &str = "hnefatafl.ron";
 
@@ -445,6 +445,7 @@ impl<'a> Client {
     fn board(&self) -> Row<'_, Message> {
         let (board, heat_map) = if let Some(game_handle) = &self.archived_game_handle {
             let node = game_handle.boards.here();
+
             if self.heat_map_display
                 && let Some(heat_map) = &self.heat_map
             {
@@ -456,51 +457,22 @@ impl<'a> Client {
             let Some(game) = &self.game else {
                 panic!("we should be in a game");
             };
+
             (&game.board, None)
         };
 
         let board_size = board.size();
         let board_size_usize: usize = board_size.into();
-
-        let (board_dimension, letter_size, piece_size, spacing) = match board_size {
-            BoardSize::_11 => match self.screen_size {
-                Size::Large | Size::Giant => (75, 55, 60, 6),
-                Size::Medium => (65, 45, 50, 8),
-                Size::Small => (55, 35, 40, 11),
-                Size::Tiny => (40, 20, 25, 16),
-            },
-            BoardSize::_13 => match self.screen_size {
-                Size::Large | Size::Giant => (65, 45, 50, 8),
-                Size::Medium => (58, 38, 43, 10),
-                Size::Small => (50, 30, 35, 12),
-                Size::Tiny => (40, 20, 25, 15),
-            },
-        };
-
+        let d = Dimensions::new(board_size, &self.screen_size);
         let letters: Vec<_> = BOARD_LETTERS[..board_size_usize].chars().collect();
         let mut game_display = Row::new().spacing(2);
+        let possible_moves = self.possible_moves();
 
-        let mut possible_moves = None;
-        if self.my_turn {
-            if let Some(game) = self.game.as_ref() {
-                possible_moves = Some(game.all_legal_moves());
-            }
-        } else if let Some(handle) = &self.archived_game_handle {
-            let game = Game::from(&handle.boards);
-            possible_moves = Some(game.all_legal_moves());
-        }
-
-        let mut column = column![text(" ").size(letter_size)].spacing(spacing);
-
-        for i in 0..board_size_usize {
-            let i = board_size_usize - i;
-            column = column.push(text!("{i:2}").size(letter_size).align_y(Vertical::Center));
-        }
-        game_display = game_display.push(column);
+        game_display = game_display.push(numbers(d.letter_size, d.spacing, board_size_usize));
 
         for (x, letter) in letters.iter().enumerate() {
             let mut column = Column::new().spacing(2).align_x(Horizontal::Center);
-            column = column.push(text(letter).size(letter_size));
+            column = column.push(text(letter).size(d.letter_size));
 
             for y in 0..board_size_usize {
                 let vertex = Vertex {
@@ -511,54 +483,25 @@ impl<'a> Client {
 
                 let mut txt = match board.get(&vertex) {
                     Space::Empty => {
-                        if (board_size == BoardSize::_11
-                            && ((y, x) == (0, 0)
-                                || (y, x) == (10, 0)
-                                || (y, x) == (0, 10)
-                                || (y, x) == (10, 10)
-                                || (y, x) == (5, 5)))
-                            || (board_size == BoardSize::_13
-                                && ((y, x) == (0, 0)
-                                    || (y, x) == (12, 0)
-                                    || (y, x) == (0, 12)
-                                    || (y, x) == (12, 12)
-                                    || (y, x) == (6, 6)))
-                        {
+                        if board.on_restricted_square(&vertex) {
                             text("⌘")
+                        } else if let Some(arrow) = self.draw_arrow(y, x) {
+                            text(arrow)
+                        } else if self.captures.contains(&vertex) {
+                            text("🗙")
                         } else {
                             text(" ")
                         }
                     }
-                    Space::Attacker => text("♟"),
-                    Space::King => text("♔"),
-                    Space::Defender => text("♙"),
+                    Space::Attacker => text("♟").font(CHESS_FONT),
+                    Space::King => text("♔").font(CHESS_FONT),
+                    Space::Defender => text("♙").font(CHESS_FONT),
                 };
 
-                txt = txt.size(piece_size).center();
-
-                if let (Some(from), Some(to)) = (&self.play_from_previous, &self.play_to_previous) {
-                    let x_diff = from.x as i128 - to.x as i128;
-                    let y_diff = from.y as i128 - to.y as i128;
-                    let mut arrow = " ";
-
-                    if y_diff < 0 {
-                        arrow = "↓";
-                    } else if y_diff > 0 {
-                        arrow = "↑";
-                    } else if x_diff < 0 {
-                        arrow = "→";
-                    } else if x_diff > 0 {
-                        arrow = "←";
-                    }
-
-                    if (y, x) == (from.y, from.x) {
-                        txt = text(arrow).size(piece_size).center();
-                    }
-                }
-
-                if self.captures.contains(&vertex) {
-                    txt = text("🗙").size(piece_size).center();
-                }
+                txt = txt
+                    .size(d.piece_size)
+                    .align_x(Alignment::Center)
+                    .align_y(Alignment::Center);
 
                 if let Some((heat_map_from, heat_map_to)) = &heat_map
                     && possible_moves.is_some()
@@ -580,7 +523,8 @@ impl<'a> Client {
                                 };
 
                                 txt = text(txt_char)
-                                    .size(piece_size)
+                                    .font(CHESS_FONT)
+                                    .size(d.piece_size)
                                     .center()
                                     .color(Color::from_rgba(0.0, 0.0, 0.0, heat.into()));
                             }
@@ -591,40 +535,75 @@ impl<'a> Client {
                     }
                 }
 
-                let mut button_ = button(txt.font(Font::MONOSPACE).font(CHESS_FONT))
-                    .width(board_dimension)
-                    .height(board_dimension);
+                let mut button = button(txt.font(Font::MONOSPACE))
+                    .width(d.board_dimension)
+                    .height(d.board_dimension);
 
                 if let Some(legal_moves) = &possible_moves {
                     if let Some(vertex_from) = self.play_from.as_ref() {
                         if let Some(vertexes) = legal_moves.moves.get(vertex_from) {
                             if vertex == *vertex_from {
-                                button_ = button_.on_press(Message::PlayMoveRevert);
+                                button = button.on_press(Message::PlayMoveRevert);
                             }
                             if vertexes.contains(&vertex) {
-                                button_ = button_.on_press(Message::PlayMoveTo(vertex));
+                                button = button.on_press(Message::PlayMoveTo(vertex));
                             }
                         }
                     } else if legal_moves.moves.contains_key(&vertex) {
-                        button_ = button_.on_press(Message::PlayMoveFrom(vertex));
+                        button = button.on_press(Message::PlayMoveFrom(vertex));
                     }
                 }
 
-                column = column.push(button_);
+                column = column.push(button);
             }
 
-            column = column.push(text(letter).size(letter_size));
+            column = column.push(text(letter).size(d.letter_size));
             game_display = game_display.push(column);
         }
 
-        let mut column = column![text(" ").size(letter_size)].spacing(spacing);
-        for i in 0..board_size_usize {
-            let i = board_size_usize - i;
-            column = column.push(text!("{i:2}").size(letter_size).align_y(Vertical::Center));
+        game_display = game_display.push(numbers(d.letter_size, d.spacing, board_size_usize));
+        game_display
+    }
+
+    fn draw_arrow(&self, y: usize, x: usize) -> Option<&str> {
+        if let (Some(from), Some(to)) = (&self.play_from_previous, &self.play_to_previous) {
+            if (y, x) == (from.y, from.x) {
+                let x_diff = from.x as i128 - to.x as i128;
+                let y_diff = from.y as i128 - to.y as i128;
+                let mut arrow = " ";
+
+                if y_diff < 0 {
+                    arrow = "↓";
+                } else if y_diff > 0 {
+                    arrow = "↑";
+                } else if x_diff < 0 {
+                    arrow = "→";
+                } else if x_diff > 0 {
+                    arrow = "←";
+                }
+
+                Some(arrow)
+            } else {
+                None
+            }
+        } else {
+            None
+        }
+    }
+
+    fn possible_moves(&self) -> Option<LegalMoves> {
+        let mut possible_moves = None;
+
+        if self.my_turn {
+            if let Some(game) = self.game.as_ref() {
+                possible_moves = Some(game.all_legal_moves());
+            }
+        } else if let Some(handle) = &self.archived_game_handle {
+            let game = Game::from(&handle.boards);
+            possible_moves = Some(game.all_legal_moves());
         }
 
-        game_display = game_display.push(column);
-        game_display
+        possible_moves
     }
 
     // Fixme: get the real status when exploring the game tree.
@@ -2825,6 +2804,51 @@ enum Message {
     TimeMinutes(String),
     Users,
     WindowResized((f32, f32)),
+}
+
+#[derive(Clone, Debug)]
+struct Dimensions {
+    board_dimension: u32,
+    letter_size: u32,
+    piece_size: u32,
+    spacing: u32,
+}
+
+impl Dimensions {
+    fn new(board_size: BoardSize, screen_size: &Size) -> Self {
+        let (board_dimension, letter_size, piece_size, spacing) = match board_size {
+            BoardSize::_11 => match screen_size {
+                Size::Large | Size::Giant => (75, 55, 60, 6),
+                Size::Medium => (65, 45, 50, 8),
+                Size::Small => (55, 35, 40, 11),
+                Size::Tiny => (40, 20, 25, 16),
+            },
+            BoardSize::_13 => match screen_size {
+                Size::Large | Size::Giant => (65, 45, 50, 8),
+                Size::Medium => (58, 38, 43, 10),
+                Size::Small => (50, 30, 35, 12),
+                Size::Tiny => (40, 20, 25, 15),
+            },
+        };
+
+        Dimensions {
+            board_dimension,
+            letter_size,
+            piece_size,
+            spacing,
+        }
+    }
+}
+
+fn numbers<'a>(letter_size: u32, spacing: u32, board_size: usize) -> Column<'a, Message> {
+    let mut column = column![text(" ").size(letter_size)].spacing(spacing);
+
+    for i in 0..board_size {
+        let i = board_size - i;
+        column = column.push(text!("{i:2}").size(letter_size).align_y(Vertical::Center));
+    }
+
+    column
 }
 
 fn estimate_score() -> impl Stream<Item = Message> {
