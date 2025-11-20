@@ -481,19 +481,7 @@ impl<'a> Client {
 
                 let mut txt = match board.get(&vertex) {
                     Space::Empty => {
-                        if (board_size == BoardSize::_11
-                            && ((y, x) == (0, 0)
-                                || (y, x) == (10, 0)
-                                || (y, x) == (0, 10)
-                                || (y, x) == (10, 10)
-                                || (y, x) == (5, 5)))
-                            || (board_size == BoardSize::_13
-                                && ((y, x) == (0, 0)
-                                    || (y, x) == (12, 0)
-                                    || (y, x) == (0, 12)
-                                    || (y, x) == (12, 12)
-                                    || (y, x) == (6, 6)))
-                        {
+                        if board.on_restricted_square(&vertex) {
                             text("⌘")
                         } else {
                             text(" ")
@@ -2845,11 +2833,7 @@ fn numbers<'a>(letter_size: u32, spacing: u32, board_size: usize) -> Column<'a, 
 
     for i in 0..board_size {
         let i = board_size - i;
-        column = column.push(
-            text!("{i:2}")
-                .size(letter_size)
-                .align_y(Vertical::Center),
-        );
+        column = column.push(text!("{i:2}").size(letter_size).align_y(Vertical::Center));
     }
 
     column
