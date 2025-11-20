@@ -41,7 +41,7 @@ use hnefatafl_copenhagen::{
 #[cfg(target_os = "linux")]
 use iced::window::settings::PlatformSpecific;
 use iced::{
-    Color, Element, Event, Font, Pixels, Subscription, Task,
+    Alignment, Color, Element, Event, Font, Pixels, Subscription, Task,
     alignment::{Horizontal, Vertical},
     event,
     futures::Stream,
@@ -483,6 +483,10 @@ impl<'a> Client {
                     Space::Empty => {
                         if board.on_restricted_square(&vertex) {
                             text("⌘")
+                        } else if let Some(arrow) = self.draw_arrow(y, x) {
+                            text(arrow)
+                        } else if self.captures.contains(&vertex) {
+                            text("🗙")
                         } else {
                             text(" ")
                         }
@@ -492,31 +496,10 @@ impl<'a> Client {
                     Space::Defender => text("♙"),
                 };
 
-                txt = txt.size(d.piece_size).center();
-
-                if let (Some(from), Some(to)) = (&self.play_from_previous, &self.play_to_previous) {
-                    let x_diff = from.x as i128 - to.x as i128;
-                    let y_diff = from.y as i128 - to.y as i128;
-                    let mut arrow = " ";
-
-                    if y_diff < 0 {
-                        arrow = "↓";
-                    } else if y_diff > 0 {
-                        arrow = "↑";
-                    } else if x_diff < 0 {
-                        arrow = "→";
-                    } else if x_diff > 0 {
-                        arrow = "←";
-                    }
-
-                    if (y, x) == (from.y, from.x) {
-                        txt = text(arrow).size(d.piece_size).center();
-                    }
-                }
-
-                if self.captures.contains(&vertex) {
-                    txt = text("🗙").size(d.piece_size).center();
-                }
+                txt = txt
+                    .size(d.piece_size)
+                    .align_x(Alignment::Center)
+                    .align_y(Alignment::Center);
 
                 if let Some((heat_map_from, heat_map_to)) = &heat_map
                     && possible_moves.is_some()
@@ -577,6 +560,32 @@ impl<'a> Client {
 
         game_display = game_display.push(numbers(d.letter_size, d.spacing, board_size_usize));
         game_display
+    }
+
+    fn draw_arrow(&self, y: usize, x: usize) -> Option<&str> {
+        if let (Some(from), Some(to)) = (&self.play_from_previous, &self.play_to_previous) {
+            if (y, x) == (from.y, from.x) {
+                let x_diff = from.x as i128 - to.x as i128;
+                let y_diff = from.y as i128 - to.y as i128;
+                let mut arrow = " ";
+
+                if y_diff < 0 {
+                    arrow = "↓";
+                } else if y_diff > 0 {
+                    arrow = "↑";
+                } else if x_diff < 0 {
+                    arrow = "→";
+                } else if x_diff > 0 {
+                    arrow = "←";
+                }
+
+                Some(arrow)
+            } else {
+                None
+            }
+        } else {
+            None
+        }
     }
 
     fn possible_moves(&self) -> Option<LegalMoves> {
