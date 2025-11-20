@@ -480,6 +480,8 @@ impl<'a> Client {
                 };
 
                 let mut txt = match board.get(&vertex) {
+                    Space::Attacker => text("♟"),
+                    Space::Defender => text("♙"),
                     Space::Empty => {
                         if board.on_restricted_square(&vertex) {
                             text("⌘")
@@ -491,9 +493,7 @@ impl<'a> Client {
                             text(" ")
                         }
                     }
-                    Space::Attacker => text("♟"),
                     Space::King => text("♔"),
-                    Space::Defender => text("♙"),
                 };
 
                 txt = txt
