@@ -532,7 +532,7 @@ impl<'a> Client {
                     }
                 }
 
-                let mut button_ = button(txt.font(Font::MONOSPACE))
+                let mut button = button(txt.font(Font::MONOSPACE))
                     .width(d.board_dimension)
                     .height(d.board_dimension);
 
@@ -540,18 +540,18 @@ impl<'a> Client {
                     if let Some(vertex_from) = self.play_from.as_ref() {
                         if let Some(vertexes) = legal_moves.moves.get(vertex_from) {
                             if vertex == *vertex_from {
-                                button_ = button_.on_press(Message::PlayMoveRevert);
+                                button = button.on_press(Message::PlayMoveRevert);
                             }
                             if vertexes.contains(&vertex) {
-                                button_ = button_.on_press(Message::PlayMoveTo(vertex));
+                                button = button.on_press(Message::PlayMoveTo(vertex));
                             }
                         }
                     } else if legal_moves.moves.contains_key(&vertex) {
-                        button_ = button_.on_press(Message::PlayMoveFrom(vertex));
+                        button = button.on_press(Message::PlayMoveFrom(vertex));
                     }
                 }
 
-                column = column.push(button_);
+                column = column.push(button);
             }
 
             column = column.push(text(letter).size(d.letter_size));
