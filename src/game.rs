@@ -529,12 +529,12 @@ impl Game {
 
             for neighbor in &neighbors {
                 if !visited.contains_key(neighbor) || total_cost < visited[neighbor].0 {
-                    let escape_vec_cost = escape_vec.get(&current_nodes[0]).unwrap_or_default();
-                    let added_cost = escape_vec_cost + 1;
+                    let mut moves = escape_vec.get(&current_nodes[0]).unwrap_or_default();
+                    moves += 1;
+                    escape_vec.set(neighbor, moves);
 
-                    escape_vec.set(neighbor, added_cost);
                     if self.board.exit_squares().contains(neighbor) {
-                        return (MovesToEscape::Utility(added_cost), escape_vec);
+                        return (MovesToEscape::Moves(moves), escape_vec);
                     }
 
                     for current_node in &current_nodes {
@@ -820,7 +820,7 @@ impl Game {
         utility += match moves_to_escape {
             MovesToEscape::CanNotEscape => 1_000.0,
             MovesToEscape::GameOver => 0.0,
-            MovesToEscape::Utility(utility) => f64::from(utility) * 100.0,
+            MovesToEscape::Moves(moves) => f64::from(moves) * 100.0,
         };
 
         (utility, escape_vec)
@@ -886,7 +886,7 @@ impl fmt::Display for EscapeVec {
 pub enum MovesToEscape {
     CanNotEscape,
     GameOver,
-    Utility(u8),
+    Moves(u8),
 }
 
 impl From<&Tree> for Game {
