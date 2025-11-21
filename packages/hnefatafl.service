@@ -1,5 +1,6 @@
 [Unit]
 Description=Copenhagen Hnefatafl Server
+Documentation="https://hnefatafl.org"
 
 [Service]
 Type=simple

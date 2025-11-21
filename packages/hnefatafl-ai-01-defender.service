@@ -1,5 +1,6 @@
 [Unit]
 Description=Copenhagen Hnefatafl AI
+Documentation="https://hnefatafl.org"
 
 [Service]
 Type=simple
