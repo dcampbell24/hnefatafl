@@ -454,9 +454,7 @@ impl<'a> Client {
                 (&node.board.clone(), None)
             }
         } else {
-            let Some(game) = &self.game else {
-                panic!("we should be in a game");
-            };
+            let game = self.game.as_ref().expect("we should be in a game");
 
             (&game.board, None)
         };
@@ -650,9 +648,7 @@ impl<'a> Client {
                     }
                 }
 
-                let Some(game) = &self.game else {
-                    panic!("we should be in a game");
-                };
+                let game = self.game.as_ref().expect("we should be in a game");
 
                 (
                     &self.game_id,
@@ -1037,9 +1033,7 @@ impl<'a> Client {
                 self.game_id = id;
                 self.send(format!("join_game_pending {id}\n"));
 
-                let Some(game) = self.games_light.0.get(&id) else {
-                    panic!("the game must exist");
-                };
+                let game = self.games_light.0.get(&id).expect("the game must exist");
 
                 self.game_settings.role_selected = if game.attacker.is_some() {
                     Some(Role::Defender)
@@ -1195,9 +1189,9 @@ impl<'a> Client {
             }
             Message::PlayMoveFrom(vertex) => self.play_from = Some(vertex),
             Message::PlayMoveTo(to) => {
-                let Some(from) = self.play_from else {
-                    panic!("you have to have a from to get to to");
-                };
+                let from = self
+                    .play_from
+                    .expect("you have to have a from to get to to");
 
                 let mut turn = Role::Roleless;
                 if let Some(game) = &self.game {
@@ -1355,10 +1349,10 @@ impl<'a> Client {
                                 self.users.clear();
                                 for user_wins_losses_rating in users.chunks_exact(6) {
                                     let rating = user_wins_losses_rating[4];
-                                    let Some((mut rating, mut deviation)) = rating.split_once("±")
-                                    else {
-                                        panic!("the ratings has this form: {rating}");
-                                    };
+                                    let (mut rating, mut deviation) =
+                                        rating.split_once("±").unwrap_or_else(|| {
+                                            panic!("the ratings has this form: {rating}")
+                                        });
 
                                     rating = rating.trim();
                                     deviation = deviation.trim();
@@ -1460,47 +1454,41 @@ impl<'a> Client {
                                 self.texts_game = VecDeque::new();
                                 self.archived_game_handle = None;
 
-                                let Some(attacker) = text.next() else {
-                                    panic!("the attacker should be supplied");
-                                };
-                                let Some(defender) = text.next() else {
-                                    panic!("the defender should be supplied");
-                                };
+                                let attacker =
+                                    text.next().expect("the attacker should be supplied");
+                                let defender =
+                                    text.next().expect("the defender should be supplied");
+
                                 self.attacker = attacker.to_string();
                                 self.defender = defender.to_string();
 
-                                let Some(rated) = text.next() else {
-                                    panic!("there should be rated or unrated supplied");
-                                };
-                                let Ok(rated) = Rated::from_str(rated) else {
-                                    panic!("rated should be valid");
-                                };
+                                let rated = text
+                                    .next()
+                                    .expect("there should be rated or unrated supplied");
+                                let rated = Rated::from_str(rated).expect("rated should be valid");
+
                                 self.game_settings.rated = rated;
 
-                                let Some(timed) = text.next() else {
-                                    panic!("there should be a time setting supplied");
-                                };
-                                let Some(minutes) = text.next() else {
-                                    panic!("there should be a minutes supplied");
-                                };
-                                let Some(add_seconds) = text.next() else {
-                                    panic!("there should be a add_seconds supplied");
-                                };
-                                let Ok(timed) = TimeSettings::try_from(vec![
+                                let timed = text
+                                    .next()
+                                    .expect("there should be a time setting supplied");
+                                let minutes =
+                                    text.next().expect("there should be a minutes supplied");
+                                let add_seconds =
+                                    text.next().expect("there should be a add_seconds supplied");
+
+                                let timed = TimeSettings::try_from(vec![
                                     "time_settings",
                                     timed,
                                     minutes,
                                     add_seconds,
-                                ]) else {
-                                    panic!("there should be a valid time settings");
-                                };
+                                ])
+                                .expect("there should be a valid time settings");
 
-                                let Some(board_size) = text.next() else {
-                                    panic!("there should be a valid board size");
-                                };
-                                let Ok(board_size) = BoardSize::from_str(board_size) else {
-                                    panic!("there should be a valid board size");
-                                };
+                                let board_size =
+                                    text.next().expect("there should be a valid board size");
+                                let board_size = BoardSize::from_str(board_size)
+                                    .expect("there should be a valid board size");
 
                                 let board = Board::new(board_size);
 
@@ -1573,14 +1561,11 @@ impl<'a> Client {
                                 self.game = Some(game);
                             }
                             Some("join_game_pending") => {
-                                self.challenger = true;
-                                let Some(id) = text.next() else {
-                                    panic!("there should be an id supplied");
-                                };
-                                let Ok(id) = id.parse() else {
-                                    panic!("id should be a valid usize");
-                                };
+                                let id = text.next().expect("there should be an id supplied");
+                                let id = id.parse().expect("id should be a valid usize");
+
                                 self.game_id = id;
+                                self.challenger = true;
                             }
                             Some("leave_game") => self.game_id = 0,
                             Some("login") => {
@@ -1592,14 +1577,12 @@ impl<'a> Client {
                             Some("new_game") => {
                                 // = new_game game 15 none david rated fischer 900_000 10
                                 if Some("game") == text.next() {
-                                    self.challenger = false;
-                                    let Some(game_id) = text.next() else {
-                                        panic!("the game id should be next");
-                                    };
-                                    let Ok(game_id) = game_id.parse() else {
-                                        panic!("the game_id should be a usize")
-                                    };
+                                    let game_id = text.next().expect("the game id should be next");
+                                    let game_id =
+                                        game_id.parse().expect("the game_id should be a usize");
+
                                     self.game_id = game_id;
+                                    self.challenger = false;
                                 }
                             }
                             Some("ping") => {
@@ -1632,12 +1615,11 @@ impl<'a> Client {
                     }
                     Some("game") => {
                         // Plays the move then sends the result back.
-                        let Some(id) = text.next() else {
-                            panic!("there should be a game id");
-                        };
-                        let Ok(id) = id.parse::<Id>() else {
-                            panic!("the game_id should be a valid usize");
-                        };
+                        let id = text.next().expect("there should be a game id");
+                        let id = id
+                            .parse::<Id>()
+                            .expect("the game_id should be a valid usize");
+
                         self.game_id = id;
 
                         // game 0 generate_move attacker
@@ -1685,12 +1667,10 @@ impl<'a> Client {
                         }
                     }
                     Some("request_draw") => {
-                        let Some(id) = text.next() else {
-                            panic!("there should be a game id");
-                        };
-                        let Ok(id) = id.parse::<Id>() else {
-                            panic!("the game_id should be a valid usize");
-                        };
+                        let id = text.next().expect("there should be a game id");
+                        let id = id
+                            .parse::<Id>()
+                            .expect("the game_id should be a valid usize");
 
                         if id == self.game_id {
                             self.request_draw = true;
@@ -1971,42 +1951,42 @@ impl<'a> Client {
         let game_id = t!("ID");
         let game_ids = column![
             text(game_id.to_string()),
-            text("-".repeat(game_id.chars().count())),
+            text("-".repeat(game_id.chars().count())).font(Font::MONOSPACE),
             game_ids
         ]
         .padding(PADDING);
         let attacker = t!("attacker");
         let attackers = column![
             text(attacker.to_string()),
-            text("-".repeat(attacker.chars().count())),
+            text("-".repeat(attacker.chars().count())).font(Font::MONOSPACE),
             attackers
         ]
         .padding(PADDING);
         let defender = t!("defender");
         let defenders = column![
             text(defender.to_string()),
-            text("-".repeat(defender.chars().count())),
+            text("-".repeat(defender.chars().count())).font(Font::MONOSPACE),
             defenders
         ]
         .padding(PADDING);
         let rated = t!("rated");
         let ratings = column![
             text(rated.to_string()),
-            text("-".repeat(rated.chars().count())),
+            text("-".repeat(rated.chars().count())).font(Font::MONOSPACE),
             ratings
         ]
         .padding(PADDING);
         let timed = t!("timed");
         let timings = column![
             text(timed.to_string()),
-            text("-".repeat(timed.chars().count())),
+            text("-".repeat(timed.chars().count())).font(Font::MONOSPACE),
             timings
         ]
         .padding(PADDING);
         let size = t!("size");
         let sizes = column![
             text(size.to_string()),
-            text("-".repeat(size.chars().count())),
+            text("-".repeat(size.chars().count())).font(Font::MONOSPACE),
             sizes
         ]
         .padding(PADDING);
@@ -2104,35 +2084,35 @@ impl<'a> Client {
         let rating = t!("rating");
         let ratings = column![
             text(rating.to_string()),
-            text("-".repeat(rating.chars().count())),
+            text("-".repeat(rating.chars().count())).font(Font::MONOSPACE),
             ratings
         ]
         .padding(PADDING);
         let username = t!("username");
         let usernames = column![
             text(username.to_string()),
-            text("-".repeat(username.chars().count())),
+            text("-".repeat(username.chars().count())).font(Font::MONOSPACE),
             usernames
         ]
         .padding(PADDING);
         let win = t!("wins");
         let wins = column![
             text(win.to_string()),
-            text("-".repeat(win.chars().count())),
+            text("-".repeat(win.chars().count())).font(Font::MONOSPACE),
             wins
         ]
         .padding(PADDING);
         let loss = t!("losses");
         let losses = column![
             text(loss.to_string()),
-            text("-".repeat(loss.chars().count())),
+            text("-".repeat(loss.chars().count())).font(Font::MONOSPACE),
             losses
         ]
         .padding(PADDING);
         let draw = t!("draws");
         let draws = column![
             text(draw.to_string()),
-            text("-".repeat(draw.chars().count())),
+            text("-".repeat(draw.chars().count())).font(Font::MONOSPACE),
             draws
         ]
         .padding(PADDING);
