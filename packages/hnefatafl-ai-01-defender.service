@@ -6,6 +6,9 @@ Documentation="https://hnefatafl.org"
 Type=simple
 Restart=always
 ExecStart=/usr/games/hnefatafl-ai --username 01 --password PASSWORD --role defender
+PrivateTmp=yes
+InaccessibleDirectories=/home
+DeviceAllow=/dev/null rw
 
 [Install]
 WantedBy=multi-user.target
