@@ -44,7 +44,7 @@ struct Args {
     host: String,
 
     /// Choose an AI to play as
-    #[arg(default_value = "monte-carlo", long)]
+    #[arg(default_value = "basic", long)]
     ai: String,
 
     /// How many seconds to run the monte-carlo AI
