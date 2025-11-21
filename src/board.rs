@@ -1409,7 +1409,7 @@ impl Board {
 
         let mut sum = 4;
         for vertex in [up, left, down, right] {
-            if self.get(&vertex) == Space::Attacker {
+            if self.get(&vertex) == Space::Attacker || self.on_throne(&vertex) {
                 sum -= 1;
             }
         }
