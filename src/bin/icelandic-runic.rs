@@ -8,7 +8,7 @@ fn main() {
         let mut output = String::new();
 
         match io::stdin().read_line(&mut input) {
-            Ok(_) => {
+            Ok(_characters_read) => {
                 for c in input.chars() {
                     output.push(translate_to_runic(c));
                 }
@@ -22,10 +22,6 @@ fn main() {
 
 fn translate_to_runic(c: char) -> char {
     match c {
-        ' ' => ' ',
-        '\n' => '\n',
-        '(' => '(',
-        ')' => ')',
         'A' | 'a' => 'ᛆ',
         'Á' | 'á' => 'ᚨ',
         'B' | 'b' => 'ᛒ',
@@ -58,6 +54,6 @@ fn translate_to_runic(c: char) -> char {
         'Þ' | 'þ' => 'ᚦ',
         'Æ' | 'æ' => 'ᛅ',
         'Ö' | 'ö' => 'ᚯ',
-        _ => panic!("an invalid character was reached"),
+        ch => ch,
     }
 }
