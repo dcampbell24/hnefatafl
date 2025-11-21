@@ -910,7 +910,8 @@ impl Game {
 
         let captured = self.board.captured();
         utility -= f64::from(captured.attacker) * 10_000.0;
-        utility += f64::from(captured.defender);
+        utility += f64::from(captured.defender) * 10.0;
+        utility -= f64::from(self.board.spaces_around_the_king());
 
         let (moves_to_escape, escape_vec) = self.moves_to_escape();
 

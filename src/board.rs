@@ -1386,6 +1386,36 @@ impl Board {
             true
         }
     }
+
+    #[allow(clippy::missing_panics_doc)]
+    #[must_use]
+    pub fn spaces_around_the_king(&self) -> u8 {
+        let king = self
+            .find_the_king()
+            .expect("the king should still be on the board");
+
+        let Some(up) = king.up() else {
+            return 5;
+        };
+        let Some(left) = king.left() else {
+            return 5;
+        };
+        let Some(down) = king.down() else {
+            return 5;
+        };
+        let Some(right) = king.right() else {
+            return 5;
+        };
+
+        let mut sum = 4;
+        for vertex in [up, left, down, right] {
+            if self.get(&vertex) == Space::Attacker {
+                sum -= 1;
+            }
+        }
+
+        sum
+    }
 }
 
 impl From<&[u8]> for Board {
