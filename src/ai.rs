@@ -118,7 +118,7 @@ impl AI for AiBasic {
             });
         }
 
-        let (play, score, escape_vec) = game.alpha_beta(
+        let (play, score, escape_vec) = game.alpha_beta_parallel(
             self.depth as usize,
             self.depth,
             None,
