@@ -41,7 +41,7 @@ use hnefatafl_copenhagen::{
 #[cfg(target_os = "linux")]
 use iced::window::settings::PlatformSpecific;
 use iced::{
-    Alignment, Color, Element, Event, Font, Pixels, Subscription, Task,
+    Color, Element, Event, Font, Pixels, Subscription, Task,
     alignment::{Horizontal, Vertical},
     event,
     futures::Stream,
@@ -494,11 +494,6 @@ impl<'a> Client {
                     Space::King => text("♔"),
                 };
 
-                txt = txt
-                    .size(d.piece_size)
-                    .align_x(Alignment::Center)
-                    .align_y(Alignment::Center);
-
                 if let Some((heat_map_from, heat_map_to)) = &heat_map
                     && possible_moves.is_some()
                 {
@@ -518,10 +513,12 @@ impl<'a> Client {
                                     Space::King => "♔",
                                 };
 
-                                txt = text(txt_char)
-                                    .size(d.piece_size)
-                                    .center()
-                                    .color(Color::from_rgba(0.0, 0.0, 0.0, heat.into()));
+                                txt = text(txt_char).color(Color::from_rgba(
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    heat.into(),
+                                ));
                             }
                         }
                     } else {
@@ -530,7 +527,8 @@ impl<'a> Client {
                     }
                 }
 
-                let mut button = button(txt.font(Font::MONOSPACE))
+                txt = txt.font(Font::MONOSPACE).center().size(d.piece_size);
+                let mut button = button(txt)
                     .width(d.board_dimension)
                     .height(d.board_dimension);
 
