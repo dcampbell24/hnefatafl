@@ -481,12 +481,12 @@ impl<'a> Client {
                     Space::Attacker => text("♟"),
                     Space::Defender => text("♙"),
                     Space::Empty => {
-                        if board.on_restricted_square(&vertex) {
-                            text("⌘")
-                        } else if let Some(arrow) = self.draw_arrow(y, x) {
+                        if let Some(arrow) = self.draw_arrow(y, x) {
                             text(arrow)
                         } else if self.captures.contains(&vertex) {
                             text("🗙")
+                        } else if board.on_restricted_square(&vertex) {
+                            text("⌘")
                         } else {
                             text(" ")
                         }
