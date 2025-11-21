@@ -909,13 +909,13 @@ impl Game {
         let mut utility = 0.0;
 
         let captured = self.board.captured();
-        utility -= f64::from(captured.attacker);
+        utility -= f64::from(captured.attacker) * 10_000.0;
         utility += f64::from(captured.defender);
 
         let (moves_to_escape, escape_vec) = self.moves_to_escape();
 
         utility += match moves_to_escape {
-            MovesToEscape::CanNotEscape => 1_000.0,
+            MovesToEscape::CanNotEscape => 2_000.0,
             MovesToEscape::GameOver => 0.0,
             MovesToEscape::Moves(moves) => f64::from(moves) * 100.0,
         };
