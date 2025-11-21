@@ -1,14 +1,15 @@
-use std::io::BufReader;
-use std::net::{Shutdown, TcpListener, TcpStream};
-use std::thread;
+use std::{
+    io::{BufReader, Write},
+    net::{Shutdown, TcpListener, TcpStream},
+    thread,
+};
 
-use clap::command;
-use clap::{self, Parser};
+use clap::{self, CommandFactory, Parser, command};
 
-use hnefatafl_copenhagen::game::Game;
-use hnefatafl_copenhagen::status::Status;
-use hnefatafl_copenhagen::utils::clear_screen;
-use hnefatafl_copenhagen::{SERVER_PORT, read_response, write_command};
+use hnefatafl_copenhagen::{
+    COPYRIGHT, SERVER_PORT, game::Game, read_response, status::Status, utils::clear_screen,
+    write_command,
+};
 
 /// A Hnefatafl Copenhagen Server
 ///
@@ -18,12 +19,29 @@ use hnefatafl_copenhagen::{SERVER_PORT, read_response, write_command};
 #[command(version, about)]
 struct Args {
     /// Listen for HTP drivers on host and port
-    #[arg(default_value = "localhost", index = 1, value_name = "host")]
+    #[arg(default_value = "0.0.0.0", index = 1, value_name = "host")]
     host: String,
+
+    /// Build the manpage
+    #[arg(long)]
+    man: bool,
 }
 
 fn main() -> anyhow::Result<()> {
     let args = Args::parse();
+
+    if args.man {
+        let mut buffer: Vec<u8> = Vec::default();
+        let cmd = Args::command().name("hnefatafl-server").long_version(None);
+        let man = clap_mangen::Man::new(cmd).date("2025-11-21");
+
+        man.render(&mut buffer)?;
+        write!(buffer, "{COPYRIGHT}")?;
+
+        std::fs::write("hnefatafl-server.1", buffer)?;
+        return Ok(());
+    }
+
     let mut address = args.host;
     address.push_str(SERVER_PORT);
     start(&address)

@@ -147,6 +147,7 @@ features = ["server"]
 assets = [
     ["hnefatafl-ai.1.gz", "usr/share/man/man1/", "644"],
     ["hnefatafl-client.1.gz", "usr/share/man/man1/", "644"],
+    ["hnefatafl-server.1.gz", "usr/share/man/man1/", "644"],
     ["hnefatafl-server-full.1.gz", "usr/share/man/man1/", "644"],
     ["hnefatafl-text-protocol.1.gz", "usr/share/man/man1/", "644"],
     ["icons/king_16x16.png", "usr/share/icons/hicolor/16x16/apps/org.hnefatafl.hnefatafl_client.png", "644"],
@@ -163,6 +164,7 @@ assets = [
     ["packages/hnefatafl.service", "usr/lib/systemd/system/", "644"],
     ["target/release/examples/hnefatafl-client", "usr/games/", "755"],
     ["target/release/hnefatafl-ai", "usr/games/", "755"],
+    ["target/release/hnefatafl-server", "usr/games/", "755"],
     ["target/release/hnefatafl-server-full", "usr/games/", "755"],
     ["target/release/hnefatafl-text-protocol", "usr/games/", "755"],
 ]
