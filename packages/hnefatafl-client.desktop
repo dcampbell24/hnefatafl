@@ -1,6 +1,7 @@
 [Desktop Entry]
 Name=Hnefatafl Copenhagen
 Comment=Viking Game
+Keywords=board-game,strategy
 Exec=hnefatafl-client
 Icon=org.hnefatafl.hnefatafl_client
 Type=Application

@@ -23,7 +23,7 @@ rm hnefatafl-client.1.gz
 rm hnefatafl-server-full.1.gz
 
 echo $PACKAGE
-lintian $PACKAGE
+lintian -EviIL +pedantic $PACKAGE
 
 if [ -z $1 ]; then
     exit
