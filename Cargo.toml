@@ -168,7 +168,7 @@ assets = [
     ["target/release/hnefatafl-server-full", "usr/games/", "755"],
     ["target/release/hnefatafl-text-protocol", "usr/games/", "755"],
 ]
-changelog = "packages/changelog"
+changelog = "packages/debian/changelog"
 section = "games"
 
 [package.metadata.i18n]
