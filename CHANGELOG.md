@@ -14,11 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- hnefatafl-client: Use an 🗙 instead of an X to mark a piece captured.
-- hnefatafl-client: Only monospace the board.
+- hnefatafl-client: use an 🗙 instead of an X to mark a piece captured.
+- hnefatafl-client: only monospace the board.
 
 ### Fixed
 
+- hnefatafl-client: Update the board with the capture of the king.
 - board::difference().
 - Don't allow the Heat Map when the game is over.
 - Fix HeatMap sorting.

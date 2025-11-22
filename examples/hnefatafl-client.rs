@@ -28,7 +28,7 @@ use hnefatafl_copenhagen::{
     glicko::{CONFIDENCE_INTERVAL_95, Rating},
     heat_map::{Heat, HeatMap},
     locale::Locale,
-    play::{BOARD_LETTERS, Plays, Vertex},
+    play::{BOARD_LETTERS, Plae, Plays, Vertex},
     rating::Rated,
     role::Role,
     server_game::{ArchivedGame, ArchivedGameHandle, ServerGameLight, ServerGamesLight},
@@ -2012,21 +2012,10 @@ impl<'a> Client {
             game.turn
         };
 
-        match game.read_line(&format!("play {role} {from} {to}\n")) {
-            Ok(vertexes) => {
-                if let Some(vertexes) = vertexes {
-                    for vertex in vertexes.split_ascii_whitespace() {
-                        let vertex =
-                            Vertex::from_str(vertex).expect("this should be a valid vertex");
-
-                        self.captures.insert(vertex);
-                    }
-                }
-            }
-            Err(error) => {
-                error!("{error}");
-                exit(1)
-            }
+        let play = Plae::try_from(vec!["play", &role.to_string(), from, to]).unwrap();
+        let captures = game.play(&play).unwrap();
+        for vertex in captures.0 {
+            self.captures.insert(vertex);
         }
 
         if let Some(handle) = &mut self.archived_game_handle {
