@@ -771,8 +771,19 @@ impl Board {
         None
     }
 
+    #[must_use]
+    pub fn captured_the_king(&self) -> bool {
+        for space in &self.spaces {
+            if *space == Space::King {
+                return false;
+            }
+        }
+
+        true
+    }
+
     fn capture_the_king(
-        &self,
+        &mut self,
         role_from: Role,
         play_to: &Vertex,
         captures: &mut Vec<Vertex>,
@@ -823,6 +834,7 @@ impl Board {
             }
 
             if attacker_moved {
+                self.set(&kings_vertex, Space::Empty);
                 captures.push(kings_vertex);
                 return true;
             }
