@@ -9,6 +9,7 @@ use std::{
 };
 
 use chrono::Utc;
+use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use rustc_hash::{FxBuildHasher, FxHashMap, FxHashSet};
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "js")]
@@ -154,33 +155,8 @@ impl Game {
         mut alpha: f64,
         mut beta: f64,
     ) -> (Option<Plae>, f64, Option<EscapeVec>) {
-        match self.status {
-            Status::AttackerWins => {
-                return (
-                    self.play_n(self.plays.len() - original_depth + usize::from(depth) - 1),
-                    f64::INFINITY,
-                    None,
-                );
-            }
-            Status::DefenderWins => {
-                return (
-                    self.play_n(self.plays.len() - original_depth - 1),
-                    -f64::INFINITY,
-                    None,
-                );
-            }
-            Status::Draw => unreachable!(),
-            Status::Ongoing => {}
-        }
-
-        if depth == 0 {
-            let (utility, escape_vec) = self.utility();
-
-            return (
-                self.play_n(self.plays.len() - original_depth),
-                utility,
-                Some(escape_vec),
-            );
+        if let Some(result) = self.alpha_beta_duplicated(original_depth, depth) {
+            return result;
         }
 
         if self.turn == Role::Attacker {
@@ -238,6 +214,127 @@ impl Game {
 
             (play_option, value, escape_vec)
         }
+    }
+
+    #[allow(clippy::missing_panics_doc)]
+    #[must_use]
+    pub fn alpha_beta_parallel(
+        &self,
+        original_depth: usize,
+        depth: u8,
+        mut play_option: Option<Plae>,
+        mut alpha: f64,
+        mut beta: f64,
+    ) -> (Option<Plae>, f64, Option<EscapeVec>) {
+        if let Some(result) = self.alpha_beta_duplicated(original_depth, depth) {
+            return result;
+        }
+
+        if self.turn == Role::Attacker {
+            let mut value = -f64::INFINITY;
+            let mut escape_vec = None;
+            let results: Vec<_> = self
+                .all_legal_plays()
+                .par_iter()
+                .map(|plae| {
+                    let mut child = self.clone();
+                    child.play(plae).expect("this play should be valid");
+                    child.alpha_beta(original_depth, depth - 1, Some(plae.clone()), alpha, beta)
+                })
+                .collect();
+
+            for (play_option_2, value_2, escape_vec_2) in results {
+                if value_2 > value {
+                    value = value_2;
+                    play_option.clone_from(&play_option_2);
+                    escape_vec.clone_from(&escape_vec_2);
+                }
+
+                if value >= beta {
+                    break;
+                }
+
+                if value > alpha {
+                    alpha = value;
+                    play_option = play_option_2;
+                    escape_vec = escape_vec_2;
+                }
+            }
+
+            (play_option, value, escape_vec)
+        } else {
+            let mut value = f64::INFINITY;
+            let mut escape_vec = None;
+
+            let results: Vec<_> = self
+                .all_legal_plays()
+                .par_iter()
+                .map(|plae| {
+                    let mut child = self.clone();
+                    child.play(plae).expect("this play should be valid");
+                    child.alpha_beta(original_depth, depth - 1, Some(plae.clone()), alpha, beta)
+                })
+                .collect();
+
+            for (play_option_2, value_2, escape_vec_2) in results {
+                if value_2 < value {
+                    value = value_2;
+                    play_option.clone_from(&play_option_2);
+                    escape_vec.clone_from(&escape_vec_2);
+                }
+
+                if value <= alpha {
+                    break;
+                }
+
+                if value < beta {
+                    beta = value;
+                    play_option = play_option_2;
+                    escape_vec = escape_vec_2;
+                }
+            }
+
+            (play_option, value, escape_vec)
+        }
+    }
+
+    #[allow(clippy::missing_panics_doc)]
+    #[must_use]
+    pub fn alpha_beta_duplicated(
+        &self,
+        original_depth: usize,
+        depth: u8,
+    ) -> Option<(Option<Plae>, f64, Option<EscapeVec>)> {
+        match self.status {
+            Status::AttackerWins => {
+                return Some((
+                    self.play_n(self.plays.len() - original_depth + usize::from(depth) - 1),
+                    f64::INFINITY,
+                    None,
+                ));
+            }
+            Status::DefenderWins => {
+                return Some((
+                    self.play_n(self.plays.len() - original_depth + usize::from(depth) - 1),
+                    -f64::INFINITY,
+                    None,
+                ));
+            }
+            Status::Draw => unreachable!(),
+            Status::Ongoing => {}
+        }
+
+        if depth == 0 {
+            let (utility, escape_vec) = self.utility();
+
+            return Some((
+                self.play_n(self.plays.len() - original_depth),
+                utility,
+                Some(escape_vec),
+            ));
+        }
+
+        None
     }
 
     #[allow(clippy::missing_panics_doc)]
@@ -812,13 +909,14 @@ impl Game {
         let mut utility = 0.0;
 
         let captured = self.board.captured();
-        utility -= f64::from(captured.attacker);
-        utility += f64::from(captured.defender);
+        utility -= f64::from(captured.attacker) * 10_000.0;
+        utility += f64::from(captured.defender) * 10.0;
+        utility -= f64::from(self.board.spaces_around_the_king());
 
         let (moves_to_escape, escape_vec) = self.moves_to_escape();
 
         utility += match moves_to_escape {
-            MovesToEscape::CanNotEscape => 1_000.0,
+            MovesToEscape::CanNotEscape => 2_000.0,
             MovesToEscape::GameOver => 0.0,
             MovesToEscape::Moves(moves) => f64::from(moves) * 100.0,
         };

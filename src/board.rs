@@ -771,8 +771,19 @@ impl Board {
         None
     }
 
+    #[must_use]
+    pub fn captured_the_king(&self) -> bool {
+        for space in &self.spaces {
+            if *space == Space::King {
+                return false;
+            }
+        }
+
+        true
+    }
+
     fn capture_the_king(
-        &self,
+        &mut self,
         role_from: Role,
         play_to: &Vertex,
         captures: &mut Vec<Vertex>,
@@ -823,6 +834,7 @@ impl Board {
             }
 
             if attacker_moved {
+                self.set(&kings_vertex, Space::Empty);
                 captures.push(kings_vertex);
                 return true;
             }
@@ -1385,6 +1397,36 @@ impl Board {
             self.set(vertex, space);
             true
         }
+    }
+
+    #[allow(clippy::missing_panics_doc)]
+    #[must_use]
+    pub fn spaces_around_the_king(&self) -> u8 {
+        let king = self
+            .find_the_king()
+            .expect("the king should still be on the board");
+
+        let Some(up) = king.up() else {
+            return 5;
+        };
+        let Some(left) = king.left() else {
+            return 5;
+        };
+        let Some(down) = king.down() else {
+            return 5;
+        };
+        let Some(right) = king.right() else {
+            return 5;
+        };
+
+        let mut sum = 4;
+        for vertex in [up, left, down, right] {
+            if self.get(&vertex) == Space::Attacker || self.on_throne(&vertex) {
+                sum -= 1;
+            }
+        }
+
+        sum
     }
 }
 

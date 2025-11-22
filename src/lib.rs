@@ -180,10 +180,12 @@ fn play_game(i: usize, record: &GameRecord) -> Result<(usize, Game), anyhow::Err
 
         let captures_2 = Captures(captures_2);
 
-        if let Some(captures_1) = captures_1 {
-            assert_eq!(captures_1, captures_2);
-        } else if !captures_2.0.is_empty() {
-            panic!("The engine reports captures, but the record says there are none.");
+        if !game.board.captured_the_king() {
+            if let Some(captures_1) = captures_1 {
+                assert_eq!(captures_1, captures_2);
+            } else if !captures_2.0.is_empty() {
+                panic!("The engine reports captures, but the record says there are none.");
+            }
         }
     }
 

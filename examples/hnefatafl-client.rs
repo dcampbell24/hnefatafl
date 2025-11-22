@@ -28,7 +28,7 @@ use hnefatafl_copenhagen::{
     glicko::{CONFIDENCE_INTERVAL_95, Rating},
     heat_map::{Heat, HeatMap},
     locale::Locale,
-    play::{BOARD_LETTERS, Plays, Vertex},
+    play::{BOARD_LETTERS, Plae, Plays, Vertex},
     rating::Rated,
     role::Role,
     server_game::{ArchivedGame, ArchivedGameHandle, ServerGameLight, ServerGamesLight},
@@ -41,7 +41,7 @@ use hnefatafl_copenhagen::{
 #[cfg(target_os = "linux")]
 use iced::window::settings::PlatformSpecific;
 use iced::{
-    Alignment, Color, Element, Event, Font, Pixels, Subscription, Task,
+    Color, Element, Event, Font, Pixels, Subscription, Task,
     alignment::{Horizontal, Vertical},
     event,
     futures::Stream,
@@ -483,23 +483,18 @@ impl<'a> Client {
                     Space::Attacker => text("♟").font(CHESS_FONT),
                     Space::Defender => text("♙").font(CHESS_FONT),
                     Space::Empty => {
-                        if board.on_restricted_square(&vertex) {
-                            text("⌘")
-                        } else if let Some(arrow) = self.draw_arrow(y, x) {
+                        if let Some(arrow) = self.draw_arrow(y, x) {
                             text(arrow)
                         } else if self.captures.contains(&vertex) {
                             text("🗙")
+                        } else if board.on_restricted_square(&vertex) {
+                            text("⌘")
                         } else {
                             text(" ")
                         }
                     }
                     Space::King => text("♔").font(CHESS_FONT),
                 };
-
-                txt = txt
-                    .size(d.piece_size)
-                    .align_x(Alignment::Center)
-                    .align_y(Alignment::Center);
 
                 if let Some((heat_map_from, heat_map_to)) = &heat_map
                     && possible_moves.is_some()
@@ -520,11 +515,12 @@ impl<'a> Client {
                                     Space::King => "♔",
                                 };
 
-                                txt = text(txt_char)
-                                    .font(CHESS_FONT)
-                                    .size(d.piece_size)
-                                    .center()
-                                    .color(Color::from_rgba(0.0, 0.0, 0.0, heat.into()));
+                                txt = text(txt_char).color(Color::from_rgba(
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    heat.into(),
+                                ));
                             }
                         }
                     } else {
@@ -533,7 +529,8 @@ impl<'a> Client {
                     }
                 }
 
-                let mut button = button(txt.font(Font::MONOSPACE))
+                txt = txt.font(Font::MONOSPACE).center().size(d.piece_size);
+                let mut button = button(txt)
                     .width(d.board_dimension)
                     .height(d.board_dimension);
 
@@ -2017,21 +2014,10 @@ impl<'a> Client {
             game.turn
         };
 
-        match game.read_line(&format!("play {role} {from} {to}\n")) {
-            Ok(vertexes) => {
-                if let Some(vertexes) = vertexes {
-                    for vertex in vertexes.split_ascii_whitespace() {
-                        let vertex =
-                            Vertex::from_str(vertex).expect("this should be a valid vertex");
-
-                        self.captures.insert(vertex);
-                    }
-                }
-            }
-            Err(error) => {
-                error!("{error}");
-                exit(1)
-            }
+        let play = Plae::try_from(vec!["play", &role.to_string(), from, to]).unwrap();
+        let captures = game.play(&play).unwrap();
+        for vertex in captures.0 {
+            self.captures.insert(vertex);
         }
 
         if let Some(handle) = &mut self.archived_game_handle {

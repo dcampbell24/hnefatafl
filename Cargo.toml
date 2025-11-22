@@ -4,13 +4,13 @@ version = "4.2.2"
 authors = ["David Campbell <dcampbell24@gmail.com>"]
 edition = "2024"
 rust-version =  "1.88"
-description = "Copenhagen Hnefatafl client, engine, and server."
+description = "Copenhagen Hnefatafl client, engine, server and artificial intelligence"
 documentation = "https://docs.rs/hnefatafl-copenhagen/"
 readme = "README.md"
 homepage = "https://hnefatafl.org"
 repository = "https://github.com/dcampbell24/hnefatafl"
 license = "MIT OR Apache-2.0"
-keywords = ["board-game", "copenhagen", "hnefatafl", "tafl"]
+keywords = ["board-game", "copenhagen", "hnefatafl", "strategy", "tafl"]
 categories = ["game-engines", "games", "wasm"]
 default-run = "hnefatafl-server-full"
 
@@ -142,11 +142,28 @@ debug = true
 [package.metadata.deb]
 copyright = "2025 David Lawrence Campbell"
 maintainer = "David Campbell <dcampbell24@gmail.com>"
-extended-description = "The engine is similar to the Go Text Protocol."
+extended-description = """This package contains an engine, server, client, artificial intelligence and systemd services to run them.
+
+Their are two server binaries. One which is the full version and another just
+for running hnefatafl text protocol clients. The pack includes a systemd
+service for running the full server.
+
+The artificial intelligence comes with a service for running it as an attacker
+and as a defender. When you run the service, the player will repeatedly create
+a game and wait for a challenger.
+
+The hnefatafl-text-protocol can be piped to the server or run as a standalone
+binary. It has various options such as running a simulation with --ai and
+displaying the game with --display-game for a user friendly interface.
+
+The client is a graphical user interface that connects to the server-full. By
+default it connects to the server running at hnefatafl.org.
+"""
 features = ["server"]
 assets = [
     ["hnefatafl-ai.1.gz", "usr/share/man/man1/", "644"],
     ["hnefatafl-client.1.gz", "usr/share/man/man1/", "644"],
+    ["hnefatafl-server.1.gz", "usr/share/man/man1/", "644"],
     ["hnefatafl-server-full.1.gz", "usr/share/man/man1/", "644"],
     ["hnefatafl-text-protocol.1.gz", "usr/share/man/man1/", "644"],
     ["icons/king_16x16.png", "usr/share/icons/hicolor/16x16/apps/org.hnefatafl.hnefatafl_client.png", "644"],
@@ -163,10 +180,11 @@ assets = [
     ["packages/hnefatafl.service", "usr/lib/systemd/system/", "644"],
     ["target/release/examples/hnefatafl-client", "usr/games/", "755"],
     ["target/release/hnefatafl-ai", "usr/games/", "755"],
+    ["target/release/hnefatafl-server", "usr/games/", "755"],
     ["target/release/hnefatafl-server-full", "usr/games/", "755"],
     ["target/release/hnefatafl-text-protocol", "usr/games/", "755"],
 ]
-changelog = "packages/changelog"
+changelog = "packages/debian/changelog"
 section = "games"
 
 [package.metadata.i18n]
