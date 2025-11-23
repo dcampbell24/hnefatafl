@@ -6,9 +6,12 @@ mkdir --parents apt-repo/pool/main
 mkdir --parents apt-repo/dists/stable
 
 cp ../../target/debian/${PACKAGE} apt-repo/pool/main
-dpkg-scanpackages --arch amd64 apt-repo/pool/ > apt-repo/dists/stable/main/binary-amd64/Packages
-cat apt-repo/dists/stable/main/binary-amd64/Packages | lzma --keep > apt-repo/dists/stable/main/binary-amd64/Packages.xz
-cd apt-repo/dists/stable/
+
+cd apt-repo
+dpkg-scanpackages --arch amd64 pool/ > dists/stable/main/binary-amd64/Packages
+cat dists/stable/main/binary-amd64/Packages | lzma --keep > dists/stable/main/binary-amd64/Packages.xz
+
+cd dists/stable/
 
 cat > Release << EOF
 Origin: Hnefatafl Org
@@ -38,3 +41,6 @@ do_hash() {
 do_hash 'MD5Sum' 'md5sum' >> 'Release'
 do_hash 'SHA1' 'sha1sum' >> 'Release'
 do_hash 'SHA256' 'sha256sum' >> 'Release'
+
+
+# echo "deb [arch=amd64] http://127.0.0.1:8000/apt-repo stable main" >  /etc/apt/sources.list.d/hnefatafl.list
