@@ -43,6 +43,7 @@ do_hash 'SHA1' 'sha1sum' >> 'Release'
 do_hash 'SHA256' 'sha256sum' >> 'Release'
 
 cat Release | gpg -abs > Release.gpg
+cat Release | gpg -abs --clearsign > InRelease
 
 # /etc/apt/sources.list.d/hnefatafl.list
 # deb [arch=amd64 signed-by=/etc/apt/keyrings/packages.hnefatafl.org.asc] http://127.0.0.1:8000/apt-repo stable main
