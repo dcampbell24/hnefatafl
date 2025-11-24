@@ -1,6 +1,6 @@
 #! /bin/bash -e
 
-PACKAGE='hnefatafl-copenhagen_4.2.2-1_amd64.deb'
+PACKAGE='hnefatafl-copenhagen_4.3.0-1_amd64.deb'
 
 mkdir --parents apt/pool/main
 mkdir --parents apt/dists/stable/main/binary-amd64
@@ -18,7 +18,7 @@ Origin: Hnefatafl Org
 Label: Hnefatafl Copenhagen
 Suite: stable
 Codename: stable
-Version: 4.2.2-1
+Version: 4.3.0-1
 Architectures: amd64
 Components: main
 Description: A software repository containing Hnefatafl Copenhagen
