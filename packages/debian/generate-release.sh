@@ -3,7 +3,7 @@
 PACKAGE='hnefatafl-copenhagen_4.2.2-1_amd64.deb'
 
 mkdir --parents apt/pool/main
-mkdir --parents apt/dists/stable
+mkdir --parents apt/dists/stable/main/binary-amd64
 
 cp ../../target/debian/${PACKAGE} apt/pool/main
 

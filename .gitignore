@@ -1,4 +1,4 @@
-/packages/debian/apt-repo
+/packages/debian/apt
 /profile.json
 /profile.json.gz
 /ssl
