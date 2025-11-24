@@ -37,7 +37,7 @@ pub fn choose_ai(ai: &str, seconds: Option<u64>, depth: Option<u8>) -> anyhow::R
 #[allow(clippy::missing_errors_doc)]
 pub fn clear_screen() -> anyhow::Result<ExitStatus> {
     #[cfg(not(any(target_family = "unix", target_family = "windows")))]
-    return Ok(1);
+    return Ok(ExitStatus::default());
 
     #[cfg(target_family = "unix")]
     let exit_status = Command::new("clear").status()?;
@@ -45,6 +45,7 @@ pub fn clear_screen() -> anyhow::Result<ExitStatus> {
     #[cfg(target_family = "windows")]
     let exit_status = Command::new("cls").status()?;
 
+    #[cfg(any(target_family = "unix", target_family = "windows"))]
     Ok(exit_status)
 }
 
