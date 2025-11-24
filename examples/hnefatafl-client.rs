@@ -622,7 +622,9 @@ impl<'a> Client {
                 attacker_rating = game_handle.game.attacker_rating.to_string_rounded();
                 defender_rating = game_handle.game.defender_rating.to_string_rounded();
 
-                let status = if game_handle.play < game_handle.game.plays.len() - 1 {
+                let status = if game_handle.play < game_handle.game.plays.len() - 1
+                    || game_handle.play >= game_handle.game.plays.len()
+                {
                     &Status::Ongoing
                 } else {
                     &game_handle.game.status
