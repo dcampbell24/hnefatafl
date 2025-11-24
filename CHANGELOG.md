@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- hnefatafl-text-protocol: pass all of the arguments onto htp.
+- hnefatafl-text-protocol: pass all of the arguments onto htp for tcp.
 - hnefatafl-client: Update the board with the capture of the king.
 - board::difference().
 - Don't allow the Heat Map when the game is over.
