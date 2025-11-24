@@ -19,6 +19,7 @@ rust_i18n::i18n!();
 pub mod accounts;
 pub mod ai;
 pub mod board;
+pub mod characters;
 pub mod client;
 pub mod draw;
 pub mod game;

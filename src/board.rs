@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 use crate::{
+    characters::Characters,
     game::PreviousBoards,
     play::{BOARD_LETTERS, Plae, Play, Vertex},
     role::Role,
@@ -1525,15 +1526,16 @@ pub struct Captured {
 
 impl Captured {
     #[must_use]
-    pub fn attacker(&self) -> String {
-        format!("♟ {}", self.attacker)
+    pub fn attacker(&self, chars: &Characters) -> String {
+        format!("{} {}", chars.attacker, self.attacker)
     }
 
     #[must_use]
-    pub fn defender(&self) -> String {
-        let mut string = format!("♙ {}", self.defender);
+    pub fn defender(&self, chars: &Characters) -> String {
+        let mut string = format!("{} {}", chars.defender, self.defender);
         if self.king {
-            string.push_str(" ♔");
+            string.push(' ');
+            string.push_str(&chars.king);
         }
         string
     }
