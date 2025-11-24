@@ -5,7 +5,6 @@ use std::{
     hash::{DefaultHasher, Hash, Hasher},
     process::exit,
     str::FromStr,
-    time::Duration,
 };
 
 use chrono::Utc;
@@ -16,7 +15,7 @@ use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::wasm_bindgen;
 
 use crate::{
-    ai::{AI, AiMonteCarlo},
+    ai::{AI, AiBasic},
     board::{Board, BoardSize, InvalidMove},
     characters::Characters,
     message::{COMMANDS, Message},
@@ -840,7 +839,7 @@ impl Game {
             Message::Empty => Ok(None),
             Message::FinalStatus => Ok(Some(format!("{}", self.status))),
             Message::GenerateMove => {
-                let mut ai = AiMonteCarlo::new(Duration::from_secs(10), 20);
+                let mut ai = AiBasic::new(4);
                 let generate_move = ai.generate_move(self)?;
                 Ok(Some(generate_move.to_string()))
             }
