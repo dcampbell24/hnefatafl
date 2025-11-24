@@ -183,7 +183,14 @@ fn play_tcp(mut ai: Box<dyn AI>, address: &str, display_game: bool) -> anyhow::R
                     println!("{generate_move}");
                     println!("{}", generate_move.heat_map);
                 }
-                _ => unreachable!("You can't get here!"),
+                _ => match game.read_line(&message) {
+                    Err(error) => println!("? {error}\n"),
+                    Ok(message) => {
+                        if let Some(message) = message {
+                            println!("= {message}");
+                        }
+                    }
+                },
             }
         }
 
