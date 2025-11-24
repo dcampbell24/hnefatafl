@@ -69,7 +69,7 @@ fn main() -> anyhow::Result<()> {
 
         let ai = match args.ai {
             Some(ai) => choose_ai(&ai, args.seconds, args.depth)?,
-            None => choose_ai("monte-carlo", args.seconds, args.depth)?,
+            None => choose_ai("basic", args.seconds, args.depth)?,
         };
 
         play_tcp(ai, &address, args.display_game)?;
