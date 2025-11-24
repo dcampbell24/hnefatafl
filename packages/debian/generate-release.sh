@@ -2,12 +2,12 @@
 
 PACKAGE='hnefatafl-copenhagen_4.2.2-1_amd64.deb'
 
-mkdir --parents apt-repo/pool/main
-mkdir --parents apt-repo/dists/stable
+mkdir --parents apt/pool/main
+mkdir --parents apt/dists/stable
 
-cp ../../target/debian/${PACKAGE} apt-repo/pool/main
+cp ../../target/debian/${PACKAGE} apt/pool/main
 
-cd apt-repo
+cd apt
 dpkg-scanpackages --arch amd64 pool/ > dists/stable/main/binary-amd64/Packages
 cat dists/stable/main/binary-amd64/Packages | lzma --keep > dists/stable/main/binary-amd64/Packages.xz
 
@@ -46,4 +46,4 @@ cat Release | gpg -abs > Release.gpg
 cat Release | gpg -abs --clearsign > InRelease
 
 # /etc/apt/sources.list.d/hnefatafl.list
-# deb [arch=amd64 signed-by=/etc/apt/keyrings/packages.hnefatafl.org.asc] http://127.0.0.1:8000/apt-repo stable main
+# deb [arch=amd64 signed-by=/etc/apt/keyrings/packages.hnefatafl.org.asc] http://127.0.0.1:8000/apt stable main
