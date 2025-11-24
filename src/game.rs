@@ -18,6 +18,7 @@ use wasm_bindgen::prelude::wasm_bindgen;
 use crate::{
     ai::{AI, AiMonteCarlo},
     board::{Board, BoardSize, InvalidMove},
+    characters::Characters,
     message::{COMMANDS, Message},
     play::{Captures, Plae, Play, PlayRecordTimed, Plays, Vertex},
     role::Role,
@@ -37,6 +38,8 @@ pub struct Game {
     pub attacker_time: TimeSettings,
     pub defender_time: TimeSettings,
     pub turn: Role,
+    #[serde(skip)]
+    pub chars: Characters,
 }
 
 #[cfg(feature = "js")]
@@ -60,6 +63,9 @@ pub struct Game {
     pub defender_time: TimeSettings,
     #[wasm_bindgen(skip)]
     pub turn: Role,
+    #[wasm_bindgen(skip)]
+    #[serde(skip)]
+    pub chars: Characters,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
@@ -90,8 +96,8 @@ impl fmt::Display for Game {
         writeln!(
             f,
             "captures: {} {}",
-            &captured.attacker(),
-            &captured.defender()
+            &captured.attacker(&self.chars),
+            &captured.defender(&self.chars)
         )?;
         writeln!(f, "status: {}", self.status)?;
         writeln!(f, "turn: {}", self.turn)?;

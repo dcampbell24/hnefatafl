@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- hnefatafl-client: the option to only use ASCII characters to do rendering.
 - The engine and the server to the .deb package.
 - Basic AI.
 

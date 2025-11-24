@@ -22,6 +22,7 @@ use hnefatafl_copenhagen::{
     accounts::Email,
     ai::GenerateMove,
     board::{Board, BoardSize},
+    characters::Characters,
     client::{Size, Theme, User},
     draw::Draw,
     game::{Game, LegalMoves, TimeUnix},
@@ -92,6 +93,10 @@ struct Args {
     /// Make the window size tiny
     #[arg(long)]
     tiny_window: bool,
+
+    /// Render everything in ASCII
+    #[arg(long)]
+    ascii: bool,
 
     /// Build the manpage
     #[arg(long)]
@@ -189,7 +194,7 @@ fn init_client() -> Client {
 
     rust_i18n::set_locale(&client.locale_selected.txt());
     client.strings = i18n_buttons();
-    client.text_input = client.username.clone();
+    client.text_input.clone_from(&client.username);
 
     let archived_games: Vec<ArchivedGame> = match &fs::read(&user_config_file_postcard) {
         Ok(bytes) => match postcard::from_bytes(bytes) {
@@ -223,6 +228,11 @@ fn init_client() -> Client {
 
     client.archived_games = archived_games;
     client.error_persistent = error;
+
+    let args = Args::parse();
+    if args.ascii {
+        client.chars.ascii();
+    }
 
     client
 }
@@ -305,6 +315,8 @@ struct Client {
     captures: HashSet<Vertex>,
     #[serde(skip)]
     counter: u64,
+    #[serde(skip)]
+    chars: Characters,
     #[serde(skip)]
     challenger: bool,
     #[serde(skip)]
@@ -478,20 +490,20 @@ impl<'a> Client {
                 };
 
                 let mut txt = match board.get(&vertex) {
-                    Space::Attacker => text("♟"),
-                    Space::Defender => text("♙"),
+                    Space::Attacker => text(&self.chars.attacker),
+                    Space::Defender => text(&self.chars.defender),
                     Space::Empty => {
                         if let Some(arrow) = self.draw_arrow(y, x) {
                             text(arrow)
                         } else if self.captures.contains(&vertex) {
-                            text("🗙")
+                            text(&self.chars.captured)
                         } else if board.on_restricted_square(&vertex) {
-                            text("⌘")
+                            text(&self.chars.restricted_square)
                         } else {
                             text(" ")
                         }
                     }
-                    Space::King => text("♔"),
+                    Space::King => text(&self.chars.king),
                 };
 
                 if let Some((heat_map_from, heat_map_to)) = &heat_map
@@ -507,10 +519,10 @@ impl<'a> Client {
                                 txt = txt.color(Color::from_rgba(0.0, 0.0, 0.0, heat.into()));
                             } else {
                                 let txt_char = match space {
-                                    Space::Attacker => "♟",
-                                    Space::Defender => "♙",
+                                    Space::Attacker => &self.chars.attacker,
+                                    Space::Defender => &self.chars.defender,
                                     Space::Empty => "",
-                                    Space::King => "♔",
+                                    Space::King => &self.chars.king,
                                 };
 
                                 txt = text(txt_char).color(Color::from_rgba(
@@ -566,13 +578,13 @@ impl<'a> Client {
                 let mut arrow = " ";
 
                 if y_diff < 0 {
-                    arrow = "↓";
+                    arrow = &self.chars.arrow_down;
                 } else if y_diff > 0 {
-                    arrow = "↑";
+                    arrow = &self.chars.arrow_up;
                 } else if x_diff < 0 {
-                    arrow = "→";
+                    arrow = &self.chars.arrow_right;
                 } else if x_diff > 0 {
-                    arrow = "←";
+                    arrow = &self.chars.arrow_left;
                 }
 
                 Some(arrow)
@@ -673,12 +685,12 @@ impl<'a> Client {
                 row![
                     text(attacker),
                     text(attacker_rating).center(),
-                    text(captured.defender().clone()),
+                    text(captured.defender(&self.chars).clone()),
                 ]
                 .spacing(SPACING),
                 row![
                     text(attacker_time).size(35).center(),
-                    text("🗡").size(35).center(),
+                    text(&self.chars.dagger).size(35).center(),
                 ]
                 .spacing(SPACING),
             ]
@@ -692,12 +704,12 @@ impl<'a> Client {
                 row![
                     text(defender),
                     text(defender_rating).center(),
-                    text(captured.attacker().clone()),
+                    text(captured.attacker(&self.chars).clone()),
                 ]
                 .spacing(SPACING),
                 row![
                     text(defender_time).size(35).center(),
-                    text("⛨").size(35.0).center(),
+                    text(&self.chars.shield).size(35.0).center(),
                 ]
                 .spacing(SPACING),
             ]
@@ -801,7 +813,8 @@ impl<'a> Client {
         }
 
         let spectator = column![text!(
-            "👥 ({}) {}: {seconds:01}.{sub_second:03} s",
+            "{} ({}) {}: {seconds:01}.{sub_second:03} s",
+            &self.chars.people,
             self.spectators.len(),
             t!("lag"),
         )];
@@ -832,22 +845,23 @@ impl<'a> Client {
 
             user_area = user_area.push(row![heat_map, heat_map_text]);
 
-            let mut left_all = button(text("⏮"));
-            let mut left = button(text("⏪"));
+            let mut left_all = button(text(&self.chars.double_arrow_left_full));
+            let mut left = button(text(&self.chars.double_arrow_left));
             if handle.play > 0 {
                 left_all = left_all.on_press(Message::ReviewGameBackwardAll);
                 left = left.on_press(Message::ReviewGameBackward);
             }
 
-            let mut right = button(text("⏩").center());
-            let mut right_all = button(text("⏭").center());
+            let mut right = button(text(&self.chars.double_arrow_right).center());
+            let mut right_all = button(text(&self.chars.double_arrow_right_full).center());
             if handle.boards.has_children() {
                 right = right.on_press(Message::ReviewGameForward);
                 right_all = right_all.on_press(Message::ReviewGameForwardAll);
             }
 
             let child_number = text(handle.boards.next_child);
-            let child_right = button(text("⏩").center()).on_press(Message::ReviewGameChildNext);
+            let child_right = button(text(&self.chars.double_arrow_right).center())
+                .on_press(Message::ReviewGameChildNext);
 
             user_area = user_area.push(
                 row![left_all, left, right, right_all, child_right, child_number].spacing(SPACING),
