@@ -2060,7 +2060,6 @@ mod tests {
         };
 
         game.read_line("play attacker c3 b3")?;
-        println!("{}", game.board);
         assert_eq!(game.status, Status::Ongoing);
 
         Ok(())
@@ -2376,7 +2375,6 @@ mod tests {
             }
         }
 
-        println!("{}", game.status);
         assert!(game.status == Status::AttackerWins || game.status == Status::DefenderWins);
     }
 }
