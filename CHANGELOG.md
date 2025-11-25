@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
 - hnefatafl-client: social preview and hide letters.
 - hnefatafl-client: draw a bordered box around the board.
 
