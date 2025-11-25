@@ -843,25 +843,6 @@ impl<'a> Client {
             }
         }
 
-        let spectator = column![text!(
-            "{} ({}) {}: {seconds:01}.{sub_second:03} s",
-            &self.chars.people,
-            self.spectators.len(),
-            t!("lag"),
-        )];
-
-        if self.spectators.is_empty() {
-            user_area = user_area.push(spectator);
-        } else {
-            user_area = user_area.push(tooltip(
-                spectator,
-                container(spectators)
-                    .style(container::bordered_box)
-                    .padding(PADDING),
-                tooltip::Position::Bottom,
-            ));
-        }
-
         if let Some(handle) = &self.archived_game_handle {
             let mut heat_map = checkbox("", self.heat_map_display).size(32);
             if self.heat_map.is_some() {
@@ -897,6 +878,25 @@ impl<'a> Client {
             user_area = user_area.push(
                 row![left_all, left, right, right_all, child_right, child_number].spacing(SPACING),
             );
+        } else {
+            let spectator = text!(
+                "{} ({}) {}: {seconds:01}.{sub_second:03} s",
+                &self.chars.people,
+                self.spectators.len(),
+                t!("lag"),
+            );
+
+            if self.spectators.is_empty() {
+                user_area = user_area.push(spectator);
+            } else {
+                user_area = user_area.push(tooltip(
+                    spectator,
+                    container(spectators)
+                        .style(container::bordered_box)
+                        .padding(PADDING),
+                    tooltip::Position::Bottom,
+                ));
+            }
         }
 
         if self.archived_game_handle.is_some() {
