@@ -385,22 +385,6 @@ Muted:
   is-RU: ᚦᛆᚵᚵᛆᚧ
   sv-SE: Ljudlös
 
-My Games Only:
-  en-US: My Games Only
-  zh-CN: 仅限我的游戏
-  es: Solo mis juegos
-  ar: ألعابي فقط
-  id: Hanya Game Saya
-  pt-BR: Somente meus jogos
-  pt-PT: Somente os meus jogos
-  fr: Mes jeux uniquement
-  ja: 私のゲームのみ
-  ru: Только мои игры
-  de: Nur meine Spiele
-  is-IS: Aðeins mínir leikir
-  is-RU: ᛆᚧᛂᛁᚿᛋ ᛘᛇᚿᛁᚱ ᛚᛂᛁᚴᛁᚱ
-  sv-SE: Bara mina spel
-
 New Game:
   en-US: New Game
   zh-CN: 新游戏
@@ -928,6 +912,22 @@ move:
   is-IS: færa
   is-RU: ᚠᛅᚱᛆ
   sv-SE: flytta
+
+my games only:
+  en-US: my games only
+  zh-CN: 仅限我的游戏
+  es: solo mis juegos
+  ar: ألعابي فقط
+  id: hanya game saya
+  pt-BR: somente meus jogos
+  pt-PT: somente os meus jogos
+  fr: mes jeux uniquement
+  ja: 私のゲームのみ
+  ru: tолько мои игры
+  de: nur meine Spiele
+  is-IS: aðeins mínir leikir
+  is-RU: ᛆᚧᛂᛁᚿᛋ ᛘᛇᚿᛁᚱ ᛚᛂᛁᚴᛁᚱ
+  sv-SE: bara mina spel
 
 no:
   en-US: no

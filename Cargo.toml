@@ -3,7 +3,7 @@ name = "hnefatafl-copenhagen"
 version = "4.3.0"
 authors = ["David Campbell <dcampbell24@gmail.com>"]
 edition = "2024"
-rust-version =  "1.88"
+rust-version =  "1.89"
 description = "Copenhagen Hnefatafl client, engine, server and artificial intelligence"
 documentation = "https://docs.rs/hnefatafl-copenhagen/"
 readme = "README.md"
@@ -19,6 +19,7 @@ criterion = { version = "0.7", features = ["html_reports"] }
 futures = "0.3"
 iced = { git = "https://github.com/iced-rs/iced", features = ["advanced-shaping", "fira-sans", "smol"] }
 rodio = "0.21"
+smol_str = "0.3.2"
 webbrowser = { version = "1", features = ["hardened"] }
 
 [dependencies]
