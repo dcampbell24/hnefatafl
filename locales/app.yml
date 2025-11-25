@@ -240,6 +240,23 @@ Heat Map:
   is-RU: ᚼᛁᛐᛆᚴᚮᚱᛐ
   sv-SE: Värmekarta
 
+
+Hide Coordinates:
+  en-US: Hide Coordinates
+  zh-CN: 隐藏坐标
+  es: Ocultar coordenadas
+  ar: إخفاء الإحداثيات
+  id: Sembunyikan Koordinat
+  pt-BR: Ocultar coordenadas
+  pt-PT: Ocultar coordenadas
+  fr: Masquer les coordonnées
+  ja: 座標を非表示にする
+  ru: Скрыть координаты
+  de: Koordinaten ausblenden
+  is-IS: Fela hnit
+  is-RU: ᚠᛂᛚᛆ ᚼᚿᛁᛐ
+  sv-SE: Dölj koordinater
+
 ID:
   en-US: ID
   zh-CN: ID
