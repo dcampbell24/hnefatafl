@@ -49,15 +49,18 @@ use iced::{
     keyboard::{self, Key, key::Named},
     stream,
     widget::{
-        Column, Container, Row, Scrollable, button, checkbox, column, container,
+        self, Column, Container, Row, Scrollable, button, checkbox, column, container,
         operation::{focus_next, focus_previous},
-        pick_list, radio, row, scrollable, text, text_editor, text_input, tooltip,
+        pick_list, radio, row, scrollable, text, text_editor,
+        text_input::Value,
+        tooltip,
     },
     window::{self, icon},
 };
 use log::{debug, error, info, trace};
 use rust_i18n::t;
 use serde::{Deserialize, Serialize};
+use smol_str::ToSmolStr;
 
 const USER_CONFIG_FILE_POSTCARD: &str = "hnefatafl.postcard";
 const USER_CONFIG_FILE_RON: &str = "hnefatafl.ron";
@@ -816,19 +819,23 @@ impl<'a> Client {
             }
         }
 
-        let coordinates = checkbox(t!("Hide Coordinates"), self.hide_coordinates)
-            .on_toggle(Message::HideCoordinates)
-            .size(32);
+        let coordinates = row![
+            checkbox(self.hide_coordinates).on_toggle(Message::HideCoordinates),
+            text(t!("Hide Coordinates")),
+        ]
+        .spacing(SPACING);
 
         user_area = user_area.push(coordinates);
 
-        let muted = checkbox(t!("Muted"), self.sound_muted)
-            .on_toggle(Message::SoundMuted)
-            .size(32);
+        let muted = row![
+            checkbox(self.sound_muted).on_toggle(Message::SoundMuted),
+            text(t!("Muted"))
+        ]
+        .spacing(SPACING);
 
         let leave = button(text(self.strings["Leave"].as_str())).on_press(Message::Leave);
 
-        user_area = user_area.push(row![muted, leave].spacing(SPACING));
+        user_area = user_area.push(muted);
 
         match status {
             Status::AttackerWins => {
@@ -844,7 +851,7 @@ impl<'a> Client {
         }
 
         if let Some(handle) = &self.archived_game_handle {
-            let mut heat_map = checkbox("", self.heat_map_display).size(32);
+            let mut heat_map = checkbox(self.heat_map_display).size(32);
             if self.heat_map.is_some() {
                 heat_map = heat_map.on_toggle(Message::HeatMap);
             }
@@ -855,7 +862,7 @@ impl<'a> Client {
                 heat_map_text = heat_map_text.on_press(Message::EstimateScore);
             }
 
-            user_area = user_area.push(row![heat_map, heat_map_text]);
+            user_area = user_area.push(row![heat_map, heat_map_text, leave].spacing(SPACING));
 
             let mut left_all = button(text(&self.chars.double_arrow_left_full));
             let mut left = button(text(&self.chars.double_arrow_left));
@@ -937,6 +944,18 @@ impl<'a> Client {
                 Some(Message::WindowResized((size.width, size.height)))
             }
             Event::Keyboard(event) => match event {
+                // Fixme: it doesn't work!
+                keyboard::Event::KeyPressed {
+                    key: Key::Character(ch),
+                    modifiers,
+                    ..
+                } => Some(
+                    if modifiers.control() && *ch == *Value::new("m").to_smolstr() {
+                        Message::FocusPrevious
+                    } else {
+                        Message::Empty
+                    },
+                ),
                 keyboard::Event::KeyPressed {
                     key: Key::Named(Named::Tab),
                     modifiers,
@@ -973,12 +992,12 @@ impl<'a> Client {
         enable_texting: bool,
     ) -> Container<'a, Message> {
         let text_input = if enable_texting {
-            text_input(&format!("{}…", t!("message")), &self.text_input)
+            iced::widget::text_input(&format!("{}…", t!("message")), &self.text_input)
                 .on_input(Message::TextChanged)
                 .on_paste(Message::TextChanged)
                 .on_submit(Message::TextSend)
         } else {
-            text_input(&format!("{}…", t!("message")), "")
+            iced::widget::text_input(&format!("{}…", t!("message")), "")
         };
 
         let mut text_box = column![text_input].spacing(SPACING);
@@ -1037,6 +1056,7 @@ impl<'a> Client {
                 self.email = None;
                 self.send("email_reset\n".to_string());
             }
+            Message::Empty => {}
             Message::EstimateScore => {
                 if !self.estimate_score {
                     info!("start running score estimator...");
@@ -2231,7 +2251,7 @@ impl<'a> Client {
                         let mut row = Row::new();
                         row = row.push(text!("{}: ", t!("email code")));
                         row = row.push(
-                            text_input("", &self.text_input)
+                            widget::text_input("", &self.text_input)
                                 .on_input(Message::TextChanged)
                                 .on_paste(Message::TextChanged)
                                 .on_submit(Message::TextSendEmailCode),
@@ -2242,7 +2262,7 @@ impl<'a> Client {
                     let mut row = Row::new();
                     row = row.push(text!("{}: ", t!("email address")));
                     row = row.push(
-                        text_input("", &self.text_input)
+                        widget::text_input("", &self.text_input)
                             .on_input(Message::TextChanged)
                             .on_paste(Message::TextChanged)
                             .on_submit(Message::TextSendEmail),
@@ -2271,7 +2291,7 @@ impl<'a> Client {
                 columns = columns.push(
                     row![
                         change_password_button,
-                        text_input("", &self.password)
+                        widget::text_input("", &self.password)
                             .secure(!self.password_show)
                             .on_input(Message::PasswordChanged)
                             .on_paste(Message::PasswordChanged),
@@ -2279,10 +2299,10 @@ impl<'a> Client {
                     .spacing(SPACING),
                 );
 
-                columns = columns.push(
-                    checkbox(t!("show password"), self.password_show)
-                        .on_toggle(Message::PasswordShow),
-                );
+                columns = columns.push(row![
+                    text(t!("show password")),
+                    checkbox(self.password_show).on_toggle(Message::PasswordShow)
+                ]);
 
                 if self.delete_account {
                     columns = columns.push(
@@ -2304,7 +2324,7 @@ impl<'a> Client {
             Screen::EmailEveryone => {
                 let subject = row![
                     text("Subject: "),
-                    text_input("", &self.text_input)
+                    widget::text_input("", &self.text_input)
                         .on_input(Message::TextChanged)
                         .on_paste(Message::TextChanged)
                         .on_submit(Message::TextSend),
@@ -2353,8 +2373,11 @@ impl<'a> Client {
                     Message::RoleSelected,
                 );
 
-                let rated = checkbox(t!("rated"), self.game_settings.rated.into())
-                    .on_toggle(Message::RatedSelected);
+                let rated = row![
+                    text(format!("{}:", t!("rated"))),
+                    checkbox(self.game_settings.rated.into()).on_toggle(Message::RatedSelected)
+                ]
+                .spacing(SPACING);
 
                 let mut new_game = button(text(self.strings["New Game"].as_str()));
                 if self.game_settings.role_selected.is_some()
@@ -2380,11 +2403,9 @@ impl<'a> Client {
                 );
 
                 let time = row![
-                    checkbox(
-                        format!("{}:", t!("timed")),
-                        self.game_settings.timed.clone().into()
-                    )
-                    .on_toggle(Message::TimeCheckbox)
+                    text(format!("{}:", t!("timed"))),
+                    checkbox(self.game_settings.timed.clone().into())
+                        .on_toggle(Message::TimeCheckbox)
                 ]
                 .spacing(SPACING);
 
@@ -2402,38 +2423,38 @@ impl<'a> Client {
                 if let TimeSettings::Timed(_) = self.game_settings.timed {
                     row_3 = row_3.push(text(t!("days")));
                     row_3 = row_3.push(
-                        text_input("0", &self.game_settings.time_days)
+                        widget::text_input("0", &self.game_settings.time_days)
                             .on_input(Message::TimeDays)
                             .on_paste(Message::TimeDays),
                     );
                     row_3 = row_3.push(text(t!("hours")));
                     row_3 = row_3.push(
-                        text_input("0", &self.game_settings.time_hours)
+                        widget::text_input("0", &self.game_settings.time_hours)
                             .on_input(Message::TimeHours)
                             .on_paste(Message::TimeHours),
                     );
                     row_3 = row_3.push(text(t!("minutes")));
                     row_3 = row_3.push(
-                        text_input("15", &self.game_settings.time_minutes)
+                        widget::text_input("15", &self.game_settings.time_minutes)
                             .on_input(Message::TimeMinutes)
                             .on_paste(Message::TimeMinutes),
                     );
 
                     row_4 = row_4.push(text(t!("add hours")));
                     row_4 = row_4.push(
-                        text_input("0", &self.game_settings.time_add_hours)
+                        widget::text_input("0", &self.game_settings.time_add_hours)
                             .on_input(Message::TimeAddHours)
                             .on_paste(Message::TimeAddHours),
                     );
                     row_4 = row_4.push(text(t!("add minutes")));
                     row_4 = row_4.push(
-                        text_input("0", &self.game_settings.time_add_minutes)
+                        widget::text_input("0", &self.game_settings.time_add_minutes)
                             .on_input(Message::TimeAddMinutes)
                             .on_paste(Message::TimeAddMinutes),
                     );
                     row_4 = row_4.push(text(t!("add seconds")));
                     row_4 = row_4.push(
-                        text_input("10", &self.game_settings.time_add_seconds)
+                        widget::text_input("10", &self.game_settings.time_add_seconds)
                             .on_input(Message::TimeAddSeconds)
                             .on_paste(Message::TimeAddSeconds),
                     );
@@ -2490,14 +2511,14 @@ impl<'a> Client {
                     .padding(PADDING / 2)
                     .style(container::bordered_box);
 
-                let my_games = checkbox(t!("My Games Only"), self.my_games_only)
-                    .size(32)
-                    .on_toggle(Message::MyGamesOnly);
+                let my_games_text = text(t!("my games only"));
+                let my_games = checkbox(self.my_games_only).on_toggle(Message::MyGamesOnly);
 
                 let get_archived_games = button(text(self.strings["Get Archived Games"].as_str()))
                     .on_press(Message::ArchivedGamesGet);
 
-                let username = row![username, get_archived_games, my_games].spacing(SPACING);
+                let username =
+                    row![username, get_archived_games, my_games, my_games_text].spacing(SPACING);
 
                 let create_game =
                     button(text(self.strings["Create Game"].as_str())).on_press(Message::GameNew);
@@ -2524,7 +2545,7 @@ impl<'a> Client {
             Screen::Login => {
                 let username = row![
                     text!("{}:", t!("username")).size(20),
-                    text_input("", &self.text_input)
+                    widget::text_input("", &self.text_input)
                         .on_input(Message::TextChanged)
                         .on_paste(Message::TextChanged),
                 ]
@@ -2536,7 +2557,7 @@ impl<'a> Client {
 
                 let password = row![
                     text!("{}:", t!("password")).size(20),
-                    text_input("", &self.password)
+                    widget::text_input("", &self.password)
                         .secure(!self.password_show)
                         .on_input(Message::PasswordChanged)
                         .on_paste(Message::PasswordChanged),
@@ -2547,11 +2568,11 @@ impl<'a> Client {
                     .padding(PADDING)
                     .style(container::bordered_box);
 
-                let show_password = checkbox(t!("show password"), self.password_show)
-                    .on_toggle(Message::PasswordShow);
+                let show_password_text = text(t!("show password"));
+                let show_password = checkbox(self.password_show).on_toggle(Message::PasswordShow);
 
-                let save_password = checkbox(t!("save password"), self.password_save)
-                    .on_toggle(Message::PasswordSave);
+                let save_password_text = text(t!("save password"));
+                let save_password = checkbox(self.password_save).on_toggle(Message::PasswordSave);
 
                 let mut login = button(text(self.strings["Login"].as_str()));
                 if !self.password_ends_with_whitespace {
@@ -2590,12 +2611,11 @@ impl<'a> Client {
                     self.archived_games.clone()
                 };
 
-                let my_games = checkbox(t!("My Games Only"), self.my_games_only)
-                    .size(32)
-                    .on_toggle(Message::MyGamesOnly);
+                let my_games_text = text(t!("my games only"));
+                let my_games = checkbox(self.my_games_only).on_toggle(Message::MyGamesOnly);
 
-                let buttons_1 = row![login, create_account, reset_password, review_game, my_games]
-                    .spacing(SPACING);
+                let buttons_1 =
+                    row![login, create_account, reset_password, review_game,].spacing(SPACING);
 
                 let review_game_pick = pick_list(
                     archived_games,
@@ -2668,7 +2688,15 @@ impl<'a> Client {
                 column![
                     username,
                     password,
-                    row![show_password, save_password].spacing(SPACING),
+                    row![
+                        show_password,
+                        show_password_text,
+                        save_password,
+                        save_password_text,
+                        my_games,
+                        my_games_text,
+                    ]
+                    .spacing(SPACING),
                     buttons_1,
                     review_game_pick,
                     locale,
@@ -2774,6 +2802,7 @@ enum Message {
     DeleteAccount,
     EmailEveryone,
     EmailReset,
+    Empty,
     EstimateScore,
     EstimateScoreConnected(mpsc::Sender<Tree>),
     EstimateScoreDisplay((Node, GenerateMove)),
