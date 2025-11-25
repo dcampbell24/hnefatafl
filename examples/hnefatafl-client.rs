@@ -2511,7 +2511,7 @@ impl<'a> Client {
                     .padding(PADDING / 2)
                     .style(container::bordered_box);
 
-                let my_games_text = text(t!("my games only"));
+                let my_games_text = text(t!("My Games Only"));
                 let my_games = checkbox(self.my_games_only).on_toggle(Message::MyGamesOnly);
 
                 let get_archived_games = button(text(self.strings["Get Archived Games"].as_str()))
@@ -2611,7 +2611,7 @@ impl<'a> Client {
                     self.archived_games.clone()
                 };
 
-                let my_games_text = text(t!("my games only"));
+                let my_games_text = text(t!("My Games Only"));
                 let my_games = checkbox(self.my_games_only).on_toggle(Message::MyGamesOnly);
 
                 let buttons_1 =
