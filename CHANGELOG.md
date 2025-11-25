@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - hnefatafl-client: Don't show lag and spectators when reviewing a game.
 
+### Fixed
+
+- hnefatafl-text-protocol: don't overflow when doing ReviewGameBackward.
+
 ## [4.3.0] - 2025-11-24
 
 ### Added

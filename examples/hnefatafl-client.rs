@@ -1307,7 +1307,7 @@ impl<'a> Client {
             }
             Message::ReviewGameBackward => {
                 if let Some(handle) = &mut self.archived_game_handle {
-                    handle.play -= 1;
+                    handle.play = handle.play.saturating_sub(1);
                     handle.boards.backward();
                     self.reset_markers();
                 }
