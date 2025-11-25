@@ -1891,7 +1891,7 @@ impl<'a> Client {
                     self.screen_size = Size::Large;
                 } else if width >= 1_200.0 && height >= 850.0 {
                     self.screen_size = Size::Medium;
-                } else if width >= 1_100.0 && height >= 750.0 {
+                } else if width >= 1_000.0 && height >= 750.0 {
                     self.screen_size = Size::Small;
                 } else if width >= 1_100.0 {
                     self.screen_size = Size::TinyWide;
