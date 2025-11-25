@@ -57,12 +57,16 @@ impl fmt::Display for ArchivedGame {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(
             f,
-            "ID: {}, Attacker: {} {}, Defender: {} {}, Size: {}",
+            "{}: {}, {}: {} {}, {}: {} {}, {}: {}",
+            t!("ID"),
             self.id,
+            t!("Attacker"),
             self.attacker,
             self.attacker_rating.to_string_rounded(),
+            t!("Defender"),
             self.defender,
             self.defender_rating.to_string_rounded(),
+            t!("Size"),
             self.board_size,
         )
     }

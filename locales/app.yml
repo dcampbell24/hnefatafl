@@ -64,6 +64,22 @@ Archived Games:
   is-RU: ᚵᛂᛣᛘᛑᛁᚱ ᛚᛂᛁᚴᛁᚱ
   sv-SE: Arkiverade spel
 
+Attacker:
+  en-US: Attacker
+  zh-CN: 攻击者
+  es: Agresor
+  ar: مهاجم
+  id: Penyerang
+  pt-BR: Atacante
+  pt-PT: Atacante
+  fr: Attaquant
+  ja: アタッカー
+  ru: нападающий
+  de: Angreifer
+  is-IS: Árásarmaður
+  is-RU: ᚨᚱᚨᛋᛆᚱᛘᛆᚧᚢᚱ
+  sv-SE: Angripare
+
 Attacker wins!:
   en-US: Attacker wins!
   zh-CN: 进攻方获胜！
@@ -159,6 +175,22 @@ Decline:
   is-IS: Hafna
   is-RU: ᚼᛆᚠᚿᛆ
   sv-SE: Nedgång
+
+Defender:
+  en-US: Defender
+  zh-CN: 后卫
+  es: Defensor
+  ar: مناصر
+  id: Pembela
+  pt-BR: Defensor
+  pt-PT: Defensor
+  fr: Défenseur
+  ja: ディフェンダー
+  ru: защитник
+  de: Verteidiger
+  is-IS: Varnarmaður
+  is-RU: ᚡᛆᚱᚿᛆᚱᛘᛆᚧᚢᚱ
+  sv-SE: Försvarare
 
 Defender wins!:
   en-US: Defender wins!
@@ -416,6 +448,22 @@ New Game:
   is-IS: Nýr leikur
   is-RU: ᚿᛨᚱ ᛚᛂᛁᚴᚢᚱ
   sv-SE: Nytt spel
+
+Size:
+  en-US: Size
+  zh-CN: 尺寸
+  es: Tamaño
+  ar: مقاس
+  id: Ukuran
+  pt-BR: Tamanho
+  pt-PT: Tamanho
+  fr: Taille
+  ja: サイズ
+  ru: размер
+  de: Größe
+  is-IS: Stærð
+  is-RU: ᛋᛐᛅᚱᚧ
+  sv-SE: Storlek
 
 Unable to find Archived Games file:
   en-US: Unable to find Archived Games file
