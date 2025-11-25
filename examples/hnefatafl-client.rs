@@ -71,6 +71,7 @@ rust_i18n::i18n!();
 /// Hnefatafl Copenhagen Client
 ///
 /// This is a TCP client that connects to a server.
+#[allow(clippy::struct_excessive_bools)]
 #[derive(Parser, Debug)]
 #[command(long_version = LONG_VERSION, about = "Copenhagen Hnefatafl Client")]
 struct Args {
@@ -93,6 +94,10 @@ struct Args {
     /// Make the window size tiny
     #[arg(long)]
     tiny_window: bool,
+
+    /// Make the window size appropriate for social preview
+    #[arg(long)]
+    social_preview: bool,
 
     /// Render everything in ASCII
     #[arg(long)]
@@ -284,6 +289,13 @@ fn main() -> anyhow::Result<()> {
         });
     }
 
+    if args.social_preview {
+        application = application.window_size(iced::Size {
+            width: 1148.0,
+            height: 481.0,
+        });
+    }
+
     application.run()?;
     Ok(())
 }
@@ -347,6 +359,8 @@ struct Client {
     heat_map: Option<HeatMap>,
     #[serde(skip)]
     heat_map_display: bool,
+    #[serde(skip)]
+    hide_coordinates: bool,
     #[serde(default)]
     locale_selected: Locale,
     #[serde(default)]
@@ -476,11 +490,16 @@ impl<'a> Client {
         let mut game_display = Row::new().spacing(2);
         let possible_moves = self.possible_moves();
 
-        game_display = game_display.push(numbers(d.letter_size, d.spacing, board_size_usize));
+        if !self.hide_coordinates {
+            game_display = game_display.push(numbers(d.letter_size, d.spacing, board_size_usize));
+        }
 
         for (x, letter) in letters.iter().enumerate() {
             let mut column = Column::new().spacing(2).align_x(Horizontal::Center);
-            column = column.push(text(letter).size(d.letter_size));
+
+            if !self.hide_coordinates {
+                column = column.push(text(letter).size(d.letter_size));
+            }
 
             for y in 0..board_size_usize {
                 let vertex = Vertex {
@@ -562,11 +581,17 @@ impl<'a> Client {
                 column = column.push(button);
             }
 
-            column = column.push(text(letter).size(d.letter_size));
+            if !self.hide_coordinates {
+                column = column.push(text(letter).size(d.letter_size));
+            }
+
             game_display = game_display.push(column);
         }
 
-        game_display = game_display.push(numbers(d.letter_size, d.spacing, board_size_usize));
+        if !self.hide_coordinates {
+            game_display = game_display.push(numbers(d.letter_size, d.spacing, board_size_usize));
+        }
+
         game_display
     }
 
@@ -614,6 +639,8 @@ impl<'a> Client {
     // Fixme: get the real status when exploring the game tree.
     #[allow(clippy::too_many_lines)]
     fn display_game(&self) -> Element<'_, Message> {
+        let args = Args::parse();
+
         let mut attacker_rating = String::new();
         let mut defender_rating = String::new();
 
@@ -732,13 +759,10 @@ impl<'a> Client {
 
         user_area = user_area.push(text!("{}: {play} {}: {is_rated}", t!("move"), t!("rated")));
 
-        match self.screen_size {
-            Size::Tiny | Size::Small | Size::Medium | Size::Large => {
-                user_area = user_area.push(column![attacker, defender].spacing(SPACING));
-            }
-            Size::Giant => {
-                user_area = user_area.push(row![attacker, defender].spacing(SPACING));
-            }
+        if self.screen_size == Size::Giant || args.social_preview {
+            user_area = user_area.push(row![attacker, defender].spacing(SPACING));
+        } else {
+            user_area = user_area.push(column![attacker, defender].spacing(SPACING));
         }
 
         let mut spectators = Column::new();
@@ -790,6 +814,12 @@ impl<'a> Client {
                 user_area = user_area.push(row.spacing(SPACING));
             }
         }
+
+        let coordinates = checkbox(t!("Hide Coordinates"), self.hide_coordinates)
+            .on_toggle(Message::HideCoordinates)
+            .size(32);
+
+        user_area = user_area.push(coordinates);
 
         let muted = checkbox(t!("Muted"), self.sound_muted)
             .on_toggle(Message::SoundMuted)
@@ -1057,6 +1087,7 @@ impl<'a> Client {
                 self.send(format!("watch_game {id}\n"));
             }
             Message::HeatMap(display) => self.heat_map_display = display,
+            Message::HideCoordinates(hide_coordinates) => self.hide_coordinates = hide_coordinates,
             Message::Leave => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
@@ -2740,6 +2771,7 @@ enum Message {
     GameSubmit,
     GameWatch(Id),
     HeatMap(bool),
+    HideCoordinates(bool),
     Leave,
     LocaleSelected(Locale),
     MyGamesOnly(bool),
