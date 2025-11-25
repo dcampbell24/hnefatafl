@@ -2657,6 +2657,14 @@ impl<'a> Client {
                 buttons_2 = buttons_2.push(website);
                 buttons_2 = buttons_2.push(quit);
 
+                let help_text = container(text!(
+                    "Tab: {}, Shift + Tab: {}",
+                    self.chars.arrow_right,
+                    self.chars.arrow_left
+                ))
+                .padding(PADDING)
+                .style(container::bordered_box);
+
                 column![
                     username,
                     password,
@@ -2665,6 +2673,7 @@ impl<'a> Client {
                     review_game_pick,
                     locale,
                     buttons_2,
+                    help_text,
                     error,
                     error_persistent
                 ]
