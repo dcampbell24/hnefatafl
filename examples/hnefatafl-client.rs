@@ -908,7 +908,11 @@ impl<'a> Client {
             .padding(PADDING)
             .style(container::bordered_box);
 
-        row![self.board(), user_area].spacing(SPACING).into()
+        let board = container(self.board())
+            .style(container::bordered_box)
+            .padding(PADDING);
+
+        row![board, user_area].spacing(SPACING).into()
     }
 
     #[allow(clippy::collapsible_match)]
