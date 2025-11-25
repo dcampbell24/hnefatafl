@@ -639,8 +639,6 @@ impl<'a> Client {
     // Fixme: get the real status when exploring the game tree.
     #[allow(clippy::too_many_lines)]
     fn display_game(&self) -> Element<'_, Message> {
-        let args = Args::parse();
-
         let mut attacker_rating = String::new();
         let mut defender_rating = String::new();
 
@@ -759,10 +757,13 @@ impl<'a> Client {
 
         user_area = user_area.push(text!("{}: {play} {}: {is_rated}", t!("move"), t!("rated")));
 
-        if self.screen_size == Size::Giant || args.social_preview {
-            user_area = user_area.push(row![attacker, defender].spacing(SPACING));
-        } else {
-            user_area = user_area.push(column![attacker, defender].spacing(SPACING));
+        match self.screen_size {
+            Size::Large | Size::Medium | Size::Small => {
+                user_area = user_area.push(column![attacker, defender].spacing(SPACING));
+            }
+            Size::Giant | Size::Tiny => {
+                user_area = user_area.push(row![attacker, defender].spacing(SPACING));
+            }
         }
 
         let mut spectators = Column::new();
