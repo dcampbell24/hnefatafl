@@ -758,10 +758,10 @@ impl<'a> Client {
         user_area = user_area.push(text!("{}: {play} {}: {is_rated}", t!("move"), t!("rated")));
 
         match self.screen_size {
-            Size::Large | Size::Medium | Size::Small => {
+            Size::Large | Size::Medium | Size::Small | Size::Tiny => {
                 user_area = user_area.push(column![attacker, defender].spacing(SPACING));
             }
-            Size::Giant | Size::Tiny => {
+            Size::Giant | Size::TinyWide => {
                 user_area = user_area.push(row![attacker, defender].spacing(SPACING));
             }
         }
@@ -796,7 +796,7 @@ impl<'a> Client {
                             .spacing(SPACING),
                         );
                     }
-                    Size::Medium | Size::Large | Size::Giant => {
+                    Size::TinyWide | Size::Medium | Size::Large | Size::Giant => {
                         user_area = user_area.push(row![resign, request_draw].spacing(SPACING));
                     }
                 }
@@ -1891,8 +1891,10 @@ impl<'a> Client {
                     self.screen_size = Size::Large;
                 } else if width >= 1_200.0 && height >= 850.0 {
                     self.screen_size = Size::Medium;
-                } else if width >= 1_000.0 && height >= 750.0 {
+                } else if width >= 1_100.0 && height >= 750.0 {
                     self.screen_size = Size::Small;
+                } else if width >= 1_100.0 {
+                    self.screen_size = Size::TinyWide;
                 } else {
                     self.screen_size = Size::Tiny;
                 }
@@ -2836,13 +2838,13 @@ impl Dimensions {
                 Size::Large | Size::Giant => (75, 55, 60, 6),
                 Size::Medium => (65, 45, 50, 8),
                 Size::Small => (55, 35, 40, 11),
-                Size::Tiny => (40, 20, 25, 16),
+                Size::Tiny | Size::TinyWide => (40, 20, 25, 16),
             },
             BoardSize::_13 => match screen_size {
                 Size::Large | Size::Giant => (65, 45, 50, 8),
                 Size::Medium => (58, 38, 43, 10),
                 Size::Small => (50, 30, 35, 12),
-                Size::Tiny => (40, 20, 25, 15),
+                Size::Tiny | Size::TinyWide => (40, 20, 25, 15),
             },
         };
 

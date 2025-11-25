@@ -5,6 +5,7 @@ use crate::glicko::Rating;
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub enum Size {
     Tiny,
+    TinyWide,
     #[default]
     Small,
     Medium,
