@@ -51,7 +51,7 @@ impl fmt::Display for Locale {
             Self::Spanish => write!(f, "Español"),
             Self::Arabic => write!(f, "العربية"),
             Self::Indonesian => write!(f, "bahasa Indonesia"),
-            Self::PortugueseBr => write!(f, "Português (Brazil)"),
+            Self::PortugueseBr => write!(f, "Português (Brasil)"),
             Self::PortuguesePt => write!(f, "Português (Portugal)"),
             Self::French => write!(f, "Français"),
             Self::Japanese => write!(f, "日本人"),
