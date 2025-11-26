@@ -8,6 +8,7 @@ use std::{
     fs::{self, File},
     io::{BufRead, BufReader, Cursor, ErrorKind, Read, Write},
     net::{Shutdown, TcpStream},
+    ops::Not,
     process::exit,
     str::{FromStr, SplitAsciiWhitespace},
     sync::mpsc,
@@ -316,6 +317,8 @@ struct Client {
     archived_game_selected: Option<ArchivedGame>,
     #[serde(skip)]
     archived_game_handle: Option<ArchivedGameHandle>,
+    #[serde(default)]
+    coordinates: Coordinates,
     #[serde(skip)]
     defender: String,
     #[serde(skip)]
@@ -362,8 +365,6 @@ struct Client {
     heat_map: Option<HeatMap>,
     #[serde(skip)]
     heat_map_display: bool,
-    #[serde(default)]
-    hide_coordinates: bool,
     #[serde(default)]
     locale_selected: Locale,
     #[serde(default)]
@@ -493,14 +494,15 @@ impl<'a> Client {
         let mut game_display = Row::new().spacing(2);
         let possible_moves = self.possible_moves();
 
-        if !self.hide_coordinates {
+        let coordinates: bool = self.coordinates.into();
+        if coordinates {
             game_display = game_display.push(numbers(d.letter_size, d.spacing, board_size_usize));
         }
 
         for (x, letter) in letters.iter().enumerate() {
             let mut column = Column::new().spacing(2).align_x(Horizontal::Center);
 
-            if !self.hide_coordinates {
+            if coordinates {
                 column = column.push(text(letter).size(d.letter_size));
             }
 
@@ -584,14 +586,14 @@ impl<'a> Client {
                 column = column.push(button);
             }
 
-            if !self.hide_coordinates {
+            if coordinates {
                 column = column.push(text(letter).size(d.letter_size));
             }
 
             game_display = game_display.push(column);
         }
 
-        if !self.hide_coordinates {
+        if coordinates {
             game_display = game_display.push(numbers(d.letter_size, d.spacing, board_size_usize));
         }
 
@@ -820,7 +822,7 @@ impl<'a> Client {
         }
 
         let coordinates = row![
-            checkbox(self.hide_coordinates).on_toggle(Message::HideCoordinates),
+            checkbox(self.coordinates.into()).on_toggle(Message::Coordinates),
             text!("{} (o)", t!("Coordinates")),
         ]
         .spacing(SPACING);
@@ -959,7 +961,7 @@ impl<'a> Client {
                 } => Some(if *ch == *Value::new("n").to_smolstr() {
                     Message::SoundMutedToggle
                 } else if *ch == *Value::new("o").to_smolstr() {
-                    Message::HideCoordinatesToggle
+                    Message::CoordinatesToggle
                 } else if *ch == *Value::new("w").to_smolstr() {
                     Message::BoardSizeSelected(BoardSize::_11)
                 } else if *ch == *Value::new("x").to_smolstr() {
@@ -1076,6 +1078,14 @@ impl<'a> Client {
                 }
             }
             Message::ConnectedTo(address) => self.connected_to = address,
+            Message::Coordinates(coordinates) => {
+                self.coordinates = coordinates.into();
+                handle_error(self.save_client_ron());
+            }
+            Message::CoordinatesToggle => {
+                self.coordinates = !self.coordinates;
+                handle_error(self.save_client_ron());
+            }
             Message::DeleteAccount => {
                 if self.delete_account {
                     self.send("delete_account\n".to_string());
@@ -1148,14 +1158,6 @@ impl<'a> Client {
                 self.send(format!("watch_game {id}\n"));
             }
             Message::HeatMap(display) => self.heat_map_display = display,
-            Message::HideCoordinates(hide_coordinates) => {
-                self.hide_coordinates = hide_coordinates;
-                handle_error(self.save_client_ron());
-            }
-            Message::HideCoordinatesToggle => {
-                self.hide_coordinates = !self.hide_coordinates;
-                handle_error(self.save_client_ron());
-            }
             Message::Leave => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
@@ -2817,7 +2819,7 @@ impl<'a> Client {
 
         let client = Client {
             archived_games: Vec::new(),
-            hide_coordinates: self.hide_coordinates,
+            coordinates: self.coordinates,
             locale_selected: self.locale_selected,
             my_games_only: self.my_games_only,
             password,
@@ -2869,6 +2871,8 @@ enum Message {
     BoardSizeSelected(BoardSize),
     ChangeTheme(Theme),
     ConnectedTo(String),
+    Coordinates(bool),
+    CoordinatesToggle,
     DeleteAccount,
     EmailEveryone,
     EmailReset,
@@ -2886,8 +2890,6 @@ enum Message {
     GameSubmit,
     GameWatch(Id),
     HeatMap(bool),
-    HideCoordinates(bool),
-    HideCoordinatesToggle,
     Leave,
     LocaleSelected(Locale),
     MyGamesOnly(bool),
@@ -2931,6 +2933,39 @@ enum Message {
     TimeMinutes(String),
     Users,
     WindowResized((f32, f32)),
+}
+
+#[derive(Clone, Copy, Debug, Default, Deserialize, Serialize)]
+enum Coordinates {
+    Hide,
+    #[default]
+    Show,
+}
+
+impl Not for Coordinates {
+    type Output = Coordinates;
+
+    fn not(self) -> Self::Output {
+        match self {
+            Self::Hide => Self::Show,
+            Self::Show => Self::Hide,
+        }
+    }
+}
+
+impl From<bool> for Coordinates {
+    fn from(value: bool) -> Self {
+        if value { Self::Show } else { Self::Hide }
+    }
+}
+
+impl From<Coordinates> for bool {
+    fn from(coordinates: Coordinates) -> Self {
+        match coordinates {
+            Coordinates::Show => true,
+            Coordinates::Hide => false,
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
