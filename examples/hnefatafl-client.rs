@@ -967,13 +967,26 @@ impl<'a> Client {
                     Message::FocusNext
                 }),
                 keyboard::Event::KeyPressed {
+                    key: Key::Named(Named::ArrowUp),
+                    ..
+                } => Some(Message::ReviewGameBackwardAll),
+                keyboard::Event::KeyPressed {
                     key: Key::Named(Named::ArrowLeft),
                     ..
                 } => Some(Message::ReviewGameBackward),
                 keyboard::Event::KeyPressed {
                     key: Key::Named(Named::ArrowRight),
+                    modifiers,
                     ..
-                } => Some(Message::ReviewGameForward),
+                } => Some(if modifiers.shift() {
+                    Message::ReviewGameChildNext
+                } else {
+                    Message::ReviewGameForward
+                }),
+                keyboard::Event::KeyPressed {
+                    key: Key::Named(Named::ArrowDown),
+                    ..
+                } => Some(Message::ReviewGameForwardAll),
                 _ => None,
             },
             _ => None,
