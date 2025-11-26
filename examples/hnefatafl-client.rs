@@ -834,7 +834,7 @@ impl<'a> Client {
         .spacing(SPACING);
 
         let leave =
-            button(text!("{}, (Esc)", self.strings["Leave"].as_str())).on_press(Message::Leave);
+            button(text!("{} (Esc)", self.strings["Leave"].as_str())).on_press(Message::Leave);
 
         user_area = user_area.push(muted);
 
