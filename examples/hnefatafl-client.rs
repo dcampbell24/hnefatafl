@@ -2573,8 +2573,10 @@ impl<'a> Client {
                     .padding(PADDING / 2)
                     .style(container::bordered_box);
 
-                let my_games_text = text(t!("My Games Only"));
-                let my_games = checkbox(self.my_games_only).on_toggle(Message::MyGamesOnly);
+                let my_games_text = text(t!("My Games Only")).center();
+                let my_games = checkbox(self.my_games_only)
+                    .on_toggle(Message::MyGamesOnly)
+                    .size(32);
 
                 let get_archived_games = button(text(self.strings["Get Archived Games"].as_str()))
                     .on_press(Message::ArchivedGamesGet);
