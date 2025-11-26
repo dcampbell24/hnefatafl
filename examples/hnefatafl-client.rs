@@ -821,7 +821,7 @@ impl<'a> Client {
 
         let coordinates = row![
             checkbox(self.hide_coordinates).on_toggle(Message::HideCoordinates),
-            text!("{} (c)", t!("Hide Coordinates")),
+            text!("{} (o)", t!("Hide Coordinates")),
         ]
         .spacing(SPACING);
 
@@ -958,15 +958,15 @@ impl<'a> Client {
                     ..
                 } => Some(if *ch == *Value::new("m").to_smolstr() {
                     Message::SoundMutedToggle
-                } else if *ch == *Value::new("c").to_smolstr() {
+                } else if *ch == *Value::new("o").to_smolstr() {
                     Message::HideCoordinatesToggle
-                } else if *ch == *Value::new("1").to_smolstr() {
+                } else if *ch == *Value::new("!").to_smolstr() {
                     Message::BoardSizeSelected(BoardSize::_11)
-                } else if *ch == *Value::new("3").to_smolstr() {
+                } else if *ch == *Value::new("#").to_smolstr() {
                     Message::BoardSizeSelected(BoardSize::_13)
-                } else if *ch == *Value::new("a").to_smolstr() {
+                } else if *ch == *Value::new("A").to_smolstr() {
                     Message::RoleSelected(Role::Attacker)
-                } else if *ch == *Value::new("d").to_smolstr() {
+                } else if *ch == *Value::new("D").to_smolstr() {
                     Message::RoleSelected(Role::Defender)
                 } else {
                     Message::Empty
@@ -2416,14 +2416,14 @@ impl<'a> Client {
             Screen::Game | Screen::GameReview => self.display_game(),
             Screen::GameNew => {
                 let attacker = radio(
-                    format!("{} (a)", t!("attacker")),
+                    format!("{} (A)", t!("attacker")),
                     Role::Attacker,
                     self.game_settings.role_selected,
                     Message::RoleSelected,
                 );
 
                 let defender = radio(
-                    format!("{} (d),", t!("defender")),
+                    format!("{} (D),", t!("defender")),
                     Role::Defender,
                     self.game_settings.role_selected,
                     Message::RoleSelected,
@@ -2446,14 +2446,14 @@ impl<'a> Client {
                     .on_press(Message::Leave);
 
                 let size_11x11 = radio(
-                    "11x11 (1)",
+                    "11x11 (!)",
                     BoardSize::_11,
                     self.game_settings.board_size,
                     Message::BoardSizeSelected,
                 );
 
                 let size_13x13 = radio(
-                    "13x13 (3),",
+                    "13x13 (#),",
                     BoardSize::_13,
                     self.game_settings.board_size,
                     Message::BoardSizeSelected,
