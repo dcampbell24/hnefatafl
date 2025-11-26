@@ -821,24 +821,18 @@ impl<'a> Client {
             }
         }
 
-        let coordinates = row![
+        let coordinates_muted = row![
             checkbox(self.coordinates.into()).on_toggle(Message::Coordinates),
             text!("{} (o)", t!("Coordinates")),
-        ]
-        .spacing(SPACING);
-
-        user_area = user_area.push(coordinates);
-
-        let muted = row![
             checkbox(self.sound_muted).on_toggle(Message::SoundMuted),
             text!("{} (n)", t!("Muted"))
         ]
         .spacing(SPACING);
 
+        user_area = user_area.push(coordinates_muted);
+
         let leave =
             button(text!("{} (Esc)", self.strings["Leave"].as_str())).on_press(Message::Leave);
-
-        user_area = user_area.push(muted);
 
         match status {
             Status::AttackerWins => {
