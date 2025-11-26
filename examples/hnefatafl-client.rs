@@ -821,7 +821,7 @@ impl<'a> Client {
 
         let coordinates = row![
             checkbox(self.hide_coordinates).on_toggle(Message::HideCoordinates),
-            text!("{} (Ctrl + c)", t!("Hide Coordinates")),
+            text!("{} (c)", t!("Hide Coordinates")),
         ]
         .spacing(SPACING);
 
@@ -829,7 +829,7 @@ impl<'a> Client {
 
         let muted = row![
             checkbox(self.sound_muted).on_toggle(Message::SoundMuted),
-            text!("{} (Ctrl + m)", t!("Muted"))
+            text!("{} (m)", t!("Muted"))
         ]
         .spacing(SPACING);
 
@@ -946,17 +946,14 @@ impl<'a> Client {
             Event::Keyboard(event) => match event {
                 keyboard::Event::KeyPressed {
                     key: Key::Character(ch),
-                    modifiers,
                     ..
-                } => Some(
-                    if modifiers.control() && *ch == *Value::new("m").to_smolstr() {
-                        Message::SoundMutedToggle
-                    } else if modifiers.control() && *ch == *Value::new("c").to_smolstr() {
-                        Message::HideCoordinatesToggle
-                    } else {
-                        Message::Empty
-                    },
-                ),
+                } => Some(if *ch == *Value::new("m").to_smolstr() {
+                    Message::SoundMutedToggle
+                } else if *ch == *Value::new("c").to_smolstr() {
+                    Message::HideCoordinatesToggle
+                } else {
+                    Message::Empty
+                }),
                 keyboard::Event::KeyPressed {
                     key: Key::Named(Named::Tab),
                     modifiers,
