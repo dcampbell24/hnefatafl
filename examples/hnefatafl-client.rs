@@ -945,6 +945,10 @@ impl<'a> Client {
             }
             Event::Keyboard(event) => match event {
                 keyboard::Event::KeyPressed {
+                    key: Key::Named(Named::Enter),
+                    ..
+                } => Some(Message::TextSendLogin),
+                keyboard::Event::KeyPressed {
                     key: Key::Character(ch),
                     ..
                 } => Some(if *ch == *Value::new("m").to_smolstr() {
@@ -1831,6 +1835,10 @@ impl<'a> Client {
                 handle_error(self.save_client_ron());
             }
             Message::TextSendLogin => {
+                if self.screen != Screen::Login {
+                    return Task::none();
+                }
+
                 if !self.connected_tcp {
                     self.send("tcp_connect\n".to_string());
                     self.connected_tcp = true;
@@ -2704,7 +2712,8 @@ impl<'a> Client {
                 buttons_2 = buttons_2.push(quit);
 
                 let help_text = container(text!(
-                    "Tab: {}, Shift + Tab: {}",
+                    "Enter: {}, Tab: {}, Shift + Tab: {}",
+                    t!("Login"),
                     self.chars.arrow_right,
                     self.chars.arrow_left
                 ))
