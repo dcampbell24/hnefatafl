@@ -821,7 +821,7 @@ impl<'a> Client {
 
         let coordinates = row![
             checkbox(self.hide_coordinates).on_toggle(Message::HideCoordinates),
-            text!("{} (o)", t!("Hide Coordinates")),
+            text!("{} (o)", t!("Coordinates")),
         ]
         .spacing(SPACING);
 

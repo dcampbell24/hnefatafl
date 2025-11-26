@@ -112,6 +112,22 @@ Change Password:
   is-RU: ᛒᚱᛂᛣᛐᛆ ᛚᛣᚴᛁᛚᚮᚱᚧᛁ
   sv-SE: Ändra lösenord
 
+Coordinates:
+  en-US: Coordinates
+  zh-CN: 坐标
+  es: Coordenadas
+  ar: الإحداثيات
+  id: Koordinat
+  pt-BR: Coordenadas
+  pt-PT: Coordenadas
+  fr: Coordonnés
+  ja: 座標
+  ru: Координаты
+  de: Koordinaten
+  is-IS: Hnit
+  is-RU: ᚼᚿᛁᛐ
+  sv-SE: Koordinater
+
 Create Account:
   en-US: Create Account
   zh-CN: 创建账户
@@ -271,23 +287,6 @@ Heat Map:
   is-IS: Hitakort
   is-RU: ᚼᛁᛐᛆᚴᚮᚱᛐ
   sv-SE: Värmekarta
-
-
-Hide Coordinates:
-  en-US: Hide Coordinates
-  zh-CN: 隐藏坐标
-  es: Ocultar coordenadas
-  ar: إخفاء الإحداثيات
-  id: Sembunyikan Koordinat
-  pt-BR: Ocultar coordenadas
-  pt-PT: Ocultar coordenadas
-  fr: Masquer les coordonnées
-  ja: 座標を非表示にする
-  ru: Скрыть координаты
-  de: Koordinaten ausblenden
-  is-IS: Fela hnit
-  is-RU: ᚠᛂᛚᛆ ᚼᚿᛁᛐ
-  sv-SE: Dölj koordinater
 
 ID:
   en-US: ID
