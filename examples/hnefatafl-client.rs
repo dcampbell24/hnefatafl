@@ -362,7 +362,7 @@ struct Client {
     heat_map: Option<HeatMap>,
     #[serde(skip)]
     heat_map_display: bool,
-    #[serde(skip)]
+    #[serde(default)]
     hide_coordinates: bool,
     #[serde(default)]
     locale_selected: Locale,
@@ -821,7 +821,7 @@ impl<'a> Client {
 
         let coordinates = row![
             checkbox(self.hide_coordinates).on_toggle(Message::HideCoordinates),
-            text(t!("Hide Coordinates")),
+            text!("{} (Ctrl + c)", t!("Hide Coordinates")),
         ]
         .spacing(SPACING);
 
@@ -829,7 +829,7 @@ impl<'a> Client {
 
         let muted = row![
             checkbox(self.sound_muted).on_toggle(Message::SoundMuted),
-            text(t!("Muted"))
+            text!("{} (Ctrl + m)", t!("Muted"))
         ]
         .spacing(SPACING);
 
@@ -944,14 +944,15 @@ impl<'a> Client {
                 Some(Message::WindowResized((size.width, size.height)))
             }
             Event::Keyboard(event) => match event {
-                // Fixme: it doesn't work!
                 keyboard::Event::KeyPressed {
                     key: Key::Character(ch),
                     modifiers,
                     ..
                 } => Some(
                     if modifiers.control() && *ch == *Value::new("m").to_smolstr() {
-                        Message::FocusPrevious
+                        Message::SoundMutedToggle
+                    } else if modifiers.control() && *ch == *Value::new("c").to_smolstr() {
+                        Message::HideCoordinatesToggle
                     } else {
                         Message::Empty
                     },
@@ -1112,7 +1113,14 @@ impl<'a> Client {
                 self.send(format!("watch_game {id}\n"));
             }
             Message::HeatMap(display) => self.heat_map_display = display,
-            Message::HideCoordinates(hide_coordinates) => self.hide_coordinates = hide_coordinates,
+            Message::HideCoordinates(hide_coordinates) => {
+                self.hide_coordinates = hide_coordinates;
+                handle_error(self.save_client_ron());
+            }
+            Message::HideCoordinatesToggle => {
+                self.hide_coordinates = !self.hide_coordinates;
+                handle_error(self.save_client_ron());
+            }
             Message::Leave => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
@@ -1303,6 +1311,10 @@ impl<'a> Client {
             }
             Message::SoundMuted(muted) => {
                 self.sound_muted = muted;
+                handle_error(self.save_client_ron());
+            }
+            Message::SoundMutedToggle => {
+                self.sound_muted = !self.sound_muted;
                 handle_error(self.save_client_ron());
             }
             Message::StreamConnected(tx) => self.tx = Some(tx),
@@ -2748,6 +2760,7 @@ impl<'a> Client {
 
         let client = Client {
             archived_games: Vec::new(),
+            hide_coordinates: self.hide_coordinates,
             locale_selected: self.locale_selected,
             my_games_only: self.my_games_only,
             password,
@@ -2817,6 +2830,7 @@ enum Message {
     GameWatch(Id),
     HeatMap(bool),
     HideCoordinates(bool),
+    HideCoordinatesToggle,
     Leave,
     LocaleSelected(Locale),
     MyGamesOnly(bool),
@@ -2831,6 +2845,7 @@ enum Message {
     PlayMoveRevert,
     PlayResign,
     SoundMuted(bool),
+    SoundMutedToggle,
     RatedSelected(bool),
     ResetPassword(String),
     ReviewGame,
