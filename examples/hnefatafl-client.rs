@@ -960,13 +960,13 @@ impl<'a> Client {
                     Message::SoundMutedToggle
                 } else if *ch == *Value::new("o").to_smolstr() {
                     Message::HideCoordinatesToggle
-                } else if *ch == *Value::new("!").to_smolstr() {
+                } else if *ch == *Value::new("w").to_smolstr() {
                     Message::BoardSizeSelected(BoardSize::_11)
-                } else if *ch == *Value::new("#").to_smolstr() {
+                } else if *ch == *Value::new("x").to_smolstr() {
                     Message::BoardSizeSelected(BoardSize::_13)
-                } else if *ch == *Value::new("A").to_smolstr() {
+                } else if *ch == *Value::new("y").to_smolstr() {
                     Message::RoleSelected(Role::Attacker)
-                } else if *ch == *Value::new("D").to_smolstr() {
+                } else if *ch == *Value::new("z").to_smolstr() {
                     Message::RoleSelected(Role::Defender)
                 } else {
                     Message::Empty
@@ -2416,14 +2416,14 @@ impl<'a> Client {
             Screen::Game | Screen::GameReview => self.display_game(),
             Screen::GameNew => {
                 let attacker = radio(
-                    format!("{} (A)", t!("attacker")),
+                    format!("{} (y)", t!("attacker")),
                     Role::Attacker,
                     self.game_settings.role_selected,
                     Message::RoleSelected,
                 );
 
                 let defender = radio(
-                    format!("{} (D),", t!("defender")),
+                    format!("{} (z),", t!("defender")),
                     Role::Defender,
                     self.game_settings.role_selected,
                     Message::RoleSelected,
@@ -2446,14 +2446,14 @@ impl<'a> Client {
                     .on_press(Message::Leave);
 
                 let size_11x11 = radio(
-                    "11x11 (!)",
+                    "11x11 (w)",
                     BoardSize::_11,
                     self.game_settings.board_size,
                     Message::BoardSizeSelected,
                 );
 
                 let size_13x13 = radio(
-                    "13x13 (#),",
+                    "13x13 (x),",
                     BoardSize::_13,
                     self.game_settings.board_size,
                     Message::BoardSizeSelected,
