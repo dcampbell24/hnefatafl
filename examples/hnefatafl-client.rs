@@ -987,6 +987,10 @@ impl<'a> Client {
                     key: Key::Named(Named::ArrowDown),
                     ..
                 } => Some(Message::ReviewGameForwardAll),
+                keyboard::Event::KeyPressed {
+                    key: Key::Named(Named::Escape),
+                    ..
+                } => Some(Message::Leave),
                 _ => None,
             },
             _ => None,
