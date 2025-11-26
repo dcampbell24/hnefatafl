@@ -829,7 +829,7 @@ impl<'a> Client {
 
         let muted = row![
             checkbox(self.sound_muted).on_toggle(Message::SoundMuted),
-            text!("{} (m)", t!("Muted"))
+            text!("{} (n)", t!("Muted"))
         ]
         .spacing(SPACING);
 
@@ -956,7 +956,7 @@ impl<'a> Client {
                 keyboard::Event::KeyPressed {
                     key: Key::Character(ch),
                     ..
-                } => Some(if *ch == *Value::new("m").to_smolstr() {
+                } => Some(if *ch == *Value::new("n").to_smolstr() {
                     Message::SoundMutedToggle
                 } else if *ch == *Value::new("o").to_smolstr() {
                     Message::HideCoordinatesToggle
