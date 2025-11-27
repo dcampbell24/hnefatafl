@@ -971,31 +971,33 @@ impl<'a> Client {
                     key: Key::Character(ch),
                     modifiers,
                     ..
-                } => Some(if modifiers.control() {
-                    if *ch == *Value::new("n").to_smolstr() {
-                        Message::SoundMutedToggle
-                    } else if *ch == *Value::new("o").to_smolstr() {
-                        Message::CoordinatesToggle
-                    } else if *ch == *Value::new("p").to_smolstr() {
-                        Message::PasswordShowToggle
-                    } else if *ch == *Value::new("q").to_smolstr() {
-                        Message::PasswordSaveToggle
-                    } else if *ch == *Value::new("r").to_smolstr() {
-                        Message::MyGamesOnlyToggle
-                    } else if *ch == *Value::new("w").to_smolstr() {
-                        Message::BoardSizeSelected(BoardSize::_11)
-                    } else if *ch == *Value::new("x").to_smolstr() {
-                        Message::BoardSizeSelected(BoardSize::_13)
-                    } else if *ch == *Value::new("y").to_smolstr() {
-                        Message::RoleSelected(Role::Attacker)
-                    } else if *ch == *Value::new("z").to_smolstr() {
-                        Message::RoleSelected(Role::Defender)
+                } => {
+                    if modifiers.control() {
+                        if *ch == *Value::new("n").to_smolstr() {
+                            Some(Message::SoundMutedToggle)
+                        } else if *ch == *Value::new("o").to_smolstr() {
+                            Some(Message::CoordinatesToggle)
+                        } else if *ch == *Value::new("p").to_smolstr() {
+                            Some(Message::PasswordShowToggle)
+                        } else if *ch == *Value::new("q").to_smolstr() {
+                            Some(Message::PasswordSaveToggle)
+                        } else if *ch == *Value::new("r").to_smolstr() {
+                            Some(Message::MyGamesOnlyToggle)
+                        } else if *ch == *Value::new("w").to_smolstr() {
+                            Some(Message::BoardSizeSelected(BoardSize::_11))
+                        } else if *ch == *Value::new("x").to_smolstr() {
+                            Some(Message::BoardSizeSelected(BoardSize::_13))
+                        } else if *ch == *Value::new("y").to_smolstr() {
+                            Some(Message::RoleSelected(Role::Attacker))
+                        } else if *ch == *Value::new("z").to_smolstr() {
+                            Some(Message::RoleSelected(Role::Defender))
+                        } else {
+                            None
+                        }
                     } else {
-                        Message::Empty
+                        None
                     }
-                } else {
-                    Message::Empty
-                }),
+                }
                 keyboard::Event::KeyPressed {
                     key: Key::Named(Named::Tab),
                     modifiers,
@@ -1125,7 +1127,6 @@ impl<'a> Client {
                 self.email = None;
                 self.send("email_reset\n".to_string());
             }
-            Message::Empty => {}
             Message::EstimateScore => {
                 if !self.estimate_score {
                     info!("start running score estimator...");
@@ -2907,7 +2908,6 @@ enum Message {
     DeleteAccount,
     EmailEveryone,
     EmailReset,
-    Empty,
     EstimateScore,
     EstimateScoreConnected(mpsc::Sender<Tree>),
     EstimateScoreDisplay((Node, GenerateMove)),
