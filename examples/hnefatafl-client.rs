@@ -951,19 +951,24 @@ impl<'a> Client {
                 } => Some(Message::TextSendLogin),
                 keyboard::Event::KeyPressed {
                     key: Key::Character(ch),
+                    modifiers,
                     ..
-                } => Some(if *ch == *Value::new("n").to_smolstr() {
-                    Message::SoundMutedToggle
-                } else if *ch == *Value::new("o").to_smolstr() {
-                    Message::CoordinatesToggle
-                } else if *ch == *Value::new("w").to_smolstr() {
-                    Message::BoardSizeSelected(BoardSize::_11)
-                } else if *ch == *Value::new("x").to_smolstr() {
-                    Message::BoardSizeSelected(BoardSize::_13)
-                } else if *ch == *Value::new("y").to_smolstr() {
-                    Message::RoleSelected(Role::Attacker)
-                } else if *ch == *Value::new("z").to_smolstr() {
-                    Message::RoleSelected(Role::Defender)
+                } => Some(if modifiers.control() {
+                    if *ch == *Value::new("n").to_smolstr() {
+                        Message::SoundMutedToggle
+                    } else if *ch == *Value::new("o").to_smolstr() {
+                        Message::CoordinatesToggle
+                    } else if *ch == *Value::new("w").to_smolstr() {
+                        Message::BoardSizeSelected(BoardSize::_11)
+                    } else if *ch == *Value::new("x").to_smolstr() {
+                        Message::BoardSizeSelected(BoardSize::_13)
+                    } else if *ch == *Value::new("y").to_smolstr() {
+                        Message::RoleSelected(Role::Attacker)
+                    } else if *ch == *Value::new("z").to_smolstr() {
+                        Message::RoleSelected(Role::Defender)
+                    } else {
+                        Message::Empty
+                    }
                 } else {
                     Message::Empty
                 }),
@@ -2747,6 +2752,10 @@ impl<'a> Client {
                 .padding(PADDING)
                 .style(container::bordered_box);
 
+                let help_text_2 = text(t!(
+                    "You must hold down Ctrl when pressing a lettered or numbered hot key."
+                ));
+
                 column![
                     username,
                     password,
@@ -2764,6 +2773,7 @@ impl<'a> Client {
                     locale,
                     buttons_2,
                     help_text,
+                    help_text_2,
                     error,
                     error_persistent
                 ]
