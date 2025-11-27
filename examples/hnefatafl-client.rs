@@ -381,7 +381,7 @@ struct Client {
     password_ends_with_whitespace: bool,
     #[serde(default)]
     password_save: bool,
-    #[serde(skip)]
+    #[serde(default)]
     password_show: bool,
     #[serde(skip)]
     play_from: Option<Vertex>,
@@ -924,6 +924,24 @@ impl<'a> Client {
         row![board, user_area].spacing(SPACING).into()
     }
 
+    fn my_games_only(&mut self) {
+        let selected = !self.my_games_only;
+        if selected {
+            self.archived_games_filtered = Some(
+                self.archived_games
+                    .iter()
+                    .filter(|game| game.attacker == self.username || game.defender == self.username)
+                    .cloned()
+                    .collect(),
+            );
+        } else {
+            self.archived_games_filtered = None;
+        }
+
+        self.my_games_only = selected;
+        handle_error(self.save_client_ron());
+    }
+
     #[allow(clippy::collapsible_match)]
     fn subscriptions(&self) -> Subscription<Message> {
         let subscription_1 = if let Some(game) = &self.game {
@@ -958,6 +976,12 @@ impl<'a> Client {
                         Message::SoundMutedToggle
                     } else if *ch == *Value::new("o").to_smolstr() {
                         Message::CoordinatesToggle
+                    } else if *ch == *Value::new("p").to_smolstr() {
+                        Message::PasswordShowToggle
+                    } else if *ch == *Value::new("q").to_smolstr() {
+                        Message::PasswordSaveToggle
+                    } else if *ch == *Value::new("r").to_smolstr() {
+                        Message::MyGamesOnlyToggle
                     } else if *ch == *Value::new("w").to_smolstr() {
                         Message::BoardSizeSelected(BoardSize::_11)
                     } else if *ch == *Value::new("x").to_smolstr() {
@@ -1203,23 +1227,11 @@ impl<'a> Client {
                 self.locale_selected = locale;
                 handle_error(self.save_client_ron());
             }
-            Message::MyGamesOnly(selected) => {
-                if selected {
-                    self.archived_games_filtered = Some(
-                        self.archived_games
-                            .iter()
-                            .filter(|game| {
-                                game.attacker == self.username || game.defender == self.username
-                            })
-                            .cloned()
-                            .collect(),
-                    );
-                } else {
-                    self.archived_games_filtered = None;
-                }
-
-                self.my_games_only = selected;
-                handle_error(self.save_client_ron());
+            Message::MyGamesOnly(_selected) => {
+                self.my_games_only();
+            }
+            Message::MyGamesOnlyToggle => {
+                self.my_games_only();
             }
             Message::OpenUrl(string) => open_url(&string),
             Message::GameNew => {
@@ -1288,7 +1300,18 @@ impl<'a> Client {
                 self.password_save = save_password;
                 handle_error(self.save_client_ron());
             }
-            Message::PasswordShow(show_password) => self.password_show = show_password,
+            Message::PasswordSaveToggle => {
+                self.password_save = !self.password_save;
+                handle_error(self.save_client_ron());
+            }
+            Message::PasswordShow(show_password) => {
+                self.password_show = show_password;
+                handle_error(self.save_client_ron());
+            }
+            Message::PasswordShowToggle => {
+                self.password_show = !self.password_show;
+                handle_error(self.save_client_ron());
+            }
             Message::PlayDraw => {
                 let game = self.game.as_ref().expect("you should have a game by now");
                 self.send(format!("request_draw {} {}\n", self.game_id, game.turn));
@@ -2353,10 +2376,13 @@ impl<'a> Client {
                     .spacing(SPACING),
                 );
 
-                columns = columns.push(row![
-                    text(t!("show password")),
-                    checkbox(self.password_show).on_toggle(Message::PasswordShow)
-                ]);
+                columns = columns.push(
+                    row![
+                        checkbox(self.password_show).on_toggle(Message::PasswordShow),
+                        text!("{} (p)", t!("show password")),
+                    ]
+                    .spacing(SPACING),
+                );
 
                 if self.delete_account {
                     columns = columns.push(
@@ -2574,7 +2600,7 @@ impl<'a> Client {
                     .padding(PADDING / 2)
                     .style(container::bordered_box);
 
-                let my_games_text = text(t!("My Games Only")).center();
+                let my_games_text = text!("{} (r)", t!("My Games Only")).center();
                 let my_games = checkbox(self.my_games_only)
                     .on_toggle(Message::MyGamesOnly)
                     .size(32);
@@ -2634,10 +2660,10 @@ impl<'a> Client {
                     .padding(PADDING)
                     .style(container::bordered_box);
 
-                let show_password_text = text(t!("show password"));
+                let show_password_text = text!("{} (p)", t!("show password"));
                 let show_password = checkbox(self.password_show).on_toggle(Message::PasswordShow);
 
-                let save_password_text = text(t!("save password"));
+                let save_password_text = text!("{} (q)", t!("save password"));
                 let save_password = checkbox(self.password_save).on_toggle(Message::PasswordSave);
 
                 let mut login = button(text!("{} (Enter)", self.strings["Login"].as_str()));
@@ -2677,7 +2703,7 @@ impl<'a> Client {
                     self.archived_games.clone()
                 };
 
-                let my_games_text = text(t!("My Games Only"));
+                let my_games_text = text!("{} (r)", t!("My Games Only"));
                 let my_games = checkbox(self.my_games_only).on_toggle(Message::MyGamesOnly);
 
                 let buttons_1 =
@@ -2828,6 +2854,7 @@ impl<'a> Client {
             my_games_only: self.my_games_only,
             password,
             password_save: self.password_save,
+            password_show: self.password_show,
             sound_muted: self.sound_muted,
             theme: self.theme,
             username: self.username.clone(),
@@ -2897,10 +2924,13 @@ enum Message {
     Leave,
     LocaleSelected(Locale),
     MyGamesOnly(bool),
+    MyGamesOnlyToggle,
     OpenUrl(String),
     PasswordChanged(String),
     PasswordSave(bool),
+    PasswordSaveToggle,
     PasswordShow(bool),
+    PasswordShowToggle,
     PlayDraw,
     PlayDrawDecision(Draw),
     PlayMoveFrom(Vertex),
