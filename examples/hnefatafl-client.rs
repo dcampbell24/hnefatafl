@@ -2753,7 +2753,7 @@ impl<'a> Client {
                 .style(container::bordered_box);
 
                 let help_text_2 = text(t!(
-                    "You must hold down Ctrl when pressing a lettered or numbered hot key."
+                    "You must hold down Ctrl when pressing a lettered or numbered hotkey."
                 ));
 
                 column![
