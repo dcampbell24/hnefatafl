@@ -964,10 +964,6 @@ impl<'a> Client {
             }
             Event::Keyboard(event) => match event {
                 keyboard::Event::KeyPressed {
-                    key: Key::Named(Named::Enter),
-                    ..
-                } => Some(Message::TextSendLogin),
-                keyboard::Event::KeyPressed {
                     key: Key::Character(ch),
                     modifiers,
                     ..
@@ -999,39 +995,32 @@ impl<'a> Client {
                     }
                 }
                 keyboard::Event::KeyPressed {
-                    key: Key::Named(Named::Tab),
+                    key: Key::Named(named),
                     modifiers,
                     ..
-                } => Some(if modifiers.shift() {
-                    Message::FocusPrevious
-                } else {
-                    Message::FocusNext
-                }),
-                keyboard::Event::KeyPressed {
-                    key: Key::Named(Named::ArrowUp),
-                    ..
-                } => Some(Message::ReviewGameBackwardAll),
-                keyboard::Event::KeyPressed {
-                    key: Key::Named(Named::ArrowLeft),
-                    ..
-                } => Some(Message::ReviewGameBackward),
-                keyboard::Event::KeyPressed {
-                    key: Key::Named(Named::ArrowRight),
-                    modifiers,
-                    ..
-                } => Some(if modifiers.shift() {
-                    Message::ReviewGameChildNext
-                } else {
-                    Message::ReviewGameForward
-                }),
-                keyboard::Event::KeyPressed {
-                    key: Key::Named(Named::ArrowDown),
-                    ..
-                } => Some(Message::ReviewGameForwardAll),
-                keyboard::Event::KeyPressed {
-                    key: Key::Named(Named::Escape),
-                    ..
-                } => Some(Message::Leave),
+                } => {
+                    if named == Named::Enter {
+                        Some(Message::TextSendLogin)
+                    } else if modifiers.shift() && named == Named::Tab {
+                        Some(Message::FocusPrevious)
+                    } else if named == Named::Tab {
+                        Some(Message::FocusNext)
+                    } else if named == Named::ArrowUp {
+                        Some(Message::ReviewGameBackwardAll)
+                    } else if named == Named::ArrowLeft {
+                        Some(Message::ReviewGameBackward)
+                    } else if named == Named::ArrowRight && modifiers.shift() {
+                        Some(Message::ReviewGameChildNext)
+                    } else if named == Named::ArrowRight {
+                        Some(Message::ReviewGameForward)
+                    } else if named == Named::ArrowDown {
+                        Some(Message::ReviewGameForwardAll)
+                    } else if named == Named::Escape {
+                        Some(Message::Leave)
+                    } else {
+                        None
+                    }
+                }
                 _ => None,
             },
             _ => None,
