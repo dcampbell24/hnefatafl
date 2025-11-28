@@ -629,6 +629,27 @@ impl<'a> Client {
         game_display
     }
 
+    fn create_account(&mut self) {
+        if !self.connected_tcp {
+            self.send("tcp_connect\n".to_string());
+            self.connected_tcp = true;
+        }
+
+        if self.screen == Screen::Login {
+            if !self.text_input.trim().is_empty() {
+                let username = self.text_input.clone();
+                self.send(format!(
+                    "{VERSION_ID} create_account {username} {}\n",
+                    self.password,
+                ));
+                self.username = username;
+            }
+            self.text_input.clear();
+            self.archived_game_reset();
+            handle_error(self.save_client_ron());
+        }
+    }
+
     fn draw_arrow(&self, y: usize, x: usize) -> Option<&str> {
         if let (Some(from), Some(to)) = (&self.play_from_previous, &self.play_to_previous) {
             if (y, x) == (from.y, from.x) {
@@ -1023,10 +1044,6 @@ impl<'a> Client {
                             Some(Message::SoundMutedToggle)
                         } else if *ch == *Value::new("o").to_smolstr() {
                             Some(Message::CoordinatesToggle)
-                        } else if *ch == *Value::new("s").to_smolstr() {
-                            Some(Message::TextSendCreateAccount)
-                        } else if *ch == *Value::new("t").to_smolstr() {
-                            Some(Message::ResetPassword)
                         } else if *ch == *Value::new("w").to_smolstr() {
                             Some(Message::BoardSizeSelected(BoardSize::_11))
                         } else if *ch == *Value::new("x").to_smolstr() {
@@ -1447,16 +1464,30 @@ impl<'a> Client {
                     }
                 }
             },
-            Message::Press4 => {
-                if self.screen == Screen::Game || self.screen == Screen::GameReview {
+            Message::Press4 => match self.screen {
+                Screen::AccountSettings
+                | Screen::EmailEveryone
+                | Screen::Games
+                | Screen::GameNew
+                | Screen::GameNewFrozen
+                | Screen::Users => {}
+                Screen::Login => self.create_account(),
+                Screen::Game | Screen::GameReview => {
                     self.press_numbers[3] = !self.press_numbers[3];
                 }
-            }
-            Message::Press5 => {
-                if self.screen == Screen::Game || self.screen == Screen::GameReview {
+            },
+            Message::Press5 => match self.screen {
+                Screen::AccountSettings
+                | Screen::EmailEveryone
+                | Screen::Games
+                | Screen::GameNew
+                | Screen::GameNewFrozen
+                | Screen::Users => {}
+                Screen::Login => self.reset_password(),
+                Screen::Game | Screen::GameReview => {
                     self.press_numbers[4] = !self.press_numbers[4];
                 }
-            }
+            },
             Message::Press6 => {
                 if self.screen == Screen::Game || self.screen == Screen::GameReview {
                     self.press_numbers[5] = !self.press_numbers[5];
@@ -1494,16 +1525,7 @@ impl<'a> Client {
             Message::RatedSelected(rated) => {
                 self.game_settings.rated = if rated { Rated::Yes } else { Rated::No };
             }
-            Message::ResetPassword => {
-                if !self.connected_tcp {
-                    self.send("tcp_connect\n".to_string());
-                    self.connected_tcp = true;
-                }
-
-                if self.screen == Screen::Login {
-                    self.send(format!("{VERSION_ID} reset_password {}\n", self.text_input));
-                }
-            }
+            Message::ResetPassword => self.reset_password(),
             Message::ReviewGame => {
                 if let Some(archived_game) = &self.archived_game_selected {
                     self.archived_game_handle = Some(ArchivedGameHandle::new(archived_game));
@@ -1976,26 +1998,7 @@ impl<'a> Client {
 
                 self.send(format!("email_code {}\n", self.text_input));
             }
-            Message::TextSendCreateAccount => {
-                if !self.connected_tcp {
-                    self.send("tcp_connect\n".to_string());
-                    self.connected_tcp = true;
-                }
-
-                if self.screen == Screen::Login {
-                    if !self.text_input.trim().is_empty() {
-                        let username = self.text_input.clone();
-                        self.send(format!(
-                            "{VERSION_ID} create_account {username} {}\n",
-                            self.password,
-                        ));
-                        self.username = username;
-                    }
-                    self.text_input.clear();
-                    self.archived_game_reset();
-                    handle_error(self.save_client_ron());
-                }
-            }
+            Message::TextSendCreateAccount => self.create_account(),
             Message::TextSendLogin => {
                 if self.screen != Screen::Login {
                     return Task::none();
@@ -2388,6 +2391,17 @@ impl<'a> Client {
         container(user_area)
             .padding(PADDING)
             .style(container::bordered_box)
+    }
+
+    fn reset_password(&mut self) {
+        if !self.connected_tcp {
+            self.send("tcp_connect\n".to_string());
+            self.connected_tcp = true;
+        }
+
+        if self.screen == Screen::Login {
+            self.send(format!("{VERSION_ID} reset_password {}\n", self.text_input));
+        }
     }
 
     #[must_use]
@@ -2791,13 +2805,13 @@ impl<'a> Client {
                 }
 
                 let mut create_account =
-                    button(text!("{} (s)", self.strings["Create Account"].as_str()));
+                    button(text!("{} (4)", self.strings["Create Account"].as_str()));
                 if !self.text_input.is_empty() && !self.password_ends_with_whitespace {
                     create_account = create_account.on_press(Message::TextSendCreateAccount);
                 }
 
                 let mut reset_password =
-                    button(text!("{} (t)", self.strings["Reset Password"].as_str()));
+                    button(text!("{} (5)", self.strings["Reset Password"].as_str()));
                 if !self.text_input.is_empty() {
                     reset_password = reset_password.on_press(Message::ResetPassword);
                 }
