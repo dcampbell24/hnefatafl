@@ -1151,11 +1151,7 @@ impl<'a> Client {
                 self.theme = theme;
                 handle_error(self.save_client_ron());
             }
-            Message::BoardSizeSelected(size) => {
-                if self.screen == Screen::GameNew {
-                    self.game_settings.board_size = Some(size);
-                }
-            }
+            Message::BoardSizeSelected(size) => self.game_settings.board_size = Some(size),
             Message::ConnectedTo(address) => self.connected_to = address,
             Message::Coordinates(coordinates) => {
                 self.coordinates = coordinates.into();
@@ -1447,9 +1443,9 @@ impl<'a> Client {
             Message::Press3 => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
-                | Screen::GameNew
                 | Screen::GameNewFrozen
                 | Screen::Users => {}
+                Screen::GameNew => self.game_settings.board_size = Some(BoardSize::_11),
                 Screen::Login | Screen::Games => self.my_games_only(),
                 Screen::Game | Screen::GameReview => {
                     if self.screen == Screen::Game || self.screen == Screen::GameReview {
@@ -1468,9 +1464,9 @@ impl<'a> Client {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::Games
-                | Screen::GameNew
                 | Screen::GameNewFrozen
                 | Screen::Users => {}
+                Screen::GameNew => self.game_settings.board_size = Some(BoardSize::_13),
                 Screen::Login => self.create_account(),
                 Screen::Game | Screen::GameReview => {
                     self.press_numbers[3] = !self.press_numbers[3];
@@ -2606,14 +2602,14 @@ impl<'a> Client {
                     .on_press(Message::Leave);
 
                 let size_11x11 = radio(
-                    "11x11 (w)",
+                    "11x11 (3)",
                     BoardSize::_11,
                     self.game_settings.board_size,
                     Message::BoardSizeSelected,
                 );
 
                 let size_13x13 = radio(
-                    "13x13 (x),",
+                    "13x13 (4),",
                     BoardSize::_13,
                     self.game_settings.board_size,
                     Message::BoardSizeSelected,
