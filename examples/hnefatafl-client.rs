@@ -1346,10 +1346,7 @@ impl<'a> Client {
                 self.password_save = !self.password_save;
                 handle_error(self.save_client_ron());
             }
-            Message::PasswordShow(show_password) => {
-                self.password_show = show_password;
-                handle_error(self.save_client_ron());
-            }
+            Message::PasswordShow(_) => self.toggle_show_password(),
             Message::PlayDraw => {
                 let game = self.game.as_ref().expect("you should have a game by now");
                 self.send(format!("request_draw {} {}\n", self.game_id, game.turn));
@@ -1407,10 +1404,7 @@ impl<'a> Client {
                 ));
             }
             Message::Press1 => match self.screen {
-                Screen::AccountSettings | Screen::Login => {
-                    self.password_show = !self.password_show;
-                    handle_error(self.save_client_ron());
-                }
+                Screen::AccountSettings | Screen::Login => self.toggle_show_password(),
                 Screen::EmailEveryone
                 | Screen::GameNew
                 | Screen::GameNewFrozen
@@ -3018,6 +3012,11 @@ impl<'a> Client {
         );
     }
 
+    fn toggle_show_password(&mut self) {
+        self.password_show = !self.password_show;
+        handle_error(self.save_client_ron());
+    }
+
     fn numbers(&self, letter_size: u32, spacing: u32, board_size: usize) -> Column<'a, Message> {
         let mut column = column![text(" ").size(letter_size)].spacing(spacing);
 
@@ -3069,6 +3068,7 @@ enum Message {
     PasswordChanged(String),
     PasswordSave(bool),
     PasswordSaveToggle,
+    #[allow(dead_code)]
     PasswordShow(bool),
     PlayDraw,
     PlayDrawDecision(Draw),
