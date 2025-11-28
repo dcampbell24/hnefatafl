@@ -1023,8 +1023,6 @@ impl<'a> Client {
                             Some(Message::SoundMutedToggle)
                         } else if *ch == *Value::new("o").to_smolstr() {
                             Some(Message::CoordinatesToggle)
-                        } else if *ch == *Value::new("q").to_smolstr() {
-                            Some(Message::PasswordSaveToggle)
                         } else if *ch == *Value::new("r").to_smolstr() {
                             Some(Message::MyGamesOnlyToggle)
                         } else if *ch == *Value::new("s").to_smolstr() {
@@ -1338,14 +1336,7 @@ impl<'a> Client {
                     self.password = password;
                 }
             }
-            Message::PasswordSave(save_password) => {
-                self.password_save = save_password;
-                handle_error(self.save_client_ron());
-            }
-            Message::PasswordSaveToggle => {
-                self.password_save = !self.password_save;
-                handle_error(self.save_client_ron());
-            }
+            Message::PasswordSave(_) => self.toggle_save_password(),
             Message::PasswordShow(_) => self.toggle_show_password(),
             Message::PlayDraw => {
                 let game = self.game.as_ref().expect("you should have a game by now");
@@ -1423,8 +1414,14 @@ impl<'a> Client {
                     }
                 }
             },
-            Message::Press2 => {
-                if self.screen == Screen::Game || self.screen == Screen::GameReview {
+            Message::Press2 => match self.screen {
+                Screen::AccountSettings | Screen::Login => self.toggle_save_password(),
+                Screen::EmailEveryone
+                | Screen::GameNew
+                | Screen::GameNewFrozen
+                | Screen::Games
+                | Screen::Users => {}
+                Screen::Game | Screen::GameReview => {
                     if self.press_numbers[0] && !self.press_numbers[11] {
                         self.press_numbers[0] = false;
                         self.press_numbers[11] = true;
@@ -1434,7 +1431,7 @@ impl<'a> Client {
                         self.press_numbers[1] = !self.press_numbers[1];
                     }
                 }
-            }
+            },
             Message::Press3 => {
                 if self.screen == Screen::Game || self.screen == Screen::GameReview {
                     if self.press_numbers[0] && !self.press_numbers[12] {
@@ -2782,7 +2779,7 @@ impl<'a> Client {
                 let show_password_text = text!("{} (1)", t!("show password"));
                 let show_password = checkbox(self.password_show).on_toggle(Message::PasswordShow);
 
-                let save_password_text = text!("{} (q)", t!("save password"));
+                let save_password_text = text!("{} (2)", t!("save password"));
                 let save_password = checkbox(self.password_save).on_toggle(Message::PasswordSave);
 
                 let mut login = button(text!("{} (Enter)", self.strings["Login"].as_str()));
@@ -3012,6 +3009,11 @@ impl<'a> Client {
         );
     }
 
+    fn toggle_save_password(&mut self) {
+        self.password_save = !self.password_save;
+        handle_error(self.save_client_ron());
+    }
+
     fn toggle_show_password(&mut self) {
         self.password_show = !self.password_show;
         handle_error(self.save_client_ron());
@@ -3066,8 +3068,8 @@ enum Message {
     MyGamesOnlyToggle,
     OpenUrl(String),
     PasswordChanged(String),
+    #[allow(dead_code)]
     PasswordSave(bool),
-    PasswordSaveToggle,
     #[allow(dead_code)]
     PasswordShow(bool),
     PlayDraw,
