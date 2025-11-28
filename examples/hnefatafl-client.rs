@@ -968,7 +968,7 @@ impl<'a> Client {
                     modifiers,
                     ..
                 } => {
-                    if modifiers.control() {
+                    if modifiers.control() || modifiers.command() {
                         if *ch == *Value::new("n").to_smolstr() {
                             Some(Message::SoundMutedToggle)
                         } else if *ch == *Value::new("o").to_smolstr() {
