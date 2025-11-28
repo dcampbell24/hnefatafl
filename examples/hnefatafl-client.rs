@@ -268,6 +268,14 @@ fn init_client() -> Client {
         client.chars.ascii();
     }
 
+    let mut letters = HashMap::new();
+    for ch in [
+        'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+    ] {
+        letters.insert(ch, false);
+    }
+    client.press_letters = letters;
+
     client
 }
 
@@ -415,6 +423,8 @@ struct Client {
     #[serde(skip)]
     play_to_previous: Option<Vertex>,
     #[serde(skip)]
+    press_letters: HashMap<char, bool>,
+    #[serde(skip)]
     press_numbers: [bool; 13],
     #[serde(skip)]
     request_draw: bool,
@@ -528,10 +538,11 @@ impl<'a> Client {
         }
 
         for (x, letter) in letters.iter().enumerate() {
+            //
             let mut column = Column::new().spacing(2).align_x(Horizontal::Center);
 
             if coordinates {
-                column = column.push(text(letter).size(d.letter_size));
+                column = self.letter(*letter, column, d.letter_size);
             }
 
             for y in 0..board_size_usize {
@@ -615,7 +626,7 @@ impl<'a> Client {
             }
 
             if coordinates {
-                column = column.push(text(letter).size(d.letter_size));
+                column = self.letter(*letter, column, d.letter_size);
             }
 
             game_display = game_display.push(column);
@@ -1020,7 +1031,33 @@ impl<'a> Client {
                     ..
                 } => {
                     if modifiers.control() || modifiers.command() {
-                        if *ch == *Value::new("1").to_smolstr() {
+                        if *ch == *Value::new("a").to_smolstr() {
+                            Some(Message::PressA)
+                        } else if *ch == *Value::new("b").to_smolstr() {
+                            Some(Message::PressB)
+                        } else if *ch == *Value::new("c").to_smolstr() {
+                            Some(Message::PressC)
+                        } else if *ch == *Value::new("d").to_smolstr() {
+                            Some(Message::PressD)
+                        } else if *ch == *Value::new("e").to_smolstr() {
+                            Some(Message::PressE)
+                        } else if *ch == *Value::new("f").to_smolstr() {
+                            Some(Message::PressF)
+                        } else if *ch == *Value::new("g").to_smolstr() {
+                            Some(Message::PressG)
+                        } else if *ch == *Value::new("h").to_smolstr() {
+                            Some(Message::PressH)
+                        } else if *ch == *Value::new("i").to_smolstr() {
+                            Some(Message::PressI)
+                        } else if *ch == *Value::new("j").to_smolstr() {
+                            Some(Message::PressJ)
+                        } else if *ch == *Value::new("k").to_smolstr() {
+                            Some(Message::PressK)
+                        } else if *ch == *Value::new("l").to_smolstr() {
+                            Some(Message::PressL)
+                        } else if *ch == *Value::new("m").to_smolstr() {
+                            Some(Message::PressM)
+                        } else if *ch == *Value::new("1").to_smolstr() {
                             Some(Message::Press1)
                         } else if *ch == *Value::new("2").to_smolstr() {
                             Some(Message::Press2)
@@ -1394,6 +1431,162 @@ impl<'a> Client {
                     self.game_id, game.turn
                 ));
             }
+            Message::PressA => match self.screen {
+                Screen::AccountSettings
+                | Screen::EmailEveryone
+                | Screen::GameNewFrozen
+                | Screen::Games
+                | Screen::Login
+                | Screen::Users => {}
+                Screen::GameNew => self.game_settings.role_selected = Some(Role::Defender),
+                Screen::Game | Screen::GameReview => {
+                    self.press_letters.insert('a', !self.press_letters[&'a']);
+                }
+            },
+            Message::PressB => match self.screen {
+                Screen::AccountSettings
+                | Screen::EmailEveryone
+                | Screen::GameNewFrozen
+                | Screen::Games
+                | Screen::Login
+                | Screen::Users => {}
+                Screen::GameNew => self.game_settings.role_selected = Some(Role::Defender),
+                Screen::Game | Screen::GameReview => {
+                    self.press_letters.insert('b', !self.press_letters[&'b']);
+                }
+            },
+            Message::PressC => match self.screen {
+                Screen::AccountSettings
+                | Screen::EmailEveryone
+                | Screen::GameNewFrozen
+                | Screen::Games
+                | Screen::Login
+                | Screen::Users => {}
+                Screen::GameNew => self.game_settings.role_selected = Some(Role::Defender),
+                Screen::Game | Screen::GameReview => {
+                    self.press_letters.insert('c', !self.press_letters[&'c']);
+                }
+            },
+            Message::PressD => match self.screen {
+                Screen::AccountSettings
+                | Screen::EmailEveryone
+                | Screen::GameNewFrozen
+                | Screen::Games
+                | Screen::Login
+                | Screen::Users => {}
+                Screen::GameNew => self.game_settings.role_selected = Some(Role::Defender),
+                Screen::Game | Screen::GameReview => {
+                    self.press_letters.insert('d', !self.press_letters[&'d']);
+                }
+            },
+            Message::PressE => match self.screen {
+                Screen::AccountSettings
+                | Screen::EmailEveryone
+                | Screen::GameNewFrozen
+                | Screen::Games
+                | Screen::Login
+                | Screen::Users => {}
+                Screen::GameNew => self.game_settings.role_selected = Some(Role::Defender),
+                Screen::Game | Screen::GameReview => {
+                    self.press_letters.insert('e', !self.press_letters[&'e']);
+                }
+            },
+            Message::PressF => match self.screen {
+                Screen::AccountSettings
+                | Screen::EmailEveryone
+                | Screen::GameNewFrozen
+                | Screen::Games
+                | Screen::Login
+                | Screen::Users => {}
+                Screen::GameNew => self.game_settings.role_selected = Some(Role::Defender),
+                Screen::Game | Screen::GameReview => {
+                    self.press_letters.insert('f', !self.press_letters[&'f']);
+                }
+            },
+            Message::PressG => match self.screen {
+                Screen::AccountSettings
+                | Screen::EmailEveryone
+                | Screen::GameNewFrozen
+                | Screen::Games
+                | Screen::Login
+                | Screen::Users => {}
+                Screen::GameNew => self.game_settings.role_selected = Some(Role::Defender),
+                Screen::Game | Screen::GameReview => {
+                    self.press_letters.insert('g', !self.press_letters[&'g']);
+                }
+            },
+            Message::PressH => match self.screen {
+                Screen::AccountSettings
+                | Screen::EmailEveryone
+                | Screen::GameNewFrozen
+                | Screen::Games
+                | Screen::Login
+                | Screen::Users => {}
+                Screen::GameNew => self.game_settings.role_selected = Some(Role::Defender),
+                Screen::Game | Screen::GameReview => {
+                    self.press_letters.insert('h', !self.press_letters[&'h']);
+                }
+            },
+            Message::PressI => match self.screen {
+                Screen::AccountSettings
+                | Screen::EmailEveryone
+                | Screen::GameNewFrozen
+                | Screen::Games
+                | Screen::Login
+                | Screen::Users => {}
+                Screen::GameNew => self.game_settings.role_selected = Some(Role::Defender),
+                Screen::Game | Screen::GameReview => {
+                    self.press_letters.insert('i', !self.press_letters[&'i']);
+                }
+            },
+            Message::PressJ => match self.screen {
+                Screen::AccountSettings
+                | Screen::EmailEveryone
+                | Screen::GameNewFrozen
+                | Screen::Games
+                | Screen::Login
+                | Screen::Users => {}
+                Screen::GameNew => self.game_settings.role_selected = Some(Role::Defender),
+                Screen::Game | Screen::GameReview => {
+                    self.press_letters.insert('j', !self.press_letters[&'j']);
+                }
+            },
+            Message::PressK => match self.screen {
+                Screen::AccountSettings
+                | Screen::EmailEveryone
+                | Screen::GameNewFrozen
+                | Screen::Games
+                | Screen::Login
+                | Screen::Users => {}
+                Screen::GameNew => self.game_settings.role_selected = Some(Role::Defender),
+                Screen::Game | Screen::GameReview => {
+                    self.press_letters.insert('k', !self.press_letters[&'k']);
+                }
+            },
+            Message::PressL => match self.screen {
+                Screen::AccountSettings
+                | Screen::EmailEveryone
+                | Screen::GameNewFrozen
+                | Screen::Games
+                | Screen::Login
+                | Screen::Users => {}
+                Screen::GameNew => self.game_settings.role_selected = Some(Role::Defender),
+                Screen::Game | Screen::GameReview => {
+                    self.press_letters.insert('l', !self.press_letters[&'l']);
+                }
+            },
+            Message::PressM => match self.screen {
+                Screen::AccountSettings
+                | Screen::EmailEveryone
+                | Screen::GameNewFrozen
+                | Screen::Games
+                | Screen::Login
+                | Screen::Users => {}
+                Screen::GameNew => self.game_settings.role_selected = Some(Role::Defender),
+                Screen::Game | Screen::GameReview => {
+                    self.press_letters.insert('m', !self.press_letters[&'m']);
+                }
+            },
             Message::Press1 => match self.screen {
                 Screen::AccountSettings | Screen::Login => self.toggle_show_password(),
                 Screen::EmailEveryone | Screen::GameNewFrozen | Screen::Games | Screen::Users => {}
@@ -3014,6 +3207,20 @@ impl<'a> Client {
         handle_error(self.save_client_ron());
     }
 
+    fn letter(
+        &self,
+        letter: char,
+        column: Column<'a, Message>,
+        letter_size: u32,
+    ) -> Column<'a, Message> {
+        let mut text = text(letter).size(letter_size);
+        if self.press_letters[&letter.to_ascii_lowercase()] {
+            text = text.color(BLUE);
+        }
+
+        column.push(text)
+    }
+
     fn numbers(&self, letter_size: u32, spacing: u32, board_size: usize) -> Column<'a, Message> {
         let mut column = column![text(" ").size(letter_size)].spacing(spacing);
 
@@ -3070,6 +3277,19 @@ enum Message {
     PlayMoveTo(Vertex),
     PlayMoveRevert,
     PlayResign,
+    PressA,
+    PressB,
+    PressC,
+    PressD,
+    PressE,
+    PressF,
+    PressG,
+    PressH,
+    PressI,
+    PressJ,
+    PressK,
+    PressL,
+    PressM,
     Press1,
     Press2,
     Press3,
