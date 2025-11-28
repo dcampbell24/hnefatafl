@@ -1023,8 +1023,6 @@ impl<'a> Client {
                             Some(Message::SoundMutedToggle)
                         } else if *ch == *Value::new("o").to_smolstr() {
                             Some(Message::CoordinatesToggle)
-                        } else if *ch == *Value::new("r").to_smolstr() {
-                            Some(Message::MyGamesOnlyToggle)
                         } else if *ch == *Value::new("s").to_smolstr() {
                             Some(Message::TextSendCreateAccount)
                         } else if *ch == *Value::new("t").to_smolstr() {
@@ -1270,9 +1268,6 @@ impl<'a> Client {
             Message::MyGamesOnly(_selected) => {
                 self.my_games_only();
             }
-            Message::MyGamesOnlyToggle => {
-                self.my_games_only();
-            }
             Message::OpenUrl(string) => open_url(&string),
             Message::GameNew => {
                 self.game_settings = NewGameSettings::default();
@@ -1336,8 +1331,8 @@ impl<'a> Client {
                     self.password = password;
                 }
             }
-            Message::PasswordSave(_) => self.toggle_save_password(),
-            Message::PasswordShow(_) => self.toggle_show_password(),
+            Message::PasswordSave(_save) => self.toggle_save_password(),
+            Message::PasswordShow(_show) => self.toggle_show_password(),
             Message::PlayDraw => {
                 let game = self.game.as_ref().expect("you should have a game by now");
                 self.send(format!("request_draw {} {}\n", self.game_id, game.turn));
@@ -1432,18 +1427,26 @@ impl<'a> Client {
                     }
                 }
             },
-            Message::Press3 => {
-                if self.screen == Screen::Game || self.screen == Screen::GameReview {
-                    if self.press_numbers[0] && !self.press_numbers[12] {
-                        self.press_numbers[0] = false;
-                        self.press_numbers[12] = true;
-                    } else if self.press_numbers[12] {
-                        self.press_numbers[12] = false;
-                    } else if !self.press_numbers[0] {
-                        self.press_numbers[2] = !self.press_numbers[2];
+            Message::Press3 => match self.screen {
+                Screen::AccountSettings
+                | Screen::EmailEveryone
+                | Screen::GameNew
+                | Screen::GameNewFrozen
+                | Screen::Users => {}
+                Screen::Login | Screen::Games => self.my_games_only(),
+                Screen::Game | Screen::GameReview => {
+                    if self.screen == Screen::Game || self.screen == Screen::GameReview {
+                        if self.press_numbers[0] && !self.press_numbers[12] {
+                            self.press_numbers[0] = false;
+                            self.press_numbers[12] = true;
+                        } else if self.press_numbers[12] {
+                            self.press_numbers[12] = false;
+                        } else if !self.press_numbers[0] {
+                            self.press_numbers[2] = !self.press_numbers[2];
+                        }
                     }
                 }
-            }
+            },
             Message::Press4 => {
                 if self.screen == Screen::Game || self.screen == Screen::GameReview {
                     self.press_numbers[3] = !self.press_numbers[3];
@@ -2716,7 +2719,7 @@ impl<'a> Client {
                     .padding(PADDING / 2)
                     .style(container::bordered_box);
 
-                let my_games_text = text!("{} (r)", t!("My Games Only")).center();
+                let my_games_text = text!("{} (3)", t!("My Games Only")).center();
                 let my_games = checkbox(self.my_games_only)
                     .on_toggle(Message::MyGamesOnly)
                     .size(32);
@@ -2820,7 +2823,7 @@ impl<'a> Client {
                     self.archived_games.clone()
                 };
 
-                let my_games_text = text!("{} (r)", t!("My Games Only"));
+                let my_games_text = text!("{} (3)", t!("My Games Only"));
                 let my_games = checkbox(self.my_games_only).on_toggle(Message::MyGamesOnly);
 
                 let buttons_1 =
@@ -3065,12 +3068,9 @@ enum Message {
     Leave,
     LocaleSelected(Locale),
     MyGamesOnly(bool),
-    MyGamesOnlyToggle,
     OpenUrl(String),
     PasswordChanged(String),
-    #[allow(dead_code)]
     PasswordSave(bool),
-    #[allow(dead_code)]
     PasswordShow(bool),
     PlayDraw,
     PlayDrawDecision(Draw),
