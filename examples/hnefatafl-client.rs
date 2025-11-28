@@ -390,6 +390,8 @@ struct Client {
     #[serde(skip)]
     play_to_previous: Option<Vertex>,
     #[serde(skip)]
+    press_numbers: [bool; 13],
+    #[serde(skip)]
     request_draw: bool,
     #[serde(skip)]
     screen: Screen,
@@ -496,7 +498,8 @@ impl<'a> Client {
 
         let coordinates: bool = self.coordinates.into();
         if coordinates {
-            game_display = game_display.push(numbers(d.letter_size, d.spacing, board_size_usize));
+            game_display =
+                game_display.push(self.numbers(d.letter_size, d.spacing, board_size_usize));
         }
 
         for (x, letter) in letters.iter().enumerate() {
@@ -594,7 +597,8 @@ impl<'a> Client {
         }
 
         if coordinates {
-            game_display = game_display.push(numbers(d.letter_size, d.spacing, board_size_usize));
+            game_display =
+                game_display.push(self.numbers(d.letter_size, d.spacing, board_size_usize));
         }
 
         game_display
@@ -942,6 +946,7 @@ impl<'a> Client {
         handle_error(self.save_client_ron());
     }
 
+    #[allow(clippy::too_many_lines)]
     #[allow(clippy::collapsible_match)]
     fn subscriptions(&self) -> Subscription<Message> {
         let subscription_1 = if let Some(game) = &self.game {
@@ -969,7 +974,27 @@ impl<'a> Client {
                     ..
                 } => {
                     if modifiers.control() || modifiers.command() {
-                        if *ch == *Value::new("n").to_smolstr() {
+                        if *ch == *Value::new("1").to_smolstr() {
+                            Some(Message::Press1)
+                        } else if *ch == *Value::new("2").to_smolstr() {
+                            Some(Message::Press2)
+                        } else if *ch == *Value::new("3").to_smolstr() {
+                            Some(Message::Press3)
+                        } else if *ch == *Value::new("4").to_smolstr() {
+                            Some(Message::Press4)
+                        } else if *ch == *Value::new("5").to_smolstr() {
+                            Some(Message::Press5)
+                        } else if *ch == *Value::new("6").to_smolstr() {
+                            Some(Message::Press6)
+                        } else if *ch == *Value::new("7").to_smolstr() {
+                            Some(Message::Press7)
+                        } else if *ch == *Value::new("8").to_smolstr() {
+                            Some(Message::Press8)
+                        } else if *ch == *Value::new("9").to_smolstr() {
+                            Some(Message::Press9)
+                        } else if *ch == *Value::new("0").to_smolstr() {
+                            Some(Message::Press10)
+                        } else if *ch == *Value::new("n").to_smolstr() {
                             Some(Message::SoundMutedToggle)
                         } else if *ch == *Value::new("o").to_smolstr() {
                             Some(Message::CoordinatesToggle)
@@ -1361,6 +1386,79 @@ impl<'a> Client {
                     "game {} play {} resigns _\n",
                     self.game_id, game.turn
                 ));
+            }
+            Message::Press1 => {
+                if self.screen == Screen::Game || self.screen == Screen::GameReview {
+                    if !self.press_numbers[0] && !self.press_numbers[10] {
+                        self.press_numbers[0] = true;
+                        self.press_numbers[10] = false;
+                    } else if self.press_numbers[0] && !self.press_numbers[10] {
+                        self.press_numbers[0] = false;
+                        self.press_numbers[10] = true;
+                    } else if self.press_numbers[10] || self.press_numbers[11] {
+                        self.press_numbers[10] = false;
+                        self.press_numbers[11] = false;
+                    }
+                }
+            }
+            Message::Press2 => {
+                if self.screen == Screen::Game || self.screen == Screen::GameReview {
+                    if self.press_numbers[0] && !self.press_numbers[11] {
+                        self.press_numbers[0] = false;
+                        self.press_numbers[11] = true;
+                    } else if self.press_numbers[11] {
+                        self.press_numbers[11] = false;
+                    } else if !self.press_numbers[0] {
+                        self.press_numbers[1] = !self.press_numbers[1];
+                    }
+                }
+            }
+            Message::Press3 => {
+                if self.screen == Screen::Game || self.screen == Screen::GameReview {
+                    if self.press_numbers[0] && !self.press_numbers[12] {
+                        self.press_numbers[0] = false;
+                        self.press_numbers[12] = true;
+                    } else if self.press_numbers[12] {
+                        self.press_numbers[12] = false;
+                    } else if !self.press_numbers[0] {
+                        self.press_numbers[2] = !self.press_numbers[2];
+                    }
+                }
+            }
+            Message::Press4 => {
+                if self.screen == Screen::Game || self.screen == Screen::GameReview {
+                    self.press_numbers[3] = !self.press_numbers[3];
+                }
+            }
+            Message::Press5 => {
+                if self.screen == Screen::Game || self.screen == Screen::GameReview {
+                    self.press_numbers[4] = !self.press_numbers[4];
+                }
+            }
+            Message::Press6 => {
+                if self.screen == Screen::Game || self.screen == Screen::GameReview {
+                    self.press_numbers[5] = !self.press_numbers[5];
+                }
+            }
+            Message::Press7 => {
+                if self.screen == Screen::Game || self.screen == Screen::GameReview {
+                    self.press_numbers[6] = !self.press_numbers[6];
+                }
+            }
+            Message::Press8 => {
+                if self.screen == Screen::Game || self.screen == Screen::GameReview {
+                    self.press_numbers[7] = !self.press_numbers[7];
+                }
+            }
+            Message::Press9 => {
+                if self.screen == Screen::Game || self.screen == Screen::GameReview {
+                    self.press_numbers[8] = !self.press_numbers[8];
+                }
+            }
+            Message::Press10 => {
+                if self.screen == Screen::Game || self.screen == Screen::GameReview {
+                    self.press_numbers[9] = !self.press_numbers[9];
+                }
             }
             Message::SoundMuted(muted) => {
                 self.sound_muted = muted;
@@ -2891,6 +2989,21 @@ impl<'a> Client {
                 .send(tree),
         );
     }
+
+    fn numbers(&self, letter_size: u32, spacing: u32, board_size: usize) -> Column<'a, Message> {
+        let mut column = column![text(" ").size(letter_size)].spacing(spacing);
+
+        for i in 0..board_size {
+            let i = board_size - i;
+            let mut text = text!("{i:2}").size(letter_size).align_y(Vertical::Center);
+            if self.press_numbers[i - 1] {
+                text = text.color(Color::from_rgb(1.0, 0.0, 0.0));
+            }
+            column = column.push(text);
+        }
+
+        column
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -2936,6 +3049,16 @@ enum Message {
     PlayMoveTo(Vertex),
     PlayMoveRevert,
     PlayResign,
+    Press1,
+    Press2,
+    Press3,
+    Press4,
+    Press5,
+    Press6,
+    Press7,
+    Press8,
+    Press9,
+    Press10,
     SoundMuted(bool),
     SoundMutedToggle,
     RatedSelected(bool),
@@ -3033,17 +3156,6 @@ impl Dimensions {
             spacing,
         }
     }
-}
-
-fn numbers<'a>(letter_size: u32, spacing: u32, board_size: usize) -> Column<'a, Message> {
-    let mut column = column![text(" ").size(letter_size)].spacing(spacing);
-
-    for i in 0..board_size {
-        let i = board_size - i;
-        column = column.push(text!("{i:2}").size(letter_size).align_y(Vertical::Center));
-    }
-
-    column
 }
 
 fn estimate_score() -> impl Stream<Item = Message> {
