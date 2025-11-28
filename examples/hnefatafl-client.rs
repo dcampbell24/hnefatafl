@@ -1044,14 +1044,6 @@ impl<'a> Client {
                             Some(Message::SoundMutedToggle)
                         } else if *ch == *Value::new("o").to_smolstr() {
                             Some(Message::CoordinatesToggle)
-                        } else if *ch == *Value::new("w").to_smolstr() {
-                            Some(Message::BoardSizeSelected(BoardSize::_11))
-                        } else if *ch == *Value::new("x").to_smolstr() {
-                            Some(Message::BoardSizeSelected(BoardSize::_13))
-                        } else if *ch == *Value::new("y").to_smolstr() {
-                            Some(Message::RoleSelected(Role::Attacker))
-                        } else if *ch == *Value::new("z").to_smolstr() {
-                            Some(Message::RoleSelected(Role::Defender))
                         } else {
                             None
                         }
@@ -1404,11 +1396,8 @@ impl<'a> Client {
             }
             Message::Press1 => match self.screen {
                 Screen::AccountSettings | Screen::Login => self.toggle_show_password(),
-                Screen::EmailEveryone
-                | Screen::GameNew
-                | Screen::GameNewFrozen
-                | Screen::Games
-                | Screen::Users => {}
+                Screen::EmailEveryone | Screen::GameNewFrozen | Screen::Games | Screen::Users => {}
+                Screen::GameNew => self.game_settings.role_selected = Some(Role::Attacker),
                 Screen::Game | Screen::GameReview => {
                     if !self.press_numbers[0] && !self.press_numbers[10] {
                         self.press_numbers[0] = true;
@@ -1424,11 +1413,8 @@ impl<'a> Client {
             },
             Message::Press2 => match self.screen {
                 Screen::AccountSettings | Screen::Login => self.toggle_save_password(),
-                Screen::EmailEveryone
-                | Screen::GameNew
-                | Screen::GameNewFrozen
-                | Screen::Games
-                | Screen::Users => {}
+                Screen::EmailEveryone | Screen::GameNewFrozen | Screen::Games | Screen::Users => {}
+                Screen::GameNew => self.game_settings.role_selected = Some(Role::Defender),
                 Screen::Game | Screen::GameReview => {
                     if self.press_numbers[0] && !self.press_numbers[11] {
                         self.press_numbers[0] = false;
@@ -1567,11 +1553,7 @@ impl<'a> Client {
                     self.reset_markers();
                 }
             }
-            Message::RoleSelected(role) => {
-                if self.screen == Screen::GameNew {
-                    self.game_settings.role_selected = Some(role);
-                }
-            }
+            Message::RoleSelected(role) => self.game_settings.role_selected = Some(role),
             Message::TextChanged(string) => {
                 if self.screen == Screen::Login {
                     let string: Vec<_> = string.split_whitespace().collect();
@@ -2572,14 +2554,14 @@ impl<'a> Client {
             Screen::Game | Screen::GameReview => self.display_game(),
             Screen::GameNew => {
                 let attacker = radio(
-                    format!("{} (y)", t!("attacker")),
+                    format!("{} (1)", t!("attacker")),
                     Role::Attacker,
                     self.game_settings.role_selected,
                     Message::RoleSelected,
                 );
 
                 let defender = radio(
-                    format!("{} (z),", t!("defender")),
+                    format!("{} (2),", t!("defender")),
                     Role::Defender,
                     self.game_settings.role_selected,
                     Message::RoleSelected,
