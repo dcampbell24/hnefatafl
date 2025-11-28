@@ -659,9 +659,9 @@ impl<'a> Client {
 
     fn clear_numbers_except(&mut self, number: usize, board_size: usize) {
         for i in 0..board_size {
-            let n = board_size - i;
-            if n != number {
-                self.press_numbers[i] = false;
+            let i = board_size - i;
+            if i != number {
+                self.press_numbers[i - 1] = false;
             }
         }
     }
