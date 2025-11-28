@@ -538,7 +538,6 @@ impl<'a> Client {
         }
 
         for (x, letter) in letters.iter().enumerate() {
-            //
             let mut column = Column::new().spacing(2).align_x(Horizontal::Center);
 
             if coordinates {
