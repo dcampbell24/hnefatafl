@@ -480,21 +480,21 @@ Unable to find Archived Games file:
   is-RU: ᚠᛁᚿᚿ ᛂᚴᚴᛁ ᛋᚴᚱᚨ ᚤᚱ ᛋᚴᛃᛆᛚᛆᛋᛆᚠᚿᛁ ᛚᛂᛁᚴᛃᛆ
   sv-SE: Det gick inte att hitta filen med arkiverade spel
 
-You must hold down Ctrl when pressing a lettered or numbered hotkey.:
-  en-US: You must hold down Ctrl when pressing a lettered or numbered hotkey.
-  zh-CN: 按下字母或数字热键时，必须按住 Ctrl 键。
-  es: Debes mantener presionada la tecla Ctrl al presionar una tecla de acceso rápido con letra o número.
-  ar: يجب عليك الضغط باستمرار على مفتاح Ctrl عند الضغط على مفتاح اختصار يحمل حرفًا أو رقمًا.
-  id: Anda harus menahan tombol Ctrl saat menekan tombol pintas berhuruf atau bernomor.
-  pt-BR: Você deve manter pressionada a tecla Ctrl ao pressionar uma tecla de atalho com letra ou número.
-  pt-PT: Deve manter premida a tecla Ctrl ao premir uma tecla de atalho com letra ou número.
-  fr: Vous devez maintenir la touche Ctrl enfoncée lorsque vous appuyez sur une touche de raccourci alphanumérique ou lettrée.
-  ja: 文字または数字のホットキーを押すときは、Ctrl キーを押したままにする必要があります。
-  ru: При нажатии буквенной или цифровой горячей клавиши необходимо удерживать клавишу Ctrl.
-  de: Beim Drücken einer Buchstaben- oder Zahlentaste muss die Strg-Taste gedrückt gehalten werden.
-  is-IS: Þú verður að halda inni Ctrl þegar þú ýtir á flýtilykla með bókstöfum eða tölum.
-  is-RU: ᚦᚤ ᚡᛂᚱᚧᚢᚱ ᛆᚧ ᚼᛆᛚᛑᛆ ᛁᚿᚿᛁ Cᛐᚱᛚ ᚦᛂᚵᛆᚱ ᚦᚤ ᛨᛐᛁᚱ ᚨ ᚠᛚᛨᛐᛁᛚᛣᚴᛚᛆ ᛘᛂᚧ ᛒᛟᚴᛋᛐᚯᚠᚢᛘ ᛂᚧᛆ ᛐᚯᛚᚢᛘ.
-  sv-SE: Du måste hålla nere Ctrl när du trycker på en snabbtangent med bokstäver eller siffror.
+You must hold down the control (Ctrl) or command (⌘) key when pressing a lettered or numbered hotkey.:
+  en-US: You must hold down the control (Ctrl) or command (⌘) key when pressing a lettered or numbered hotkey.
+  zh-CN: 按下字母或数字快捷键时，必须同时按住控制键 (Ctrl) 或命令键 (⌘)。
+  es: Debes mantener pulsada la tecla Control (Ctrl) o Comando (⌘) al pulsar una tecla de acceso rápido con una letra o un número.
+  ar: يجب عليك الضغط باستمرار على مفتاح التحكم (Ctrl) أو مفتاح الأوامر (⌘) عند الضغط على مفتاح اختصار يتكون من حرف أو رقم.
+  id: Anda harus menekan dan menahan tombol kontrol (Ctrl) atau perintah (⌘) saat menekan tombol pintasan berupa huruf atau angka.
+  pt-BR: Você deve manter pressionada a tecla Control (Ctrl) ou Command (⌘) ao pressionar uma tecla de atalho com letra ou número.
+  pt-PT: Deve manter premida a tecla Control (Ctrl) ou Command (⌘) quando premir uma tecla de atalho com letra ou número.
+  fr: Vous devez maintenir la touche de contrôle (Ctrl) ou de commande (⌘) enfoncée lorsque vous appuyez sur une touche de raccourci comportant une lettre ou un chiffre.
+  ja: 文字または数字のショートカットキーを押す際は、コントロール（Ctrl）キーまたはコマンド（⌘）キーを押し続ける必要があります。
+  ru: При нажатии буквенной или цифровой горячей клавиши необходимо удерживать клавишу Control (Ctrl) или Command (⌘).
+  de: Sie müssen die Strg-Taste (Ctrl) oder die Befehlstaste (⌘) gedrückt halten, wenn Sie eine Tastenkombination mit einem Buchstaben oder einer Zahl verwenden.
+  is-IS: Þú verður að halda niðri Ctrl (Ctrl) eða Command (⌘) takkanum þegar þú ýtir á flýtilykla með bókstöfum eða tölum.
+  is-RU: ᚦᚤ ᚡᛂᚱᚧᚢᚱ ᛆᚧ ᚼᛆᛚᛑᛆ ᚿᛁᚧᚱᛁ ᚴᛐᚱᛚ (Ctrl) ᛂᚧᛆ ᚴᚮᛘᛘᛆᚿᛑ (⌘) ᛐᛆᚴᚴᛆᚿᚢᛘ ᚦᛂᚵᛆᚱ ᚦᚤ ᛨᛐᛁᚱ ᚨ ᚠᛚᛨᛐᛁᛚᛣᚴᛚᛆ ᛘᛂᚧ ᛒᛟᚴᛋᛐᚯᚠᚢᛘ ᛂᚧᛆ ᛐᚯᛚᚢᛘ.
+  sv-SE: Du måste hålla ner Ctrl-tangenten (Ctrl) eller kommandotangenten (⌘) när du trycker på en snabbtangent med bokstäver eller siffror.
 
 Quit:
   en-US: Quit
