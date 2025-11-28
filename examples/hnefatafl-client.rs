@@ -979,6 +979,10 @@ impl<'a> Client {
                             Some(Message::PasswordSaveToggle)
                         } else if *ch == *Value::new("r").to_smolstr() {
                             Some(Message::MyGamesOnlyToggle)
+                        } else if *ch == *Value::new("s").to_smolstr() {
+                            Some(Message::TextSendCreateAccount)
+                        } else if *ch == *Value::new("t").to_smolstr() {
+                            Some(Message::ResetPassword)
                         } else if *ch == *Value::new("w").to_smolstr() {
                             Some(Message::BoardSizeSelected(BoardSize::_11))
                         } else if *ch == *Value::new("x").to_smolstr() {
@@ -1370,12 +1374,15 @@ impl<'a> Client {
             Message::RatedSelected(rated) => {
                 self.game_settings.rated = if rated { Rated::Yes } else { Rated::No };
             }
-            Message::ResetPassword(account) => {
+            Message::ResetPassword => {
                 if !self.connected_tcp {
                     self.send("tcp_connect\n".to_string());
                     self.connected_tcp = true;
                 }
-                self.send(format!("{VERSION_ID} reset_password {account}\n"));
+
+                if self.screen == Screen::Login {
+                    self.send(format!("{VERSION_ID} reset_password {}\n", self.text_input));
+                }
             }
             Message::ReviewGame => {
                 if let Some(archived_game) = &self.archived_game_selected {
@@ -1855,17 +1862,19 @@ impl<'a> Client {
                     self.connected_tcp = true;
                 }
 
-                if !self.text_input.trim().is_empty() {
-                    let username = self.text_input.clone();
-                    self.send(format!(
-                        "{VERSION_ID} create_account {username} {}\n",
-                        self.password,
-                    ));
-                    self.username = username;
+                if self.screen == Screen::Login {
+                    if !self.text_input.trim().is_empty() {
+                        let username = self.text_input.clone();
+                        self.send(format!(
+                            "{VERSION_ID} create_account {username} {}\n",
+                            self.password,
+                        ));
+                        self.username = username;
+                    }
+                    self.text_input.clear();
+                    self.archived_game_reset();
+                    handle_error(self.save_client_ron());
                 }
-                self.text_input.clear();
-                self.archived_game_reset();
-                handle_error(self.save_client_ron());
             }
             Message::TextSendLogin => {
                 if self.screen != Screen::Login {
@@ -2661,15 +2670,16 @@ impl<'a> Client {
                     login = login.on_press(Message::TextSendLogin);
                 }
 
-                let mut create_account = button(text(self.strings["Create Account"].as_str()));
+                let mut create_account =
+                    button(text!("{} (s)", self.strings["Create Account"].as_str()));
                 if !self.text_input.is_empty() && !self.password_ends_with_whitespace {
                     create_account = create_account.on_press(Message::TextSendCreateAccount);
                 }
 
-                let mut reset_password = button(text(self.strings["Reset Password"].as_str()));
+                let mut reset_password =
+                    button(text!("{} (t)", self.strings["Reset Password"].as_str()));
                 if !self.text_input.is_empty() {
-                    reset_password =
-                        reset_password.on_press(Message::ResetPassword(self.text_input.clone()));
+                    reset_password = reset_password.on_press(Message::ResetPassword);
                 }
 
                 let mut error = text("");
@@ -2929,7 +2939,7 @@ enum Message {
     SoundMuted(bool),
     SoundMutedToggle,
     RatedSelected(bool),
-    ResetPassword(String),
+    ResetPassword,
     ReviewGame,
     ReviewGameBackward,
     ReviewGameBackwardAll,
