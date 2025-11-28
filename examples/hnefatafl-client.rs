@@ -1433,11 +1433,11 @@ impl<'a> Client {
             Message::PressA => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
+                | Screen::GameNew
                 | Screen::GameNewFrozen
                 | Screen::Games
                 | Screen::Login
                 | Screen::Users => {}
-                Screen::GameNew => self.game_settings.role_selected = Some(Role::Defender),
                 Screen::Game | Screen::GameReview => {
                     self.press_letters.insert('a', !self.press_letters[&'a']);
                 }
@@ -1445,11 +1445,11 @@ impl<'a> Client {
             Message::PressB => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
+                | Screen::GameNew
                 | Screen::GameNewFrozen
                 | Screen::Games
                 | Screen::Login
                 | Screen::Users => {}
-                Screen::GameNew => self.game_settings.role_selected = Some(Role::Defender),
                 Screen::Game | Screen::GameReview => {
                     self.press_letters.insert('b', !self.press_letters[&'b']);
                 }
@@ -1457,11 +1457,11 @@ impl<'a> Client {
             Message::PressC => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
+                | Screen::GameNew
                 | Screen::GameNewFrozen
                 | Screen::Games
                 | Screen::Login
                 | Screen::Users => {}
-                Screen::GameNew => self.game_settings.role_selected = Some(Role::Defender),
                 Screen::Game | Screen::GameReview => {
                     self.press_letters.insert('c', !self.press_letters[&'c']);
                 }
@@ -1469,11 +1469,11 @@ impl<'a> Client {
             Message::PressD => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
+                | Screen::GameNew
                 | Screen::GameNewFrozen
                 | Screen::Games
                 | Screen::Login
                 | Screen::Users => {}
-                Screen::GameNew => self.game_settings.role_selected = Some(Role::Defender),
                 Screen::Game | Screen::GameReview => {
                     self.press_letters.insert('d', !self.press_letters[&'d']);
                 }
@@ -1481,11 +1481,11 @@ impl<'a> Client {
             Message::PressE => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
+                | Screen::GameNew
                 | Screen::GameNewFrozen
                 | Screen::Games
                 | Screen::Login
                 | Screen::Users => {}
-                Screen::GameNew => self.game_settings.role_selected = Some(Role::Defender),
                 Screen::Game | Screen::GameReview => {
                     self.press_letters.insert('e', !self.press_letters[&'e']);
                 }
@@ -1493,11 +1493,11 @@ impl<'a> Client {
             Message::PressF => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
+                | Screen::GameNew
                 | Screen::GameNewFrozen
                 | Screen::Games
                 | Screen::Login
                 | Screen::Users => {}
-                Screen::GameNew => self.game_settings.role_selected = Some(Role::Defender),
                 Screen::Game | Screen::GameReview => {
                     self.press_letters.insert('f', !self.press_letters[&'f']);
                 }
@@ -1505,11 +1505,11 @@ impl<'a> Client {
             Message::PressG => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
+                | Screen::GameNew
                 | Screen::GameNewFrozen
                 | Screen::Games
                 | Screen::Login
                 | Screen::Users => {}
-                Screen::GameNew => self.game_settings.role_selected = Some(Role::Defender),
                 Screen::Game | Screen::GameReview => {
                     self.press_letters.insert('g', !self.press_letters[&'g']);
                 }
@@ -1517,11 +1517,11 @@ impl<'a> Client {
             Message::PressH => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
+                | Screen::GameNew
                 | Screen::GameNewFrozen
                 | Screen::Games
                 | Screen::Login
                 | Screen::Users => {}
-                Screen::GameNew => self.game_settings.role_selected = Some(Role::Defender),
                 Screen::Game | Screen::GameReview => {
                     self.press_letters.insert('h', !self.press_letters[&'h']);
                 }
@@ -1529,11 +1529,11 @@ impl<'a> Client {
             Message::PressI => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
+                | Screen::GameNew
                 | Screen::GameNewFrozen
                 | Screen::Games
                 | Screen::Login
                 | Screen::Users => {}
-                Screen::GameNew => self.game_settings.role_selected = Some(Role::Defender),
                 Screen::Game | Screen::GameReview => {
                     self.press_letters.insert('i', !self.press_letters[&'i']);
                 }
@@ -1541,11 +1541,11 @@ impl<'a> Client {
             Message::PressJ => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
+                | Screen::GameNew
                 | Screen::GameNewFrozen
                 | Screen::Games
                 | Screen::Login
                 | Screen::Users => {}
-                Screen::GameNew => self.game_settings.role_selected = Some(Role::Defender),
                 Screen::Game | Screen::GameReview => {
                     self.press_letters.insert('j', !self.press_letters[&'j']);
                 }
@@ -1553,11 +1553,11 @@ impl<'a> Client {
             Message::PressK => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
+                | Screen::GameNew
                 | Screen::GameNewFrozen
                 | Screen::Games
                 | Screen::Login
                 | Screen::Users => {}
-                Screen::GameNew => self.game_settings.role_selected = Some(Role::Defender),
                 Screen::Game | Screen::GameReview => {
                     self.press_letters.insert('k', !self.press_letters[&'k']);
                 }
@@ -1565,11 +1565,11 @@ impl<'a> Client {
             Message::PressL => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
+                | Screen::GameNew
                 | Screen::GameNewFrozen
                 | Screen::Games
                 | Screen::Login
                 | Screen::Users => {}
-                Screen::GameNew => self.game_settings.role_selected = Some(Role::Defender),
                 Screen::Game | Screen::GameReview => {
                     self.press_letters.insert('l', !self.press_letters[&'l']);
                 }
@@ -1577,11 +1577,11 @@ impl<'a> Client {
             Message::PressM => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
+                | Screen::GameNew
                 | Screen::GameNewFrozen
                 | Screen::Games
                 | Screen::Login
                 | Screen::Users => {}
-                Screen::GameNew => self.game_settings.role_selected = Some(Role::Defender),
                 Screen::Game | Screen::GameReview => {
                     self.press_letters.insert('m', !self.press_letters[&'m']);
                 }
