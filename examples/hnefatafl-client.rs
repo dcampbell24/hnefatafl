@@ -87,6 +87,9 @@ green     #859900  2/2 green     64 #5f8700 60 -20  65 133 153   0  68 100  60
 */
 
 const BLUE: Color = Color::from_rgb(0.149_02, 0.545_098, 0.823_529);
+const BOARD_LETTERS_LOWERCASE: [char; 13] = [
+    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+];
 
 const USER_CONFIG_FILE_POSTCARD: &str = "hnefatafl.postcard";
 const USER_CONFIG_FILE_RON: &str = "hnefatafl.ron";
@@ -269,9 +272,7 @@ fn init_client() -> Client {
     }
 
     let mut letters = HashMap::new();
-    for ch in [
-        'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-    ] {
+    for ch in BOARD_LETTERS_LOWERCASE {
         letters.insert(ch, false);
     }
     client.press_letters = letters;
@@ -508,22 +509,7 @@ impl<'a> Client {
     #[allow(clippy::too_many_lines)]
     #[must_use]
     fn board(&self) -> Row<'_, Message> {
-        let (board, heat_map) = if let Some(game_handle) = &self.archived_game_handle {
-            let node = game_handle.boards.here();
-
-            if self.heat_map_display
-                && let Some(heat_map) = &self.heat_map
-            {
-                (&node.board.clone(), Some(heat_map.draw(node.turn)))
-            } else {
-                (&node.board.clone(), None)
-            }
-        } else {
-            let game = self.game.as_ref().expect("we should be in a game");
-
-            (&game.board, None)
-        };
-
+        let (board, heat_map) = self.board_and_heatmap();
         let board_size = board.size();
         let board_size_usize: usize = board_size.into();
         let d = Dimensions::new(board_size, &self.screen_size);
@@ -637,6 +623,47 @@ impl<'a> Client {
         }
 
         game_display
+    }
+
+    #[allow(clippy::type_complexity)]
+    fn board_and_heatmap(
+        &self,
+    ) -> (
+        Board,
+        Option<(Vec<Heat>, HashMap<(Role, Vertex), Vec<Heat>>)>,
+    ) {
+        if let Some(game_handle) = &self.archived_game_handle {
+            let node = game_handle.boards.here();
+
+            if self.heat_map_display
+                && let Some(heat_map) = &self.heat_map
+            {
+                (node.board.clone(), Some(heat_map.draw(node.turn)))
+            } else {
+                (node.board.clone(), None)
+            }
+        } else {
+            let game = self.game.as_ref().expect("we should be in a game");
+
+            (game.board.clone(), None)
+        }
+    }
+
+    fn clear_letters_except(&mut self, letter: char) {
+        for l in BOARD_LETTERS_LOWERCASE {
+            if l != letter {
+                self.press_letters.insert(l, false);
+            }
+        }
+    }
+
+    fn clear_numbers_except(&mut self, number: usize, board_size: usize) {
+        for i in 0..board_size {
+            let n = board_size - i;
+            if n != number {
+                self.press_numbers[i] = false;
+            }
+        }
     }
 
     fn create_account(&mut self) {
@@ -1439,6 +1466,7 @@ impl<'a> Client {
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game | Screen::GameReview => {
+                    self.clear_letters_except('a');
                     self.press_letters.insert('a', !self.press_letters[&'a']);
                 }
             },
@@ -1451,6 +1479,7 @@ impl<'a> Client {
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game | Screen::GameReview => {
+                    self.clear_letters_except('b');
                     self.press_letters.insert('b', !self.press_letters[&'b']);
                 }
             },
@@ -1463,6 +1492,7 @@ impl<'a> Client {
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game | Screen::GameReview => {
+                    self.clear_letters_except('c');
                     self.press_letters.insert('c', !self.press_letters[&'c']);
                 }
             },
@@ -1475,6 +1505,7 @@ impl<'a> Client {
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game | Screen::GameReview => {
+                    self.clear_letters_except('d');
                     self.press_letters.insert('d', !self.press_letters[&'d']);
                 }
             },
@@ -1487,6 +1518,7 @@ impl<'a> Client {
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game | Screen::GameReview => {
+                    self.clear_letters_except('e');
                     self.press_letters.insert('e', !self.press_letters[&'e']);
                 }
             },
@@ -1499,6 +1531,7 @@ impl<'a> Client {
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game | Screen::GameReview => {
+                    self.clear_letters_except('f');
                     self.press_letters.insert('f', !self.press_letters[&'f']);
                 }
             },
@@ -1511,6 +1544,7 @@ impl<'a> Client {
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game | Screen::GameReview => {
+                    self.clear_letters_except('g');
                     self.press_letters.insert('g', !self.press_letters[&'g']);
                 }
             },
@@ -1523,6 +1557,7 @@ impl<'a> Client {
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game | Screen::GameReview => {
+                    self.clear_letters_except('h');
                     self.press_letters.insert('h', !self.press_letters[&'h']);
                 }
             },
@@ -1535,6 +1570,7 @@ impl<'a> Client {
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game | Screen::GameReview => {
+                    self.clear_letters_except('i');
                     self.press_letters.insert('i', !self.press_letters[&'i']);
                 }
             },
@@ -1547,6 +1583,7 @@ impl<'a> Client {
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game | Screen::GameReview => {
+                    self.clear_letters_except('j');
                     self.press_letters.insert('j', !self.press_letters[&'j']);
                 }
             },
@@ -1559,6 +1596,7 @@ impl<'a> Client {
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game | Screen::GameReview => {
+                    self.clear_letters_except('k');
                     self.press_letters.insert('k', !self.press_letters[&'k']);
                 }
             },
@@ -1571,6 +1609,7 @@ impl<'a> Client {
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game | Screen::GameReview => {
+                    self.clear_letters_except('l');
                     self.press_letters.insert('l', !self.press_letters[&'l']);
                 }
             },
@@ -1583,6 +1622,7 @@ impl<'a> Client {
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game | Screen::GameReview => {
+                    self.clear_letters_except('m');
                     self.press_letters.insert('m', !self.press_letters[&'m']);
                 }
             },
@@ -1647,6 +1687,9 @@ impl<'a> Client {
                 Screen::GameNew => self.game_settings.board_size = Some(BoardSize::_13),
                 Screen::Login => self.create_account(),
                 Screen::Game | Screen::GameReview => {
+                    let (board, _) = self.board_and_heatmap();
+                    self.clear_numbers_except(4, board.size().into());
+
                     self.press_numbers[3] = !self.press_numbers[3];
                 }
             },
@@ -1659,31 +1702,49 @@ impl<'a> Client {
                 | Screen::Users => {}
                 Screen::Login => self.reset_password(),
                 Screen::Game | Screen::GameReview => {
+                    let (board, _) = self.board_and_heatmap();
+                    self.clear_numbers_except(5, board.size().into());
+
                     self.press_numbers[4] = !self.press_numbers[4];
                 }
             },
             Message::Press6 => {
                 if self.screen == Screen::Game || self.screen == Screen::GameReview {
+                    let (board, _) = self.board_and_heatmap();
+                    self.clear_numbers_except(6, board.size().into());
+
                     self.press_numbers[5] = !self.press_numbers[5];
                 }
             }
             Message::Press7 => {
                 if self.screen == Screen::Game || self.screen == Screen::GameReview {
+                    let (board, _) = self.board_and_heatmap();
+                    self.clear_numbers_except(7, board.size().into());
+
                     self.press_numbers[6] = !self.press_numbers[6];
                 }
             }
             Message::Press8 => {
                 if self.screen == Screen::Game || self.screen == Screen::GameReview {
+                    let (board, _) = self.board_and_heatmap();
+                    self.clear_numbers_except(8, board.size().into());
+
                     self.press_numbers[7] = !self.press_numbers[7];
                 }
             }
             Message::Press9 => {
                 if self.screen == Screen::Game || self.screen == Screen::GameReview {
+                    let (board, _) = self.board_and_heatmap();
+                    self.clear_numbers_except(9, board.size().into());
+
                     self.press_numbers[8] = !self.press_numbers[8];
                 }
             }
             Message::Press10 => {
                 if self.screen == Screen::Game || self.screen == Screen::GameReview {
+                    let (board, _) = self.board_and_heatmap();
+                    self.clear_numbers_except(10, board.size().into());
+
                     self.press_numbers[9] = !self.press_numbers[9];
                 }
             }
