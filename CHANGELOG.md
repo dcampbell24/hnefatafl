@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- hnefatafl-client: All of the hotkeys.
 - hnefatafl-client: TinyWide.
 - hnefatafl-client: social preview and hide letters.
 - hnefatafl-client: draw a bordered box around the board.
