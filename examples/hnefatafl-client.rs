@@ -1657,12 +1657,14 @@ impl<'a> Client {
                 Screen::EmailEveryone | Screen::GameNewFrozen | Screen::Games | Screen::Users => {}
                 Screen::GameNew => self.game_settings.role_selected = Some(Role::Defender),
                 Screen::Game | Screen::GameReview => {
-                    if !self.press_numbers[0] && !self.press_numbers[11] {
+                    if !self.press_numbers[0] && !self.press_numbers[1] && !self.press_numbers[11] {
                         let (board, _) = self.board_and_heatmap();
                         self.clear_numbers_except(2, board.size().into());
 
                         self.press_numbers[1] = true;
-                    } else if !self.press_numbers[0] && self.press_numbers[11] {
+                    } else if self.press_numbers[1] {
+                        self.press_numbers[1] = false;
+                    } else if self.press_numbers[11] {
                         self.press_numbers[11] = false;
                     } else {
                         self.press_numbers[0] = false;
@@ -1678,12 +1680,14 @@ impl<'a> Client {
                 Screen::GameNew => self.game_settings.board_size = Some(BoardSize::_11),
                 Screen::Login | Screen::Games => self.my_games_only(),
                 Screen::Game | Screen::GameReview => {
-                    if !self.press_numbers[0] && !self.press_numbers[12] {
+                    if !self.press_numbers[0] && !self.press_numbers[2] && !self.press_numbers[12] {
                         let (board, _) = self.board_and_heatmap();
                         self.clear_numbers_except(3, board.size().into());
 
                         self.press_numbers[2] = true;
-                    } else if !self.press_numbers[0] && self.press_numbers[12] {
+                    } else if self.press_numbers[2] {
+                        self.press_numbers[2] = false;
+                    } else if self.press_numbers[12] {
                         self.press_numbers[12] = false;
                     } else {
                         self.press_numbers[0] = false;
