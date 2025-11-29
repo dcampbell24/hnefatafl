@@ -713,6 +713,20 @@ impl<'a> Client {
         }
     }
 
+    fn estimate_score(&mut self) {
+        if !self.estimate_score {
+            info!("start running score estimator...");
+
+            let handle = self
+                .archived_game_handle
+                .as_ref()
+                .expect("we should have a game handle now");
+
+            self.estimate_score = true;
+            self.send_estimate_score(handle.boards.clone());
+        }
+    }
+
     fn possible_moves(&self) -> Option<LegalMoves> {
         let mut possible_moves = None;
 
@@ -950,13 +964,14 @@ impl<'a> Client {
                 heat_map = heat_map.on_toggle(Message::HeatMap);
             }
 
-            let mut heat_map_text = button(text(self.strings["Heat Map"].as_str()));
+            let mut heat_map_button =
+                button(text!("{} (p) (q)", self.strings["Heat Map"].as_str()));
 
             if !self.estimate_score && *status == Status::Ongoing {
-                heat_map_text = heat_map_text.on_press(Message::EstimateScore);
+                heat_map_button = heat_map_button.on_press(Message::EstimateScore);
             }
 
-            user_area = user_area.push(row![heat_map, heat_map_text, leave].spacing(SPACING));
+            user_area = user_area.push(row![heat_map, heat_map_button, leave].spacing(SPACING));
 
             let mut left_all = button(text(&self.chars.double_arrow_left_full));
             let mut left = button(text(&self.chars.double_arrow_left));
@@ -1097,6 +1112,10 @@ impl<'a> Client {
                             Some(Message::PressN)
                         } else if *ch == *Value::new("o").to_smolstr() {
                             Some(Message::PressO)
+                        } else if *ch == *Value::new("p").to_smolstr() {
+                            Some(Message::PressP)
+                        } else if *ch == *Value::new("q").to_smolstr() {
+                            Some(Message::PressQ)
                         } else if *ch == *Value::new("1").to_smolstr() {
                             Some(Message::Press1)
                         } else if *ch == *Value::new("2").to_smolstr() {
@@ -1232,19 +1251,7 @@ impl<'a> Client {
                 self.email = None;
                 self.send("email_reset\n".to_string());
             }
-            Message::EstimateScore => {
-                if !self.estimate_score {
-                    info!("start running score estimator...");
-
-                    let handle = self
-                        .archived_game_handle
-                        .as_ref()
-                        .expect("we should have a game handle now");
-
-                    self.estimate_score = true;
-                    self.send_estimate_score(handle.boards.clone());
-                }
-            }
+            Message::EstimateScore => self.estimate_score(),
             Message::EstimateScoreConnected(tx) => self.estimate_score_tx = Some(tx),
             Message::EstimateScoreDisplay((node, generate_move)) => {
                 info!("finish running score estimator...");
@@ -1286,7 +1293,7 @@ impl<'a> Client {
                 self.game_id = id;
                 self.send(format!("watch_game {id}\n"));
             }
-            Message::HeatMap(display) => self.heat_map_display = display,
+            Message::HeatMap(_display) => self.heat_map_display = !self.heat_map_display,
             Message::Leave => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
@@ -1645,6 +1652,28 @@ impl<'a> Client {
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game | Screen::GameReview => self.sound_muted(),
+            },
+            Message::PressP => match self.screen {
+                Screen::AccountSettings
+                | Screen::EmailEveryone
+                | Screen::Game
+                | Screen::GameNew
+                | Screen::GameNewFrozen
+                | Screen::Games
+                | Screen::Login
+                | Screen::Users => {}
+                Screen::GameReview => self.estimate_score(),
+            },
+            Message::PressQ => match self.screen {
+                Screen::AccountSettings
+                | Screen::EmailEveryone
+                | Screen::Game
+                | Screen::GameNew
+                | Screen::GameNewFrozen
+                | Screen::Games
+                | Screen::Login
+                | Screen::Users => {}
+                Screen::GameReview => self.heat_map_display = !self.heat_map_display,
             },
             Message::Press1 => match self.screen {
                 Screen::AccountSettings | Screen::Login => self.toggle_show_password(),
@@ -3426,6 +3455,8 @@ enum Message {
     PressM,
     PressN,
     PressO,
+    PressP,
+    PressQ,
     Press1,
     Press2,
     Press3,
