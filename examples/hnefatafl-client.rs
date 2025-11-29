@@ -1680,9 +1680,9 @@ impl<'a> Client {
                 Screen::Game | Screen::GameReview => {
                     if !self.press_numbers[0] && !self.press_numbers[12] {
                         let (board, _) = self.board_and_heatmap();
-                        self.clear_numbers_except(2, board.size().into());
+                        self.clear_numbers_except(3, board.size().into());
 
-                        self.press_numbers[1] = true;
+                        self.press_numbers[2] = true;
                     } else if !self.press_numbers[0] && self.press_numbers[12] {
                         self.press_numbers[12] = false;
                     } else {
