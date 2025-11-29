@@ -1005,12 +1005,10 @@ impl<'a> Client {
                 t!("lag"),
             );
 
-            let mut row = Row::new().spacing(SPACING);
-
             if self.spectators.is_empty() {
-                row = row.push(spectator);
+                user_area = user_area.push(spectator);
             } else {
-                row = row.push(tooltip(
+                user_area = user_area.push(tooltip(
                     spectator,
                     container(spectators)
                         .style(container::bordered_box)
@@ -1018,8 +1016,6 @@ impl<'a> Client {
                     tooltip::Position::Bottom,
                 ));
             }
-
-            user_area = user_area.push(row);
         }
 
         if self.archived_game_handle.is_some() {
