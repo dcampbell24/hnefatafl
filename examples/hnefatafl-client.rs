@@ -1631,15 +1631,24 @@ impl<'a> Client {
                 Screen::EmailEveryone | Screen::GameNewFrozen | Screen::Games | Screen::Users => {}
                 Screen::GameNew => self.game_settings.role_selected = Some(Role::Attacker),
                 Screen::Game | Screen::GameReview => {
-                    if !self.press_numbers[0] && !self.press_numbers[10] {
+                    if !(self.press_numbers[0]
+                        || self.press_numbers[10]
+                        || self.press_numbers[11]
+                        || self.press_numbers[12])
+                    {
+                        let (board, _) = self.board_and_heatmap();
+                        self.clear_numbers_except(0, board.size().into());
+
                         self.press_numbers[0] = true;
-                        self.press_numbers[10] = false;
-                    } else if self.press_numbers[0] && !self.press_numbers[10] {
-                        self.press_numbers[0] = false;
+                    } else if self.press_numbers[0] {
+                        let (board, _) = self.board_and_heatmap();
+                        self.clear_numbers_except(10, board.size().into());
+
                         self.press_numbers[10] = true;
-                    } else if self.press_numbers[10] || self.press_numbers[11] {
+                    } else {
+                        let (board, _) = self.board_and_heatmap();
+                        self.clear_numbers_except(11, board.size().into());
                         self.press_numbers[10] = false;
-                        self.press_numbers[11] = false;
                     }
                 }
             },
@@ -1648,13 +1657,16 @@ impl<'a> Client {
                 Screen::EmailEveryone | Screen::GameNewFrozen | Screen::Games | Screen::Users => {}
                 Screen::GameNew => self.game_settings.role_selected = Some(Role::Defender),
                 Screen::Game | Screen::GameReview => {
-                    if self.press_numbers[0] && !self.press_numbers[11] {
+                    if !self.press_numbers[0] && !self.press_numbers[11] {
+                        let (board, _) = self.board_and_heatmap();
+                        self.clear_numbers_except(2, board.size().into());
+
+                        self.press_numbers[1] = true;
+                    } else if !self.press_numbers[0] && self.press_numbers[11] {
+                        self.press_numbers[11] = false;
+                    } else {
                         self.press_numbers[0] = false;
                         self.press_numbers[11] = true;
-                    } else if self.press_numbers[11] {
-                        self.press_numbers[11] = false;
-                    } else if !self.press_numbers[0] {
-                        self.press_numbers[1] = !self.press_numbers[1];
                     }
                 }
             },
@@ -1666,15 +1678,16 @@ impl<'a> Client {
                 Screen::GameNew => self.game_settings.board_size = Some(BoardSize::_11),
                 Screen::Login | Screen::Games => self.my_games_only(),
                 Screen::Game | Screen::GameReview => {
-                    if self.screen == Screen::Game || self.screen == Screen::GameReview {
-                        if self.press_numbers[0] && !self.press_numbers[12] {
-                            self.press_numbers[0] = false;
-                            self.press_numbers[12] = true;
-                        } else if self.press_numbers[12] {
-                            self.press_numbers[12] = false;
-                        } else if !self.press_numbers[0] {
-                            self.press_numbers[2] = !self.press_numbers[2];
-                        }
+                    if !self.press_numbers[0] && !self.press_numbers[12] {
+                        let (board, _) = self.board_and_heatmap();
+                        self.clear_numbers_except(2, board.size().into());
+
+                        self.press_numbers[1] = true;
+                    } else if !self.press_numbers[0] && self.press_numbers[12] {
+                        self.press_numbers[12] = false;
+                    } else {
+                        self.press_numbers[0] = false;
+                        self.press_numbers[12] = true;
                     }
                 }
             },
