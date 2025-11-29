@@ -971,7 +971,8 @@ impl<'a> Client {
                 heat_map_button = heat_map_button.on_press(Message::EstimateScore);
             }
 
-            user_area = user_area.push(row![heat_map, heat_map_button, leave].spacing(SPACING));
+            user_area = user_area.push(row![heat_map, heat_map_button].spacing(SPACING));
+            user_area = user_area.push(leave);
 
             let mut left_all = button(text(&self.chars.double_arrow_left_full));
             let mut left = button(text(&self.chars.double_arrow_left));
@@ -995,6 +996,8 @@ impl<'a> Client {
                 row![left_all, left, right, right_all, child_right, child_number].spacing(SPACING),
             );
         } else {
+            user_area = user_area.push(leave);
+
             let spectator = text!(
                 "{} ({}) {}: {seconds:01}.{sub_second:03} s",
                 &self.chars.people,
@@ -1002,7 +1005,7 @@ impl<'a> Client {
                 t!("lag"),
             );
 
-            let mut row = Row::new().push(leave).spacing(SPACING);
+            let mut row = Row::new().spacing(SPACING);
 
             if self.spectators.is_empty() {
                 row = row.push(spectator);
