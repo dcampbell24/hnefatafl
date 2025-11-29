@@ -728,6 +728,11 @@ impl<'a> Client {
         possible_moves
     }
 
+    fn change_theme(&mut self, theme: Theme) {
+        self.theme = theme;
+        handle_error(self.save_client_ron());
+    }
+
     // Fixme: get the real status when exploring the game tree.
     #[allow(clippy::too_many_lines)]
     fn display_game(&self) -> Element<'_, Message> {
@@ -1202,10 +1207,7 @@ impl<'a> Client {
             }
             Message::ArchivedGamesGet => self.send("archived_games\n".to_string()),
             Message::ArchivedGameSelected(game) => self.archived_game_selected = Some(game),
-            Message::ChangeTheme(theme) => {
-                self.theme = theme;
-                handle_error(self.save_client_ron());
-            }
+            Message::ChangeTheme(theme) => self.change_theme(theme),
             Message::BoardSizeSelected(size) => self.game_settings.board_size = Some(size),
             Message::ConnectedTo(address) => self.connected_to = address,
             Message::Coordinates(coordinates) => {
@@ -1742,22 +1744,36 @@ impl<'a> Client {
                     }
                 }
             },
-            Message::Press7 => {
-                if self.screen == Screen::Game || self.screen == Screen::GameReview {
+            Message::Press7 => match self.screen {
+                Screen::AccountSettings
+                | Screen::EmailEveryone
+                | Screen::Games
+                | Screen::GameNew
+                | Screen::GameNewFrozen
+                | Screen::Users => {}
+                Screen::Login => self.change_theme(Theme::Dark),
+                Screen::Game | Screen::GameReview => {
                     let (board, _) = self.board_and_heatmap();
                     self.clear_numbers_except(7, board.size().into());
 
                     self.press_numbers[6] = !self.press_numbers[6];
                 }
-            }
-            Message::Press8 => {
-                if self.screen == Screen::Game || self.screen == Screen::GameReview {
+            },
+            Message::Press8 => match self.screen {
+                Screen::AccountSettings
+                | Screen::EmailEveryone
+                | Screen::Games
+                | Screen::GameNew
+                | Screen::GameNewFrozen
+                | Screen::Users => {}
+                Screen::Login => self.change_theme(Theme::Light),
+                Screen::Game | Screen::GameReview => {
                     let (board, _) = self.board_and_heatmap();
                     self.clear_numbers_except(8, board.size().into());
 
                     self.press_numbers[7] = !self.press_numbers[7];
                 }
-            }
+            },
             Message::Press9 => {
                 if self.screen == Screen::Game || self.screen == Screen::GameReview {
                     let (board, _) = self.board_and_heatmap();
@@ -3125,15 +3141,15 @@ impl<'a> Client {
 
                 let mut buttons_2 = if self.theme == Theme::Light {
                     row![
-                        button(text(self.strings["Dark"].as_str()))
+                        button(text!("{} (7)", self.strings["Dark"].as_str()))
                             .on_press(Message::ChangeTheme(Theme::Dark)),
-                        button(text(self.strings["Light"].as_str())),
+                        button(text!("{} (8)", self.strings["Light"].as_str())),
                     ]
                     .spacing(SPACING)
                 } else {
                     row![
-                        button(text(self.strings["Dark"].as_str())),
-                        button(text(self.strings["Light"].as_str()))
+                        button(text!("{} (7)", self.strings["Dark"].as_str())),
+                        button(text!("{} (8)", self.strings["Light"].as_str()))
                             .on_press(Message::ChangeTheme(Theme::Light)),
                     ]
                     .spacing(SPACING)
