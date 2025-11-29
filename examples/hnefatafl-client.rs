@@ -733,6 +733,11 @@ impl<'a> Client {
         handle_error(self.save_client_ron());
     }
 
+    fn coordinates(&mut self) {
+        self.coordinates = !self.coordinates;
+        handle_error(self.save_client_ron());
+    }
+
     // Fixme: get the real status when exploring the game tree.
     #[allow(clippy::too_many_lines)]
     fn display_game(&self) -> Element<'_, Message> {
@@ -915,9 +920,9 @@ impl<'a> Client {
 
         let coordinates_muted = row![
             checkbox(self.coordinates.into()).on_toggle(Message::Coordinates),
-            text!("{} (o)", t!("Coordinates")),
+            text!("{} (n)", t!("Coordinates")),
             checkbox(self.sound_muted).on_toggle(Message::SoundMuted),
-            text!("{} (n)", t!("Muted"))
+            text!("{} (o)", t!("Muted"))
         ]
         .spacing(SPACING);
 
@@ -1088,6 +1093,10 @@ impl<'a> Client {
                             Some(Message::PressL)
                         } else if *ch == *Value::new("m").to_smolstr() {
                             Some(Message::PressM)
+                        } else if *ch == *Value::new("n").to_smolstr() {
+                            Some(Message::PressN)
+                        } else if *ch == *Value::new("o").to_smolstr() {
+                            Some(Message::PressO)
                         } else if *ch == *Value::new("1").to_smolstr() {
                             Some(Message::Press1)
                         } else if *ch == *Value::new("2").to_smolstr() {
@@ -1108,10 +1117,6 @@ impl<'a> Client {
                             Some(Message::Press9)
                         } else if *ch == *Value::new("0").to_smolstr() {
                             Some(Message::Press10)
-                        } else if *ch == *Value::new("n").to_smolstr() {
-                            Some(Message::SoundMutedToggle)
-                        } else if *ch == *Value::new("o").to_smolstr() {
-                            Some(Message::CoordinatesToggle)
                         } else {
                             None
                         }
@@ -1210,14 +1215,7 @@ impl<'a> Client {
             Message::ChangeTheme(theme) => self.change_theme(theme),
             Message::BoardSizeSelected(size) => self.game_settings.board_size = Some(size),
             Message::ConnectedTo(address) => self.connected_to = address,
-            Message::Coordinates(coordinates) => {
-                self.coordinates = coordinates.into();
-                handle_error(self.save_client_ron());
-            }
-            Message::CoordinatesToggle => {
-                self.coordinates = !self.coordinates;
-                handle_error(self.save_client_ron());
-            }
+            Message::Coordinates(_coordinates) => self.coordinates(),
             Message::DeleteAccount => {
                 if self.delete_account {
                     self.send("delete_account\n".to_string());
@@ -1628,6 +1626,26 @@ impl<'a> Client {
                     self.press_letters.insert('m', !self.press_letters[&'m']);
                 }
             },
+            Message::PressN => match self.screen {
+                Screen::AccountSettings
+                | Screen::EmailEveryone
+                | Screen::GameNew
+                | Screen::GameNewFrozen
+                | Screen::Games
+                | Screen::Login
+                | Screen::Users => {}
+                Screen::Game | Screen::GameReview => self.coordinates(),
+            },
+            Message::PressO => match self.screen {
+                Screen::AccountSettings
+                | Screen::EmailEveryone
+                | Screen::GameNew
+                | Screen::GameNewFrozen
+                | Screen::Games
+                | Screen::Login
+                | Screen::Users => {}
+                Screen::Game | Screen::GameReview => self.sound_muted(),
+            },
             Message::Press1 => match self.screen {
                 Screen::AccountSettings | Screen::Login => self.toggle_show_password(),
                 Screen::EmailEveryone | Screen::GameNewFrozen | Screen::Games | Screen::Users => {}
@@ -1804,14 +1822,7 @@ impl<'a> Client {
                     self.press_numbers[9] = !self.press_numbers[9];
                 }
             },
-            Message::SoundMuted(muted) => {
-                self.sound_muted = muted;
-                handle_error(self.save_client_ron());
-            }
-            Message::SoundMutedToggle => {
-                self.sound_muted = !self.sound_muted;
-                handle_error(self.save_client_ron());
-            }
+            Message::SoundMuted(_muted) => self.sound_muted(),
             Message::StreamConnected(tx) => self.tx = Some(tx),
             Message::RatedSelected(rated) => {
                 self.game_settings.rated = if rated { Rated::Yes } else { Rated::No };
@@ -2597,6 +2608,11 @@ impl<'a> Client {
         });
     }
 
+    fn sound_muted(&mut self) {
+        self.sound_muted = !self.sound_muted;
+        handle_error(self.save_client_ron());
+    }
+
     #[must_use]
     fn users(&self, logged_in: bool) -> Scrollable<'_, Message> {
         let mut ratings = Column::new();
@@ -3366,7 +3382,6 @@ enum Message {
     ChangeTheme(Theme),
     ConnectedTo(String),
     Coordinates(bool),
-    CoordinatesToggle,
     DeleteAccount,
     EmailEveryone,
     EmailReset,
@@ -3409,6 +3424,8 @@ enum Message {
     PressK,
     PressL,
     PressM,
+    PressN,
+    PressO,
     Press1,
     Press2,
     Press3,
@@ -3420,7 +3437,6 @@ enum Message {
     Press9,
     Press10,
     SoundMuted(bool),
-    SoundMutedToggle,
     RatedSelected(bool),
     ResetPassword,
     ReviewGame,
