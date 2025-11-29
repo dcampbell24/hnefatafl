@@ -1725,14 +1725,23 @@ impl<'a> Client {
                     self.press_numbers[4] = !self.press_numbers[4];
                 }
             },
-            Message::Press6 => {
-                if self.screen == Screen::Game || self.screen == Screen::GameReview {
-                    let (board, _) = self.board_and_heatmap();
-                    self.clear_numbers_except(6, board.size().into());
+            Message::Press6 => match self.screen {
+                Screen::AccountSettings
+                | Screen::EmailEveryone
+                | Screen::Games
+                | Screen::GameNew
+                | Screen::GameNewFrozen
+                | Screen::Users => {}
+                Screen::Login => self.review_game(),
+                Screen::Game | Screen::GameReview => {
+                    if self.screen == Screen::Game || self.screen == Screen::GameReview {
+                        let (board, _) = self.board_and_heatmap();
+                        self.clear_numbers_except(6, board.size().into());
 
-                    self.press_numbers[5] = !self.press_numbers[5];
+                        self.press_numbers[5] = !self.press_numbers[5];
+                    }
                 }
-            }
+            },
             Message::Press7 => {
                 if self.screen == Screen::Game || self.screen == Screen::GameReview {
                     let (board, _) = self.board_and_heatmap();
@@ -1778,15 +1787,7 @@ impl<'a> Client {
                 self.game_settings.rated = if rated { Rated::Yes } else { Rated::No };
             }
             Message::ResetPassword => self.reset_password(),
-            Message::ReviewGame => {
-                if let Some(archived_game) = &self.archived_game_selected {
-                    self.archived_game_handle = Some(ArchivedGameHandle::new(archived_game));
-                    self.screen = Screen::GameReview;
-
-                    self.captures = HashSet::new();
-                    self.reset_markers();
-                }
-            }
+            Message::ReviewGame => self.review_game(),
             Message::ReviewGameBackward => {
                 if let Some(handle) = &mut self.archived_game_handle {
                     handle.play = handle.play.saturating_sub(1);
@@ -3074,7 +3075,7 @@ impl<'a> Client {
                     error_persistent = error_persistent.push(text(error));
                 }
 
-                let mut review_game = button(text(self.strings["Review Game"].as_str()));
+                let mut review_game = button(text!("{} (6)", self.strings["Review Game"].as_str()));
                 if self.archived_game_selected.is_some() {
                     review_game = review_game.on_press(Message::ReviewGame);
                 }
@@ -3210,6 +3211,16 @@ impl<'a> Client {
         self.play_from = None;
         self.play_from_previous = None;
         self.play_to_previous = None;
+    }
+
+    fn review_game(&mut self) {
+        if let Some(archived_game) = &self.archived_game_selected {
+            self.archived_game_handle = Some(ArchivedGameHandle::new(archived_game));
+            self.screen = Screen::GameReview;
+
+            self.captures = HashSet::new();
+            self.reset_markers();
+        }
     }
 
     fn save_client_postcard(&self) -> anyhow::Result<()> {
