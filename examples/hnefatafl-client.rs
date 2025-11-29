@@ -1774,22 +1774,36 @@ impl<'a> Client {
                     self.press_numbers[7] = !self.press_numbers[7];
                 }
             },
-            Message::Press9 => {
-                if self.screen == Screen::Game || self.screen == Screen::GameReview {
+            Message::Press9 => match self.screen {
+                Screen::AccountSettings
+                | Screen::EmailEveryone
+                | Screen::Games
+                | Screen::GameNew
+                | Screen::GameNewFrozen
+                | Screen::Users => {}
+                Screen::Login => open_url("https://discord.gg/h56CAHEBXd"),
+                Screen::Game | Screen::GameReview => {
                     let (board, _) = self.board_and_heatmap();
                     self.clear_numbers_except(9, board.size().into());
 
                     self.press_numbers[8] = !self.press_numbers[8];
                 }
-            }
-            Message::Press10 => {
-                if self.screen == Screen::Game || self.screen == Screen::GameReview {
+            },
+            Message::Press10 => match self.screen {
+                Screen::AccountSettings
+                | Screen::EmailEveryone
+                | Screen::Games
+                | Screen::GameNew
+                | Screen::GameNewFrozen
+                | Screen::Users => {}
+                Screen::Login => open_url("https://hnefatafl.org"),
+                Screen::Game | Screen::GameReview => {
                     let (board, _) = self.board_and_heatmap();
                     self.clear_numbers_except(10, board.size().into());
 
                     self.press_numbers[9] = !self.press_numbers[9];
                 }
-            }
+            },
             Message::SoundMuted(muted) => {
                 self.sound_muted = muted;
                 handle_error(self.save_client_ron());
@@ -3155,11 +3169,12 @@ impl<'a> Client {
                     .spacing(SPACING)
                 };
 
-                let discord = button(text(self.strings["Join Discord"].as_str())).on_press(
-                    Message::OpenUrl("https://discord.gg/h56CAHEBXd".to_string()),
-                );
+                let discord = button(text!("{} (9)", self.strings["Join Discord"].as_str()))
+                    .on_press(Message::OpenUrl(
+                        "https://discord.gg/h56CAHEBXd".to_string(),
+                    ));
 
-                let website = button("https://hnefatafl.org")
+                let website = button("https://hnefatafl.org (0)")
                     .on_press(Message::OpenUrl("https://hnefatafl.org".to_string()));
 
                 let quit = button(text!("{} (Esc)", self.strings["Quit"].as_str()))
