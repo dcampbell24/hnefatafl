@@ -732,6 +732,32 @@ impl<'a> Client {
         self.screen = Screen::GameNew;
     }
 
+    fn login(&mut self) {
+        if !self.connected_tcp {
+            self.send("tcp_connect\n".to_string());
+            self.connected_tcp = true;
+        }
+
+        if self.text_input.trim().is_empty() {
+            let username = format!("user-{:x}", rand::random::<u16>());
+
+            self.send(format!(
+                "{VERSION_ID} create_account {username} {}\n",
+                self.password
+            ));
+            self.username = username;
+        } else {
+            let username = self.text_input.clone();
+
+            self.send(format!("{VERSION_ID} login {username} {}\n", self.password));
+            self.username = username;
+        }
+
+        self.text_input.clear();
+        self.archived_game_reset();
+        handle_error(self.save_client_ron());
+    }
+
     fn possible_moves(&self) -> Option<LegalMoves> {
         let mut possible_moves = None;
 
@@ -1153,7 +1179,7 @@ impl<'a> Client {
                     ..
                 } => {
                     if named == Named::Enter {
-                        Some(Message::TextSendLogin)
+                        Some(Message::PressEnter)
                     } else if modifiers.shift() && named == Named::Tab {
                         Some(Message::FocusPrevious)
                     } else if named == Named::Tab {
@@ -1465,6 +1491,17 @@ impl<'a> Client {
                     self.game_id, game.turn
                 ));
             }
+            Message::PressEnter => match self.screen {
+                Screen::AccountSettings
+                | Screen::EmailEveryone
+                | Screen::GameNew
+                | Screen::GameNewFrozen
+                | Screen::Game
+                | Screen::GameReview
+                | Screen::Users => {}
+                Screen::Games => self.game_new(),
+                Screen::Login => self.login(),
+            },
             Message::PressA => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
@@ -1729,7 +1766,8 @@ impl<'a> Client {
                 | Screen::EmailEveryone
                 | Screen::GameNewFrozen
                 | Screen::Users => {}
-                Screen::Games => self.game_new(),
+                Screen::Games => self.screen = Screen::Users,
+                // Screen::Games => self.game_new(), //
                 Screen::GameNew => self.game_settings.board_size = Some(BoardSize::_11),
                 Screen::Login => self.my_games_only(),
                 Screen::Game | Screen::GameReview => {
@@ -1753,7 +1791,7 @@ impl<'a> Client {
                 | Screen::EmailEveryone
                 | Screen::GameNewFrozen
                 | Screen::Users => {}
-                Screen::Games => self.screen = Screen::Users,
+                Screen::Games => self.screen = Screen::AccountSettings,
                 Screen::GameNew => self.game_settings.board_size = Some(BoardSize::_13),
                 Screen::Login => self.create_account(),
                 Screen::Game | Screen::GameReview => {
@@ -1769,7 +1807,7 @@ impl<'a> Client {
                 | Screen::GameNew
                 | Screen::GameNewFrozen
                 | Screen::Users => {}
-                Screen::Games => self.screen = Screen::AccountSettings,
+                Screen::Games => open_url("https://hnefatafl.org/rules.html"),
                 Screen::Login => self.reset_password(),
                 Screen::Game | Screen::GameReview => {
                     let (board, _) = self.board_and_heatmap();
@@ -1781,10 +1819,10 @@ impl<'a> Client {
             Message::Press6 => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
+                | Screen::Games
                 | Screen::GameNew
                 | Screen::GameNewFrozen
                 | Screen::Users => {}
-                Screen::Games => open_url("https://hnefatafl.org/rules.html"),
                 Screen::Login => self.review_game(),
                 Screen::Game | Screen::GameReview => {
                     if self.screen == Screen::Game || self.screen == Screen::GameReview {
@@ -2322,35 +2360,7 @@ impl<'a> Client {
                 self.send(format!("email_code {}\n", self.text_input));
             }
             Message::TextSendCreateAccount => self.create_account(),
-            Message::TextSendLogin => {
-                if self.screen != Screen::Login {
-                    return Task::none();
-                }
-
-                if !self.connected_tcp {
-                    self.send("tcp_connect\n".to_string());
-                    self.connected_tcp = true;
-                }
-
-                if self.text_input.trim().is_empty() {
-                    let username = format!("user-{:x}", rand::random::<u16>());
-
-                    self.send(format!(
-                        "{VERSION_ID} create_account {username} {}\n",
-                        self.password
-                    ));
-                    self.username = username;
-                } else {
-                    let username = self.text_input.clone();
-
-                    self.send(format!("{VERSION_ID} login {username} {}\n", self.password));
-                    self.username = username;
-                }
-
-                self.text_input.clear();
-                self.archived_game_reset();
-                handle_error(self.save_client_ron());
-            }
+            Message::TextSendLogin => self.login(),
             Message::Tick => {
                 self.counter = self.counter.wrapping_add(1);
                 if self.counter.is_multiple_of(25) {
@@ -3073,17 +3083,17 @@ impl<'a> Client {
                 let username =
                     row![username, get_archived_games, my_games, my_games_text].spacing(SPACING);
 
-                let create_game = button(text!("{} (3)", self.strings["Create Game"].as_str()))
+                let create_game = button(text!("{} (Enter)", self.strings["Create Game"].as_str()))
                     .on_press(Message::GameNew);
 
-                let users = button(text!("{} (4)", self.strings["Users"].as_str()))
+                let users = button(text!("{} (3)", self.strings["Users"].as_str()))
                     .on_press(Message::Users);
 
                 let account_setting =
-                    button(text!("{} (5)", self.strings["Account Settings"].as_str()))
+                    button(text!("{} (4)", self.strings["Account Settings"].as_str()))
                         .on_press(Message::AccountSettings);
 
-                let website = button(text!("{} (6)", self.strings["Rules"].as_str())).on_press(
+                let website = button(text!("{} (5)", self.strings["Rules"].as_str())).on_press(
                     Message::OpenUrl("https://hnefatafl.org/rules.html".to_string()),
                 );
 
@@ -3447,6 +3457,7 @@ enum Message {
     PlayMoveTo(Vertex),
     PlayMoveRevert,
     PlayResign,
+    PressEnter,
     PressA,
     PressB,
     PressC,
