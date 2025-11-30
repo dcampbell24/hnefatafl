@@ -687,6 +687,11 @@ impl<'a> Client {
         }
     }
 
+    fn draw(&mut self) {
+        let game = self.game.as_ref().expect("you should have a game by now");
+        self.send(format!("request_draw {} {}\n", self.game_id, game.turn));
+    }
+
     fn draw_arrow(&self, y: usize, x: usize) -> Option<&str> {
         if let (Some(from), Some(to)) = (&self.play_from_previous, &self.play_to_previous) {
             if (y, x) == (from.y, from.x) {
@@ -926,10 +931,11 @@ impl<'a> Client {
             spectators = spectators.push(text(spectator));
         }
 
-        let resign = button(text(self.strings["Resign"].as_str())).on_press(Message::PlayResign);
+        let resign =
+            button(text!("{} (p)", self.strings["Resign"].as_str())).on_press(Message::PlayResign);
 
-        let request_draw =
-            button(text(self.strings["Request Draw"].as_str())).on_press(Message::PlayDraw);
+        let request_draw = button(text!("{} (q)", self.strings["Request Draw"].as_str()))
+            .on_press(Message::PlayDraw);
 
         if !watching {
             if self.my_turn {
@@ -1435,10 +1441,7 @@ impl<'a> Client {
             }
             Message::PasswordSave(_save) => self.toggle_save_password(),
             Message::PasswordShow(_show) => self.toggle_show_password(),
-            Message::PlayDraw => {
-                let game = self.game.as_ref().expect("you should have a game by now");
-                self.send(format!("request_draw {} {}\n", self.game_id, game.turn));
-            }
+            Message::PlayDraw => self.draw(),
             Message::PlayDrawDecision(draw) => {
                 self.send(format!("draw {} {draw}\n", self.game_id));
             }
@@ -1483,14 +1486,7 @@ impl<'a> Client {
                 self.play_from = None;
             }
             Message::PlayMoveRevert => self.play_from = None,
-            Message::PlayResign => {
-                let game = self.game.as_ref().expect("you should have a game by now");
-
-                self.send(format!(
-                    "game {} play {} resigns _\n",
-                    self.game_id, game.turn
-                ));
-            }
+            Message::PlayResign => self.resign(),
             Message::PressEnter => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
@@ -1694,23 +1690,23 @@ impl<'a> Client {
             Message::PressP => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
-                | Screen::Game
                 | Screen::GameNew
                 | Screen::GameNewFrozen
                 | Screen::Games
                 | Screen::Login
                 | Screen::Users => {}
+                Screen::Game => self.resign(),
                 Screen::GameReview => self.estimate_score(),
             },
             Message::PressQ => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
-                | Screen::Game
                 | Screen::GameNew
                 | Screen::GameNewFrozen
                 | Screen::Games
                 | Screen::Login
                 | Screen::Users => {}
+                Screen::Game => self.draw(),
                 Screen::GameReview => self.heat_map_display = !self.heat_map_display,
             },
             Message::Press1 => match self.screen {
@@ -1964,7 +1960,8 @@ impl<'a> Client {
                                 "archived_games"
                                 | "challenge_requested"
                                 | "change_password"
-                                | "game",
+                                | "game"
+                                | "request_draw",
                             ) => {}
                             Some("display_games") => {
                                 self.games_light.0.clear();
@@ -2648,6 +2645,15 @@ impl<'a> Client {
             stream.log_on_drop(false);
             Ok::<(), anyhow::Error>(())
         });
+    }
+
+    fn resign(&mut self) {
+        let game = self.game.as_ref().expect("you should have a game by now");
+
+        self.send(format!(
+            "game {} play {} resigns _\n",
+            self.game_id, game.turn
+        ));
     }
 
     fn sound_muted(&mut self) {
