@@ -727,6 +727,11 @@ impl<'a> Client {
         }
     }
 
+    fn game_new(&mut self) {
+        self.game_settings = NewGameSettings::default();
+        self.screen = Screen::GameNew;
+    }
+
     fn possible_moves(&self) -> Option<LegalMoves> {
         let mut possible_moves = None;
 
@@ -1343,10 +1348,7 @@ impl<'a> Client {
                 self.my_games_only();
             }
             Message::OpenUrl(string) => open_url(&string),
-            Message::GameNew => {
-                self.game_settings = NewGameSettings::default();
-                self.screen = Screen::GameNew;
-            }
+            Message::GameNew => self.game_new(),
             Message::GameResume(id) => {
                 self.game_id = id;
                 self.send(format!("resume_game {id}\n"));
@@ -1676,7 +1678,8 @@ impl<'a> Client {
             },
             Message::Press1 => match self.screen {
                 Screen::AccountSettings | Screen::Login => self.toggle_show_password(),
-                Screen::EmailEveryone | Screen::GameNewFrozen | Screen::Games | Screen::Users => {}
+                Screen::EmailEveryone | Screen::GameNewFrozen | Screen::Users => {}
+                Screen::Games => self.send("archived_games\n".to_string()),
                 Screen::GameNew => self.game_settings.role_selected = Some(Role::Attacker),
                 Screen::Game | Screen::GameReview => {
                     if !(self.press_numbers[0]
@@ -1702,7 +1705,8 @@ impl<'a> Client {
             },
             Message::Press2 => match self.screen {
                 Screen::AccountSettings | Screen::Login => self.toggle_save_password(),
-                Screen::EmailEveryone | Screen::GameNewFrozen | Screen::Games | Screen::Users => {}
+                Screen::EmailEveryone | Screen::GameNewFrozen | Screen::Users => {}
+                Screen::Games => self.my_games_only(),
                 Screen::GameNew => self.game_settings.role_selected = Some(Role::Defender),
                 Screen::Game | Screen::GameReview => {
                     if !self.press_numbers[0] && !self.press_numbers[1] && !self.press_numbers[11] {
@@ -1725,8 +1729,9 @@ impl<'a> Client {
                 | Screen::EmailEveryone
                 | Screen::GameNewFrozen
                 | Screen::Users => {}
+                Screen::Games => self.game_new(),
                 Screen::GameNew => self.game_settings.board_size = Some(BoardSize::_11),
-                Screen::Login | Screen::Games => self.my_games_only(),
+                Screen::Login => self.my_games_only(),
                 Screen::Game | Screen::GameReview => {
                     if !self.press_numbers[0] && !self.press_numbers[2] && !self.press_numbers[12] {
                         let (board, _) = self.board_and_heatmap();
@@ -1746,9 +1751,9 @@ impl<'a> Client {
             Message::Press4 => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
-                | Screen::Games
                 | Screen::GameNewFrozen
                 | Screen::Users => {}
+                Screen::Games => self.screen = Screen::Users,
                 Screen::GameNew => self.game_settings.board_size = Some(BoardSize::_13),
                 Screen::Login => self.create_account(),
                 Screen::Game | Screen::GameReview => {
@@ -1761,10 +1766,10 @@ impl<'a> Client {
             Message::Press5 => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
-                | Screen::Games
                 | Screen::GameNew
                 | Screen::GameNewFrozen
                 | Screen::Users => {}
+                Screen::Games => self.screen = Screen::AccountSettings,
                 Screen::Login => self.reset_password(),
                 Screen::Game | Screen::GameReview => {
                     let (board, _) = self.board_and_heatmap();
@@ -1776,10 +1781,10 @@ impl<'a> Client {
             Message::Press6 => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
-                | Screen::Games
                 | Screen::GameNew
                 | Screen::GameNewFrozen
                 | Screen::Users => {}
+                Screen::Games => open_url("https://hnefatafl.org/rules.html"),
                 Screen::Login => self.review_game(),
                 Screen::Game | Screen::GameReview => {
                     if self.screen == Screen::Game || self.screen == Screen::GameReview {
@@ -3056,26 +3061,29 @@ impl<'a> Client {
                     .padding(PADDING / 2)
                     .style(container::bordered_box);
 
-                let my_games_text = text!("{} (3)", t!("My Games Only")).center();
+                let my_games_text = text!("{} (2)", t!("My Games Only")).center();
                 let my_games = checkbox(self.my_games_only)
                     .on_toggle(Message::MyGamesOnly)
                     .size(32);
 
-                let get_archived_games = button(text(self.strings["Get Archived Games"].as_str()))
-                    .on_press(Message::ArchivedGamesGet);
+                let get_archived_games =
+                    button(text!("{} (1)", self.strings["Get Archived Games"].as_str()))
+                        .on_press(Message::ArchivedGamesGet);
 
                 let username =
                     row![username, get_archived_games, my_games, my_games_text].spacing(SPACING);
 
-                let create_game =
-                    button(text(self.strings["Create Game"].as_str())).on_press(Message::GameNew);
+                let create_game = button(text!("{} (3)", self.strings["Create Game"].as_str()))
+                    .on_press(Message::GameNew);
 
-                let users = button(text(self.strings["Users"].as_str())).on_press(Message::Users);
+                let users = button(text!("{} (4)", self.strings["Users"].as_str()))
+                    .on_press(Message::Users);
 
-                let account_setting = button(text(self.strings["Account Settings"].as_str()))
-                    .on_press(Message::AccountSettings);
+                let account_setting =
+                    button(text!("{} (5)", self.strings["Account Settings"].as_str()))
+                        .on_press(Message::AccountSettings);
 
-                let website = button(text(self.strings["Rules"].as_str())).on_press(
+                let website = button(text!("{} (6)", self.strings["Rules"].as_str())).on_press(
                     Message::OpenUrl("https://hnefatafl.org/rules.html".to_string()),
                 );
 
