@@ -1,4 +1,4 @@
-use std::{fmt, str::FromStr};
+use std::{fmt, ops::Not, str::FromStr};
 
 use serde::{Deserialize, Serialize};
 
@@ -14,6 +14,17 @@ impl fmt::Display for Rated {
         match self {
             Rated::No => write!(f, "unrated"),
             Rated::Yes => write!(f, "rated"),
+        }
+    }
+}
+
+impl Not for Rated {
+    type Output = Rated;
+
+    fn not(self) -> Self::Output {
+        match self {
+            Rated::No => Rated::Yes,
+            Rated::Yes => Rated::No,
         }
     }
 }

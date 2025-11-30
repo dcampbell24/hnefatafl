@@ -36,7 +36,7 @@ use hnefatafl_copenhagen::{
     server_game::{ArchivedGame, ArchivedGameHandle, ServerGameLight, ServerGamesLight},
     space::Space,
     status::Status,
-    time::{Time, TimeSettings},
+    time::{Time, TimeEnum, TimeSettings},
     tree::{Node, Tree},
     utils::{self, choose_ai, data_file},
 };
@@ -464,7 +464,7 @@ struct Client {
 #[derive(Debug, Default, Deserialize, Serialize)]
 struct NewGameSettings {
     #[serde(skip)]
-    board_size: Option<BoardSize>,
+    board_size: BoardSize,
     #[serde(skip)]
     rated: Rated,
     #[serde(skip)]
@@ -472,17 +472,7 @@ struct NewGameSettings {
     #[serde(skip)]
     timed: TimeSettings,
     #[serde(skip)]
-    time_days: String,
-    #[serde(skip)]
-    time_hours: String,
-    #[serde(skip)]
-    time_minutes: String,
-    #[serde(skip)]
-    time_add_hours: String,
-    #[serde(skip)]
-    time_add_minutes: String,
-    #[serde(skip)]
-    time_add_seconds: String,
+    time: TimeEnum,
 }
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
@@ -735,6 +725,34 @@ impl<'a> Client {
     fn game_new(&mut self) {
         self.game_settings = NewGameSettings::default();
         self.screen = Screen::GameNew;
+    }
+
+    fn game_submit(&mut self) {
+        if let Some(role) = self.game_settings.role_selected {
+            if let TimeSettings::Timed(_) = self.game_settings.timed {
+                let (milliseconds_left, add_seconds) = match self.game_settings.time {
+                    TimeEnum::Classical => (1_000 * 60 * 30, 20),
+                    TimeEnum::Rapid => (1_000 * 60 * 15, 10),
+                    TimeEnum::Long => (1_000 * 60 * 60 * 12 * 7, 60 * 60 * 4),
+                };
+
+                self.game_settings.timed = TimeSettings::Timed(Time {
+                    add_seconds,
+                    milliseconds_left,
+                });
+            }
+
+            self.screen = Screen::GameNewFrozen;
+
+            let board_size = self.game_settings.board_size;
+
+            // <- new_game (attacker | defender) (rated | unrated) (TIME_MINUTES | _) (ADD_SECONDS_AFTER_EACH_MOVE | _) board_size
+            // -> game id rated attacker defender un-timed _ _ board_size challenger challenge_accepted spectators
+            self.send(format!(
+                "new_game {role} {} {:?} {board_size}\n",
+                self.game_settings.rated, self.game_settings.timed,
+            ));
+        }
     }
 
     fn login(&mut self) {
@@ -1171,7 +1189,7 @@ impl<'a> Client {
                         } else if *ch == *Value::new("9").to_smolstr() {
                             Some(Message::Press9)
                         } else if *ch == *Value::new("0").to_smolstr() {
-                            Some(Message::Press10)
+                            Some(Message::Press0)
                         } else {
                             None
                         }
@@ -1268,7 +1286,7 @@ impl<'a> Client {
             Message::ArchivedGamesGet => self.send("archived_games\n".to_string()),
             Message::ArchivedGameSelected(game) => self.archived_game_selected = Some(game),
             Message::ChangeTheme(theme) => self.change_theme(theme),
-            Message::BoardSizeSelected(size) => self.game_settings.board_size = Some(size),
+            Message::BoardSizeSelected(size) => self.game_settings.board_size = size,
             Message::ConnectedTo(address) => self.connected_to = address,
             Message::Coordinates(_coordinates) => self.coordinates(),
             Message::DeleteAccount => {
@@ -1385,53 +1403,7 @@ impl<'a> Client {
                 self.game_id = id;
                 self.send(format!("resume_game {id}\n"));
             }
-            Message::GameSubmit => {
-                if let Some(role) = self.game_settings.role_selected {
-                    if let TimeSettings::Timed(_) = self.game_settings.timed {
-                        let days: i64 = self.game_settings.time_days.parse().unwrap_or_default();
-                        let hours: i64 = self.game_settings.time_hours.parse().unwrap_or_default();
-                        let minutes: i64 = self.game_settings.time_minutes.parse().unwrap_or(15);
-                        let milliseconds_left = (days * 24 * 60 * 60 * 1_000)
-                            + (hours * 60 * 60 * 1_000)
-                            + (minutes * 60 * 1_000);
-
-                        let add_hours: i64 = self
-                            .game_settings
-                            .time_add_hours
-                            .parse()
-                            .unwrap_or_default();
-
-                        let add_minutes: i64 = self
-                            .game_settings
-                            .time_add_minutes
-                            .parse()
-                            .unwrap_or_default();
-
-                        let mut add_seconds: i64 =
-                            self.game_settings.time_add_seconds.parse().unwrap_or(10);
-
-                        add_seconds += (add_hours * 60 * 60) + (add_minutes * 60);
-
-                        self.game_settings.timed = TimeSettings::Timed(Time {
-                            add_seconds,
-                            milliseconds_left,
-                        });
-                    }
-
-                    self.screen = Screen::GameNewFrozen;
-
-                    let Some(board_size) = self.game_settings.board_size else {
-                        unreachable!();
-                    };
-
-                    // <- new_game (attacker | defender) (rated | unrated) (TIME_MINUTES | _) (ADD_SECONDS_AFTER_EACH_MOVE | _) board_size
-                    // -> game id rated attacker defender un-timed _ _ board_size challenger challenge_accepted spectators
-                    self.send(format!(
-                        "new_game {role} {} {:?} {board_size}\n",
-                        self.game_settings.rated, self.game_settings.timed,
-                    ));
-                }
-            }
+            Message::GameSubmit => self.game_submit(),
             Message::PasswordChanged(password) => {
                 let (password, ends_with_whitespace) = utils::split_whitespace_password(&password);
                 self.password_ends_with_whitespace = ends_with_whitespace;
@@ -1490,12 +1462,12 @@ impl<'a> Client {
             Message::PressEnter => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
-                | Screen::GameNew
                 | Screen::GameNewFrozen
                 | Screen::Game
                 | Screen::Games
                 | Screen::GameReview
                 | Screen::Users => {}
+                Screen::GameNew => self.game_submit(),
                 Screen::Login => self.login(),
             },
             Message::PressA => match self.screen {
@@ -1763,7 +1735,7 @@ impl<'a> Client {
                 | Screen::GameNewFrozen
                 | Screen::Users => {}
                 Screen::Games => self.game_new(),
-                Screen::GameNew => self.game_settings.board_size = Some(BoardSize::_11),
+                Screen::GameNew => self.game_settings.board_size = BoardSize::_11,
                 Screen::Login => self.my_games_only(),
                 Screen::Game | Screen::GameReview => {
                     if !self.press_numbers[0] && !self.press_numbers[2] && !self.press_numbers[12] {
@@ -1787,7 +1759,7 @@ impl<'a> Client {
                 | Screen::GameNewFrozen
                 | Screen::Users => {}
                 Screen::Games => self.screen = Screen::Users,
-                Screen::GameNew => self.game_settings.board_size = Some(BoardSize::_13),
+                Screen::GameNew => self.game_settings.board_size = BoardSize::_13,
                 Screen::Login => self.create_account(),
                 Screen::Game | Screen::GameReview => {
                     let (board, _) = self.board_and_heatmap();
@@ -1799,10 +1771,10 @@ impl<'a> Client {
             Message::Press5 => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
-                | Screen::GameNew
                 | Screen::GameNewFrozen
                 | Screen::Users => {}
                 Screen::Games => self.screen = Screen::AccountSettings,
+                Screen::GameNew => self.game_settings.time = TimeEnum::Rapid,
                 Screen::Login => self.reset_password(),
                 Screen::Game | Screen::GameReview => {
                     let (board, _) = self.board_and_heatmap();
@@ -1814,9 +1786,9 @@ impl<'a> Client {
             Message::Press6 => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
-                | Screen::GameNew
                 | Screen::GameNewFrozen
                 | Screen::Users => {}
+                Screen::GameNew => self.game_settings.time = TimeEnum::Classical,
                 Screen::Games => open_url("https://hnefatafl.org/rules.html"),
                 Screen::Login => self.review_game(),
                 Screen::Game | Screen::GameReview => {
@@ -1832,9 +1804,9 @@ impl<'a> Client {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::Games
-                | Screen::GameNew
                 | Screen::GameNewFrozen
                 | Screen::Users => {}
+                Screen::GameNew => self.game_settings.time = TimeEnum::Long,
                 Screen::Login => self.change_theme(Theme::Dark),
                 Screen::Game | Screen::GameReview => {
                     let (board, _) = self.board_and_heatmap();
@@ -1873,13 +1845,13 @@ impl<'a> Client {
                     self.press_numbers[8] = !self.press_numbers[8];
                 }
             },
-            Message::Press10 => match self.screen {
+            Message::Press0 => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::Games
-                | Screen::GameNew
                 | Screen::GameNewFrozen
                 | Screen::Users => {}
+                Screen::GameNew => self.game_settings.rated = !self.game_settings.rated,
                 Screen::Login => open_url("https://hnefatafl.org"),
                 Screen::Game | Screen::GameReview => {
                     let (board, _) = self.board_and_heatmap();
@@ -1890,9 +1862,7 @@ impl<'a> Client {
             },
             Message::SoundMuted(_muted) => self.sound_muted(),
             Message::StreamConnected(tx) => self.tx = Some(tx),
-            Message::RatedSelected(rated) => {
-                self.game_settings.rated = if rated { Rated::Yes } else { Rated::No };
-            }
+            Message::RatedSelected(rated) => self.game_settings.rated = rated.into(),
             Message::ResetPassword => self.reset_password(),
             Message::ReviewGame => self.review_game(),
             Message::ReviewGameBackward => {
@@ -2386,51 +2356,7 @@ impl<'a> Client {
                     }
                 }
             }
-            Message::TimeAddHours(string) => {
-                if string.parse::<u8>().is_ok() {
-                    self.game_settings.time_add_hours = string;
-                }
-            }
-            Message::TimeAddMinutes(string) => {
-                if let Ok(minutes) = string.parse::<u8>()
-                    && minutes < 60
-                {
-                    self.game_settings.time_add_minutes = string;
-                }
-            }
-            Message::TimeAddSeconds(string) => {
-                if let Ok(seconds) = string.parse::<u8>()
-                    && seconds < 60
-                {
-                    self.game_settings.time_add_seconds = string;
-                }
-            }
-            Message::TimeCheckbox(time_selected) => {
-                if time_selected {
-                    self.game_settings.timed = TimeSettings::default();
-                } else {
-                    self.game_settings.timed = TimeSettings::UnTimed;
-                }
-            }
-            Message::TimeDays(string) => {
-                if string.parse::<u8>().is_ok() {
-                    self.game_settings.time_days = string;
-                }
-            }
-            Message::TimeHours(string) => {
-                if let Ok(hours) = string.parse::<u8>()
-                    && hours < 24
-                {
-                    self.game_settings.time_hours = string;
-                }
-            }
-            Message::TimeMinutes(string) => {
-                if let Ok(minutes) = string.parse::<u8>()
-                    && minutes < 60
-                {
-                    self.game_settings.time_minutes = string;
-                }
-            }
+            Message::Time(time) => self.game_settings.time = time,
             Message::Users => self.screen = Screen::Users,
             Message::WindowResized((width, height)) => {
                 if width >= 1_500.0 && height >= 1_000.0 {
@@ -2926,22 +2852,21 @@ impl<'a> Client {
                 );
 
                 let defender = radio(
-                    format!("{} (2),", t!("defender")),
+                    format!("{} (2)", t!("defender")),
                     Role::Defender,
                     self.game_settings.role_selected,
                     Message::RoleSelected,
                 );
 
                 let rated = row![
-                    text(format!("{}:", t!("rated"))),
+                    text!("{} (0):", t!("rated")),
                     checkbox(self.game_settings.rated.into()).on_toggle(Message::RatedSelected)
                 ]
+                .padding(PADDING)
                 .spacing(SPACING);
 
-                let mut new_game = button(text(self.strings["New Game"].as_str()));
-                if self.game_settings.role_selected.is_some()
-                    && self.game_settings.board_size.is_some()
-                {
+                let mut new_game = button(text!("{} (Enter)", self.strings["New Game"].as_str()));
+                if self.game_settings.role_selected.is_some() {
                     new_game = new_game.on_press(Message::GameSubmit);
                 }
 
@@ -2951,77 +2876,52 @@ impl<'a> Client {
                 let size_11x11 = radio(
                     "11x11 (3)",
                     BoardSize::_11,
-                    self.game_settings.board_size,
+                    Some(self.game_settings.board_size),
                     Message::BoardSizeSelected,
                 );
 
                 let size_13x13 = radio(
-                    "13x13 (4),",
+                    "13x13 (4)",
                     BoardSize::_13,
-                    self.game_settings.board_size,
+                    Some(self.game_settings.board_size),
                     Message::BoardSizeSelected,
                 );
 
-                let time = row![
-                    text(format!("{}:", t!("timed"))),
-                    checkbox(self.game_settings.timed.clone().into())
-                        .on_toggle(Message::TimeCheckbox)
-                ]
-                .spacing(SPACING);
-
-                let row_1 = row![text!("{}:", t!("role")), attacker, defender, rated,]
+                let row_1 = row![text!("{}:", t!("role")), attacker, defender]
                     .padding(PADDING)
                     .spacing(SPACING);
 
-                let row_2 = row![text!("{}:", t!("board size")), size_11x11, size_13x13, time,]
+                let row_2 = row![text!("{}:", t!("board size")), size_11x11, size_13x13]
                     .padding(PADDING)
                     .spacing(SPACING);
 
-                let mut row_3 = Row::new().spacing(SPACING).padding(PADDING);
-                let mut row_4 = Row::new().spacing(SPACING).padding(PADDING);
+                let rapid = radio(
+                    format!("{} (5)", TimeEnum::Rapid),
+                    TimeEnum::Rapid,
+                    Some(self.game_settings.time),
+                    Message::Time,
+                );
 
-                if let TimeSettings::Timed(_) = self.game_settings.timed {
-                    row_3 = row_3.push(text(t!("days")));
-                    row_3 = row_3.push(
-                        widget::text_input("0", &self.game_settings.time_days)
-                            .on_input(Message::TimeDays)
-                            .on_paste(Message::TimeDays),
-                    );
-                    row_3 = row_3.push(text(t!("hours")));
-                    row_3 = row_3.push(
-                        widget::text_input("0", &self.game_settings.time_hours)
-                            .on_input(Message::TimeHours)
-                            .on_paste(Message::TimeHours),
-                    );
-                    row_3 = row_3.push(text(t!("minutes")));
-                    row_3 = row_3.push(
-                        widget::text_input("15", &self.game_settings.time_minutes)
-                            .on_input(Message::TimeMinutes)
-                            .on_paste(Message::TimeMinutes),
-                    );
+                let classical = radio(
+                    format!("{} (6)", TimeEnum::Classical),
+                    TimeEnum::Classical,
+                    Some(self.game_settings.time),
+                    Message::Time,
+                );
 
-                    row_4 = row_4.push(text(t!("add hours")));
-                    row_4 = row_4.push(
-                        widget::text_input("0", &self.game_settings.time_add_hours)
-                            .on_input(Message::TimeAddHours)
-                            .on_paste(Message::TimeAddHours),
-                    );
-                    row_4 = row_4.push(text(t!("add minutes")));
-                    row_4 = row_4.push(
-                        widget::text_input("0", &self.game_settings.time_add_minutes)
-                            .on_input(Message::TimeAddMinutes)
-                            .on_paste(Message::TimeAddMinutes),
-                    );
-                    row_4 = row_4.push(text(t!("add seconds")));
-                    row_4 = row_4.push(
-                        widget::text_input("10", &self.game_settings.time_add_seconds)
-                            .on_input(Message::TimeAddSeconds)
-                            .on_paste(Message::TimeAddSeconds),
-                    );
-                }
+                let long = radio(
+                    format!("{} (7)", TimeEnum::Long),
+                    TimeEnum::Long,
+                    Some(self.game_settings.time),
+                    Message::Time,
+                );
 
-                let row_5 = row![new_game, leave].padding(PADDING).spacing(SPACING);
-                column![row_1, row_2, row_3, row_4, row_5].into()
+                let row_3 = row![text!("{}:", t!("time")), rapid, classical, long,]
+                    .padding(PADDING)
+                    .spacing(SPACING);
+
+                let row_4 = row![new_game, leave].padding(PADDING).spacing(SPACING);
+                column![rated, row_1, row_2, row_3, row_4].into()
             }
             Screen::GameNewFrozen => {
                 let mut buttons_live = false;
@@ -3489,7 +3389,7 @@ enum Message {
     Press7,
     Press8,
     Press9,
-    Press10,
+    Press0,
     SoundMuted(bool),
     RatedSelected(bool),
     ResetPassword,
@@ -3510,13 +3410,7 @@ enum Message {
     TextSendCreateAccount,
     TextSendLogin,
     Tick,
-    TimeAddHours(String),
-    TimeAddMinutes(String),
-    TimeAddSeconds(String),
-    TimeCheckbox(bool),
-    TimeDays(String),
-    TimeHours(String),
-    TimeMinutes(String),
+    Time(TimeEnum),
     Users,
     WindowResized((f32, f32)),
 }

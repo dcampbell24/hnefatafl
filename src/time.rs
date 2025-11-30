@@ -55,6 +55,24 @@ impl fmt::Display for Time {
     }
 }
 
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+pub enum TimeEnum {
+    Classical,
+    Long,
+    #[default]
+    Rapid,
+}
+
+impl fmt::Display for TimeEnum {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Classical => write!(f, "30:00 | 00:00:20"),
+            Self::Long => write!(f, "3 12:00:00 | 4:00:00"),
+            Self::Rapid => write!(f, "15:00 | 00:00:10 "),
+        }
+    }
+}
+
 #[derive(Clone, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
 pub enum TimeSettings {
     Timed(Time),
