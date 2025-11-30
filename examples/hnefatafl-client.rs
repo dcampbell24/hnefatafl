@@ -639,6 +639,17 @@ impl<'a> Client {
         }
     }
 
+    fn buttons_live(&self) -> bool {
+        if let Some(game) = self.games_light.0.get(&self.game_id)
+            && game.attacker.is_some()
+            && game.defender.is_some()
+        {
+            true
+        } else {
+            false
+        }
+    }
+
     fn clear_letters_except(&mut self, letter: char) {
         for l in BOARD_LETTERS_LOWERCASE {
             if l != letter {
@@ -1322,13 +1333,8 @@ impl<'a> Client {
             }
             Message::FocusNext => return focus_next(),
             Message::FocusPrevious => return focus_previous(),
-            Message::GameAccept(id) => {
-                self.send(format!("join_game {id}\n"));
-                self.game_id = id;
-            }
-            Message::GameDecline(id) => {
-                self.send(format!("decline_game {id}\n"));
-            }
+            Message::GameAccept => self.send(format!("join_game {}\n", self.game_id)),
+            Message::GameDecline => self.send(format!("decline_game {}\n", self.game_id)),
             Message::GameJoin(id) => {
                 self.game_id = id;
                 self.send(format!("join_game_pending {id}\n"));
@@ -1462,12 +1468,16 @@ impl<'a> Client {
             Message::PressEnter => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
-                | Screen::GameNewFrozen
                 | Screen::Game
                 | Screen::Games
                 | Screen::GameReview
                 | Screen::Users => {}
                 Screen::GameNew => self.game_submit(),
+                Screen::GameNewFrozen => {
+                    if self.buttons_live() {
+                        self.send(format!("join_game {}\n", self.game_id));
+                    }
+                }
                 Screen::Login => self.login(),
             },
             Message::PressA => match self.screen {
@@ -1683,9 +1693,14 @@ impl<'a> Client {
             },
             Message::Press1 => match self.screen {
                 Screen::AccountSettings | Screen::Login => self.toggle_show_password(),
-                Screen::EmailEveryone | Screen::GameNewFrozen | Screen::Users => {}
+                Screen::EmailEveryone | Screen::Users => {}
                 Screen::Games => self.send("archived_games\n".to_string()),
                 Screen::GameNew => self.game_settings.role_selected = Some(Role::Attacker),
+                Screen::GameNewFrozen => {
+                    if self.buttons_live() {
+                        self.send(format!("decline_game {}\n", self.game_id));
+                    }
+                }
                 Screen::Game | Screen::GameReview => {
                     if !(self.press_numbers[0]
                         || self.press_numbers[10]
@@ -2924,15 +2939,9 @@ impl<'a> Client {
                 column![rated, row_1, row_2, row_3, row_4].into()
             }
             Screen::GameNewFrozen => {
-                let mut buttons_live = false;
                 let mut game_display = Column::new().padding(PADDING);
-
                 if let Some(game) = self.games_light.0.get(&self.game_id) {
                     game_display = game_display.push(text(game.to_string()));
-
-                    if game.attacker.is_some() && game.defender.is_some() {
-                        buttons_live = true;
-                    }
                 }
 
                 let mut buttons = if self.challenger {
@@ -2940,19 +2949,19 @@ impl<'a> Client {
                         button(text!("{} (Esc)", self.strings["Leave"].as_str()))
                             .on_press(Message::Leave)
                     ]
-                } else if buttons_live {
+                } else if self.buttons_live() {
                     row![
-                        button(text(self.strings["Accept"].as_str()))
-                            .on_press(Message::GameAccept(self.game_id)),
-                        button(text(self.strings["Decline"].as_str()))
-                            .on_press(Message::GameDecline(self.game_id)),
+                        button(text!("{} (Enter)", self.strings["Accept"].as_str()))
+                            .on_press(Message::GameAccept),
+                        button(text!("{} (1)", self.strings["Decline"].as_str()))
+                            .on_press(Message::GameDecline),
                         button(text!("{} (Esc)", self.strings["Leave"].as_str()))
                             .on_press(Message::Leave),
                     ]
                 } else {
                     row![
-                        button(text(self.strings["Accept"].as_str())),
-                        button(text(self.strings["Decline"].as_str())),
+                        button(text!("{} (Enter)", self.strings["Accept"].as_str())),
+                        button(text!("{} (1)", self.strings["Decline"].as_str())),
                         button(text!("{} (Esc)", self.strings["Leave"].as_str()))
                             .on_press(Message::Leave),
                     ]
@@ -3341,8 +3350,8 @@ enum Message {
     EstimateScoreDisplay((Node, GenerateMove)),
     FocusPrevious,
     FocusNext,
-    GameAccept(Id),
-    GameDecline(Id),
+    GameAccept,
+    GameDecline,
     GameJoin(Id),
     GameNew,
     GameResume(Id),
