@@ -1497,9 +1497,9 @@ impl<'a> Client {
                 | Screen::GameNew
                 | Screen::GameNewFrozen
                 | Screen::Game
+                | Screen::Games
                 | Screen::GameReview
                 | Screen::Users => {}
-                Screen::Games => self.game_new(),
                 Screen::Login => self.login(),
             },
             Message::PressA => match self.screen {
@@ -1766,8 +1766,7 @@ impl<'a> Client {
                 | Screen::EmailEveryone
                 | Screen::GameNewFrozen
                 | Screen::Users => {}
-                Screen::Games => self.screen = Screen::Users,
-                // Screen::Games => self.game_new(), //
+                Screen::Games => self.game_new(),
                 Screen::GameNew => self.game_settings.board_size = Some(BoardSize::_11),
                 Screen::Login => self.my_games_only(),
                 Screen::Game | Screen::GameReview => {
@@ -1791,7 +1790,7 @@ impl<'a> Client {
                 | Screen::EmailEveryone
                 | Screen::GameNewFrozen
                 | Screen::Users => {}
-                Screen::Games => self.screen = Screen::AccountSettings,
+                Screen::Games => self.screen = Screen::Users,
                 Screen::GameNew => self.game_settings.board_size = Some(BoardSize::_13),
                 Screen::Login => self.create_account(),
                 Screen::Game | Screen::GameReview => {
@@ -1807,7 +1806,7 @@ impl<'a> Client {
                 | Screen::GameNew
                 | Screen::GameNewFrozen
                 | Screen::Users => {}
-                Screen::Games => open_url("https://hnefatafl.org/rules.html"),
+                Screen::Games => self.screen = Screen::AccountSettings,
                 Screen::Login => self.reset_password(),
                 Screen::Game | Screen::GameReview => {
                     let (board, _) = self.board_and_heatmap();
@@ -1819,10 +1818,10 @@ impl<'a> Client {
             Message::Press6 => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
-                | Screen::Games
                 | Screen::GameNew
                 | Screen::GameNewFrozen
                 | Screen::Users => {}
+                Screen::Games => open_url("https://hnefatafl.org/rules.html"),
                 Screen::Login => self.review_game(),
                 Screen::Game | Screen::GameReview => {
                     if self.screen == Screen::Game || self.screen == Screen::GameReview {
@@ -3083,17 +3082,17 @@ impl<'a> Client {
                 let username =
                     row![username, get_archived_games, my_games, my_games_text].spacing(SPACING);
 
-                let create_game = button(text!("{} (Enter)", self.strings["Create Game"].as_str()))
+                let create_game = button(text!("{} (3)", self.strings["Create Game"].as_str()))
                     .on_press(Message::GameNew);
 
-                let users = button(text!("{} (3)", self.strings["Users"].as_str()))
+                let users = button(text!("{} (4)", self.strings["Users"].as_str()))
                     .on_press(Message::Users);
 
                 let account_setting =
-                    button(text!("{} (4)", self.strings["Account Settings"].as_str()))
+                    button(text!("{} (5)", self.strings["Account Settings"].as_str()))
                         .on_press(Message::AccountSettings);
 
-                let website = button(text!("{} (5)", self.strings["Rules"].as_str())).on_press(
+                let website = button(text!("{} (6)", self.strings["Rules"].as_str())).on_press(
                     Message::OpenUrl("https://hnefatafl.org/rules.html".to_string()),
                 );
 
