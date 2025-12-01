@@ -2068,6 +2068,7 @@ impl<'a> Client {
                                 "archived_games"
                                 | "challenge_requested"
                                 | "change_password"
+                                | "email_reset"
                                 | "game"
                                 | "request_draw",
                             ) => {}
