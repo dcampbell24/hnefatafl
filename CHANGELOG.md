@@ -20,6 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- hnefatafl-server-full: This is a breaking change, but only for active games
+  file. Set the time correctly.
 - hnefatafl-text-protocol: don't overflow when doing ReviewGameBackward.
 
 ## [4.3.0] - 2025-11-24

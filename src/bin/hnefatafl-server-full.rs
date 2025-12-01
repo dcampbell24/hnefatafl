@@ -161,12 +161,10 @@ fn main() -> anyhow::Result<()> {
             let games: Vec<ServerGameSerialized> = postcard::from_bytes(data.as_slice())?;
             for game in games {
                 let id = game.id;
+                let server_game_light = ServerGameLight::from(&game);
                 let server_game = ServerGame::from(game);
 
-                server
-                    .games_light
-                    .0
-                    .insert(id, ServerGameLight::from(&server_game));
+                server.games_light.0.insert(id, server_game_light);
                 server.games.0.insert(id, server_game);
             }
         }
@@ -1332,7 +1330,13 @@ impl Server {
                     info!("saving active games...");
                     let mut active_games = Vec::new();
                     for game in self.games.0.values() {
-                        active_games.push(ServerGameSerialized::from(game));
+                        let mut serialized_game = ServerGameSerialized::from(game);
+
+                        if let Some(game_light) = self.games_light.0.get(&game.id) {
+                            serialized_game.timed = game_light.timed.clone();
+                        }
+
+                        active_games.push(serialized_game);
                     }
 
                     let mut file = handle_error(File::create(data_file(ACTIVE_GAMES_FILE)));
