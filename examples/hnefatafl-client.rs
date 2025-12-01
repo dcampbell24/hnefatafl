@@ -771,6 +771,12 @@ impl<'a> Client {
         }
     }
 
+    fn press_letter(&mut self, letter: char) {
+        self.clear_letters_except(letter);
+        self.press_letters
+            .insert(letter, !self.press_letters[&letter]);
+    }
+
     fn join_game_press(&mut self, i: usize) {
         let mut server_games: Vec<&ServerGameLight> = self.games_light.0.values().collect();
 
@@ -1530,10 +1536,7 @@ impl<'a> Client {
                 | Screen::GameNewFrozen
                 | Screen::Login
                 | Screen::Users => {}
-                Screen::Game | Screen::GameReview => {
-                    self.clear_letters_except('a');
-                    self.press_letters.insert('a', !self.press_letters[&'a']);
-                }
+                Screen::Game | Screen::GameReview => self.press_letter('a'),
                 Screen::Games => self.join_game_press(0),
             },
             Message::PressB => match self.screen {
@@ -1543,10 +1546,7 @@ impl<'a> Client {
                 | Screen::GameNewFrozen
                 | Screen::Login
                 | Screen::Users => {}
-                Screen::Game | Screen::GameReview => {
-                    self.clear_letters_except('b');
-                    self.press_letters.insert('b', !self.press_letters[&'b']);
-                }
+                Screen::Game | Screen::GameReview => self.press_letter('b'),
                 Screen::Games => self.join_game_press(1),
             },
             Message::PressC => match self.screen {
@@ -1556,10 +1556,7 @@ impl<'a> Client {
                 | Screen::GameNewFrozen
                 | Screen::Login
                 | Screen::Users => {}
-                Screen::Game | Screen::GameReview => {
-                    self.clear_letters_except('c');
-                    self.press_letters.insert('c', !self.press_letters[&'c']);
-                }
+                Screen::Game | Screen::GameReview => self.press_letter('c'),
                 Screen::Games => self.join_game_press(2),
             },
             Message::PressD => match self.screen {
@@ -1569,10 +1566,7 @@ impl<'a> Client {
                 | Screen::GameNewFrozen
                 | Screen::Login
                 | Screen::Users => {}
-                Screen::Game | Screen::GameReview => {
-                    self.clear_letters_except('d');
-                    self.press_letters.insert('d', !self.press_letters[&'d']);
-                }
+                Screen::Game | Screen::GameReview => self.press_letter('d'),
                 Screen::Games => self.join_game_press(3),
             },
             Message::PressE => match self.screen {
@@ -1582,10 +1576,7 @@ impl<'a> Client {
                 | Screen::GameNewFrozen
                 | Screen::Login
                 | Screen::Users => {}
-                Screen::Game | Screen::GameReview => {
-                    self.clear_letters_except('e');
-                    self.press_letters.insert('e', !self.press_letters[&'e']);
-                }
+                Screen::Game | Screen::GameReview => self.press_letter('e'),
                 Screen::Games => self.join_game_press(4),
             },
             Message::PressF => match self.screen {
@@ -1595,10 +1586,7 @@ impl<'a> Client {
                 | Screen::GameNewFrozen
                 | Screen::Login
                 | Screen::Users => {}
-                Screen::Game | Screen::GameReview => {
-                    self.clear_letters_except('f');
-                    self.press_letters.insert('f', !self.press_letters[&'f']);
-                }
+                Screen::Game | Screen::GameReview => self.press_letter('f'),
                 Screen::Games => self.join_game_press(5),
             },
             Message::PressG => match self.screen {
@@ -1608,10 +1596,7 @@ impl<'a> Client {
                 | Screen::GameNewFrozen
                 | Screen::Login
                 | Screen::Users => {}
-                Screen::Game | Screen::GameReview => {
-                    self.clear_letters_except('g');
-                    self.press_letters.insert('g', !self.press_letters[&'g']);
-                }
+                Screen::Game | Screen::GameReview => self.press_letter('g'),
                 Screen::Games => self.join_game_press(6),
             },
             Message::PressH => match self.screen {
@@ -1621,10 +1606,7 @@ impl<'a> Client {
                 | Screen::GameNewFrozen
                 | Screen::Login
                 | Screen::Users => {}
-                Screen::Game | Screen::GameReview => {
-                    self.clear_letters_except('h');
-                    self.press_letters.insert('h', !self.press_letters[&'h']);
-                }
+                Screen::Game | Screen::GameReview => self.press_letter('h'),
                 Screen::Games => self.join_game_press(7),
             },
             Message::PressI => match self.screen {
@@ -1634,10 +1616,7 @@ impl<'a> Client {
                 | Screen::GameNewFrozen
                 | Screen::Login
                 | Screen::Users => {}
-                Screen::Game | Screen::GameReview => {
-                    self.clear_letters_except('i');
-                    self.press_letters.insert('i', !self.press_letters[&'i']);
-                }
+                Screen::Game | Screen::GameReview => self.press_letter('i'),
                 Screen::Games => self.join_game_press(8),
             },
             Message::PressJ => match self.screen {
@@ -1647,10 +1626,7 @@ impl<'a> Client {
                 | Screen::GameNewFrozen
                 | Screen::Login
                 | Screen::Users => {}
-                Screen::Game | Screen::GameReview => {
-                    self.clear_letters_except('j');
-                    self.press_letters.insert('j', !self.press_letters[&'j']);
-                }
+                Screen::Game | Screen::GameReview => self.press_letter('j'),
                 Screen::Games => self.join_game_press(9),
             },
             Message::PressK => match self.screen {
@@ -1660,10 +1636,7 @@ impl<'a> Client {
                 | Screen::GameNewFrozen
                 | Screen::Login
                 | Screen::Users => {}
-                Screen::Game | Screen::GameReview => {
-                    self.clear_letters_except('k');
-                    self.press_letters.insert('k', !self.press_letters[&'k']);
-                }
+                Screen::Game | Screen::GameReview => self.press_letter('k'),
                 Screen::Games => self.join_game_press(10),
             },
             Message::PressL => match self.screen {
@@ -1673,10 +1646,7 @@ impl<'a> Client {
                 | Screen::GameNewFrozen
                 | Screen::Login
                 | Screen::Users => {}
-                Screen::Game | Screen::GameReview => {
-                    self.clear_letters_except('l');
-                    self.press_letters.insert('l', !self.press_letters[&'l']);
-                }
+                Screen::Game | Screen::GameReview => self.press_letter('l'),
                 Screen::Games => self.join_game_press(11),
             },
             Message::PressM => match self.screen {
@@ -1686,10 +1656,7 @@ impl<'a> Client {
                 | Screen::GameNewFrozen
                 | Screen::Login
                 | Screen::Users => {}
-                Screen::Game | Screen::GameReview => {
-                    self.clear_letters_except('m');
-                    self.press_letters.insert('m', !self.press_letters[&'m']);
-                }
+                Screen::Game | Screen::GameReview => self.press_letter('m'),
                 Screen::Games => self.join_game_press(12),
             },
             Message::PressN => match self.screen {
