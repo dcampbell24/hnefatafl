@@ -706,6 +706,15 @@ impl<'a> Client {
         }
     }
 
+    fn delete_account(&mut self) {
+        if self.delete_account {
+            self.send("delete_account\n".to_string());
+            self.screen = Screen::Login;
+        } else {
+            self.delete_account = true;
+        }
+    }
+
     fn draw(&mut self) {
         let game = self.game.as_ref().expect("you should have a game by now");
         self.send(format!("request_draw {} {}\n", self.game_id, game.turn));
@@ -1400,22 +1409,12 @@ impl<'a> Client {
             Message::BoardSizeSelected(size) => self.game_settings.board_size = size,
             Message::ConnectedTo(address) => self.connected_to = address,
             Message::Coordinates(_coordinates) => self.coordinates(),
-            Message::DeleteAccount => {
-                if self.delete_account {
-                    self.send("delete_account\n".to_string());
-                    self.screen = Screen::Login;
-                } else {
-                    self.delete_account = true;
-                }
-            }
+            Message::DeleteAccount => self.delete_account(),
             Message::EmailEveryone => {
                 self.screen = Screen::EmailEveryone;
                 self.send("emails_bcc\n".to_string());
             }
-            Message::EmailReset => {
-                self.email = None;
-                self.send("email_reset\n".to_string());
-            }
+            Message::EmailReset => self.reset_email(),
             Message::EstimateScore => self.estimate_score(),
             Message::EstimateScoreConnected(tx) => self.estimate_score_tx = Some(tx),
             Message::EstimateScoreDisplay((node, generate_move)) => {
@@ -1815,7 +1814,7 @@ impl<'a> Client {
                 Screen::Games => self.join_game_press(25),
             },
             Message::Press1 => match self.screen {
-                Screen::AccountSettings | Screen::Login => self.toggle_show_password(),
+                Screen::AccountSettings | Screen::Login => self.reset_email(),
                 Screen::EmailEveryone | Screen::Users => {}
                 Screen::Games => self.send("archived_games\n".to_string()),
                 Screen::GameNew => self.game_settings.role_selected = Some(Role::Attacker),
@@ -1847,7 +1846,9 @@ impl<'a> Client {
                 }
             },
             Message::Press2 => match self.screen {
-                Screen::AccountSettings | Screen::Login => self.toggle_save_password(),
+                Screen::AccountSettings => {
+                    self.send(format!("change_password {}\n", self.password));
+                }
                 Screen::EmailEveryone | Screen::GameNewFrozen | Screen::Users => {}
                 Screen::Games => self.my_games_only(),
                 Screen::GameNew => self.game_settings.role_selected = Some(Role::Defender),
@@ -1866,12 +1867,11 @@ impl<'a> Client {
                         self.press_numbers[11] = true;
                     }
                 }
+                Screen::Login => self.toggle_save_password(),
             },
             Message::Press3 => match self.screen {
-                Screen::AccountSettings
-                | Screen::EmailEveryone
-                | Screen::GameNewFrozen
-                | Screen::Users => {}
+                Screen::AccountSettings => self.toggle_show_password(),
+                Screen::EmailEveryone | Screen::GameNewFrozen | Screen::Users => {}
                 Screen::Games => self.game_new(),
                 Screen::GameNew => self.game_settings.board_size = BoardSize::_11,
                 Screen::Login => self.my_games_only(),
@@ -1892,10 +1892,8 @@ impl<'a> Client {
                 }
             },
             Message::Press4 => match self.screen {
-                Screen::AccountSettings
-                | Screen::EmailEveryone
-                | Screen::GameNewFrozen
-                | Screen::Users => {}
+                Screen::AccountSettings => self.delete_account(),
+                Screen::EmailEveryone | Screen::GameNewFrozen | Screen::Users => {}
                 Screen::Games => self.screen = Screen::Users,
                 Screen::GameNew => self.game_settings.board_size = BoardSize::_13,
                 Screen::Login => self.create_account(),
@@ -2898,7 +2896,7 @@ impl<'a> Client {
                 }
 
                 columns = columns.push(row![
-                    button(text(self.strings["Reset Email"].as_str()))
+                    button(text!("{} (1)", self.strings["Reset Email"].as_str()))
                         .on_press(Message::EmailReset)
                 ]);
 
@@ -2907,7 +2905,7 @@ impl<'a> Client {
                 }
 
                 let mut change_password_button =
-                    button(text(self.strings["Change Password"].as_str()));
+                    button(text!("{} (2)", self.strings["Change Password"].as_str()));
 
                 if !self.password_ends_with_whitespace {
                     change_password_button = change_password_button.on_press(Message::TextSend);
@@ -2927,19 +2925,22 @@ impl<'a> Client {
                 columns = columns.push(
                     row![
                         checkbox(self.password_show).on_toggle(Message::PasswordShow),
-                        text!("{} (1)", t!("show password")),
+                        text!("{} (3)", t!("show password")),
                     ]
                     .spacing(SPACING),
                 );
 
                 if self.delete_account {
                     columns = columns.push(
-                        button(text(self.strings["REALLY DELETE ACCOUNT"].as_str()))
-                            .on_press(Message::DeleteAccount),
+                        button(text!(
+                            "{} (4)",
+                            self.strings["REALLY DELETE ACCOUNT"].as_str()
+                        ))
+                        .on_press(Message::DeleteAccount),
                     );
                 } else {
                     columns = columns.push(
-                        button(text(self.strings["Delete Account"].as_str()))
+                        button(text!("{} (4)", self.strings["Delete Account"].as_str()))
                             .on_press(Message::DeleteAccount),
                     );
                 }
@@ -3353,6 +3354,11 @@ impl<'a> Client {
             .spacing(SPACING)
             .into(),
         }
+    }
+
+    fn reset_email(&mut self) {
+        self.email = None;
+        self.send("email_reset\n".to_string());
     }
 
     fn reset_markers(&mut self) {
