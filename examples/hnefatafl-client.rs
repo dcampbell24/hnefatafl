@@ -86,6 +86,11 @@ cyan      #2aa198  6/6 cyan      37 #00afaf 60 -35 -05  42 161 152 175  74  63
 green     #859900  2/2 green     64 #5f8700 60 -20  65 133 153   0  68 100  60
 */
 
+const ALPHABET: [char; 26] = [
+    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
+    't', 'u', 'v', 'w', 'x', 'y', 'z',
+];
+
 const BLUE: Color = Color::from_rgb(0.149_02, 0.545_098, 0.823_529);
 const BOARD_LETTERS_LOWERCASE: [char; 13] = [
     'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
@@ -766,6 +771,63 @@ impl<'a> Client {
         }
     }
 
+    fn join_game_press(&mut self, i: usize) {
+        let mut server_games: Vec<&ServerGameLight> = self.games_light.0.values().collect();
+
+        server_games.sort_by(|a, b| b.id.cmp(&a.id));
+
+        if let Some(game) = server_games.get(i) {
+            match self.join_game(game) {
+                JoinGame::Join => self.join(game.id),
+                JoinGame::None => {}
+                JoinGame::Resume => self.resume(game.id),
+                JoinGame::Watch => self.watch(game.id),
+            }
+        }
+    }
+
+    fn join_game(&self, game: &ServerGameLight) -> JoinGame {
+        if game.challenge_accepted
+            && !(Some(&self.username) == game.attacker.as_ref()
+                || Some(&self.username) == game.defender.as_ref())
+        {
+            JoinGame::Watch
+        } else if game.attacker.is_none() || game.defender.is_none() {
+            JoinGame::Join
+        } else if game.attacker.as_ref() == Some(&self.username)
+            || game.defender.as_ref() == Some(&self.username)
+        {
+            JoinGame::Resume
+        } else {
+            JoinGame::None
+        }
+    }
+
+    fn join(&mut self, id: u128) {
+        self.game_id = id;
+        self.send(format!("join_game_pending {id}\n"));
+
+        let game = self.games_light.0.get(&id).expect("the game must exist");
+
+        self.game_settings.role_selected = if game.attacker.is_some() {
+            Some(Role::Defender)
+        } else {
+            Some(Role::Attacker)
+        };
+
+        self.screen = Screen::GameNewFrozen;
+    }
+
+    fn resume(&mut self, id: u128) {
+        self.game_id = id;
+        self.send(format!("resume_game {id}\n"));
+    }
+
+    fn watch(&mut self, id: u128) {
+        self.game_id = id;
+        self.send(format!("watch_game {id}\n"));
+    }
+
     fn login(&mut self) {
         if !self.connected_tcp {
             self.send("tcp_connect\n".to_string());
@@ -1335,24 +1397,8 @@ impl<'a> Client {
             Message::FocusPrevious => return focus_previous(),
             Message::GameAccept => self.send(format!("join_game {}\n", self.game_id)),
             Message::GameDecline => self.send(format!("decline_game {}\n", self.game_id)),
-            Message::GameJoin(id) => {
-                self.game_id = id;
-                self.send(format!("join_game_pending {id}\n"));
-
-                let game = self.games_light.0.get(&id).expect("the game must exist");
-
-                self.game_settings.role_selected = if game.attacker.is_some() {
-                    Some(Role::Defender)
-                } else {
-                    Some(Role::Attacker)
-                };
-
-                self.screen = Screen::GameNewFrozen;
-            }
-            Message::GameWatch(id) => {
-                self.game_id = id;
-                self.send(format!("watch_game {id}\n"));
-            }
+            Message::GameJoin(id) => self.join(id),
+            Message::GameWatch(id) => self.watch(id),
             Message::HeatMap(_display) => self.heat_map_display = !self.heat_map_display,
             Message::Leave => match self.screen {
                 Screen::AccountSettings
@@ -1405,10 +1451,7 @@ impl<'a> Client {
             }
             Message::OpenUrl(string) => open_url(&string),
             Message::GameNew => self.game_new(),
-            Message::GameResume(id) => {
-                self.game_id = id;
-                self.send(format!("resume_game {id}\n"));
-            }
+            Message::GameResume(id) => self.resume(id),
             Message::GameSubmit => self.game_submit(),
             Message::PasswordChanged(password) => {
                 let (password, ends_with_whitespace) = utils::split_whitespace_password(&password);
@@ -1485,199 +1528,199 @@ impl<'a> Client {
                 | Screen::EmailEveryone
                 | Screen::GameNew
                 | Screen::GameNewFrozen
-                | Screen::Games
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game | Screen::GameReview => {
                     self.clear_letters_except('a');
                     self.press_letters.insert('a', !self.press_letters[&'a']);
                 }
+                Screen::Games => self.join_game_press(0),
             },
             Message::PressB => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
                 | Screen::GameNewFrozen
-                | Screen::Games
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game | Screen::GameReview => {
                     self.clear_letters_except('b');
                     self.press_letters.insert('b', !self.press_letters[&'b']);
                 }
+                Screen::Games => self.join_game_press(1),
             },
             Message::PressC => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
                 | Screen::GameNewFrozen
-                | Screen::Games
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game | Screen::GameReview => {
                     self.clear_letters_except('c');
                     self.press_letters.insert('c', !self.press_letters[&'c']);
                 }
+                Screen::Games => self.join_game_press(2),
             },
             Message::PressD => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
                 | Screen::GameNewFrozen
-                | Screen::Games
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game | Screen::GameReview => {
                     self.clear_letters_except('d');
                     self.press_letters.insert('d', !self.press_letters[&'d']);
                 }
+                Screen::Games => self.join_game_press(3),
             },
             Message::PressE => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
                 | Screen::GameNewFrozen
-                | Screen::Games
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game | Screen::GameReview => {
                     self.clear_letters_except('e');
                     self.press_letters.insert('e', !self.press_letters[&'e']);
                 }
+                Screen::Games => self.join_game_press(4),
             },
             Message::PressF => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
                 | Screen::GameNewFrozen
-                | Screen::Games
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game | Screen::GameReview => {
                     self.clear_letters_except('f');
                     self.press_letters.insert('f', !self.press_letters[&'f']);
                 }
+                Screen::Games => self.join_game_press(5),
             },
             Message::PressG => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
                 | Screen::GameNewFrozen
-                | Screen::Games
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game | Screen::GameReview => {
                     self.clear_letters_except('g');
                     self.press_letters.insert('g', !self.press_letters[&'g']);
                 }
+                Screen::Games => self.join_game_press(6),
             },
             Message::PressH => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
                 | Screen::GameNewFrozen
-                | Screen::Games
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game | Screen::GameReview => {
                     self.clear_letters_except('h');
                     self.press_letters.insert('h', !self.press_letters[&'h']);
                 }
+                Screen::Games => self.join_game_press(7),
             },
             Message::PressI => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
                 | Screen::GameNewFrozen
-                | Screen::Games
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game | Screen::GameReview => {
                     self.clear_letters_except('i');
                     self.press_letters.insert('i', !self.press_letters[&'i']);
                 }
+                Screen::Games => self.join_game_press(8),
             },
             Message::PressJ => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
                 | Screen::GameNewFrozen
-                | Screen::Games
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game | Screen::GameReview => {
                     self.clear_letters_except('j');
                     self.press_letters.insert('j', !self.press_letters[&'j']);
                 }
+                Screen::Games => self.join_game_press(9),
             },
             Message::PressK => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
                 | Screen::GameNewFrozen
-                | Screen::Games
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game | Screen::GameReview => {
                     self.clear_letters_except('k');
                     self.press_letters.insert('k', !self.press_letters[&'k']);
                 }
+                Screen::Games => self.join_game_press(10),
             },
             Message::PressL => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
                 | Screen::GameNewFrozen
-                | Screen::Games
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game | Screen::GameReview => {
                     self.clear_letters_except('l');
                     self.press_letters.insert('l', !self.press_letters[&'l']);
                 }
+                Screen::Games => self.join_game_press(11),
             },
             Message::PressM => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
                 | Screen::GameNewFrozen
-                | Screen::Games
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game | Screen::GameReview => {
                     self.clear_letters_except('m');
                     self.press_letters.insert('m', !self.press_letters[&'m']);
                 }
+                Screen::Games => self.join_game_press(12),
             },
             Message::PressN => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
                 | Screen::GameNewFrozen
-                | Screen::Games
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game | Screen::GameReview => self.coordinates(),
+                Screen::Games => self.join_game_press(13),
             },
             Message::PressO => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
                 | Screen::GameNewFrozen
-                | Screen::Games
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game | Screen::GameReview => self.sound_muted(),
+                Screen::Games => self.join_game_press(14),
             },
             Message::PressP => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
                 | Screen::GameNewFrozen
-                | Screen::Games
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game => self.resign(),
+                Screen::Games => self.join_game_press(15),
                 Screen::GameReview => self.estimate_score(),
             },
             Message::PressQ => match self.screen {
@@ -1685,10 +1728,10 @@ impl<'a> Client {
                 | Screen::EmailEveryone
                 | Screen::GameNew
                 | Screen::GameNewFrozen
-                | Screen::Games
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game => self.draw(),
+                Screen::Games => self.join_game_press(16),
                 Screen::GameReview => self.heat_map_display = !self.heat_map_display,
             },
             Message::Press1 => match self.screen {
@@ -2417,7 +2460,7 @@ impl<'a> Client {
         let mut server_games: Vec<&ServerGameLight> = self.games_light.0.values().collect();
         server_games.sort_by(|a, b| b.id.cmp(&a.id));
 
-        for game in server_games {
+        for (i, game) in server_games.iter().enumerate() {
             if self.my_games_only {
                 let mut includes_username = false;
                 if let Some(attacker) = &game.attacker
@@ -2460,25 +2503,32 @@ impl<'a> Client {
 
             let mut buttons_row = Row::new().spacing(SPACING);
 
-            if game.challenge_accepted
-                && !(Some(&self.username) == game.attacker.as_ref()
-                    || Some(&self.username) == game.defender.as_ref())
-            {
-                buttons_row = buttons_row.push(
-                    button(text(self.strings["Watch"].as_str())).on_press(Message::GameWatch(id)),
-                );
-            } else if game.attacker.is_none() || game.defender.is_none() {
-                buttons_row = buttons_row.push(
-                    button(text(self.strings["Join"].as_str())).on_press(Message::GameJoin(id)),
-                );
-            }
+            let i = if let Some(i) = ALPHABET.get(i) {
+                format!(" ({i})")
+            } else {
+                String::new()
+            };
 
-            if game.attacker.as_ref() == Some(&self.username)
-                || game.defender.as_ref() == Some(&self.username)
-            {
-                buttons_row = buttons_row.push(
-                    button(text(self.strings["Resume"].as_str())).on_press(Message::GameResume(id)),
-                );
+            match self.join_game(game) {
+                JoinGame::Join => {
+                    buttons_row = buttons_row.push(
+                        button(text!("{}{i}", self.strings["Join"].as_str()))
+                            .on_press(Message::GameJoin(id)),
+                    );
+                }
+                JoinGame::None => {}
+                JoinGame::Resume => {
+                    buttons_row = buttons_row.push(
+                        button(text!("{}{i}", self.strings["Resume"].as_str()))
+                            .on_press(Message::GameResume(id)),
+                    );
+                }
+                JoinGame::Watch => {
+                    buttons_row = buttons_row.push(
+                        button(text!("{}{i}", self.strings["Watch"].as_str()))
+                            .on_press(Message::GameWatch(id)),
+                    );
+                }
             }
 
             buttons = buttons.push(buttons_row);
@@ -3489,6 +3539,14 @@ impl Dimensions {
             spacing,
         }
     }
+}
+
+#[derive(Clone, Debug)]
+enum JoinGame {
+    Join,
+    None,
+    Resume,
+    Watch,
 }
 
 fn estimate_score() -> impl Stream<Item = Message> {
