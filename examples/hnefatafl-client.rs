@@ -1249,6 +1249,24 @@ impl<'a> Client {
                             Some(Message::PressP)
                         } else if *ch == *Value::new("q").to_smolstr() {
                             Some(Message::PressQ)
+                        } else if *ch == *Value::new("r").to_smolstr() {
+                            Some(Message::PressR)
+                        } else if *ch == *Value::new("s").to_smolstr() {
+                            Some(Message::PressS)
+                        } else if *ch == *Value::new("t").to_smolstr() {
+                            Some(Message::PressT)
+                        } else if *ch == *Value::new("u").to_smolstr() {
+                            Some(Message::PressU)
+                        } else if *ch == *Value::new("v").to_smolstr() {
+                            Some(Message::PressV)
+                        } else if *ch == *Value::new("w").to_smolstr() {
+                            Some(Message::PressW)
+                        } else if *ch == *Value::new("x").to_smolstr() {
+                            Some(Message::PressX)
+                        } else if *ch == *Value::new("y").to_smolstr() {
+                            Some(Message::PressY)
+                        } else if *ch == *Value::new("z").to_smolstr() {
+                            Some(Message::PressZ)
                         } else if *ch == *Value::new("1").to_smolstr() {
                             Some(Message::Press1)
                         } else if *ch == *Value::new("2").to_smolstr() {
@@ -1700,6 +1718,87 @@ impl<'a> Client {
                 Screen::Game => self.draw(),
                 Screen::Games => self.join_game_press(16),
                 Screen::GameReview => self.heat_map_display = !self.heat_map_display,
+            },
+            Message::PressR => match self.screen {
+                Screen::AccountSettings | Screen::EmailEveryone | Screen::Game => self.draw(),
+                Screen::GameNew
+                | Screen::GameNewFrozen
+                | Screen::GameReview
+                | Screen::Login
+                | Screen::Users => {}
+                Screen::Games => self.join_game_press(17),
+            },
+            Message::PressS => match self.screen {
+                Screen::AccountSettings | Screen::EmailEveryone | Screen::Game => self.draw(),
+                Screen::GameNew
+                | Screen::GameNewFrozen
+                | Screen::GameReview
+                | Screen::Login
+                | Screen::Users => {}
+                Screen::Games => self.join_game_press(18),
+            },
+            Message::PressT => match self.screen {
+                Screen::AccountSettings | Screen::EmailEveryone | Screen::Game => self.draw(),
+                Screen::GameNew
+                | Screen::GameNewFrozen
+                | Screen::GameReview
+                | Screen::Login
+                | Screen::Users => {}
+                Screen::Games => self.join_game_press(19),
+            },
+            Message::PressU => match self.screen {
+                Screen::AccountSettings | Screen::EmailEveryone | Screen::Game => self.draw(),
+                Screen::GameNew
+                | Screen::GameNewFrozen
+                | Screen::GameReview
+                | Screen::Login
+                | Screen::Users => {}
+                Screen::Games => self.join_game_press(20),
+            },
+            Message::PressV => match self.screen {
+                Screen::AccountSettings | Screen::EmailEveryone | Screen::Game => self.draw(),
+                Screen::GameNew
+                | Screen::GameNewFrozen
+                | Screen::GameReview
+                | Screen::Login
+                | Screen::Users => {}
+                Screen::Games => self.join_game_press(21),
+            },
+            Message::PressW => match self.screen {
+                Screen::AccountSettings | Screen::EmailEveryone | Screen::Game => self.draw(),
+                Screen::GameNew
+                | Screen::GameNewFrozen
+                | Screen::GameReview
+                | Screen::Login
+                | Screen::Users => {}
+                Screen::Games => self.join_game_press(22),
+            },
+            Message::PressX => match self.screen {
+                Screen::AccountSettings | Screen::EmailEveryone | Screen::Game => self.draw(),
+                Screen::GameNew
+                | Screen::GameNewFrozen
+                | Screen::GameReview
+                | Screen::Login
+                | Screen::Users => {}
+                Screen::Games => self.join_game_press(23),
+            },
+            Message::PressY => match self.screen {
+                Screen::AccountSettings | Screen::EmailEveryone | Screen::Game => self.draw(),
+                Screen::GameNew
+                | Screen::GameNewFrozen
+                | Screen::GameReview
+                | Screen::Login
+                | Screen::Users => {}
+                Screen::Games => self.join_game_press(24),
+            },
+            Message::PressZ => match self.screen {
+                Screen::AccountSettings | Screen::EmailEveryone | Screen::Game => self.draw(),
+                Screen::GameNew
+                | Screen::GameNewFrozen
+                | Screen::GameReview
+                | Screen::Login
+                | Screen::Users => {}
+                Screen::Games => self.join_game_press(25),
             },
             Message::Press1 => match self.screen {
                 Screen::AccountSettings | Screen::Login => self.toggle_show_password(),
@@ -3406,6 +3505,15 @@ enum Message {
     PressO,
     PressP,
     PressQ,
+    PressR,
+    PressS,
+    PressT,
+    PressU,
+    PressV,
+    PressW,
+    PressX,
+    PressY,
+    PressZ,
     Press1,
     Press2,
     Press3,
