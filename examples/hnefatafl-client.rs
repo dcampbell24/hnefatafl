@@ -45,7 +45,7 @@ use iced::window::settings::PlatformSpecific;
 use iced::{
     Color, Element, Event, Font, Pixels, Subscription, Task,
     alignment::{Horizontal, Vertical},
-    event,
+    color, event,
     futures::Stream,
     keyboard::{self, Key, key::Named},
     stream,
@@ -91,7 +91,7 @@ const ALPHABET: [char; 26] = [
     't', 'u', 'v', 'w', 'x', 'y', 'z',
 ];
 
-const BLUE: Color = Color::from_rgb(0.149_02, 0.545_098, 0.823_529);
+const BLUE: Color = color!(38, 139, 210);
 const BOARD_LETTERS_LOWERCASE: [char; 13] = [
     'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
 ];
