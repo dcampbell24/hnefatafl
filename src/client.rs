@@ -18,6 +18,7 @@ pub enum Theme {
     #[default]
     Dark,
     Light,
+    Tol,
 }
 
 #[derive(Clone, Debug)]
