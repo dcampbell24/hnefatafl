@@ -49,6 +49,7 @@ use iced::{
     futures::Stream,
     keyboard::{self, Key, key::Named},
     stream,
+    theme::Palette,
     widget::{
         self, Column, Container, Row, Scrollable, button, checkbox, column, container,
         operation::{focus_next, focus_previous},
@@ -85,6 +86,18 @@ blue      #268bd2  4/4 blue      33 #0087ff 55 -10 -45  38 139 210 205  82  82
 cyan      #2aa198  6/6 cyan      37 #00afaf 60 -35 -05  42 161 152 175  74  63
 green     #859900  2/2 green     64 #5f8700 60 -20  65 133 153   0  68 100  60
 */
+
+/// The [Tol] variant of a [`Palette`]. A palette for the color blind
+///
+/// [Tol]: https://www.nceas.ucsb.edu/sites/default/files/2022-06/Colorblind%20Safe%20Color%20Schemes.pdf
+pub const TOL: Palette = Palette {
+    background: color!(46, 37, 133), // Background
+    text: color!(221, 221, 221),     // Foreground
+    primary: color!(148, 203, 236),  // Blue
+    success: color!(51, 117, 56),    // Green
+    warning: color!(220, 205, 125),  // Yellow
+    danger: color!(194, 106, 119),   // Red
+};
 
 const ALPHABET: [char; 26] = [
     'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
@@ -1365,6 +1378,7 @@ impl<'a> Client {
         match self.theme {
             Theme::Dark => iced::Theme::SolarizedDark,
             Theme::Light => iced::Theme::SolarizedLight,
+            Theme::Tol => iced::Theme::custom("Tol", TOL),
         }
     }
 
@@ -1552,10 +1566,10 @@ impl<'a> Client {
                 | Screen::EmailEveryone
                 | Screen::GameNew
                 | Screen::GameNewFrozen
-                | Screen::Login
                 | Screen::Users => {}
                 Screen::Game | Screen::GameReview => self.press_letter('a'),
                 Screen::Games => self.join_game_press(0),
+                Screen::Login => self.change_theme(Theme::Tol),
             },
             Message::PressB => match self.screen {
                 Screen::AccountSettings
@@ -3250,13 +3264,24 @@ impl<'a> Client {
                         button(text!("{} (7)", self.strings["Dark"].as_str()))
                             .on_press(Message::ChangeTheme(Theme::Dark)),
                         button(text!("{} (8)", self.strings["Light"].as_str())),
+                        button(text("Tol (a)")).on_press(Message::ChangeTheme(Theme::Tol)),
                     ]
                     .spacing(SPACING)
-                } else {
+                } else if self.theme == Theme::Dark {
                     row![
                         button(text!("{} (7)", self.strings["Dark"].as_str())),
                         button(text!("{} (8)", self.strings["Light"].as_str()))
                             .on_press(Message::ChangeTheme(Theme::Light)),
+                        button(text("Tol (a)")).on_press(Message::ChangeTheme(Theme::Tol)),
+                    ]
+                    .spacing(SPACING)
+                } else {
+                    row![
+                        button(text!("{} (7)", self.strings["Dark"].as_str()))
+                            .on_press(Message::ChangeTheme(Theme::Dark)),
+                        button(text!("{} (8)", self.strings["Light"].as_str()))
+                            .on_press(Message::ChangeTheme(Theme::Light)),
+                        button(text("Tol (a)")),
                     ]
                     .spacing(SPACING)
                 };
