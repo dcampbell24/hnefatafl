@@ -513,7 +513,6 @@ impl<'a> Client {
         self.archived_game_selected = None;
     }
 
-    #[allow(clippy::cast_possible_truncation)]
     #[must_use]
     fn board(&self) -> Row<'_, Message> {
         let (board, heat_map) = self.board_and_heatmap();
