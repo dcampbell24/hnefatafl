@@ -3417,6 +3417,10 @@ impl<'a> Client {
                     "You must hold down the control (Ctrl) or command (⌘) key when pressing a lettered or numbered hotkey."
                 ));
 
+                let help_text_3 = text(t!(
+                    "You can play on the board by pressing control (Ctrl) or command (⌘) and a letter then a number or vice versa."
+                ));
+
                 column![
                     username,
                     password,
@@ -3435,6 +3439,7 @@ impl<'a> Client {
                     buttons_2,
                     help_text,
                     help_text_2,
+                    help_text_3,
                     error,
                     error_persistent
                 ]
