@@ -879,17 +879,16 @@ impl<'a> Client {
     }
 
     fn join_game(&self, game: &ServerGameLight) -> JoinGame {
-        if game.challenge_accepted
-            && !(Some(&self.username) == game.attacker.as_ref()
-                || Some(&self.username) == game.defender.as_ref())
-        {
-            JoinGame::Watch
+        if game.challenge_accepted {
+            if Some(&self.username) == game.attacker.as_ref()
+                || Some(&self.username) == game.defender.as_ref()
+            {
+                JoinGame::Resume
+            } else {
+                JoinGame::Watch
+            }
         } else if game.attacker.is_none() || game.defender.is_none() {
             JoinGame::Join
-        } else if game.attacker.as_ref() == Some(&self.username)
-            || game.defender.as_ref() == Some(&self.username)
-        {
-            JoinGame::Resume
         } else {
             JoinGame::None
         }
@@ -906,8 +905,6 @@ impl<'a> Client {
         } else {
             Some(Role::Attacker)
         };
-
-        self.screen = Screen::GameNewFrozen;
     }
 
     fn resume(&mut self, id: u128) {
@@ -1559,6 +1556,7 @@ impl<'a> Client {
                     }
                     self.spectators = Vec::new();
                 }
+                // Fixme!
                 Screen::GameNewFrozen => {
                     self.send(format!("leave_game {}\n", self.game_id));
                     self.screen = Screen::Games;
