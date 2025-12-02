@@ -24,7 +24,7 @@ use hnefatafl_copenhagen::{
     ai::GenerateMove,
     board::{Board, BoardSize},
     characters::Characters,
-    client::{Size, Theme, User},
+    client::{Move, Size, Theme, User},
     draw::Draw,
     game::{Game, LegalMoves, TimeUnix},
     glicko::{CONFIDENCE_INTERVAL_95, Rating},
@@ -514,7 +514,6 @@ impl<'a> Client {
     }
 
     #[allow(clippy::cast_possible_truncation)]
-    #[allow(clippy::too_many_lines)]
     #[must_use]
     fn board(&self) -> Row<'_, Message> {
         let (board, heat_map) = self.board_and_heatmap();
@@ -600,19 +599,11 @@ impl<'a> Client {
                     .width(d.board_dimension)
                     .height(d.board_dimension);
 
-                if let Some(legal_moves) = &possible_moves {
-                    if let Some(vertex_from) = self.play_from.as_ref() {
-                        if let Some(vertexes) = legal_moves.moves.get(vertex_from) {
-                            if vertex == *vertex_from {
-                                button = button.on_press(Message::PlayMoveRevert);
-                            }
-                            if vertexes.contains(&vertex) {
-                                button = button.on_press(Message::PlayMoveTo(vertex));
-                            }
-                        }
-                    } else if legal_moves.moves.contains_key(&vertex) {
-                        button = button.on_press(Message::PlayMoveFrom(vertex));
-                    }
+                match self.board_move(&vertex, possible_moves.as_ref()) {
+                    Move::From => button = button.on_press(Message::PlayMoveFrom(vertex)),
+                    Move::To => button = button.on_press(Message::PlayMoveTo(vertex)),
+                    Move::Revert => button = button.on_press(Message::PlayMoveRevert),
+                    Move::None => {}
                 }
 
                 column = column.push(button);
@@ -631,6 +622,30 @@ impl<'a> Client {
         }
 
         game_display
+    }
+
+    fn board_move(&self, vertex: &Vertex, possible_moves: Option<&LegalMoves>) -> Move {
+        if let Some(legal_moves) = possible_moves {
+            if let Some(vertex_from) = self.play_from.as_ref() {
+                if let Some(vertexes) = legal_moves.moves.get(vertex_from) {
+                    if vertex == vertex_from {
+                        Move::Revert
+                    } else if vertexes.contains(vertex) {
+                        Move::To
+                    } else {
+                        Move::None
+                    }
+                } else {
+                    Move::None
+                }
+            } else if legal_moves.moves.contains_key(vertex) {
+                Move::From
+            } else {
+                Move::None
+            }
+        } else {
+            Move::None
+        }
     }
 
     #[allow(clippy::type_complexity)]
