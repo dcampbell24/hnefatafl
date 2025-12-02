@@ -496,6 +496,22 @@ You must hold down the control (Ctrl) or command (⌘) key when pressing a lette
   is-RU: ᚦᚤ ᚡᛂᚱᚧᚢᚱ ᛆᚧ ᚼᛆᛚᛑᛆ ᚿᛁᚧᚱᛁ ᚴᛐᚱᛚ (Ctrl) ᛂᚧᛆ ᚴᚮᛘᛘᛆᚿᛑ (⌘) ᛐᛆᚴᚴᛆᚿᚢᛘ ᚦᛂᚵᛆᚱ ᚦᚤ ᛨᛐᛁᚱ ᚨ ᚠᛚᛨᛐᛁᛚᛣᚴᛚᛆ ᛘᛂᚧ ᛒᛟᚴᛋᛐᚯᚠᚢᛘ ᛂᚧᛆ ᛐᚯᛚᚢᛘ.
   sv-SE: Du måste hålla ner Ctrl-tangenten (Ctrl) eller kommandotangenten (⌘) när du trycker på en snabbtangent med bokstäver eller siffror.
 
+You can play on the board by pressing control (Ctrl) or command (⌘) and a letter then a number or vice versa.:
+  en-US: You can play on the board by pressing control (Ctrl) or command (⌘) and a letter then a number or vice versa.
+  zh-CN: 您可以通过按下控制键（Ctrl）或命令键（⌘）以及一个字母和一个数字（或反过来）来在棋盘上进行操作。
+  es: Puedes jugar en el tablero pulsando la tecla Control (Ctrl) o Comando (⌘) seguida de una letra y luego un número, o viceversa.
+  ar: يمكنك اللعب على اللوحة بالضغط على مفتاح التحكم (Ctrl) أو مفتاح الأوامر (⌘) وحرف ثم رقم أو العكس.
+  id: Anda dapat bermain di papan permainan dengan menekan tombol kontrol (Ctrl) atau perintah (⌘) dan sebuah huruf lalu sebuah angka atau sebaliknya.
+  pt-BR: Você pode jogar no tabuleiro pressionando a tecla Control (Ctrl) ou Command (⌘) e uma letra seguida de um número, ou vice-versa.
+  pt-PT: Pode jogar no tabuleiro premindo a tecla Control (Ctrl) ou Command (⌘) e uma letra seguida de um número, ou vice-versa.
+  fr: Vous pouvez jouer sur le plateau en appuyant sur la touche de contrôle (Ctrl) ou de commande (⌘) suivie d'une lettre puis d'un chiffre, ou inversement.
+  ja: ボード上で操作するには、コントロールキー（Ctrl）またはコマンドキー（⌘）を押しながら、文字と数字を順番に入力するか、あるいはその逆の順番で入力します。
+  ru: Вы можете играть на доске, нажимая клавишу Control (Ctrl) или Command (⌘), а затем букву и цифру или наоборот.
+  de: Sie können auf dem Spielbrett spielen, indem Sie die Steuerungstaste (Strg) oder die Befehlstaste (⌘) und anschließend einen Buchstaben und eine Zahl drücken oder umgekehrt.
+  is-IS: Þú getur spilað á borðinu með því að ýta á Ctrl eða Command (⌘) og staf og svo tölu eða öfugt.
+  is-RU: ᚦᚤ ᚵᛂᛐᚢᚱ ᛋᛔᛁᛚᛆᚧ ᚨ ᛒᚮᚱᚧᛁᚿᚢ ᛘᛂᚧ ᚦᚡᛇ ᛆᚧ ᛨᛐᛆ ᚨ ᚴᛐᚱᛚ (Ctrl) ᛂᚧᛆ ᚴᚮᛘᛘᛆᚿᛑ (⌘) ᚮᚵ ᛋᛐᛆᚠ ᚮᚵ ᛋᚡᚮ ᛐᚯᛚᚢ ᛂᚧᛆ ᚯᚠᚢᚵᛐ.
+  sv-SE: Du kan spela på spelplanen genom att trycka på Ctrl (Ctrl) eller Command (⌘) och en bokstav sedan en siffra eller vice versa.
+
 Quit:
   en-US: Quit
   zh-CN: 辞职
