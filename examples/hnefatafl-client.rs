@@ -1955,16 +1955,29 @@ impl<'a> Client {
                 Screen::Games => self.my_games_only(),
                 Screen::GameNew => self.game_settings.role_selected = Some(Role::Defender),
                 Screen::Game | Screen::GameReview => {
-                    if !self.press_numbers[0] && !self.press_numbers[1] && !self.press_numbers[11] {
-                        self.clear_numbers_except(2);
-                        self.press_numbers[1] = true;
-                    } else if self.press_numbers[1] {
-                        self.press_numbers[1] = false;
-                    } else if self.press_numbers[11] {
-                        self.press_numbers[11] = false;
-                    } else {
-                        self.press_numbers[0] = false;
-                        self.press_numbers[11] = true;
+                    let (board, _) = self.board_and_heatmap();
+                    match board.size() {
+                        BoardSize::_11 => {
+                            self.clear_numbers_except(2);
+                            self.press_numbers[1] = !self.press_numbers[1];
+                            self.press_letter_and_number();
+                        }
+                        BoardSize::_13 => {
+                            if !self.press_numbers[0]
+                                && !self.press_numbers[1]
+                                && !self.press_numbers[11]
+                            {
+                                self.clear_numbers_except(2);
+                                self.press_numbers[1] = true;
+                            } else if self.press_numbers[1] {
+                                self.press_numbers[1] = false;
+                            } else if self.press_numbers[11] {
+                                self.press_numbers[11] = false;
+                            } else {
+                                self.press_numbers[0] = false;
+                                self.press_numbers[11] = true;
+                            }
+                        }
                     }
 
                     self.press_letter_and_number();
@@ -1978,16 +1991,29 @@ impl<'a> Client {
                 Screen::GameNew => self.game_settings.board_size = BoardSize::_11,
                 Screen::Login => self.my_games_only(),
                 Screen::Game | Screen::GameReview => {
-                    if !self.press_numbers[0] && !self.press_numbers[2] && !self.press_numbers[12] {
-                        self.clear_numbers_except(3);
-                        self.press_numbers[2] = true;
-                    } else if self.press_numbers[2] {
-                        self.press_numbers[2] = false;
-                    } else if self.press_numbers[12] {
-                        self.press_numbers[12] = false;
-                    } else {
-                        self.press_numbers[0] = false;
-                        self.press_numbers[12] = true;
+                    let (board, _) = self.board_and_heatmap();
+                    match board.size() {
+                        BoardSize::_11 => {
+                            self.clear_numbers_except(3);
+                            self.press_numbers[2] = !self.press_numbers[2];
+                            self.press_letter_and_number();
+                        }
+                        BoardSize::_13 => {
+                            if !self.press_numbers[0]
+                                && !self.press_numbers[2]
+                                && !self.press_numbers[12]
+                            {
+                                self.clear_numbers_except(3);
+                                self.press_numbers[2] = true;
+                            } else if self.press_numbers[2] {
+                                self.press_numbers[2] = false;
+                            } else if self.press_numbers[12] {
+                                self.press_numbers[12] = false;
+                            } else {
+                                self.press_numbers[0] = false;
+                                self.press_numbers[12] = true;
+                            }
+                        }
                     }
 
                     self.press_letter_and_number();
