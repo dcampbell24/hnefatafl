@@ -293,7 +293,6 @@ fn init_client() -> Client {
     for ch in BOARD_LETTERS_LOWERCASE {
         letters.insert(ch, false);
     }
-    client.press_letters = letters;
 
     client
 }
@@ -442,7 +441,7 @@ struct Client {
     #[serde(skip)]
     play_to_previous: Option<Vertex>,
     #[serde(skip)]
-    press_letters: HashMap<char, bool>,
+    press_letters: HashSet<char>,
     #[serde(skip)]
     press_numbers: [bool; 13],
     #[serde(skip)]
@@ -685,12 +684,15 @@ impl<'a> Client {
     fn clear_letters_except(&mut self, letter: char) {
         for l in BOARD_LETTERS_LOWERCASE {
             if l != letter {
-                self.press_letters.insert(l, false);
+                self.press_letters.remove(&l);
             }
         }
     }
 
-    fn clear_numbers_except(&mut self, number: usize, board_size: usize) {
+    fn clear_numbers_except(&mut self, number: usize) {
+        let (board, _) = self.board_and_heatmap();
+        let board_size = board.size().into();
+
         for i in 0..board_size {
             let i = board_size - i;
             if i != number {
@@ -809,8 +811,55 @@ impl<'a> Client {
 
     fn press_letter(&mut self, letter: char) {
         self.clear_letters_except(letter);
-        self.press_letters
-            .insert(letter, !self.press_letters[&letter]);
+        self.press_letters.insert(letter);
+    }
+
+    fn press_letter_and_number(&mut self) {
+        let mut number = None;
+        let mut letter = None;
+
+        for i in 0..13 {
+            if self.press_numbers[i] {
+                number = Some(i);
+                break;
+            }
+        }
+        for (i, l) in BOARD_LETTERS_LOWERCASE.iter().enumerate() {
+            if self.press_letters.contains(l) {
+                letter = Some(i);
+                break;
+            }
+        }
+
+        let size = if let Some(game) = self.game.as_ref() {
+            Some(game.board.size())
+        } else {
+            self.archived_game_handle
+                .as_ref()
+                .map(|game| game.game.board_size)
+        };
+
+        if let (Some(size), Some(number), Some(letter)) = (size, number, letter) {
+            let board_usize: usize = size.into();
+            let vertex = Vertex {
+                size,
+                x: letter,
+                y: board_usize - number - 1,
+            };
+            let possible_moves = self.possible_moves();
+
+            match self.board_move(&vertex, possible_moves.as_ref()) {
+                Move::From => self.play_from = Some(vertex),
+                Move::To => self.play_to(vertex),
+                Move::Revert => self.play_from = None,
+                Move::None => {}
+            }
+
+            for i in 0..13 {
+                self.press_numbers[i] = false;
+            }
+            self.press_letters.clear();
+        }
     }
 
     fn join_game_press(&mut self, i: usize) {
@@ -894,6 +943,46 @@ impl<'a> Client {
         self.text_input.clear();
         self.archived_game_reset();
         handle_error(self.save_client_ron());
+    }
+
+    fn play_to(&mut self, to: Vertex) {
+        let from = self
+            .play_from
+            .expect("you have to have a from to get to to");
+
+        let mut turn = Role::Roleless;
+        if let Some(game) = &self.game {
+            turn = game.turn;
+        }
+
+        self.handle_play(None, &from.to_string(), &to.to_string());
+
+        if self.archived_game_handle.is_none() {
+            self.send(format!("game {} play {} {from} {to}\n", self.game_id, turn));
+
+            let game = self.game.as_ref().expect("you should have a game by now");
+            if game.status == Status::Ongoing {
+                match game.turn {
+                    Role::Attacker => {
+                        if let TimeSettings::Timed(time) = &mut self.time_defender {
+                            time.milliseconds_left += time.add_seconds * 1_000;
+                        }
+                    }
+                    Role::Roleless => {}
+                    Role::Defender => {
+                        if let TimeSettings::Timed(time) = &mut self.time_attacker {
+                            time.milliseconds_left += time.add_seconds * 1_000;
+                        }
+                    }
+                }
+            }
+
+            self.my_turn = false;
+        }
+
+        self.play_from_previous = self.play_from;
+        self.play_to_previous = Some(to);
+        self.play_from = None;
     }
 
     fn possible_moves(&self) -> Option<LegalMoves> {
@@ -1518,45 +1607,7 @@ impl<'a> Client {
                 self.send(format!("draw {} {draw}\n", self.game_id));
             }
             Message::PlayMoveFrom(vertex) => self.play_from = Some(vertex),
-            Message::PlayMoveTo(to) => {
-                let from = self
-                    .play_from
-                    .expect("you have to have a from to get to to");
-
-                let mut turn = Role::Roleless;
-                if let Some(game) = &self.game {
-                    turn = game.turn;
-                }
-
-                self.handle_play(None, &from.to_string(), &to.to_string());
-
-                if self.archived_game_handle.is_none() {
-                    self.send(format!("game {} play {} {from} {to}\n", self.game_id, turn));
-
-                    let game = self.game.as_ref().expect("you should have a game by now");
-                    if game.status == Status::Ongoing {
-                        match game.turn {
-                            Role::Attacker => {
-                                if let TimeSettings::Timed(time) = &mut self.time_defender {
-                                    time.milliseconds_left += time.add_seconds * 1_000;
-                                }
-                            }
-                            Role::Roleless => {}
-                            Role::Defender => {
-                                if let TimeSettings::Timed(time) = &mut self.time_attacker {
-                                    time.milliseconds_left += time.add_seconds * 1_000;
-                                }
-                            }
-                        }
-                    }
-
-                    self.my_turn = false;
-                }
-
-                self.play_from_previous = self.play_from;
-                self.play_to_previous = Some(to);
-                self.play_from = None;
-            }
+            Message::PlayMoveTo(to) => self.play_to(to),
             Message::PlayMoveRevert => self.play_from = None,
             Message::PlayResign => self.resign(),
             Message::PressEnter => match self.screen {
@@ -1580,7 +1631,10 @@ impl<'a> Client {
                 | Screen::GameNew
                 | Screen::GameNewFrozen
                 | Screen::Users => {}
-                Screen::Game | Screen::GameReview => self.press_letter('a'),
+                Screen::Game | Screen::GameReview => {
+                    self.press_letter('a');
+                    self.press_letter_and_number();
+                }
                 Screen::Games => self.join_game_press(0),
                 Screen::Login => self.change_theme(Theme::Tol),
             },
@@ -1591,7 +1645,10 @@ impl<'a> Client {
                 | Screen::GameNewFrozen
                 | Screen::Login
                 | Screen::Users => {}
-                Screen::Game | Screen::GameReview => self.press_letter('b'),
+                Screen::Game | Screen::GameReview => {
+                    self.press_letter('b');
+                    self.press_letter_and_number();
+                }
                 Screen::Games => self.join_game_press(1),
             },
             Message::PressC => match self.screen {
@@ -1601,7 +1658,10 @@ impl<'a> Client {
                 | Screen::GameNewFrozen
                 | Screen::Login
                 | Screen::Users => {}
-                Screen::Game | Screen::GameReview => self.press_letter('c'),
+                Screen::Game | Screen::GameReview => {
+                    self.press_letter('c');
+                    self.press_letter_and_number();
+                }
                 Screen::Games => self.join_game_press(2),
             },
             Message::PressD => match self.screen {
@@ -1611,7 +1671,10 @@ impl<'a> Client {
                 | Screen::GameNewFrozen
                 | Screen::Login
                 | Screen::Users => {}
-                Screen::Game | Screen::GameReview => self.press_letter('d'),
+                Screen::Game | Screen::GameReview => {
+                    self.press_letter('d');
+                    self.press_letter_and_number();
+                }
                 Screen::Games => self.join_game_press(3),
             },
             Message::PressE => match self.screen {
@@ -1621,7 +1684,10 @@ impl<'a> Client {
                 | Screen::GameNewFrozen
                 | Screen::Login
                 | Screen::Users => {}
-                Screen::Game | Screen::GameReview => self.press_letter('e'),
+                Screen::Game | Screen::GameReview => {
+                    self.press_letter('e');
+                    self.press_letter_and_number();
+                }
                 Screen::Games => self.join_game_press(4),
             },
             Message::PressF => match self.screen {
@@ -1631,7 +1697,10 @@ impl<'a> Client {
                 | Screen::GameNewFrozen
                 | Screen::Login
                 | Screen::Users => {}
-                Screen::Game | Screen::GameReview => self.press_letter('f'),
+                Screen::Game | Screen::GameReview => {
+                    self.press_letter('f');
+                    self.press_letter_and_number();
+                }
                 Screen::Games => self.join_game_press(5),
             },
             Message::PressG => match self.screen {
@@ -1641,7 +1710,10 @@ impl<'a> Client {
                 | Screen::GameNewFrozen
                 | Screen::Login
                 | Screen::Users => {}
-                Screen::Game | Screen::GameReview => self.press_letter('g'),
+                Screen::Game | Screen::GameReview => {
+                    self.press_letter('g');
+                    self.press_letter_and_number();
+                }
                 Screen::Games => self.join_game_press(6),
             },
             Message::PressH => match self.screen {
@@ -1651,7 +1723,10 @@ impl<'a> Client {
                 | Screen::GameNewFrozen
                 | Screen::Login
                 | Screen::Users => {}
-                Screen::Game | Screen::GameReview => self.press_letter('h'),
+                Screen::Game | Screen::GameReview => {
+                    self.press_letter('h');
+                    self.press_letter_and_number();
+                }
                 Screen::Games => self.join_game_press(7),
             },
             Message::PressI => match self.screen {
@@ -1661,7 +1736,10 @@ impl<'a> Client {
                 | Screen::GameNewFrozen
                 | Screen::Login
                 | Screen::Users => {}
-                Screen::Game | Screen::GameReview => self.press_letter('i'),
+                Screen::Game | Screen::GameReview => {
+                    self.press_letter('i');
+                    self.press_letter_and_number();
+                }
                 Screen::Games => self.join_game_press(8),
             },
             Message::PressJ => match self.screen {
@@ -1671,7 +1749,10 @@ impl<'a> Client {
                 | Screen::GameNewFrozen
                 | Screen::Login
                 | Screen::Users => {}
-                Screen::Game | Screen::GameReview => self.press_letter('j'),
+                Screen::Game | Screen::GameReview => {
+                    self.press_letter('j');
+                    self.press_letter_and_number();
+                }
                 Screen::Games => self.join_game_press(9),
             },
             Message::PressK => match self.screen {
@@ -1681,7 +1762,10 @@ impl<'a> Client {
                 | Screen::GameNewFrozen
                 | Screen::Login
                 | Screen::Users => {}
-                Screen::Game | Screen::GameReview => self.press_letter('k'),
+                Screen::Game | Screen::GameReview => {
+                    self.press_letter('k');
+                    self.press_letter_and_number();
+                }
                 Screen::Games => self.join_game_press(10),
             },
             Message::PressL => match self.screen {
@@ -1691,7 +1775,10 @@ impl<'a> Client {
                 | Screen::GameNewFrozen
                 | Screen::Login
                 | Screen::Users => {}
-                Screen::Game | Screen::GameReview => self.press_letter('l'),
+                Screen::Game | Screen::GameReview => {
+                    self.press_letter('l');
+                    self.press_letter_and_number();
+                }
                 Screen::Games => self.join_game_press(11),
             },
             Message::PressM => match self.screen {
@@ -1701,7 +1788,10 @@ impl<'a> Client {
                 | Screen::GameNewFrozen
                 | Screen::Login
                 | Screen::Users => {}
-                Screen::Game | Screen::GameReview => self.press_letter('m'),
+                Screen::Game | Screen::GameReview => {
+                    self.press_letter('m');
+                    self.press_letter_and_number();
+                }
                 Screen::Games => self.join_game_press(12),
             },
             Message::PressN => match self.screen {
@@ -1843,20 +1933,17 @@ impl<'a> Client {
                         || self.press_numbers[11]
                         || self.press_numbers[12])
                     {
-                        let (board, _) = self.board_and_heatmap();
-                        self.clear_numbers_except(0, board.size().into());
-
+                        self.clear_numbers_except(0);
                         self.press_numbers[0] = true;
                     } else if self.press_numbers[0] {
-                        let (board, _) = self.board_and_heatmap();
-                        self.clear_numbers_except(10, board.size().into());
-
+                        self.clear_numbers_except(10);
                         self.press_numbers[10] = true;
                     } else {
-                        let (board, _) = self.board_and_heatmap();
-                        self.clear_numbers_except(11, board.size().into());
+                        self.clear_numbers_except(11);
                         self.press_numbers[10] = false;
                     }
+
+                    self.press_letter_and_number();
                 }
             },
             Message::Press2 => match self.screen {
@@ -1868,9 +1955,7 @@ impl<'a> Client {
                 Screen::GameNew => self.game_settings.role_selected = Some(Role::Defender),
                 Screen::Game | Screen::GameReview => {
                     if !self.press_numbers[0] && !self.press_numbers[1] && !self.press_numbers[11] {
-                        let (board, _) = self.board_and_heatmap();
-                        self.clear_numbers_except(2, board.size().into());
-
+                        self.clear_numbers_except(2);
                         self.press_numbers[1] = true;
                     } else if self.press_numbers[1] {
                         self.press_numbers[1] = false;
@@ -1880,6 +1965,8 @@ impl<'a> Client {
                         self.press_numbers[0] = false;
                         self.press_numbers[11] = true;
                     }
+
+                    self.press_letter_and_number();
                 }
                 Screen::Login => self.toggle_save_password(),
             },
@@ -1891,9 +1978,7 @@ impl<'a> Client {
                 Screen::Login => self.my_games_only(),
                 Screen::Game | Screen::GameReview => {
                     if !self.press_numbers[0] && !self.press_numbers[2] && !self.press_numbers[12] {
-                        let (board, _) = self.board_and_heatmap();
-                        self.clear_numbers_except(3, board.size().into());
-
+                        self.clear_numbers_except(3);
                         self.press_numbers[2] = true;
                     } else if self.press_numbers[2] {
                         self.press_numbers[2] = false;
@@ -1903,6 +1988,8 @@ impl<'a> Client {
                         self.press_numbers[0] = false;
                         self.press_numbers[12] = true;
                     }
+
+                    self.press_letter_and_number();
                 }
             },
             Message::Press4 => match self.screen {
@@ -1912,10 +1999,9 @@ impl<'a> Client {
                 Screen::GameNew => self.game_settings.board_size = BoardSize::_13,
                 Screen::Login => self.create_account(),
                 Screen::Game | Screen::GameReview => {
-                    let (board, _) = self.board_and_heatmap();
-                    self.clear_numbers_except(4, board.size().into());
-
+                    self.clear_numbers_except(4);
                     self.press_numbers[3] = !self.press_numbers[3];
+                    self.press_letter_and_number();
                 }
             },
             Message::Press5 => match self.screen {
@@ -1927,10 +2013,9 @@ impl<'a> Client {
                 Screen::GameNew => self.game_settings.time = TimeEnum::Rapid,
                 Screen::Login => self.reset_password(),
                 Screen::Game | Screen::GameReview => {
-                    let (board, _) = self.board_and_heatmap();
-                    self.clear_numbers_except(5, board.size().into());
-
+                    self.clear_numbers_except(5);
                     self.press_numbers[4] = !self.press_numbers[4];
+                    self.press_letter_and_number();
                 }
             },
             Message::Press6 => match self.screen {
@@ -1943,10 +2028,9 @@ impl<'a> Client {
                 Screen::Login => self.review_game(),
                 Screen::Game | Screen::GameReview => {
                     if self.screen == Screen::Game || self.screen == Screen::GameReview {
-                        let (board, _) = self.board_and_heatmap();
-                        self.clear_numbers_except(6, board.size().into());
-
+                        self.clear_numbers_except(6);
                         self.press_numbers[5] = !self.press_numbers[5];
+                        self.press_letter_and_number();
                     }
                 }
             },
@@ -1959,10 +2043,9 @@ impl<'a> Client {
                 Screen::GameNew => self.game_settings.time = TimeEnum::Long,
                 Screen::Login => self.change_theme(Theme::Dark),
                 Screen::Game | Screen::GameReview => {
-                    let (board, _) = self.board_and_heatmap();
-                    self.clear_numbers_except(7, board.size().into());
-
+                    self.clear_numbers_except(7);
                     self.press_numbers[6] = !self.press_numbers[6];
+                    self.press_letter_and_number();
                 }
             },
             Message::Press8 => match self.screen {
@@ -1974,10 +2057,9 @@ impl<'a> Client {
                 | Screen::Users => {}
                 Screen::Login => self.change_theme(Theme::Light),
                 Screen::Game | Screen::GameReview => {
-                    let (board, _) = self.board_and_heatmap();
-                    self.clear_numbers_except(8, board.size().into());
-
+                    self.clear_numbers_except(8);
                     self.press_numbers[7] = !self.press_numbers[7];
+                    self.press_letter_and_number();
                 }
             },
             Message::Press9 => match self.screen {
@@ -1989,10 +2071,9 @@ impl<'a> Client {
                 | Screen::Users => {}
                 Screen::Login => open_url("https://discord.gg/h56CAHEBXd"),
                 Screen::Game | Screen::GameReview => {
-                    let (board, _) = self.board_and_heatmap();
-                    self.clear_numbers_except(9, board.size().into());
-
+                    self.clear_numbers_except(9);
                     self.press_numbers[8] = !self.press_numbers[8];
+                    self.press_letter_and_number();
                 }
             },
             Message::Press0 => match self.screen {
@@ -2004,10 +2085,9 @@ impl<'a> Client {
                 Screen::GameNew => self.game_settings.rated = !self.game_settings.rated,
                 Screen::Login => open_url("https://hnefatafl.org"),
                 Screen::Game | Screen::GameReview => {
-                    let (board, _) = self.board_and_heatmap();
-                    self.clear_numbers_except(10, board.size().into());
-
+                    self.clear_numbers_except(10);
                     self.press_numbers[9] = !self.press_numbers[9];
+                    self.press_letter_and_number();
                 }
             },
             Message::SoundMuted(_muted) => self.sound_muted(),
@@ -3471,7 +3551,7 @@ impl<'a> Client {
         letter_size: u32,
     ) -> Column<'a, Message> {
         let mut text = text(letter).size(letter_size);
-        if self.press_letters[&letter.to_ascii_lowercase()] {
+        if self.press_letters.contains(&letter.to_ascii_lowercase()) {
             text = text.color(BLUE);
         }
 
