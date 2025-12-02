@@ -61,14 +61,16 @@ pub enum TimeEnum {
     Long,
     #[default]
     Rapid,
+    VeryLong,
 }
 
 impl fmt::Display for TimeEnum {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Classical => write!(f, "00:30:00 | 00:00:20"),
-            Self::Long => write!(f, "3 12:00:00 | 4:00:00"),
+            Self::Long => write!(f, "3 00:00:00 | 6:00:00"),
             Self::Rapid => write!(f, "00:15:00 | 00:00:10 "),
+            Self::VeryLong => write!(f, "7 12:00:00 | 15:00:00 "),
         }
     }
 }

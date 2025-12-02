@@ -787,7 +787,8 @@ impl<'a> Client {
                 let (milliseconds_left, add_seconds) = match self.game_settings.time {
                     TimeEnum::Classical => (1_000 * 60 * 30, 20),
                     TimeEnum::Rapid => (1_000 * 60 * 15, 10),
-                    TimeEnum::Long => (1_000 * 60 * 60 * 12 * 7, 60 * 60 * 4),
+                    TimeEnum::Long => (1_000 * 60 * 60 * 24 * 3, 60 * 60 * 6),
+                    TimeEnum::VeryLong => (1_000 * 60 * 60 * 12 * 15, 60 * 60 * 15),
                 };
 
                 self.game_settings.timed = TimeSettings::Timed(Time {
@@ -2052,9 +2053,9 @@ impl<'a> Client {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::Games
-                | Screen::GameNew
                 | Screen::GameNewFrozen
                 | Screen::Users => {}
+                Screen::GameNew => self.game_settings.time = TimeEnum::VeryLong,
                 Screen::Login => self.change_theme(Theme::Light),
                 Screen::Game | Screen::GameReview => {
                     self.clear_numbers_except(8);
@@ -3157,7 +3158,14 @@ impl<'a> Client {
                     Message::Time,
                 );
 
-                let row_3 = row![text!("{}:", t!("time")), rapid, classical, long,]
+                let very_long = radio(
+                    format!("{} (8)", TimeEnum::Long),
+                    TimeEnum::VeryLong,
+                    Some(self.game_settings.time),
+                    Message::Time,
+                );
+
+                let row_3 = row![text!("{}:", t!("time")), rapid, classical, long, very_long]
                     .padding(PADDING)
                     .spacing(SPACING);
 
