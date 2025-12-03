@@ -887,7 +887,10 @@ impl<'a> Client {
             } else {
                 JoinGame::Watch
             }
-        } else if game.attacker.is_none() || game.defender.is_none() {
+        } else if (game.attacker.is_none() || game.defender.is_none())
+            && !(Some(&self.username) == game.attacker.as_ref()
+                || Some(&self.username) == game.defender.as_ref())
+        {
             JoinGame::Join
         } else {
             JoinGame::None
@@ -1556,7 +1559,6 @@ impl<'a> Client {
                     }
                     self.spectators = Vec::new();
                 }
-                // Fixme!
                 Screen::GameNewFrozen => {
                     self.send(format!("leave_game {}\n", self.game_id));
                     self.screen = Screen::Games;
@@ -3202,19 +3204,13 @@ impl<'a> Client {
                     game_display = game_display.push(text(game.to_string()));
                 }
 
-                let mut buttons = if self.challenger {
-                    row![
-                        button(text!("{} (Esc)", self.strings["Leave"].as_str()))
-                            .on_press(Message::Leave)
-                    ]
-                } else if self.buttons_live() {
+                let mut buttons = if self.buttons_live() {
                     row![
                         button(text!("{} (Enter)", self.strings["Accept"].as_str()))
                             .on_press(Message::GameAccept),
                         button(text!("{} (1)", self.strings["Decline"].as_str()))
                             .on_press(Message::GameDecline),
                         button(text!("{} (Esc)", self.strings["Leave"].as_str()))
-                            .on_press(Message::Leave),
                     ]
                 } else {
                     row![
