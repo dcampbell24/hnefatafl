@@ -210,6 +210,7 @@ fn i18n_buttons() -> HashMap<String, String> {
     );
     strings.insert("Heat Map".to_string(), t!("Heat Map").to_string());
     strings.insert("Join Discord".to_string(), t!("Join Discord").to_string());
+    strings.insert("Cancel".to_string(), t!("Cancel").to_string());
 
     strings
 }
@@ -870,6 +871,7 @@ impl<'a> Client {
 
         if let Some(game) = server_games.get(i) {
             match self.join_game(game) {
+                JoinGame::Cancel => self.send(format!("decline_game {} switch\n", game.id)),
                 JoinGame::Join => self.join(game.id),
                 JoinGame::None => {}
                 JoinGame::Resume => self.resume(game.id),
@@ -887,6 +889,12 @@ impl<'a> Client {
             } else {
                 JoinGame::Watch
             }
+        } else if game.attacker.is_some()
+            && game.defender.is_some()
+            && (Some(&self.username) == game.attacker.as_ref()
+                || Some(&self.username) == game.defender.as_ref())
+        {
+            JoinGame::Cancel
         } else if (game.attacker.is_none() || game.defender.is_none())
             && !(Some(&self.username) == game.attacker.as_ref()
                 || Some(&self.username) == game.defender.as_ref())
@@ -1536,6 +1544,7 @@ impl<'a> Client {
             }
             Message::FocusNext => return focus_next(),
             Message::FocusPrevious => return focus_previous(),
+            Message::GameCancel(id) => self.send(format!("decline_game {id} switch\n")),
             Message::GameAccept => self.send(format!("join_game {}\n", self.game_id)),
             Message::GameDecline => self.send(format!("decline_game {}\n", self.game_id)),
             Message::GameJoin(id) => self.join(id),
@@ -2187,6 +2196,7 @@ impl<'a> Client {
                                 "archived_games"
                                 | "challenge_requested"
                                 | "change_password"
+                                | "decline_game"
                                 | "email_reset"
                                 | "game"
                                 | "request_draw",
@@ -2710,6 +2720,12 @@ impl<'a> Client {
             };
 
             match self.join_game(game) {
+                JoinGame::Cancel => {
+                    buttons_row = buttons_row.push(
+                        button(text!("{}{i}", self.strings["Cancel"].as_str()))
+                            .on_press(Message::GameCancel(id)),
+                    );
+                }
                 JoinGame::Join => {
                     buttons_row = buttons_row.push(
                         button(text!("{}{i}", self.strings["Join"].as_str()))
@@ -3626,6 +3642,7 @@ enum Message {
     FocusPrevious,
     FocusNext,
     GameAccept,
+    GameCancel(Id),
     GameDecline,
     GameJoin(Id),
     GameNew,
@@ -3777,6 +3794,7 @@ impl Dimensions {
 
 #[derive(Clone, Debug)]
 enum JoinGame {
+    Cancel,
     Join,
     None,
     Resume,

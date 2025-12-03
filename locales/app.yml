@@ -96,6 +96,22 @@ Attacker wins!:
   is-RU: ᛋᛟᚴᚿᛆᚱᛘᛆᚧᚢᚱᛁᚿᚿ ᚡᛁᚿᚿᚢᚱ!
   sv-SE: Anfallaren vinner!
 
+Cancel:
+  en-US: Cancel
+  zh-CN: 取消
+  es: Cancelar
+  ar: يلغي
+  id: Membatalkan
+  pt-BR: Cancelar
+  pt-PT: Cancelar
+  fr: Annuler
+  ja: キャンセル
+  ru: Отмена
+  de: Stornieren
+  is-IS: Hætta við
+  is-RU: ᚼᛅᛐᛐᛆ ᚡᛁᚧ
+  sv-SE: Avboka
+
 Change Password:
   en-US: Change Password
   zh-CN: 更改密码
