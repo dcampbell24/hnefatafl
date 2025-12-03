@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- hnefatafl-client: Allow the creation of multiple games at once.
+- hnefatafl-server-full: don't automatically quit all games when quitting.
 - hnefatafl-client: Don't show lag and spectators when reviewing a game.
 
 ### Fixed

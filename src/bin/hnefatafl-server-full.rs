@@ -1708,25 +1708,15 @@ impl Server {
         command: &str,
     ) -> Option<(mpsc::Sender<String>, bool, String)> {
         // The username is in the database and already logged in.
-        if let Some(account) = self.accounts.0.get_mut(username) {
-            for game in &account.pending_games {
-                if let Some(tx) = &self.tx {
-                    let _ok = tx.send((
-                        format!("{index_supplied} {username} leave_game {game}"),
-                        None,
-                    ));
-                }
-            }
+        if let Some(account) = self.accounts.0.get_mut(username)
+            && let Some(index_database) = account.logged_in
+            && index_database == index_supplied
+        {
+            info!("{index_supplied} {username} logged out");
+            account.logged_in = None;
+            self.clients.remove(&index_database);
 
-            if let Some(index_database) = account.logged_in
-                && index_database == index_supplied
-            {
-                info!("{index_supplied} {username} logged out");
-                account.logged_in = None;
-                self.clients.remove(&index_database);
-
-                return None;
-            }
+            return None;
         }
 
         self.clients

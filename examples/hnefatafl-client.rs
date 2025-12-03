@@ -501,7 +501,6 @@ enum Screen {
     Login,
     Game,
     GameNew,
-    GameNewFrozen,
     GameReview,
     Games,
     Users,
@@ -671,15 +670,36 @@ impl<'a> Client {
         }
     }
 
-    fn buttons_live(&self) -> bool {
-        if let Some(game) = self.games_light.0.get(&self.game_id)
-            && game.attacker.is_some()
-            && game.defender.is_some()
-        {
-            true
-        } else {
-            false
+    fn game_state(&self, game_id: u128) -> State {
+        if let Some(game) = self.games_light.0.get(&game_id) {
+            if game.attacker.is_none() || game.defender.is_none() {
+                if let Some(attacker) = &game.attacker
+                    && &self.username == attacker
+                {
+                    return State::CreatorOnly;
+                }
+
+                if let Some(defender) = &game.defender
+                    && &self.username == defender
+                {
+                    return State::CreatorOnly;
+                }
+            }
+
+            if let (Some(attacker), Some(defender)) = (&game.attacker, &game.defender)
+                && (&self.username == attacker || &self.username == defender)
+            {
+                if let Some(challenger) = &game.challenger.0 {
+                    if &self.username != challenger {
+                        return State::Creator;
+                    }
+                } else {
+                    return State::Challenger;
+                }
+            }
         }
+
+        State::Spectator
     }
 
     fn clear_letters_except(&mut self, letter: char) {
@@ -798,7 +818,7 @@ impl<'a> Client {
                 });
             }
 
-            self.screen = Screen::GameNewFrozen;
+            self.screen = Screen::Games;
 
             let board_size = self.game_settings.board_size;
 
@@ -873,7 +893,11 @@ impl<'a> Client {
             match self.join_game(game) {
                 JoinGame::Cancel => self.send(format!("decline_game {} switch\n", game.id)),
                 JoinGame::Join => self.join(game.id),
-                JoinGame::None => {}
+                JoinGame::None => {
+                    if self.game_state(game.id) == State::CreatorOnly {
+                        self.send(format!("leave_game {}\n", game.id));
+                    }
+                }
                 JoinGame::Resume => self.resume(game.id),
                 JoinGame::Watch => self.watch(game.id),
             }
@@ -1517,6 +1541,7 @@ impl<'a> Client {
             }
             Message::ArchivedGamesGet => self.send("archived_games\n".to_string()),
             Message::ArchivedGameSelected(game) => self.archived_game_selected = Some(game),
+            Message::CancelGame(id) => self.send(format!("leave_game {id}\n")),
             Message::ChangeTheme(theme) => self.change_theme(theme),
             Message::BoardSizeSelected(size) => self.game_settings.board_size = size,
             Message::ConnectedTo(address) => self.connected_to = address,
@@ -1545,8 +1570,8 @@ impl<'a> Client {
             Message::FocusNext => return focus_next(),
             Message::FocusPrevious => return focus_previous(),
             Message::GameCancel(id) => self.send(format!("decline_game {id} switch\n")),
-            Message::GameAccept => self.send(format!("join_game {}\n", self.game_id)),
-            Message::GameDecline => self.send(format!("decline_game {}\n", self.game_id)),
+            Message::GameAccept(id) => self.send(format!("join_game {id}\n")),
+            Message::GameDecline(id) => self.send(format!("decline_game {id}\n")),
             Message::GameJoin(id) => self.join(id),
             Message::GameWatch(id) => self.watch(id),
             Message::HeatMap(_display) => self.heat_map_display = !self.heat_map_display,
@@ -1567,10 +1592,6 @@ impl<'a> Client {
                         self.send(format!("leave_game {}\n", self.game_id));
                     }
                     self.spectators = Vec::new();
-                }
-                Screen::GameNewFrozen => {
-                    self.send(format!("leave_game {}\n", self.game_id));
-                    self.screen = Screen::Games;
                 }
                 Screen::Games => {
                     self.send("quit\n".to_string());
@@ -1628,18 +1649,12 @@ impl<'a> Client {
                 | Screen::GameReview
                 | Screen::Users => {}
                 Screen::GameNew => self.game_submit(),
-                Screen::GameNewFrozen => {
-                    if self.buttons_live() {
-                        self.send(format!("join_game {}\n", self.game_id));
-                    }
-                }
                 Screen::Login => self.login(),
             },
             Message::PressA => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
-                | Screen::GameNewFrozen
                 | Screen::Users => {}
                 Screen::Game | Screen::GameReview => {
                     self.press_letter('a');
@@ -1652,7 +1667,6 @@ impl<'a> Client {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
-                | Screen::GameNewFrozen
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game | Screen::GameReview => {
@@ -1665,7 +1679,6 @@ impl<'a> Client {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
-                | Screen::GameNewFrozen
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game | Screen::GameReview => {
@@ -1678,7 +1691,6 @@ impl<'a> Client {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
-                | Screen::GameNewFrozen
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game | Screen::GameReview => {
@@ -1691,7 +1703,6 @@ impl<'a> Client {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
-                | Screen::GameNewFrozen
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game | Screen::GameReview => {
@@ -1704,7 +1715,6 @@ impl<'a> Client {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
-                | Screen::GameNewFrozen
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game | Screen::GameReview => {
@@ -1717,7 +1727,6 @@ impl<'a> Client {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
-                | Screen::GameNewFrozen
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game | Screen::GameReview => {
@@ -1730,7 +1739,6 @@ impl<'a> Client {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
-                | Screen::GameNewFrozen
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game | Screen::GameReview => {
@@ -1743,7 +1751,6 @@ impl<'a> Client {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
-                | Screen::GameNewFrozen
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game | Screen::GameReview => {
@@ -1756,7 +1763,6 @@ impl<'a> Client {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
-                | Screen::GameNewFrozen
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game | Screen::GameReview => {
@@ -1769,7 +1775,6 @@ impl<'a> Client {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
-                | Screen::GameNewFrozen
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game | Screen::GameReview => {
@@ -1782,7 +1787,6 @@ impl<'a> Client {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
-                | Screen::GameNewFrozen
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game | Screen::GameReview => {
@@ -1795,7 +1799,6 @@ impl<'a> Client {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
-                | Screen::GameNewFrozen
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game | Screen::GameReview => {
@@ -1808,7 +1811,6 @@ impl<'a> Client {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
-                | Screen::GameNewFrozen
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game | Screen::GameReview => self.coordinates(),
@@ -1818,7 +1820,6 @@ impl<'a> Client {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
-                | Screen::GameNewFrozen
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game | Screen::GameReview => self.sound_muted(),
@@ -1828,7 +1829,6 @@ impl<'a> Client {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
-                | Screen::GameNewFrozen
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game => self.resign(),
@@ -1839,7 +1839,6 @@ impl<'a> Client {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
-                | Screen::GameNewFrozen
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game => self.draw(),
@@ -1848,83 +1847,47 @@ impl<'a> Client {
             },
             Message::PressR => match self.screen {
                 Screen::AccountSettings | Screen::EmailEveryone | Screen::Game => self.draw(),
-                Screen::GameNew
-                | Screen::GameNewFrozen
-                | Screen::GameReview
-                | Screen::Login
-                | Screen::Users => {}
+                Screen::GameNew | Screen::GameReview | Screen::Login | Screen::Users => {}
                 Screen::Games => self.join_game_press(17),
             },
             Message::PressS => match self.screen {
                 Screen::AccountSettings | Screen::EmailEveryone | Screen::Game => self.draw(),
-                Screen::GameNew
-                | Screen::GameNewFrozen
-                | Screen::GameReview
-                | Screen::Login
-                | Screen::Users => {}
+                Screen::GameNew | Screen::GameReview | Screen::Login | Screen::Users => {}
                 Screen::Games => self.join_game_press(18),
             },
             Message::PressT => match self.screen {
                 Screen::AccountSettings | Screen::EmailEveryone | Screen::Game => self.draw(),
-                Screen::GameNew
-                | Screen::GameNewFrozen
-                | Screen::GameReview
-                | Screen::Login
-                | Screen::Users => {}
+                Screen::GameNew | Screen::GameReview | Screen::Login | Screen::Users => {}
                 Screen::Games => self.join_game_press(19),
             },
             Message::PressU => match self.screen {
                 Screen::AccountSettings | Screen::EmailEveryone | Screen::Game => self.draw(),
-                Screen::GameNew
-                | Screen::GameNewFrozen
-                | Screen::GameReview
-                | Screen::Login
-                | Screen::Users => {}
+                Screen::GameNew | Screen::GameReview | Screen::Login | Screen::Users => {}
                 Screen::Games => self.join_game_press(20),
             },
             Message::PressV => match self.screen {
                 Screen::AccountSettings | Screen::EmailEveryone | Screen::Game => self.draw(),
-                Screen::GameNew
-                | Screen::GameNewFrozen
-                | Screen::GameReview
-                | Screen::Login
-                | Screen::Users => {}
+                Screen::GameNew | Screen::GameReview | Screen::Login | Screen::Users => {}
                 Screen::Games => self.join_game_press(21),
             },
             Message::PressW => match self.screen {
                 Screen::AccountSettings | Screen::EmailEveryone | Screen::Game => self.draw(),
-                Screen::GameNew
-                | Screen::GameNewFrozen
-                | Screen::GameReview
-                | Screen::Login
-                | Screen::Users => {}
+                Screen::GameNew | Screen::GameReview | Screen::Login | Screen::Users => {}
                 Screen::Games => self.join_game_press(22),
             },
             Message::PressX => match self.screen {
                 Screen::AccountSettings | Screen::EmailEveryone | Screen::Game => self.draw(),
-                Screen::GameNew
-                | Screen::GameNewFrozen
-                | Screen::GameReview
-                | Screen::Login
-                | Screen::Users => {}
+                Screen::GameNew | Screen::GameReview | Screen::Login | Screen::Users => {}
                 Screen::Games => self.join_game_press(23),
             },
             Message::PressY => match self.screen {
                 Screen::AccountSettings | Screen::EmailEveryone | Screen::Game => self.draw(),
-                Screen::GameNew
-                | Screen::GameNewFrozen
-                | Screen::GameReview
-                | Screen::Login
-                | Screen::Users => {}
+                Screen::GameNew | Screen::GameReview | Screen::Login | Screen::Users => {}
                 Screen::Games => self.join_game_press(24),
             },
             Message::PressZ => match self.screen {
                 Screen::AccountSettings | Screen::EmailEveryone | Screen::Game => self.draw(),
-                Screen::GameNew
-                | Screen::GameNewFrozen
-                | Screen::GameReview
-                | Screen::Login
-                | Screen::Users => {}
+                Screen::GameNew | Screen::GameReview | Screen::Login | Screen::Users => {}
                 Screen::Games => self.join_game_press(25),
             },
             Message::Press1 => match self.screen {
@@ -1932,11 +1895,6 @@ impl<'a> Client {
                 Screen::EmailEveryone | Screen::Users => {}
                 Screen::Games => self.send("archived_games\n".to_string()),
                 Screen::GameNew => self.game_settings.role_selected = Some(Role::Attacker),
-                Screen::GameNewFrozen => {
-                    if self.buttons_live() {
-                        self.send(format!("decline_game {}\n", self.game_id));
-                    }
-                }
                 Screen::Game | Screen::GameReview => {
                     if !(self.press_numbers[0]
                         || self.press_numbers[10]
@@ -1960,7 +1918,7 @@ impl<'a> Client {
                 Screen::AccountSettings => {
                     self.send(format!("change_password {}\n", self.password));
                 }
-                Screen::EmailEveryone | Screen::GameNewFrozen | Screen::Users => {}
+                Screen::EmailEveryone | Screen::Users => {}
                 Screen::Games => self.my_games_only(),
                 Screen::GameNew => self.game_settings.role_selected = Some(Role::Defender),
                 Screen::Game | Screen::GameReview => {
@@ -1995,7 +1953,7 @@ impl<'a> Client {
             },
             Message::Press3 => match self.screen {
                 Screen::AccountSettings => self.toggle_show_password(),
-                Screen::EmailEveryone | Screen::GameNewFrozen | Screen::Users => {}
+                Screen::EmailEveryone | Screen::Users => {}
                 Screen::Games => self.game_new(),
                 Screen::GameNew => self.game_settings.board_size = BoardSize::_11,
                 Screen::Login => self.my_games_only(),
@@ -2030,7 +1988,7 @@ impl<'a> Client {
             },
             Message::Press4 => match self.screen {
                 Screen::AccountSettings => self.delete_account(),
-                Screen::EmailEveryone | Screen::GameNewFrozen | Screen::Users => {}
+                Screen::EmailEveryone | Screen::Users => {}
                 Screen::Games => self.screen = Screen::Users,
                 Screen::GameNew => self.game_settings.board_size = BoardSize::_13,
                 Screen::Login => self.create_account(),
@@ -2041,10 +1999,7 @@ impl<'a> Client {
                 }
             },
             Message::Press5 => match self.screen {
-                Screen::AccountSettings
-                | Screen::EmailEveryone
-                | Screen::GameNewFrozen
-                | Screen::Users => {}
+                Screen::AccountSettings | Screen::EmailEveryone | Screen::Users => {}
                 Screen::Games => self.screen = Screen::AccountSettings,
                 Screen::GameNew => self.game_settings.time = TimeEnum::Rapid,
                 Screen::Login => self.reset_password(),
@@ -2055,10 +2010,7 @@ impl<'a> Client {
                 }
             },
             Message::Press6 => match self.screen {
-                Screen::AccountSettings
-                | Screen::EmailEveryone
-                | Screen::GameNewFrozen
-                | Screen::Users => {}
+                Screen::AccountSettings | Screen::EmailEveryone | Screen::Users => {}
                 Screen::GameNew => self.game_settings.time = TimeEnum::Classical,
                 Screen::Games => open_url("https://hnefatafl.org/rules.html"),
                 Screen::Login => self.review_game(),
@@ -2071,11 +2023,8 @@ impl<'a> Client {
                 }
             },
             Message::Press7 => match self.screen {
-                Screen::AccountSettings
-                | Screen::EmailEveryone
-                | Screen::Games
-                | Screen::GameNewFrozen
-                | Screen::Users => {}
+                Screen::AccountSettings | Screen::EmailEveryone | Screen::Games | Screen::Users => {
+                }
                 Screen::GameNew => self.game_settings.time = TimeEnum::Long,
                 Screen::Login => self.change_theme(Theme::Dark),
                 Screen::Game | Screen::GameReview => {
@@ -2085,11 +2034,8 @@ impl<'a> Client {
                 }
             },
             Message::Press8 => match self.screen {
-                Screen::AccountSettings
-                | Screen::EmailEveryone
-                | Screen::Games
-                | Screen::GameNewFrozen
-                | Screen::Users => {}
+                Screen::AccountSettings | Screen::EmailEveryone | Screen::Games | Screen::Users => {
+                }
                 Screen::GameNew => self.game_settings.time = TimeEnum::VeryLong,
                 Screen::Login => self.change_theme(Theme::Light),
                 Screen::Game | Screen::GameReview => {
@@ -2103,7 +2049,6 @@ impl<'a> Client {
                 | Screen::EmailEveryone
                 | Screen::Games
                 | Screen::GameNew
-                | Screen::GameNewFrozen
                 | Screen::Users => {}
                 Screen::Login => open_url("https://discord.gg/h56CAHEBXd"),
                 Screen::Game | Screen::GameReview => {
@@ -2113,11 +2058,8 @@ impl<'a> Client {
                 }
             },
             Message::Press0 => match self.screen {
-                Screen::AccountSettings
-                | Screen::EmailEveryone
-                | Screen::Games
-                | Screen::GameNewFrozen
-                | Screen::Users => {}
+                Screen::AccountSettings | Screen::EmailEveryone | Screen::Games | Screen::Users => {
+                }
                 Screen::GameNew => self.game_settings.rated = !self.game_settings.rated,
                 Screen::Login => open_url("https://hnefatafl.org"),
                 Screen::Game | Screen::GameReview => {
@@ -2573,11 +2515,7 @@ impl<'a> Client {
                             self.send(format!("text {}", self.text_input));
                         }
                     }
-                    Screen::GameNew
-                    | Screen::GameNewFrozen
-                    | Screen::GameReview
-                    | Screen::Login
-                    | Screen::Users => {}
+                    Screen::GameNew | Screen::GameReview | Screen::Login | Screen::Users => {}
                 }
 
                 self.text_input.clear();
@@ -2747,6 +2685,25 @@ impl<'a> Client {
                 }
             }
 
+            match self.game_state(id) {
+                State::Challenger | State::Spectator => {}
+                State::Creator => {
+                    buttons_row = buttons_row.push(
+                        button(text!("{} (X)", self.strings["Accept"].as_str()))
+                            .on_press(Message::GameAccept(id)),
+                    );
+                    buttons_row = buttons_row.push(
+                        button(text!("{} (X)", self.strings["Decline"].as_str()))
+                            .on_press(Message::GameDecline(id)),
+                    );
+                }
+                State::CreatorOnly => {
+                    buttons_row = buttons_row.push(
+                        button(text!("{}{i}", self.strings["Cancel"].as_str()))
+                            .on_press(Message::CancelGame(id)),
+                    );
+                }
+            }
             buttons = buttons.push(buttons_row);
         }
 
@@ -3214,32 +3171,6 @@ impl<'a> Client {
                 let row_4 = row![new_game, leave].padding(PADDING).spacing(SPACING);
                 column![rated, row_1, row_2, row_3, row_4].into()
             }
-            Screen::GameNewFrozen => {
-                let mut game_display = Column::new().padding(PADDING);
-                if let Some(game) = self.games_light.0.get(&self.game_id) {
-                    game_display = game_display.push(text(game.to_string()));
-                }
-
-                let mut buttons = if self.buttons_live() {
-                    row![
-                        button(text!("{} (Enter)", self.strings["Accept"].as_str()))
-                            .on_press(Message::GameAccept),
-                        button(text!("{} (1)", self.strings["Decline"].as_str()))
-                            .on_press(Message::GameDecline),
-                        button(text!("{} (Esc)", self.strings["Leave"].as_str()))
-                    ]
-                } else {
-                    row![
-                        button(text!("{} (Enter)", self.strings["Accept"].as_str())),
-                        button(text!("{} (1)", self.strings["Decline"].as_str())),
-                        button(text!("{} (Esc)", self.strings["Leave"].as_str()))
-                            .on_press(Message::Leave),
-                    ]
-                };
-                buttons = buttons.padding(PADDING).spacing(SPACING);
-
-                game_display.push(buttons).into()
-            }
             Screen::Games => {
                 let mut email_everyone = Row::new().spacing(SPACING);
 
@@ -3630,6 +3561,7 @@ enum Message {
     ArchivedGamesGet,
     ArchivedGameSelected(ArchivedGame),
     BoardSizeSelected(BoardSize),
+    CancelGame(Id),
     ChangeTheme(Theme),
     ConnectedTo(String),
     Coordinates(bool),
@@ -3641,9 +3573,9 @@ enum Message {
     EstimateScoreDisplay((Node, GenerateMove)),
     FocusPrevious,
     FocusNext,
-    GameAccept,
+    GameAccept(Id),
     GameCancel(Id),
-    GameDecline,
+    GameDecline(Id),
     GameJoin(Id),
     GameNew,
     GameResume(Id),
@@ -3799,6 +3731,14 @@ enum JoinGame {
     None,
     Resume,
     Watch,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+enum State {
+    Challenger,
+    Creator,
+    CreatorOnly,
+    Spectator,
 }
 
 fn estimate_score() -> impl Stream<Item = Message> {
