@@ -672,6 +672,10 @@ impl<'a> Client {
 
     fn game_state(&self, game_id: u128) -> State {
         if let Some(game) = self.games_light.0.get(&game_id) {
+            if game.challenge_accepted {
+                return State::Spectator;
+            }
+
             if game.attacker.is_none() || game.defender.is_none() {
                 if let Some(attacker) = &game.attacker
                     && &self.username == attacker
@@ -884,7 +888,7 @@ impl<'a> Client {
         }
     }
 
-    fn join_game_press(&mut self, i: usize) {
+    fn join_game_press(&mut self, i: usize, shift: bool) {
         let mut server_games: Vec<&ServerGameLight> = self.games_light.0.values().collect();
 
         server_games.sort_by(|a, b| b.id.cmp(&a.id));
@@ -893,11 +897,17 @@ impl<'a> Client {
             match self.join_game(game) {
                 JoinGame::Cancel => self.send(format!("decline_game {} switch\n", game.id)),
                 JoinGame::Join => self.join(game.id),
-                JoinGame::None => {
-                    if self.game_state(game.id) == State::CreatorOnly {
-                        self.send(format!("leave_game {}\n", game.id));
+                JoinGame::None => match self.game_state(game.id) {
+                    State::Challenger | State::Spectator => {}
+                    State::Creator => {
+                        if shift {
+                            self.send(format!("decline_game {}\n", game.id));
+                        } else {
+                            self.send(format!("join_game {}\n", game.id));
+                        }
                     }
-                }
+                    State::CreatorOnly => self.send(format!("leave_game {}\n", game.id)),
+                },
                 JoinGame::Resume => self.resume(game.id),
                 JoinGame::Watch => self.watch(game.id),
             }
@@ -915,8 +925,7 @@ impl<'a> Client {
             }
         } else if game.attacker.is_some()
             && game.defender.is_some()
-            && (Some(&self.username) == game.attacker.as_ref()
-                || Some(&self.username) == game.defender.as_ref())
+            && Some(&self.username) == game.challenger.0.as_ref()
         {
             JoinGame::Cancel
         } else if (game.attacker.is_none() || game.defender.is_none())
@@ -1372,59 +1381,61 @@ impl<'a> Client {
                     modifiers,
                     ..
                 } => {
+                    let shift = modifiers.shift();
+
                     if modifiers.control() || modifiers.command() {
                         if *ch == *Value::new("a").to_smolstr() {
-                            Some(Message::PressA)
+                            Some(Message::PressA(shift))
                         } else if *ch == *Value::new("b").to_smolstr() {
-                            Some(Message::PressB)
+                            Some(Message::PressB(shift))
                         } else if *ch == *Value::new("c").to_smolstr() {
-                            Some(Message::PressC)
+                            Some(Message::PressC(shift))
                         } else if *ch == *Value::new("d").to_smolstr() {
-                            Some(Message::PressD)
+                            Some(Message::PressD(shift))
                         } else if *ch == *Value::new("e").to_smolstr() {
-                            Some(Message::PressE)
+                            Some(Message::PressE(shift))
                         } else if *ch == *Value::new("f").to_smolstr() {
-                            Some(Message::PressF)
+                            Some(Message::PressF(shift))
                         } else if *ch == *Value::new("g").to_smolstr() {
-                            Some(Message::PressG)
+                            Some(Message::PressG(shift))
                         } else if *ch == *Value::new("h").to_smolstr() {
-                            Some(Message::PressH)
+                            Some(Message::PressH(shift))
                         } else if *ch == *Value::new("i").to_smolstr() {
-                            Some(Message::PressI)
+                            Some(Message::PressI(shift))
                         } else if *ch == *Value::new("j").to_smolstr() {
-                            Some(Message::PressJ)
+                            Some(Message::PressJ(shift))
                         } else if *ch == *Value::new("k").to_smolstr() {
-                            Some(Message::PressK)
+                            Some(Message::PressK(shift))
                         } else if *ch == *Value::new("l").to_smolstr() {
-                            Some(Message::PressL)
+                            Some(Message::PressL(shift))
                         } else if *ch == *Value::new("m").to_smolstr() {
-                            Some(Message::PressM)
+                            Some(Message::PressM(shift))
                         } else if *ch == *Value::new("n").to_smolstr() {
-                            Some(Message::PressN)
+                            Some(Message::PressN(shift))
                         } else if *ch == *Value::new("o").to_smolstr() {
-                            Some(Message::PressO)
+                            Some(Message::PressO(shift))
                         } else if *ch == *Value::new("p").to_smolstr() {
-                            Some(Message::PressP)
+                            Some(Message::PressP(shift))
                         } else if *ch == *Value::new("q").to_smolstr() {
-                            Some(Message::PressQ)
+                            Some(Message::PressQ(shift))
                         } else if *ch == *Value::new("r").to_smolstr() {
-                            Some(Message::PressR)
+                            Some(Message::PressR(shift))
                         } else if *ch == *Value::new("s").to_smolstr() {
-                            Some(Message::PressS)
+                            Some(Message::PressS(shift))
                         } else if *ch == *Value::new("t").to_smolstr() {
-                            Some(Message::PressT)
+                            Some(Message::PressT(shift))
                         } else if *ch == *Value::new("u").to_smolstr() {
-                            Some(Message::PressU)
+                            Some(Message::PressU(shift))
                         } else if *ch == *Value::new("v").to_smolstr() {
-                            Some(Message::PressV)
+                            Some(Message::PressV(shift))
                         } else if *ch == *Value::new("w").to_smolstr() {
-                            Some(Message::PressW)
+                            Some(Message::PressW(shift))
                         } else if *ch == *Value::new("x").to_smolstr() {
-                            Some(Message::PressX)
+                            Some(Message::PressX(shift))
                         } else if *ch == *Value::new("y").to_smolstr() {
-                            Some(Message::PressY)
+                            Some(Message::PressY(shift))
                         } else if *ch == *Value::new("z").to_smolstr() {
-                            Some(Message::PressZ)
+                            Some(Message::PressZ(shift))
                         } else if *ch == *Value::new("1").to_smolstr() {
                             Some(Message::Press1)
                         } else if *ch == *Value::new("2").to_smolstr() {
@@ -1651,7 +1662,7 @@ impl<'a> Client {
                 Screen::GameNew => self.game_submit(),
                 Screen::Login => self.login(),
             },
-            Message::PressA => match self.screen {
+            Message::PressA(shift) => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
@@ -1660,10 +1671,10 @@ impl<'a> Client {
                     self.press_letter('a');
                     self.press_letter_and_number();
                 }
-                Screen::Games => self.join_game_press(0),
+                Screen::Games => self.join_game_press(0, shift),
                 Screen::Login => self.change_theme(Theme::Tol),
             },
-            Message::PressB => match self.screen {
+            Message::PressB(shift) => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
@@ -1673,9 +1684,9 @@ impl<'a> Client {
                     self.press_letter('b');
                     self.press_letter_and_number();
                 }
-                Screen::Games => self.join_game_press(1),
+                Screen::Games => self.join_game_press(1, shift),
             },
-            Message::PressC => match self.screen {
+            Message::PressC(shift) => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
@@ -1685,9 +1696,9 @@ impl<'a> Client {
                     self.press_letter('c');
                     self.press_letter_and_number();
                 }
-                Screen::Games => self.join_game_press(2),
+                Screen::Games => self.join_game_press(2, shift),
             },
-            Message::PressD => match self.screen {
+            Message::PressD(shift) => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
@@ -1697,9 +1708,9 @@ impl<'a> Client {
                     self.press_letter('d');
                     self.press_letter_and_number();
                 }
-                Screen::Games => self.join_game_press(3),
+                Screen::Games => self.join_game_press(3, shift),
             },
-            Message::PressE => match self.screen {
+            Message::PressE(shift) => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
@@ -1709,9 +1720,9 @@ impl<'a> Client {
                     self.press_letter('e');
                     self.press_letter_and_number();
                 }
-                Screen::Games => self.join_game_press(4),
+                Screen::Games => self.join_game_press(4, shift),
             },
-            Message::PressF => match self.screen {
+            Message::PressF(shift) => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
@@ -1721,9 +1732,9 @@ impl<'a> Client {
                     self.press_letter('f');
                     self.press_letter_and_number();
                 }
-                Screen::Games => self.join_game_press(5),
+                Screen::Games => self.join_game_press(5, shift),
             },
-            Message::PressG => match self.screen {
+            Message::PressG(shift) => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
@@ -1733,9 +1744,9 @@ impl<'a> Client {
                     self.press_letter('g');
                     self.press_letter_and_number();
                 }
-                Screen::Games => self.join_game_press(6),
+                Screen::Games => self.join_game_press(6, shift),
             },
-            Message::PressH => match self.screen {
+            Message::PressH(shift) => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
@@ -1745,9 +1756,9 @@ impl<'a> Client {
                     self.press_letter('h');
                     self.press_letter_and_number();
                 }
-                Screen::Games => self.join_game_press(7),
+                Screen::Games => self.join_game_press(7, shift),
             },
-            Message::PressI => match self.screen {
+            Message::PressI(shift) => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
@@ -1757,9 +1768,9 @@ impl<'a> Client {
                     self.press_letter('i');
                     self.press_letter_and_number();
                 }
-                Screen::Games => self.join_game_press(8),
+                Screen::Games => self.join_game_press(8, shift),
             },
-            Message::PressJ => match self.screen {
+            Message::PressJ(shift) => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
@@ -1769,9 +1780,9 @@ impl<'a> Client {
                     self.press_letter('j');
                     self.press_letter_and_number();
                 }
-                Screen::Games => self.join_game_press(9),
+                Screen::Games => self.join_game_press(9, shift),
             },
-            Message::PressK => match self.screen {
+            Message::PressK(shift) => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
@@ -1781,9 +1792,9 @@ impl<'a> Client {
                     self.press_letter('k');
                     self.press_letter_and_number();
                 }
-                Screen::Games => self.join_game_press(10),
+                Screen::Games => self.join_game_press(10, shift),
             },
-            Message::PressL => match self.screen {
+            Message::PressL(shift) => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
@@ -1793,9 +1804,9 @@ impl<'a> Client {
                     self.press_letter('l');
                     self.press_letter_and_number();
                 }
-                Screen::Games => self.join_game_press(11),
+                Screen::Games => self.join_game_press(11, shift),
             },
-            Message::PressM => match self.screen {
+            Message::PressM(shift) => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
@@ -1805,90 +1816,90 @@ impl<'a> Client {
                     self.press_letter('m');
                     self.press_letter_and_number();
                 }
-                Screen::Games => self.join_game_press(12),
+                Screen::Games => self.join_game_press(12, shift),
             },
-            Message::PressN => match self.screen {
+            Message::PressN(shift) => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game | Screen::GameReview => self.coordinates(),
-                Screen::Games => self.join_game_press(13),
+                Screen::Games => self.join_game_press(13, shift),
             },
-            Message::PressO => match self.screen {
+            Message::PressO(shift) => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game | Screen::GameReview => self.sound_muted(),
-                Screen::Games => self.join_game_press(14),
+                Screen::Games => self.join_game_press(14, shift),
             },
-            Message::PressP => match self.screen {
+            Message::PressP(shift) => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game => self.resign(),
-                Screen::Games => self.join_game_press(15),
+                Screen::Games => self.join_game_press(1, shift),
                 Screen::GameReview => self.estimate_score(),
             },
-            Message::PressQ => match self.screen {
+            Message::PressQ(shift) => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
                 | Screen::GameNew
                 | Screen::Login
                 | Screen::Users => {}
                 Screen::Game => self.draw(),
-                Screen::Games => self.join_game_press(16),
+                Screen::Games => self.join_game_press(16, shift),
                 Screen::GameReview => self.heat_map_display = !self.heat_map_display,
             },
-            Message::PressR => match self.screen {
+            Message::PressR(shift) => match self.screen {
                 Screen::AccountSettings | Screen::EmailEveryone | Screen::Game => self.draw(),
                 Screen::GameNew | Screen::GameReview | Screen::Login | Screen::Users => {}
-                Screen::Games => self.join_game_press(17),
+                Screen::Games => self.join_game_press(17, shift),
             },
-            Message::PressS => match self.screen {
+            Message::PressS(shift) => match self.screen {
                 Screen::AccountSettings | Screen::EmailEveryone | Screen::Game => self.draw(),
                 Screen::GameNew | Screen::GameReview | Screen::Login | Screen::Users => {}
-                Screen::Games => self.join_game_press(18),
+                Screen::Games => self.join_game_press(18, shift),
             },
-            Message::PressT => match self.screen {
+            Message::PressT(shift) => match self.screen {
                 Screen::AccountSettings | Screen::EmailEveryone | Screen::Game => self.draw(),
                 Screen::GameNew | Screen::GameReview | Screen::Login | Screen::Users => {}
-                Screen::Games => self.join_game_press(19),
+                Screen::Games => self.join_game_press(19, shift),
             },
-            Message::PressU => match self.screen {
+            Message::PressU(shift) => match self.screen {
                 Screen::AccountSettings | Screen::EmailEveryone | Screen::Game => self.draw(),
                 Screen::GameNew | Screen::GameReview | Screen::Login | Screen::Users => {}
-                Screen::Games => self.join_game_press(20),
+                Screen::Games => self.join_game_press(20, shift),
             },
-            Message::PressV => match self.screen {
+            Message::PressV(shift) => match self.screen {
                 Screen::AccountSettings | Screen::EmailEveryone | Screen::Game => self.draw(),
                 Screen::GameNew | Screen::GameReview | Screen::Login | Screen::Users => {}
-                Screen::Games => self.join_game_press(21),
+                Screen::Games => self.join_game_press(21, shift),
             },
-            Message::PressW => match self.screen {
+            Message::PressW(shift) => match self.screen {
                 Screen::AccountSettings | Screen::EmailEveryone | Screen::Game => self.draw(),
                 Screen::GameNew | Screen::GameReview | Screen::Login | Screen::Users => {}
-                Screen::Games => self.join_game_press(22),
+                Screen::Games => self.join_game_press(22, shift),
             },
-            Message::PressX => match self.screen {
+            Message::PressX(shift) => match self.screen {
                 Screen::AccountSettings | Screen::EmailEveryone | Screen::Game => self.draw(),
                 Screen::GameNew | Screen::GameReview | Screen::Login | Screen::Users => {}
-                Screen::Games => self.join_game_press(23),
+                Screen::Games => self.join_game_press(23, shift),
             },
-            Message::PressY => match self.screen {
+            Message::PressY(shift) => match self.screen {
                 Screen::AccountSettings | Screen::EmailEveryone | Screen::Game => self.draw(),
                 Screen::GameNew | Screen::GameReview | Screen::Login | Screen::Users => {}
-                Screen::Games => self.join_game_press(24),
+                Screen::Games => self.join_game_press(24, shift),
             },
-            Message::PressZ => match self.screen {
+            Message::PressZ(shift) => match self.screen {
                 Screen::AccountSettings | Screen::EmailEveryone | Screen::Game => self.draw(),
                 Screen::GameNew | Screen::GameReview | Screen::Login | Screen::Users => {}
-                Screen::Games => self.join_game_press(25),
+                Screen::Games => self.join_game_press(25, shift),
             },
             Message::Press1 => match self.screen {
                 Screen::AccountSettings | Screen::Login => self.reset_email(),
@@ -2689,12 +2700,16 @@ impl<'a> Client {
                 State::Challenger | State::Spectator => {}
                 State::Creator => {
                     buttons_row = buttons_row.push(
-                        button(text!("{} (X)", self.strings["Accept"].as_str()))
+                        button(text!("{}{i}", self.strings["Accept"].as_str()))
                             .on_press(Message::GameAccept(id)),
                     );
                     buttons_row = buttons_row.push(
-                        button(text!("{} (X)", self.strings["Decline"].as_str()))
-                            .on_press(Message::GameDecline(id)),
+                        button(text!(
+                            "{}{}",
+                            self.strings["Decline"].as_str(),
+                            i.to_ascii_uppercase()
+                        ))
+                        .on_press(Message::GameDecline(id)),
                     );
                 }
                 State::CreatorOnly => {
@@ -3596,32 +3611,32 @@ enum Message {
     PlayMoveRevert,
     PlayResign,
     PressEnter,
-    PressA,
-    PressB,
-    PressC,
-    PressD,
-    PressE,
-    PressF,
-    PressG,
-    PressH,
-    PressI,
-    PressJ,
-    PressK,
-    PressL,
-    PressM,
-    PressN,
-    PressO,
-    PressP,
-    PressQ,
-    PressR,
-    PressS,
-    PressT,
-    PressU,
-    PressV,
-    PressW,
-    PressX,
-    PressY,
-    PressZ,
+    PressA(bool),
+    PressB(bool),
+    PressC(bool),
+    PressD(bool),
+    PressE(bool),
+    PressF(bool),
+    PressG(bool),
+    PressH(bool),
+    PressI(bool),
+    PressJ(bool),
+    PressK(bool),
+    PressL(bool),
+    PressM(bool),
+    PressN(bool),
+    PressO(bool),
+    PressP(bool),
+    PressQ(bool),
+    PressR(bool),
+    PressS(bool),
+    PressT(bool),
+    PressU(bool),
+    PressV(bool),
+    PressW(bool),
+    PressX(bool),
+    PressY(bool),
+    PressZ(bool),
     Press1,
     Press2,
     Press3,
