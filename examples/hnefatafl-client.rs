@@ -3201,7 +3201,7 @@ impl<'a> Client {
                 );
 
                 let very_long = radio(
-                    format!("{} (8)", TimeEnum::Long),
+                    format!("{} (8)", TimeEnum::VeryLong),
                     TimeEnum::VeryLong,
                     Some(self.game_settings.time),
                     Message::Time,
