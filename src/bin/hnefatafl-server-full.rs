@@ -607,7 +607,12 @@ impl Server {
             return Some((channel.clone(), false, command));
         };
 
-        info!("{index_supplied} {username} decline_game {id}");
+        let mut switch = false;
+        if let Some(&"switch") = the_rest.get(1) {
+            switch = true;
+        }
+
+        info!("{index_supplied} {username} decline_game {id} switch={switch}");
 
         if let Some(game_old) = self.games_light.0.remove(&id) {
             let mut attacker = None;
@@ -615,10 +620,18 @@ impl Server {
             let mut defender = None;
             let mut defender_channel = None;
 
-            if Some(username.to_string()) == game_old.attacker {
+            if switch {
+                if Some(username.to_string()) == game_old.attacker {
+                    defender = game_old.defender;
+                    defender_channel = game_old.defender_channel;
+                } else if Some(username.to_string()) == game_old.defender {
+                    attacker = game_old.attacker;
+                    attacker_channel = game_old.attacker_channel;
+                }
+            } else if Some(username.to_string()) == game_old.attacker {
                 attacker = game_old.attacker;
                 attacker_channel = game_old.attacker_channel;
-            } else {
+            } else if Some(username.to_string()) == game_old.defender {
                 defender = game_old.defender;
                 defender_channel = game_old.defender_channel;
             }
