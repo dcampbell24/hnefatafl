@@ -13,6 +13,13 @@ license = "MIT OR Apache-2.0"
 keywords = ["board-game", "copenhagen", "hnefatafl", "strategy", "tafl"]
 categories = ["game-engines", "games", "wasm"]
 default-run = "hnefatafl-server-full"
+exclude = [
+    ".github/",
+    "examples/",
+    "icons/",
+    "packages/",
+    "website/",
+]
 
 [dev-dependencies]
 criterion = { version = "0.8", features = ["html_reports"] }
