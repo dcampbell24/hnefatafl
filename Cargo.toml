@@ -15,9 +15,13 @@ categories = ["game-engines", "games", "wasm"]
 default-run = "hnefatafl-server-full"
 exclude = [
     ".github/",
+    "benches/",
+    "documents/",
     "examples/",
     "icons/",
     "packages/",
+    "sound/",
+    "supply-chain/",
     "website/",
 ]
 
