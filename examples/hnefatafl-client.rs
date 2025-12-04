@@ -2257,7 +2257,7 @@ impl<'a> Client {
                                         let mut stream =
                                             rodio::OutputStreamBuilder::open_default_stream()?;
 
-                                        let game_over = include_bytes!("game_over.ogg");
+                                        let game_over = include_bytes!("../sound/game_over.ogg");
                                         let cursor = Cursor::new(game_over);
                                         let sound = rodio::play(stream.mixer(), cursor)?;
                                         sound.set_volume(1.0);
@@ -2811,10 +2811,10 @@ impl<'a> Client {
         thread::spawn(move || {
             let mut stream = rodio::OutputStreamBuilder::open_default_stream()?;
             let cursor = if capture {
-                let capture_ogg = include_bytes!("capture.ogg").to_vec();
+                let capture_ogg = include_bytes!("../sound/capture.ogg").to_vec();
                 Cursor::new(capture_ogg)
             } else {
-                let move_ogg = include_bytes!("move.ogg").to_vec();
+                let move_ogg = include_bytes!("../sound/move.ogg").to_vec();
                 Cursor::new(move_ogg)
             };
             let sound = rodio::play(stream.mixer(), cursor)?;
