@@ -490,7 +490,7 @@ struct NewGameSettings {
     #[serde(skip)]
     timed: TimeSettings,
     #[serde(skip)]
-    time: TimeEnum,
+    time: Option<TimeEnum>,
 }
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
@@ -810,10 +810,11 @@ impl<'a> Client {
         if let Some(role) = self.game_settings.role_selected {
             if let TimeSettings::Timed(_) = self.game_settings.timed {
                 let (milliseconds_left, add_seconds) = match self.game_settings.time {
-                    TimeEnum::Classical => (1_000 * 60 * 30, 20),
-                    TimeEnum::Rapid => (1_000 * 60 * 15, 10),
-                    TimeEnum::Long => (1_000 * 60 * 60 * 24 * 3, 60 * 60 * 6),
-                    TimeEnum::VeryLong => (1_000 * 60 * 60 * 12 * 15, 60 * 60 * 15),
+                    Some(TimeEnum::Classical) => (1_000 * 60 * 30, 20),
+                    Some(TimeEnum::Rapid) => (1_000 * 60 * 15, 10),
+                    Some(TimeEnum::Long) => (1_000 * 60 * 60 * 24 * 3, 60 * 60 * 6),
+                    Some(TimeEnum::VeryLong) => (1_000 * 60 * 60 * 12 * 15, 60 * 60 * 15),
+                    _ => unreachable!(),
                 };
 
                 self.game_settings.timed = TimeSettings::Timed(Time {
@@ -2012,7 +2013,7 @@ impl<'a> Client {
             Message::Press5 => match self.screen {
                 Screen::AccountSettings | Screen::EmailEveryone | Screen::Users => {}
                 Screen::Games => self.screen = Screen::AccountSettings,
-                Screen::GameNew => self.game_settings.time = TimeEnum::Rapid,
+                Screen::GameNew => self.game_settings.time = Some(TimeEnum::Rapid),
                 Screen::Login => self.reset_password(),
                 Screen::Game | Screen::GameReview => {
                     self.clear_numbers_except(5);
@@ -2022,7 +2023,7 @@ impl<'a> Client {
             },
             Message::Press6 => match self.screen {
                 Screen::AccountSettings | Screen::EmailEveryone | Screen::Users => {}
-                Screen::GameNew => self.game_settings.time = TimeEnum::Classical,
+                Screen::GameNew => self.game_settings.time = Some(TimeEnum::Classical),
                 Screen::Games => open_url("https://hnefatafl.org/rules.html"),
                 Screen::Login => self.review_game(),
                 Screen::Game | Screen::GameReview => {
@@ -2036,7 +2037,7 @@ impl<'a> Client {
             Message::Press7 => match self.screen {
                 Screen::AccountSettings | Screen::EmailEveryone | Screen::Games | Screen::Users => {
                 }
-                Screen::GameNew => self.game_settings.time = TimeEnum::Long,
+                Screen::GameNew => self.game_settings.time = Some(TimeEnum::Long),
                 Screen::Login => self.change_theme(Theme::Dark),
                 Screen::Game | Screen::GameReview => {
                     self.clear_numbers_except(7);
@@ -2047,7 +2048,7 @@ impl<'a> Client {
             Message::Press8 => match self.screen {
                 Screen::AccountSettings | Screen::EmailEveryone | Screen::Games | Screen::Users => {
                 }
-                Screen::GameNew => self.game_settings.time = TimeEnum::VeryLong,
+                Screen::GameNew => self.game_settings.time = Some(TimeEnum::VeryLong),
                 Screen::Login => self.change_theme(Theme::Light),
                 Screen::Game | Screen::GameReview => {
                     self.clear_numbers_except(8);
@@ -2573,7 +2574,7 @@ impl<'a> Client {
                     }
                 }
             }
-            Message::Time(time) => self.game_settings.time = time,
+            Message::Time(time) => self.game_settings.time = Some(time),
             Message::Users => self.screen = Screen::Users,
             Message::WindowResized((width, height)) => {
                 if width >= 1_500.0 && height >= 1_000.0 {
@@ -3122,7 +3123,7 @@ impl<'a> Client {
                 .spacing(SPACING);
 
                 let mut new_game = button(text!("{} (Enter)", self.strings["New Game"].as_str()));
-                if self.game_settings.role_selected.is_some() {
+                if self.game_settings.role_selected.is_some() && self.game_settings.time.is_some() {
                     new_game = new_game.on_press(Message::GameSubmit);
                 }
 
@@ -3154,37 +3155,40 @@ impl<'a> Client {
                 let rapid = radio(
                     format!("{} (5)", TimeEnum::Rapid),
                     TimeEnum::Rapid,
-                    Some(self.game_settings.time),
+                    self.game_settings.time,
                     Message::Time,
                 );
 
                 let classical = radio(
                     format!("{} (6)", TimeEnum::Classical),
                     TimeEnum::Classical,
-                    Some(self.game_settings.time),
+                    self.game_settings.time,
                     Message::Time,
                 );
 
                 let long = radio(
                     format!("{} (7)", TimeEnum::Long),
                     TimeEnum::Long,
-                    Some(self.game_settings.time),
+                    self.game_settings.time,
                     Message::Time,
                 );
 
                 let very_long = radio(
                     format!("{} (8)", TimeEnum::VeryLong),
                     TimeEnum::VeryLong,
-                    Some(self.game_settings.time),
+                    self.game_settings.time,
                     Message::Time,
                 );
 
-                let row_3 = row![text!("{}:", t!("time")), rapid, classical, long, very_long]
+                let row_3 = row![text!("{}:", t!("time"))]
                     .padding(PADDING)
                     .spacing(SPACING);
 
-                let row_4 = row![new_game, leave].padding(PADDING).spacing(SPACING);
-                column![rated, row_1, row_2, row_3, row_4].into()
+                let row_4 = row![rapid, classical].padding(PADDING).spacing(SPACING);
+                let row_5 = row![long, very_long].padding(PADDING).spacing(SPACING);
+                let row_6 = row![new_game, leave].padding(PADDING).spacing(SPACING);
+
+                column![rated, row_1, row_2, row_3, row_4, row_5, row_6].into()
             }
             Screen::Games => {
                 let mut email_everyone = Row::new().spacing(SPACING);
