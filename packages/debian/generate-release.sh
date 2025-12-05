@@ -1,6 +1,6 @@
 #! /bin/bash -e
 
-PACKAGE='hnefatafl-copenhagen_4.4.0-1_amd64.deb'
+PACKAGE='hnefatafl-copenhagen_4.4.1-1_amd64.deb'
 
 mkdir --parents apt/pool/main
 mkdir --parents apt/dists/stable/main/binary-amd64
