@@ -31,7 +31,7 @@ use hnefatafl_copenhagen::{
     },
     smtp::Smtp,
     status::Status,
-    time::TimeSettings,
+    time::{Time, TimeSettings},
     utils::{self, data_file},
 };
 use lettre::{
@@ -1708,15 +1708,28 @@ impl Server {
         command: &str,
     ) -> Option<(mpsc::Sender<String>, bool, String)> {
         // The username is in the database and already logged in.
-        if let Some(account) = self.accounts.0.get_mut(username)
-            && let Some(index_database) = account.logged_in
-            && index_database == index_supplied
-        {
-            info!("{index_supplied} {username} logged out");
-            account.logged_in = None;
-            self.clients.remove(&index_database);
+        if let Some(account) = self.accounts.0.get_mut(username) {
+            for id in &account.pending_games {
+                if let Some(tx) = &self.tx
+                    && let Some(game) = self.games_light.0.get(id)
+                    && let TimeSettings::Timed(Time {
+                        milliseconds_left, ..
+                    }) = game.timed
+                    && milliseconds_left < 1_000 * 60 * 60 * 24
+                {
+                    let _ok =
+                        tx.send((format!("{index_supplied} {username} leave_game {id}"), None));
+                }
+            }
 
-            return None;
+            if let Some(index_database) = account.logged_in
+                && index_database == index_supplied
+            {
+                info!("{index_supplied} {username} logged out");
+                account.logged_in = None;
+                self.clients.remove(&index_database);
+                return None;
+            }
         }
 
         self.clients
