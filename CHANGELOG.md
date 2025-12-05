@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- decrease the cargo package size.
+- hnefatafl-client: put the time settings on multiple lines and don't set a default.
 - hnefatafl-server-full: quit pending games shorter than a day when quitting.
 
 ## [4.4.0] - 2025-12-03
