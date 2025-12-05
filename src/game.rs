@@ -915,18 +915,18 @@ impl Game {
 
         let captured = self.board.captured();
         utility -= f64::from(captured.attacker) * 100_000.0;
-        utility += f64::from(self.board.closed_off_exits()) * 100.0;
-        // An extra 100.0 points for each corner that touches another corner.
-        utility += f64::from(captured.defender) * 10.0;
-        utility -= f64::from(self.board.spaces_around_the_king());
 
         let (moves_to_escape, escape_vec) = self.moves_to_escape();
-
         utility += match moves_to_escape {
             MovesToEscape::CanNotEscape => 20_000.0,
             MovesToEscape::GameOver => 0.0,
             MovesToEscape::Moves(moves) => f64::from(moves) * 1_000.0,
         };
+
+        utility += f64::from(self.board.closed_off_exits()) * 100.0;
+        // Todo: An extra 100.0 points for each corner that touches another corner.
+        utility += f64::from(captured.defender) * 10.0;
+        utility -= f64::from(self.board.spaces_around_the_king());
 
         (utility, escape_vec)
     }
