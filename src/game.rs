@@ -914,16 +914,18 @@ impl Game {
         let mut utility = 0.0;
 
         let captured = self.board.captured();
-        utility -= f64::from(captured.attacker) * 10_000.0;
-        utility += f64::from(captured.defender) * 10.0;
+        utility -= f64::from(captured.attacker) * 100_000.0;
+        utility += f64::from(captured.defender) * 100.0;
+        // 10 point for closing off a corner
+        // An extra 10 points for each corner that touches another corner
         utility -= f64::from(self.board.spaces_around_the_king());
 
         let (moves_to_escape, escape_vec) = self.moves_to_escape();
 
         utility += match moves_to_escape {
-            MovesToEscape::CanNotEscape => 2_000.0,
+            MovesToEscape::CanNotEscape => 20_000.0,
             MovesToEscape::GameOver => 0.0,
-            MovesToEscape::Moves(moves) => f64::from(moves) * 100.0,
+            MovesToEscape::Moves(moves) => f64::from(moves) * 1_000.0,
         };
 
         (utility, escape_vec)
