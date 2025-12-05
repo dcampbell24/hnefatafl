@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- hnefatafl-server-full: quit pending games shorter than a day when quitting.
+
 ## [4.4.0] - 2025-12-03
 
 ### Added
