@@ -187,6 +187,24 @@ assets = [
 changelog = "packages/debian/changelog"
 section = "games"
 
+[package.metadata.bundle]
+name = "hnefatafl-copenhagen"
+identifier = "org.hnefatafl.hnefatafl_client"
+icon = [
+    "icons/king_16x16.png",
+    "icons/king_22x22.png",
+    "icons/king_24x124.png",
+    "icons/king_32x32.png",
+    "icons/king_42x42.png",
+    "icons/king_64x64.png",
+    "icons/king_128x128.png",
+    "icons/king_256x256.png",
+]
+copyright = "2025 David Lawrence Campbell"
+category = "public.app-category.board-games"
+short_description = "Client that connects to a Copenhagen Hnefatafl Server."
+osx_url_schemes = ["org.hnefatafl.hnefatafl_client"]
+
 [package.metadata.i18n]
 default-locale = "en-US"
 available-locales = ["en-US", "zh-CN", "es", "ar", "id", "pt-BR", "pt-PT", "fr", "ja", "ru", "de", "is-IS", "is-RU", "sv-SE"]
