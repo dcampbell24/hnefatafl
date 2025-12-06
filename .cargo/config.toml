@@ -11,6 +11,10 @@ rustflags = ["-C", "link-arg=-fuse-ld=/usr/bin/mold", "-C", "link-arg=-Wl,--no-r
 [target.wasm32-unknown-unknown]
 rustflags = ['--cfg', 'getrandom_backend="wasm_js"']
 
+[target.x86_64-apple-darwin]
+linker = "x86_64-apple-darwin21.4-clang"
+ar = "x86_64-apple-darwin21.4-ar"
+
 [target.x86_64-unknown-linux-gnu]
 linker = "clang"
 rustflags = ["-C", "link-arg=-fuse-ld=/usr/bin/mold", "-C", "link-arg=-Wl,--no-rosegment"]
