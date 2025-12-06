@@ -2921,7 +2921,7 @@ impl<'a> Client {
         ]
         .padding(PADDING);
 
-        scrollable(row![ratings, usernames, wins, losses, draws, win_percents])
+        scrollable(row![ratings, usernames, wins, losses, draws, win_percents]).spacing(SPACING)
     }
 
     #[must_use]
@@ -3460,7 +3460,7 @@ impl<'a> Client {
                 .into()
             }
             Screen::Users => row![
-                scrollable(column![self.users(&LoggedIn::None),]).spacing(SPACING),
+                self.users(&LoggedIn::None),
                 row![
                     button(text!("{} (Esc)", self.strings["Leave"].as_str()))
                         .on_press(Message::Leave)
