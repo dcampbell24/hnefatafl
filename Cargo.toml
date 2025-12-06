@@ -114,6 +114,7 @@ test = false
 
 [[bench]]
 name = "hnefatafl_rs"
+required-features = ["bench"]
 harness = false
 
 [lints.clippy]
