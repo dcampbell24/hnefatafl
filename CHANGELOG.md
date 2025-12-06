@@ -7,7 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- hnefatafl-client: on the users page display all users in one category.
 - hnefatafl-client: add win % to the player statistics.
+
+### Fixed
+
+- hnefatafl-client: on the users screen move Leave out of scrolling.
 
 ## [4.4.1] - 2025-12-05
 
