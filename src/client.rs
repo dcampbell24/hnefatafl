@@ -21,6 +21,13 @@ pub enum Move {
     None,
 }
 
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum LoggedIn {
+    No,
+    None,
+    Yes,
+}
+
 #[derive(Clone, Copy, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 pub enum Theme {
     #[default]
@@ -36,5 +43,5 @@ pub struct User {
     pub losses: String,
     pub draws: String,
     pub rating: Rating,
-    pub logged_in: bool,
+    pub logged_in: LoggedIn,
 }

@@ -24,7 +24,7 @@ use hnefatafl_copenhagen::{
     ai::GenerateMove,
     board::{Board, BoardSize},
     characters::Characters,
-    client::{Move, Size, Theme, User},
+    client::{LoggedIn, Move, Size, Theme, User},
     draw::Draw,
     game::{Game, LegalMoves, TimeUnix},
     glicko::{CONFIDENCE_INTERVAL_95, Rating},
@@ -2191,7 +2191,11 @@ impl<'a> Client {
                                         );
                                     };
 
-                                    let logged_in = "logged_in" == user_wins_losses_rating[5];
+                                    let logged_in = if "logged_in" == user_wins_losses_rating[5] {
+                                        LoggedIn::Yes
+                                    } else {
+                                        LoggedIn::No
+                                    };
 
                                     self.users.insert(
                                         user_wins_losses_rating[0].to_string(),
@@ -2842,7 +2846,7 @@ impl<'a> Client {
     }
 
     #[must_use]
-    fn users(&self, logged_in: bool) -> Scrollable<'_, Message> {
+    fn users(&self, logged_in: &LoggedIn) -> Scrollable<'_, Message> {
         let mut ratings = Column::new();
         let mut usernames = Column::new();
         let mut wins = Column::new();
@@ -2851,7 +2855,7 @@ impl<'a> Client {
         let mut win_percents = Column::new();
 
         for user in self.users_sorted() {
-            if logged_in == user.logged_in {
+            if *logged_in == user.logged_in || *logged_in == LoggedIn::None {
                 let wins_number = f64::from_str(&user.wins).unwrap();
                 let mut win_percentage =
                     wins_number / (wins_number + f64::from_str(&user.losses).unwrap());
@@ -2930,7 +2934,7 @@ impl<'a> Client {
 
         let games = self.games();
         let texting = self.texting(texts, true).padding(PADDING);
-        let users = self.users(true);
+        let users = self.users(&LoggedIn::Yes);
 
         let user_area = scrollable(column![games, users, texting]);
         container(user_area)
@@ -3455,18 +3459,15 @@ impl<'a> Client {
                 .spacing(SPACING)
                 .into()
             }
-            Screen::Users => scrollable(column![
-                text(t!("logged in")),
-                self.users(true),
-                text(t!("logged out")),
-                self.users(false),
+            Screen::Users => row![
+                scrollable(column![self.users(&LoggedIn::None),]).spacing(SPACING),
                 row![
                     button(text!("{} (Esc)", self.strings["Leave"].as_str()))
                         .on_press(Message::Leave)
                 ]
-                .padding(PADDING),
-            ])
-            .spacing(SPACING)
+                .padding(PADDING)
+                .spacing(SPACING),
+            ]
             .into(),
         }
     }
