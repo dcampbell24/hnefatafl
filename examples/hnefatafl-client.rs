@@ -24,7 +24,7 @@ use hnefatafl_copenhagen::{
     ai::GenerateMove,
     board::{Board, BoardSize},
     characters::Characters,
-    client::{LoggedIn, Move, Size, Theme, User},
+    client::{LoggedIn, Move, Size, SortBy, Theme, User},
     draw::Draw,
     game::{Game, LegalMoves, TimeUnix},
     glicko::{CONFIDENCE_INTERVAL_95, Rating},
@@ -475,6 +475,8 @@ struct Client {
     username: String,
     #[serde(skip)]
     users: HashMap<String, User>,
+    #[serde(skip)]
+    users_sort_by: SortBy,
     #[serde(skip)]
     strings: HashMap<String, String>,
 }
@@ -2035,8 +2037,8 @@ impl<'a> Client {
                 }
             },
             Message::Press7 => match self.screen {
-                Screen::AccountSettings | Screen::EmailEveryone | Screen::Games | Screen::Users => {
-                }
+                Screen::AccountSettings | Screen::EmailEveryone => {}
+                Screen::Games | Screen::Users => self.users_sort_by = SortBy::Rating,
                 Screen::GameNew => self.game_settings.time = Some(TimeEnum::Long),
                 Screen::Login => self.change_theme(Theme::Dark),
                 Screen::Game | Screen::GameReview => {
@@ -2046,8 +2048,8 @@ impl<'a> Client {
                 }
             },
             Message::Press8 => match self.screen {
-                Screen::AccountSettings | Screen::EmailEveryone | Screen::Games | Screen::Users => {
-                }
+                Screen::AccountSettings | Screen::EmailEveryone => {}
+                Screen::Games | Screen::Users => self.users_sort_by = SortBy::Name,
                 Screen::GameNew => self.game_settings.time = Some(TimeEnum::VeryLong),
                 Screen::Login => self.change_theme(Theme::Light),
                 Screen::Game | Screen::GameReview => {
@@ -2580,6 +2582,7 @@ impl<'a> Client {
             }
             Message::Time(time) => self.game_settings.time = Some(time),
             Message::Users => self.screen = Screen::Users,
+            Message::UsersSortedBy(sort_by) => self.users_sort_by = sort_by,
             Message::WindowResized((width, height)) => {
                 if width >= 1_500.0 && height >= 1_000.0 {
                     self.screen_size = Size::Giant;
@@ -2604,8 +2607,16 @@ impl<'a> Client {
     fn users_sorted(&self) -> Vec<User> {
         let mut users: Vec<_> = self.users.values().cloned().collect();
 
-        users.sort_by(|a, b| b.name.cmp(&a.name));
-        users.sort_by(|a, b| b.rating.rating.partial_cmp(&a.rating.rating).unwrap());
+        match self.users_sort_by {
+            SortBy::Name => {
+                users.sort_by(|a, b| b.rating.rating.partial_cmp(&a.rating.rating).unwrap());
+                users.sort_by(|a, b| a.name.cmp(&b.name));
+            }
+            SortBy::Rating => {
+                users.sort_by(|a, b| a.name.cmp(&b.name));
+                users.sort_by(|a, b| b.rating.rating.partial_cmp(&a.rating.rating).unwrap());
+            }
+        }
 
         users
     }
@@ -2873,16 +2884,28 @@ impl<'a> Client {
         }
 
         let rating = t!("rating");
+        let mut button_1 = button(text("(7)").size(10)).padding(5);
+
+        if self.users_sort_by != SortBy::Rating {
+            button_1 = button_1.on_press(Message::UsersSortedBy(SortBy::Rating));
+        }
+
         let ratings = column![
-            text(rating.to_string()),
+            row![text(rating.to_string()), button_1,].spacing(SPACING),
             text("-".repeat(rating.chars().count())).font(Font::MONOSPACE),
             ratings
         ]
         .padding(PADDING);
 
         let username = t!("username");
+        let mut button_2 = button(text("(8)").size(10)).padding(5);
+
+        if self.users_sort_by != SortBy::Name {
+            button_2 = button_2.on_press(Message::UsersSortedBy(SortBy::Name));
+        }
+
         let usernames = column![
-            text(username.to_string()),
+            row![text(username.to_string()), button_2,].spacing(SPACING),
             text("-".repeat(username.chars().count())).font(Font::MONOSPACE),
             usernames
         ]
@@ -3696,6 +3719,7 @@ enum Message {
     Tick,
     Time(TimeEnum),
     Users,
+    UsersSortedBy(SortBy),
     WindowResized((f32, f32)),
 }
 

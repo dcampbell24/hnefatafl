@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- hnefatafl-client: you can sort users by name or rank.
+
 ### Changed
 
 - hnefatafl-client: on the users page display all users in one category.

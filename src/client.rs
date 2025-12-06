@@ -28,6 +28,13 @@ pub enum LoggedIn {
     Yes,
 }
 
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
+pub enum SortBy {
+    Name,
+    #[default]
+    Rating,
+}
+
 #[derive(Clone, Copy, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 pub enum Theme {
     #[default]
