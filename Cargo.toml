@@ -58,9 +58,9 @@ password-hash = { version = "0.5", optional = true }
 
 [features]
 default = ["server"]
+bench = ["dep:criterion"]
 js = ["dep:wasm-bindgen", "getrandom/wasm_js"]
 server = ["dep:argon2", "dep:ctrlc", "dep:lettre", "dep:old_rand", "dep:password-hash"]
-bench = ["dep:criterion"]
 
 # client only
 icon_2 = []
