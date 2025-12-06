@@ -2884,7 +2884,7 @@ impl<'a> Client {
         }
 
         let rating = t!("rating");
-        let mut button_1 = button(text("(7)").size(10)).padding(5);
+        let mut button_1 = button(text("(7)").size(10)).padding(2);
 
         if self.users_sort_by != SortBy::Rating {
             button_1 = button_1.on_press(Message::UsersSortedBy(SortBy::Rating));
@@ -2898,7 +2898,7 @@ impl<'a> Client {
         .padding(PADDING);
 
         let username = t!("username");
-        let mut button_2 = button(text("(8)").size(10)).padding(5);
+        let mut button_2 = button(text("(8)").size(10)).padding(2);
 
         if self.users_sort_by != SortBy::Name {
             button_2 = button_2.on_press(Message::UsersSortedBy(SortBy::Name));
