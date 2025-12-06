@@ -2848,14 +2848,23 @@ impl<'a> Client {
         let mut wins = Column::new();
         let mut losses = Column::new();
         let mut draws = Column::new();
+        let mut win_percents = Column::new();
 
         for user in self.users_sorted() {
             if logged_in == user.logged_in {
+                let wins_number = f64::from_str(&user.wins).unwrap();
+                let mut win_percentage =
+                    wins_number / (wins_number + f64::from_str(&user.losses).unwrap());
+
+                win_percentage *= 100.0;
+                win_percentage = win_percentage.round_ties_even();
+
                 ratings = ratings.push(text(user.rating.to_string_rounded()));
                 usernames = usernames.push(text(user.name));
                 wins = wins.push(text(user.wins));
                 losses = losses.push(text(user.losses));
                 draws = draws.push(text(user.draws));
+                win_percents = win_percents.push(text!("{}", win_percentage));
             }
         }
 
@@ -2866,6 +2875,7 @@ impl<'a> Client {
             ratings
         ]
         .padding(PADDING);
+
         let username = t!("username");
         let usernames = column![
             text(username.to_string()),
@@ -2873,6 +2883,7 @@ impl<'a> Client {
             usernames
         ]
         .padding(PADDING);
+
         let win = t!("wins");
         let wins = column![
             text(win.to_string()),
@@ -2880,6 +2891,7 @@ impl<'a> Client {
             wins
         ]
         .padding(PADDING);
+
         let loss = t!("losses");
         let losses = column![
             text(loss.to_string()),
@@ -2887,6 +2899,7 @@ impl<'a> Client {
             losses
         ]
         .padding(PADDING);
+
         let draw = t!("draws");
         let draws = column![
             text(draw.to_string()),
@@ -2895,7 +2908,16 @@ impl<'a> Client {
         ]
         .padding(PADDING);
 
-        scrollable(row![ratings, usernames, wins, losses, draws])
+        let win_percent = format!("{} %", t!("wins"));
+        let hyphens_count = win_percent.chars().count();
+        let win_percents = column![
+            text(win_percent),
+            text("-".repeat(hyphens_count)).font(Font::MONOSPACE),
+            win_percents
+        ]
+        .padding(PADDING);
+
+        scrollable(row![ratings, usernames, wins, losses, draws, win_percents])
     }
 
     #[must_use]
