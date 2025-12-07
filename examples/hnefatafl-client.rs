@@ -112,6 +112,7 @@ const USER_CONFIG_FILE_POSTCARD: &str = "hnefatafl.postcard";
 const USER_CONFIG_FILE_RON: &str = "hnefatafl.ron";
 
 const PADDING: u16 = 10;
+const PADDING_SMALL: u16 = 2;
 const SPACING: Pixels = Pixels(10.0);
 const SPACING_B: Pixels = Pixels(20.0);
 
@@ -3047,7 +3048,7 @@ impl<'a> Client {
         }
 
         let rating = t!("rating");
-        let mut button_1 = button(text("(7)").size(10)).padding(2);
+        let mut button_1 = button(text("(7)").size(10)).padding(PADDING_SMALL);
 
         if self.users_sort_by != SortBy::Rating {
             button_1 = button_1.on_press(Message::UsersSortedBy(SortBy::Rating));
@@ -3061,7 +3062,7 @@ impl<'a> Client {
         .padding(PADDING);
 
         let username = t!("username");
-        let mut button_2 = button(text("(8)").size(10)).padding(2);
+        let mut button_2 = button(text("(8)").size(10)).padding(PADDING_SMALL);
 
         if self.users_sort_by != SortBy::Name {
             button_2 = button_2.on_press(Message::UsersSortedBy(SortBy::Name));
