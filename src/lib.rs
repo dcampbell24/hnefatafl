@@ -20,7 +20,6 @@ pub mod accounts;
 pub mod ai;
 pub mod board;
 pub mod characters;
-pub mod client;
 pub mod draw;
 pub mod game;
 pub mod game_record;
