@@ -24,7 +24,6 @@ use hnefatafl_copenhagen::{
     ai::GenerateMove,
     board::{Board, BoardSize},
     characters::Characters,
-    client::{LoggedIn, Move, Size, SortBy, Theme, User},
     draw::Draw,
     game::{Game, LegalMoves, TimeUnix},
     glicko::{CONFIDENCE_INTERVAL_95, Rating},
@@ -354,6 +353,170 @@ fn main() -> anyhow::Result<()> {
 
     application.run()?;
     Ok(())
+}
+
+fn estimate_score() -> impl Stream<Item = Message> {
+    let args = Args::parse();
+
+    stream::channel(
+        100,
+        move |mut sender: iced::futures::channel::mpsc::Sender<Message>| async move {
+            let (tx, rx) = mpsc::channel();
+
+            if let Err(error) = sender.send(Message::EstimateScoreConnected(tx)).await {
+                error!("failed to send channel: {error}");
+                exit(1);
+            }
+
+            thread::spawn(move || {
+                let mut ai = match choose_ai(&args.ai, args.seconds, args.depth) {
+                    Ok(ai) => ai,
+                    Err(error) => {
+                        error!("{error}");
+                        exit(1);
+                    }
+                };
+
+                loop {
+                    let tree = handle_error(rx.recv());
+                    let mut game = Game::from(&tree);
+                    let generate_move = ai.generate_move(&mut game).expect("the game is ongoing");
+
+                    if let Err(error) = executor::block_on(
+                        sender.send(Message::EstimateScoreDisplay((tree.here(), generate_move))),
+                    ) {
+                        error!("failed to send channel: {error}");
+                        exit(1);
+                    }
+                }
+            });
+        },
+    )
+}
+
+fn handle_error<T, E: fmt::Display>(result: Result<T, E>) -> T {
+    match result {
+        Ok(value) => value,
+        Err(error) => {
+            error!("{error}");
+            exit(1)
+        }
+    }
+}
+
+fn open_url(url: &str) {
+    if let Err(error) = webbrowser::open(url) {
+        error!("{error}");
+    }
+}
+
+fn pass_messages() -> impl Stream<Item = Message> {
+    stream::channel(
+        100,
+        move |mut sender: iced::futures::channel::mpsc::Sender<Message>| async move {
+            let mut args = Args::parse();
+            args.host.push_str(SERVER_PORT);
+            let address = args.host;
+
+            thread::spawn(move || {
+                'start_over: loop {
+                    let (tx, rx) = mpsc::channel();
+
+                    if let Err(error) =
+                        executor::block_on(sender.send(Message::StreamConnected(tx)))
+                    {
+                        error!("failed to send channel: {error}");
+                        exit(1);
+                    }
+
+                    loop {
+                        let message = handle_error(rx.recv());
+                        let message_trim = message.trim();
+
+                        if message_trim == "tcp_connect" {
+                            break;
+                        }
+                    }
+
+                    let mut tcp_stream = handle_error(TcpStream::connect(&address));
+                    let mut reader = BufReader::new(handle_error(tcp_stream.try_clone()));
+                    info!("connected to {address} ...");
+
+                    thread::spawn(move || {
+                        loop {
+                            let message = handle_error(rx.recv());
+                            let message_trim = message.trim();
+
+                            if message_trim == "ping" {
+                                trace!("<- {message_trim}");
+                            } else {
+                                debug!("<- {message_trim}");
+                            }
+
+                            if message_trim == "quit" {
+                                tcp_stream
+                                    .shutdown(Shutdown::Both)
+                                    .expect("shutdown call failed");
+
+                                return;
+                            }
+
+                            handle_error(tcp_stream.write_all(message.as_bytes()));
+                        }
+                    });
+
+                    let mut buffer = String::new();
+                    handle_error(executor::block_on(
+                        sender.send(Message::ConnectedTo(address.clone())),
+                    ));
+
+                    loop {
+                        let bytes = handle_error(reader.read_line(&mut buffer));
+                        if bytes > 0 {
+                            let buffer_trim = buffer.trim();
+                            let buffer_trim_vec: Vec<_> =
+                                buffer_trim.split_ascii_whitespace().collect();
+
+                            if buffer_trim_vec[1] == "display_users"
+                                || buffer_trim_vec[1] == "display_games"
+                                || buffer_trim_vec[1] == "ping"
+                            {
+                                trace!("-> {buffer_trim}");
+                            } else {
+                                debug!("-> {buffer_trim}");
+                            }
+
+                            handle_error(executor::block_on(
+                                sender.send(Message::TextReceived(buffer.clone())),
+                            ));
+
+                            if buffer_trim_vec[1] == "archived_games" {
+                                let length = handle_error(buffer_trim_vec[2].parse());
+                                let mut buf = vec![0; length];
+                                handle_error(reader.read_exact(&mut buf));
+                                let archived_games: Vec<ArchivedGame> =
+                                    handle_error(postcard::from_bytes(&buf));
+
+                                handle_error(executor::block_on(
+                                    sender.send(Message::ArchivedGames(archived_games)),
+                                ));
+                            }
+
+                            buffer.clear();
+                        } else {
+                            info!("the TCP stream has closed");
+                            continue 'start_over;
+                        }
+                    }
+                }
+            });
+        },
+    )
+}
+
+fn text_collect(text: SplitAsciiWhitespace<'_>) -> String {
+    let text: Vec<&str> = text.collect();
+    text.join(" ")
 }
 
 #[allow(clippy::struct_excessive_bools)]
@@ -3619,6 +3782,89 @@ impl<'a> Client {
     }
 }
 
+#[derive(Clone, Copy, Debug, Default, Deserialize, Serialize)]
+enum Coordinates {
+    Hide,
+    #[default]
+    Show,
+}
+
+impl Not for Coordinates {
+    type Output = Coordinates;
+
+    fn not(self) -> Self::Output {
+        match self {
+            Self::Hide => Self::Show,
+            Self::Show => Self::Hide,
+        }
+    }
+}
+
+impl From<bool> for Coordinates {
+    fn from(value: bool) -> Self {
+        if value { Self::Show } else { Self::Hide }
+    }
+}
+
+impl From<Coordinates> for bool {
+    fn from(coordinates: Coordinates) -> Self {
+        match coordinates {
+            Coordinates::Show => true,
+            Coordinates::Hide => false,
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+struct Dimensions {
+    board_dimension: u32,
+    letter_size: u32,
+    piece_size: u32,
+    spacing: u32,
+}
+
+impl Dimensions {
+    fn new(board_size: BoardSize, screen_size: &Size) -> Self {
+        let (board_dimension, letter_size, piece_size, spacing) = match board_size {
+            BoardSize::_11 => match screen_size {
+                Size::Large | Size::Giant => (75, 55, 60, 6),
+                Size::Medium => (65, 45, 50, 8),
+                Size::Small => (55, 35, 40, 11),
+                Size::Tiny | Size::TinyWide => (40, 20, 25, 16),
+            },
+            BoardSize::_13 => match screen_size {
+                Size::Large | Size::Giant => (65, 45, 50, 8),
+                Size::Medium => (58, 38, 43, 10),
+                Size::Small => (50, 30, 35, 12),
+                Size::Tiny | Size::TinyWide => (40, 20, 25, 15),
+            },
+        };
+
+        Dimensions {
+            board_dimension,
+            letter_size,
+            piece_size,
+            spacing,
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+enum JoinGame {
+    Cancel,
+    Join,
+    None,
+    Resume,
+    Watch,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+enum LoggedIn {
+    No,
+    None,
+    Yes,
+}
+
 #[derive(Clone, Debug)]
 enum Message {
     AccountSettings,
@@ -3723,80 +3969,30 @@ enum Message {
     WindowResized((f32, f32)),
 }
 
-#[derive(Clone, Copy, Debug, Default, Deserialize, Serialize)]
-enum Coordinates {
-    Hide,
-    #[default]
-    Show,
-}
-
-impl Not for Coordinates {
-    type Output = Coordinates;
-
-    fn not(self) -> Self::Output {
-        match self {
-            Self::Hide => Self::Show,
-            Self::Show => Self::Hide,
-        }
-    }
-}
-
-impl From<bool> for Coordinates {
-    fn from(value: bool) -> Self {
-        if value { Self::Show } else { Self::Hide }
-    }
-}
-
-impl From<Coordinates> for bool {
-    fn from(coordinates: Coordinates) -> Self {
-        match coordinates {
-            Coordinates::Show => true,
-            Coordinates::Hide => false,
-        }
-    }
-}
-
 #[derive(Clone, Debug)]
-struct Dimensions {
-    board_dimension: u32,
-    letter_size: u32,
-    piece_size: u32,
-    spacing: u32,
-}
-
-impl Dimensions {
-    fn new(board_size: BoardSize, screen_size: &Size) -> Self {
-        let (board_dimension, letter_size, piece_size, spacing) = match board_size {
-            BoardSize::_11 => match screen_size {
-                Size::Large | Size::Giant => (75, 55, 60, 6),
-                Size::Medium => (65, 45, 50, 8),
-                Size::Small => (55, 35, 40, 11),
-                Size::Tiny | Size::TinyWide => (40, 20, 25, 16),
-            },
-            BoardSize::_13 => match screen_size {
-                Size::Large | Size::Giant => (65, 45, 50, 8),
-                Size::Medium => (58, 38, 43, 10),
-                Size::Small => (50, 30, 35, 12),
-                Size::Tiny | Size::TinyWide => (40, 20, 25, 15),
-            },
-        };
-
-        Dimensions {
-            board_dimension,
-            letter_size,
-            piece_size,
-            spacing,
-        }
-    }
-}
-
-#[derive(Clone, Debug)]
-enum JoinGame {
-    Cancel,
-    Join,
+enum Move {
+    From,
+    To,
+    Revert,
     None,
-    Resume,
-    Watch,
+}
+
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
+enum Size {
+    Tiny,
+    TinyWide,
+    #[default]
+    Small,
+    Medium,
+    Large,
+    Giant,
+}
+
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
+enum SortBy {
+    Name,
+    #[default]
+    Rating,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -3807,166 +4003,20 @@ enum State {
     Spectator,
 }
 
-fn estimate_score() -> impl Stream<Item = Message> {
-    let args = Args::parse();
-
-    stream::channel(
-        100,
-        move |mut sender: iced::futures::channel::mpsc::Sender<Message>| async move {
-            let (tx, rx) = mpsc::channel();
-
-            if let Err(error) = sender.send(Message::EstimateScoreConnected(tx)).await {
-                error!("failed to send channel: {error}");
-                exit(1);
-            }
-
-            thread::spawn(move || {
-                let mut ai = match choose_ai(&args.ai, args.seconds, args.depth) {
-                    Ok(ai) => ai,
-                    Err(error) => {
-                        error!("{error}");
-                        exit(1);
-                    }
-                };
-
-                loop {
-                    let tree = handle_error(rx.recv());
-                    let mut game = Game::from(&tree);
-                    let generate_move = ai.generate_move(&mut game).expect("the game is ongoing");
-
-                    if let Err(error) = executor::block_on(
-                        sender.send(Message::EstimateScoreDisplay((tree.here(), generate_move))),
-                    ) {
-                        error!("failed to send channel: {error}");
-                        exit(1);
-                    }
-                }
-            });
-        },
-    )
+#[derive(Clone, Copy, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+enum Theme {
+    #[default]
+    Dark,
+    Light,
+    Tol,
 }
 
-fn pass_messages() -> impl Stream<Item = Message> {
-    stream::channel(
-        100,
-        move |mut sender: iced::futures::channel::mpsc::Sender<Message>| async move {
-            let mut args = Args::parse();
-            args.host.push_str(SERVER_PORT);
-            let address = args.host;
-
-            thread::spawn(move || {
-                'start_over: loop {
-                    let (tx, rx) = mpsc::channel();
-
-                    if let Err(error) =
-                        executor::block_on(sender.send(Message::StreamConnected(tx)))
-                    {
-                        error!("failed to send channel: {error}");
-                        exit(1);
-                    }
-
-                    loop {
-                        let message = handle_error(rx.recv());
-                        let message_trim = message.trim();
-
-                        if message_trim == "tcp_connect" {
-                            break;
-                        }
-                    }
-
-                    let mut tcp_stream = handle_error(TcpStream::connect(&address));
-                    let mut reader = BufReader::new(handle_error(tcp_stream.try_clone()));
-                    info!("connected to {address} ...");
-
-                    thread::spawn(move || {
-                        loop {
-                            let message = handle_error(rx.recv());
-                            let message_trim = message.trim();
-
-                            if message_trim == "ping" {
-                                trace!("<- {message_trim}");
-                            } else {
-                                debug!("<- {message_trim}");
-                            }
-
-                            if message_trim == "quit" {
-                                tcp_stream
-                                    .shutdown(Shutdown::Both)
-                                    .expect("shutdown call failed");
-
-                                return;
-                            }
-
-                            handle_error(tcp_stream.write_all(message.as_bytes()));
-                        }
-                    });
-
-                    let mut buffer = String::new();
-                    handle_error(executor::block_on(
-                        sender.send(Message::ConnectedTo(address.clone())),
-                    ));
-
-                    loop {
-                        let bytes = handle_error(reader.read_line(&mut buffer));
-                        if bytes > 0 {
-                            let buffer_trim = buffer.trim();
-                            let buffer_trim_vec: Vec<_> =
-                                buffer_trim.split_ascii_whitespace().collect();
-
-                            if buffer_trim_vec[1] == "display_users"
-                                || buffer_trim_vec[1] == "display_games"
-                                || buffer_trim_vec[1] == "ping"
-                            {
-                                trace!("-> {buffer_trim}");
-                            } else {
-                                debug!("-> {buffer_trim}");
-                            }
-
-                            handle_error(executor::block_on(
-                                sender.send(Message::TextReceived(buffer.clone())),
-                            ));
-
-                            if buffer_trim_vec[1] == "archived_games" {
-                                let length = handle_error(buffer_trim_vec[2].parse());
-                                let mut buf = vec![0; length];
-                                handle_error(reader.read_exact(&mut buf));
-                                let archived_games: Vec<ArchivedGame> =
-                                    handle_error(postcard::from_bytes(&buf));
-
-                                handle_error(executor::block_on(
-                                    sender.send(Message::ArchivedGames(archived_games)),
-                                ));
-                            }
-
-                            buffer.clear();
-                        } else {
-                            info!("the TCP stream has closed");
-                            continue 'start_over;
-                        }
-                    }
-                }
-            });
-        },
-    )
-}
-
-fn handle_error<T, E: fmt::Display>(result: Result<T, E>) -> T {
-    match result {
-        Ok(value) => value,
-        Err(error) => {
-            error!("{error}");
-            exit(1)
-        }
-    }
-}
-
-fn open_url(url: &str) {
-    if let Err(error) = webbrowser::open(url) {
-        error!("{error}");
-    }
-}
-
-fn text_collect(text: SplitAsciiWhitespace<'_>) -> String {
-    let text: Vec<&str> = text.collect();
-    text.join(" ")
+#[derive(Clone, Debug)]
+struct User {
+    name: String,
+    wins: String,
+    losses: String,
+    draws: String,
+    rating: Rating,
+    logged_in: LoggedIn,
 }
