@@ -389,7 +389,7 @@ fn receiving_and_writing(
 
 /// Non-leap seconds since January 1, 1970 0:00:00 UTC.
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct UnixTimestamp(pub i64);
+struct UnixTimestamp(i64);
 
 impl Default for UnixTimestamp {
     fn default() -> Self {
