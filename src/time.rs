@@ -3,10 +3,10 @@ use std::fmt;
 use anyhow::Context;
 use serde::{Deserialize, Serialize};
 
-const DAY: i64 = 24 * 60 * 60 * 1_000;
-const HOUR: i64 = 60 * 60 * 1_000;
-const MINUTE: i64 = 60 * 1_000;
-const SECOND: i64 = 1_000;
+pub const DAY: i64 = 24 * 60 * 60 * 1_000;
+pub const HOUR: i64 = 60 * 60 * 1_000;
+pub const MINUTE: i64 = 60 * 1_000;
+pub const SECOND: i64 = 1_000;
 
 #[derive(Clone, Copy, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
 pub struct Time {
@@ -51,26 +51,6 @@ impl fmt::Display for Time {
                 f,
                 "{days} {hours:02}:{minutes:02}:{seconds:02} | {add_hours:02}:{add_minutes:02}:{add_seconds:02}"
             )
-        }
-    }
-}
-
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
-pub enum TimeEnum {
-    Classical,
-    Long,
-    #[default]
-    Rapid,
-    VeryLong,
-}
-
-impl fmt::Display for TimeEnum {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::Classical => write!(f, "00:30:00 | 00:00:20"),
-            Self::Long => write!(f, "3 00:00:00 | 6:00:00"),
-            Self::Rapid => write!(f, "00:15:00 | 00:00:10 "),
-            Self::VeryLong => write!(f, "7 12:00:00 | 15:00:00 "),
         }
     }
 }
@@ -146,7 +126,7 @@ impl fmt::Display for TimeSettings {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Timed(time) => write!(f, "{time}"),
-            Self::UnTimed => write!(f, "-"),
+            Self::UnTimed => write!(f, "∞"),
         }
     }
 }

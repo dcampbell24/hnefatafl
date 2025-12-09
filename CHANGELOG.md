@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- hnefatafl-client: un-timed as a time setting.
 - hnefatafl-client: sort users by name or rank.
 - hnefatafl-client: win % to the player statistics.
 

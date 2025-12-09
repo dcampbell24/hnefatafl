@@ -35,7 +35,7 @@ use hnefatafl_copenhagen::{
     server_game::{ArchivedGame, ArchivedGameHandle, ServerGameLight, ServerGamesLight},
     space::Space,
     status::Status,
-    time::{Time, TimeEnum, TimeSettings},
+    time::{DAY, HOUR, MINUTE, Time, TimeSettings},
     tree::{Node, Tree},
     utils::{self, choose_ai, data_file},
 };
@@ -973,33 +973,18 @@ impl<'a> Client {
     }
 
     fn game_submit(&mut self) {
-        if let Some(role) = self.game_settings.role_selected {
-            if let TimeSettings::Timed(_) = self.game_settings.timed {
-                let (milliseconds_left, add_seconds) = match self.game_settings.time {
-                    Some(TimeEnum::Classical) => (1_000 * 60 * 30, 20),
-                    Some(TimeEnum::Rapid) => (1_000 * 60 * 15, 10),
-                    Some(TimeEnum::Long) => (1_000 * 60 * 60 * 24 * 3, 60 * 60 * 6),
-                    Some(TimeEnum::VeryLong) => (1_000 * 60 * 60 * 12 * 15, 60 * 60 * 15),
-                    _ => unreachable!(),
-                };
+        self.screen = Screen::Games;
 
-                self.game_settings.timed = TimeSettings::Timed(Time {
-                    add_seconds,
-                    milliseconds_left,
-                });
-            }
+        let role = self.game_settings.role_selected.unwrap();
+        self.game_settings.timed = self.game_settings.time.unwrap().into();
+        let board_size = self.game_settings.board_size;
 
-            self.screen = Screen::Games;
-
-            let board_size = self.game_settings.board_size;
-
-            // <- new_game (attacker | defender) (rated | unrated) (TIME_MINUTES | _) (ADD_SECONDS_AFTER_EACH_MOVE | _) board_size
-            // -> game id rated attacker defender un-timed _ _ board_size challenger challenge_accepted spectators
-            self.send(format!(
-                "new_game {role} {} {:?} {board_size}\n",
-                self.game_settings.rated, self.game_settings.timed,
-            ));
-        }
+        // <- new_game (attacker | defender) (rated | unrated) (TIME_MINUTES | _) (ADD_SECONDS_AFTER_EACH_MOVE | _) board_size
+        // -> game id rated attacker defender un-timed _ _ board_size challenger challenge_accepted spectators
+        self.send(format!(
+            "new_game {role} {} {:?} {board_size}\n",
+            self.game_settings.rated, self.game_settings.timed,
+        ));
     }
 
     fn press_letter(&mut self, letter: char) {
@@ -3393,15 +3378,23 @@ impl<'a> Client {
                     Message::Time,
                 );
 
+                let un_timed = radio(
+                    format!("{} (9)", TimeEnum::Infinity),
+                    TimeEnum::Infinity,
+                    self.game_settings.time,
+                    Message::Time,
+                );
+
                 let row_3 = row![text!("{}:", t!("time"))]
                     .padding(PADDING)
                     .spacing(SPACING);
 
                 let row_4 = row![rapid, classical].padding(PADDING).spacing(SPACING);
                 let row_5 = row![long, very_long].padding(PADDING).spacing(SPACING);
-                let row_6 = row![new_game, leave].padding(PADDING).spacing(SPACING);
+                let row_6 = row![un_timed].padding(PADDING).spacing(SPACING);
+                let row_7 = row![new_game, leave].padding(PADDING).spacing(SPACING);
 
-                column![rated, row_1, row_2, row_3, row_4, row_5, row_6].into()
+                column![rated, row_1, row_2, row_3, row_4, row_5, row_6, row_7].into()
             }
             Screen::Games => {
                 let mut email_everyone = Row::new().spacing(SPACING);
@@ -4010,6 +4003,53 @@ enum Theme {
     Dark,
     Light,
     Tol,
+}
+
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+enum TimeEnum {
+    Classical,
+    Infinity,
+    Long,
+    #[default]
+    Rapid,
+    VeryLong,
+}
+
+impl From<TimeEnum> for TimeSettings {
+    fn from(time_enum: TimeEnum) -> TimeSettings {
+        match time_enum {
+            TimeEnum::Classical => TimeSettings::Timed(Time {
+                add_seconds: 20,
+                milliseconds_left: 30 * MINUTE,
+            }),
+            TimeEnum::Rapid => TimeSettings::Timed(Time {
+                add_seconds: 10,
+                milliseconds_left: 15 * MINUTE,
+            }),
+
+            TimeEnum::Long => TimeSettings::Timed(Time {
+                add_seconds: 60 * 60 * 6,
+                milliseconds_left: 3 * DAY,
+            }),
+            TimeEnum::VeryLong => TimeSettings::Timed(Time {
+                add_seconds: 60 * 60 * 15,
+                milliseconds_left: 12 * 15 * HOUR,
+            }),
+            TimeEnum::Infinity => TimeSettings::UnTimed,
+        }
+    }
+}
+
+impl fmt::Display for TimeEnum {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Classical => write!(f, "00:30:00 | 00:00:20"),
+            Self::Infinity => write!(f, "∞"),
+            Self::Long => write!(f, "3 00:00:00 | 6:00:00"),
+            Self::Rapid => write!(f, "00:15:00 | 00:00:10 "),
+            Self::VeryLong => write!(f, "7 12:00:00 | 15:00:00 "),
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
