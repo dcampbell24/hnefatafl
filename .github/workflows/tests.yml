@@ -6,6 +6,7 @@ permissions:
 
 jobs:
   cargo_test:
+    name: cargo test
     runs-on: ubuntu-latest
 
     concurrency:

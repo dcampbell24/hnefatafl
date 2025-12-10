@@ -28,7 +28,7 @@ jobs:
       - name: Run zizmor 🌈
         run: |
           cd "$GITHUB_WORKSPACE"
-          uvx zizmor --gh-token "$GH_TOKEN" .github/workflows/*
+          uvx zizmor --pedantic --gh-token "$GH_TOKEN" .github/workflows/*
 
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

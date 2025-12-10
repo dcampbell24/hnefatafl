@@ -6,6 +6,7 @@ permissions:
 
 jobs:
   cargo_fmt:
+    name: cargo fmt
     runs-on: ubuntu-latest
 
     concurrency:
