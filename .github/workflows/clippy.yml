@@ -5,14 +5,20 @@ name: clippy check
 env:
   RUSTFLAGS: "-D warnings"
 
+permissions:
+  actions: read # An explanation.
+
 jobs:
   clippy_check:
     runs-on: ubuntu-latest
+
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+
     permissions:
-      security-events: write
-      # required for workflows in private repositories
-      # contents: read
-      actions: read
+      security-events: write # An explanation.
+      actions: read # An explanation.
+
     steps:
       - uses: actions/checkout@v4
         with:
