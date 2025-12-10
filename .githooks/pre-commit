@@ -6,4 +6,4 @@ cargo fmt --all --check
 cargo clippy --all-targets --examples --features js
 cargo test --features js
 
-# zizmor --offline .github/workflows
+uvx zizmor --pedantic .github/workflows
