@@ -10,6 +10,7 @@ permissions:
 
 jobs:
   clippy_check:
+    name: clippy check
     runs-on: ubuntu-latest
 
     concurrency:
