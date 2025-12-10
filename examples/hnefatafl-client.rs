@@ -3378,23 +3378,15 @@ impl<'a> Client {
                     Message::Time,
                 );
 
-                let un_timed = radio(
-                    format!("{} (9)", TimeEnum::Infinity),
-                    TimeEnum::Infinity,
-                    self.game_settings.time,
-                    Message::Time,
-                );
-
                 let row_3 = row![text!("{}:", t!("time"))]
                     .padding(PADDING)
                     .spacing(SPACING);
 
                 let row_4 = row![rapid, classical].padding(PADDING).spacing(SPACING);
                 let row_5 = row![long, very_long].padding(PADDING).spacing(SPACING);
-                let row_6 = row![un_timed].padding(PADDING).spacing(SPACING);
-                let row_7 = row![new_game, leave].padding(PADDING).spacing(SPACING);
+                let row_6 = row![new_game, leave].padding(PADDING).spacing(SPACING);
 
-                column![rated, row_1, row_2, row_3, row_4, row_5, row_6, row_7].into()
+                column![rated, row_1, row_2, row_3, row_4, row_5, row_6].into()
             }
             Screen::Games => {
                 let mut email_everyone = Row::new().spacing(SPACING);
@@ -4008,6 +4000,7 @@ enum Theme {
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 enum TimeEnum {
     Classical,
+    #[allow(dead_code)]
     Infinity,
     Long,
     #[default]
