@@ -673,6 +673,24 @@ enum Screen {
 }
 
 impl<'a> Client {
+    #[cfg(debug_assertions)]
+    fn add_infinity(&self, column: Column<'a, Message>) -> Column<'a, Message> {
+        let infinity = radio(
+            format!("{} (9)", TimeEnum::Infinity),
+            TimeEnum::Infinity,
+            self.game_settings.time,
+            Message::Time,
+        );
+
+        let row = row![infinity].padding(PADDING).spacing(SPACING);
+        column.push(row)
+    }
+
+    #[cfg(not(debug_assertions))]
+    fn add_infinity(&self, column: Column<'a, Message>) -> Column<'a, Message> {
+        column
+    }
+
     fn archived_game_reset(&mut self) {
         self.archived_game_handle = None;
         self.archived_game_selected = None;
@@ -2208,11 +2226,9 @@ impl<'a> Client {
                 }
             },
             Message::Press9 => match self.screen {
-                Screen::AccountSettings
-                | Screen::EmailEveryone
-                | Screen::Games
-                | Screen::GameNew
-                | Screen::Users => {}
+                Screen::AccountSettings | Screen::EmailEveryone | Screen::Games | Screen::Users => {
+                }
+                Screen::GameNew => self.game_settings.time = Some(TimeEnum::Infinity),
                 Screen::Login => open_url("https://discord.gg/h56CAHEBXd"),
                 Screen::Game | Screen::GameReview => {
                     self.clear_numbers_except(9);
@@ -3384,9 +3400,12 @@ impl<'a> Client {
 
                 let row_4 = row![rapid, classical].padding(PADDING).spacing(SPACING);
                 let row_5 = row![long, very_long].padding(PADDING).spacing(SPACING);
-                let row_6 = row![new_game, leave].padding(PADDING).spacing(SPACING);
 
-                column![rated, row_1, row_2, row_3, row_4, row_5, row_6].into()
+                let mut column = column![rated, row_1, row_2, row_3, row_4, row_5];
+                column = self.add_infinity(column);
+
+                let row_6 = row![new_game, leave].padding(PADDING).spacing(SPACING);
+                column.push(row_6).into()
             }
             Screen::Games => {
                 let mut email_everyone = Row::new().spacing(SPACING);
@@ -4000,7 +4019,6 @@ enum Theme {
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 enum TimeEnum {
     Classical,
-    #[allow(dead_code)]
     Infinity,
     Long,
     #[default]
