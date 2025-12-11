@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- hnefatafl-client: switch to a stable version of iced.
 - hnefatafl-client: on the users page display all users in one category.
 
 ### Fixed

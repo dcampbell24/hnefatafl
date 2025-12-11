@@ -315,10 +315,10 @@ fn main() -> anyhow::Result<()> {
     }
 
     #[cfg(not(feature = "icon_2"))]
-    let king = include_bytes!("king_1_256x256.rgba").to_vec();
+    let king = include_bytes!("icons/king_1_256x256.rgba").to_vec();
 
     #[cfg(feature = "icon_2")]
-    let king = include_bytes!("king_2_256x256.rgba").to_vec();
+    let king = include_bytes!("icons/king_2_256x256.rgba").to_vec();
 
     let mut application = iced::application(init_client, Client::update, Client::view)
         .title("Hnefatafl Copenhagen")
@@ -2429,7 +2429,7 @@ impl<'a> Client {
                                         let mut stream =
                                             rodio::OutputStreamBuilder::open_default_stream()?;
 
-                                        let game_over = include_bytes!("../sound/game_over.ogg");
+                                        let game_over = include_bytes!("sound/game_over.ogg");
                                         let cursor = Cursor::new(game_over);
                                         let sound = rodio::play(stream.mixer(), cursor)?;
                                         sound.set_volume(1.0);
@@ -2992,10 +2992,10 @@ impl<'a> Client {
         thread::spawn(move || {
             let mut stream = rodio::OutputStreamBuilder::open_default_stream()?;
             let cursor = if capture {
-                let capture_ogg = include_bytes!("../sound/capture.ogg").to_vec();
+                let capture_ogg = include_bytes!("sound/capture.ogg").to_vec();
                 Cursor::new(capture_ogg)
             } else {
-                let move_ogg = include_bytes!("../sound/move.ogg").to_vec();
+                let move_ogg = include_bytes!("sound/move.ogg").to_vec();
                 Cursor::new(move_ogg)
             };
             let sound = rodio::play(stream.mixer(), cursor)?;

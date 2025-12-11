@@ -32,14 +32,14 @@ build() {
     tar -xvzf v$pkgver.tar.gz
     cd "hnefatafl-$pkgver"
 
-    cargo build --release --example hnefatafl-client --no-default-features
-    ./target/release/examples/hnefatafl-client --man
+    cargo build --release --bin hnefatafl-client --features client --no-default-features
+    ./target/release/hnefatafl-client --man
     gzip --no-name --best hnefatafl-client.1
 }
 
 package() {
     cd "hnefatafl-$pkgver"
-    install -Dm755 "target/release/examples/hnefatafl-client" -t "$pkgdir/usr/bin"
+    install -Dm755 "target/release/hnefatafl-client" -t "$pkgdir/usr/bin"
     install -Dm644 LICENSE-APACHE "$pkgdir/usr/share/licenses/$pkgname/LICENSE-APACHE"
     install -Dm644 LICENSE-MIT "$pkgdir/usr/share/licenses/$pkgname/LICENSE-MIT"
     install -Dm644 "icons/king_16x16.png" "$pkgdir/usr/share/icons/hicolor/16x16/apps/org.hnefatafl.hnefatafl_client.png"
