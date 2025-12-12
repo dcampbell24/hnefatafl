@@ -30,6 +30,7 @@ features = [
     "advanced-shaping", "fira-sans", "smol"
 ]
 optional = true
+default-features = false
 
 [dependencies]
 anyhow = "1"
