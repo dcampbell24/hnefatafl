@@ -3,7 +3,7 @@ use std::{
     net::TcpStream,
 };
 
-use clap::{self, CommandFactory, Parser, command};
+use clap::{self, CommandFactory, Parser};
 
 use hnefatafl_copenhagen::{
     COPYRIGHT, SERVER_PORT,

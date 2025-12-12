@@ -14,7 +14,7 @@ use std::{
 
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use chrono::{Local, Utc};
-use clap::{CommandFactory, Parser, command};
+use clap::{CommandFactory, Parser};
 use hnefatafl_copenhagen::{
     COPYRIGHT, Id, LONG_VERSION, SERVER_PORT, VERSION_ID,
     accounts::{Account, Accounts, Email},
