@@ -18,11 +18,13 @@ include = ["src/**/*", "LICENSE-*", "README.md", "CHANGELOG.md"]
 [dev-dependencies]
 criterion = { version = "0.8", features = ["html_reports"] }
 
+# client
 [target.'cfg(not(target_os = "redox"))'.dependencies.iced]
 version = "0.14"
 features = ["advanced-shaping", "fira-sans", "smol"]
 optional = true
 
+# client
 [target.'cfg(target_os = "redox")'.dependencies.iced]
 version = "0.14"
 features = [
