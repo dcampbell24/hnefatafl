@@ -18,6 +18,19 @@ include = ["src/**/*", "LICENSE-*", "README.md", "CHANGELOG.md"]
 [dev-dependencies]
 criterion = { version = "0.8", features = ["html_reports"] }
 
+[target.'cfg(not(target_os = "redox"))'.dependencies.iced]
+version = "0.14"
+features = ["advanced-shaping", "fira-sans", "smol"]
+optional = true
+
+[target.'cfg(target_os = "redox")'.dependencies.iced]
+version = "0.14"
+features = [
+    "tiny-skia", "crisp", "web-colors", "thread-pool", "linux-theme-detection", "x11", "wayland",
+    "advanced-shaping", "fira-sans", "smol"
+]
+optional = true
+
 [dependencies]
 anyhow = "1"
 # burn = { version = "0.16", features = ["train", "wgpu", "vision"] }
@@ -39,7 +52,6 @@ thiserror = "2"
 
 # client
 futures = { version = "0.3", optional = true }
-iced = { version = "0.14", features = ["advanced-shaping", "fira-sans", "smol"], optional = true }
 rodio = { version = "0.21", optional = true }
 smol_str = { version = "0.3", optional = true }
 webbrowser = { version = "1", features = ["hardened"], optional = true }
