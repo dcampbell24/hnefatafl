@@ -16,7 +16,7 @@ use std::{
 };
 
 use chrono::{Local, Utc};
-use clap::{CommandFactory, Parser, command};
+use clap::{CommandFactory, Parser};
 use futures::{SinkExt, executor};
 use hnefatafl_copenhagen::{
     COPYRIGHT, Id, LONG_VERSION, SERVER_PORT, VERSION_ID,
