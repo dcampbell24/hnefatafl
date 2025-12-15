@@ -434,6 +434,7 @@ fn pass_messages() -> impl Stream<Item = Message> {
                     let mut reader = BufReader::new(handle_error(tcp_stream.try_clone()));
                     info!("connected to {address} ...");
 
+                    let mut sender_clone = sender.clone();
                     thread::spawn(move || {
                         loop {
                             let message = handle_error(rx.recv());
@@ -447,7 +448,10 @@ fn pass_messages() -> impl Stream<Item = Message> {
 
                             if message_trim == "quit" {
                                 if cfg!(target_os = "redox") {
-                                    exit(0)
+                                    handle_error(executor::block_on(
+                                        sender_clone.send(Message::Exit),
+                                    ));
+                                    return;
                                 }
 
                                 tcp_stream
@@ -1749,6 +1753,7 @@ impl<'a> Client {
 
                 self.estimate_score = false;
             }
+            Message::Exit => return iced::exit(),
             Message::FocusNext => return focus_next(),
             Message::FocusPrevious => return focus_previous(),
             Message::GameCancel(id) => self.send(&format!("decline_game {id} switch\n")),
@@ -3894,6 +3899,7 @@ enum Message {
     EstimateScore,
     EstimateScoreConnected(mpsc::Sender<Tree>),
     EstimateScoreDisplay((Node, GenerateMove)),
+    Exit,
     FocusPrevious,
     FocusNext,
     GameAccept(Id),
