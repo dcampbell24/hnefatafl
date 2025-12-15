@@ -914,14 +914,14 @@ impl<'a> Client {
 
     fn create_account(&mut self) {
         if !self.connected_tcp {
-            self.send("tcp_connect\n".to_string());
+            self.send("tcp_connect\n");
             self.connected_tcp = true;
         }
 
         if self.screen == Screen::Login {
             if !self.text_input.trim().is_empty() {
                 let username = self.text_input.clone();
-                self.send(format!(
+                self.send(&format!(
                     "{VERSION_ID} create_account {username} {}\n",
                     self.password,
                 ));
@@ -935,7 +935,7 @@ impl<'a> Client {
 
     fn delete_account(&mut self) {
         if self.delete_account {
-            self.send("delete_account\n".to_string());
+            self.send("delete_account\n");
             self.screen = Screen::Login;
         } else {
             self.delete_account = true;
@@ -944,7 +944,7 @@ impl<'a> Client {
 
     fn draw(&mut self) {
         let game = self.game.as_ref().expect("you should have a game by now");
-        self.send(format!("request_draw {} {}\n", self.game_id, game.turn));
+        self.send(&format!("request_draw {} {}\n", self.game_id, game.turn));
     }
 
     fn draw_arrow(&self, y: usize, x: usize) -> Option<&str> {
@@ -1001,7 +1001,7 @@ impl<'a> Client {
 
         // <- new_game (attacker | defender) (rated | unrated) (TIME_MINUTES | _) (ADD_SECONDS_AFTER_EACH_MOVE | _) board_size
         // -> game id rated attacker defender un-timed _ _ board_size challenger challenge_accepted spectators
-        self.send(format!(
+        self.send(&format!(
             "new_game {role} {} {:?} {board_size}\n",
             self.game_settings.rated, self.game_settings.timed,
         ));
@@ -1067,18 +1067,18 @@ impl<'a> Client {
 
         if let Some(game) = server_games.get(i) {
             match self.join_game(game) {
-                JoinGame::Cancel => self.send(format!("decline_game {} switch\n", game.id)),
+                JoinGame::Cancel => self.send(&format!("decline_game {} switch\n", game.id)),
                 JoinGame::Join => self.join(game.id),
                 JoinGame::None => match self.game_state(game.id) {
                     State::Challenger | State::Spectator => {}
                     State::Creator => {
                         if shift {
-                            self.send(format!("decline_game {}\n", game.id));
+                            self.send(&format!("decline_game {}\n", game.id));
                         } else {
-                            self.send(format!("join_game {}\n", game.id));
+                            self.send(&format!("join_game {}\n", game.id));
                         }
                     }
-                    State::CreatorOnly => self.send(format!("leave_game {}\n", game.id)),
+                    State::CreatorOnly => self.send(&format!("leave_game {}\n", game.id)),
                 },
                 JoinGame::Resume => self.resume(game.id),
                 JoinGame::Watch => self.watch(game.id),
@@ -1112,7 +1112,7 @@ impl<'a> Client {
 
     fn join(&mut self, id: u128) {
         self.game_id = id;
-        self.send(format!("join_game_pending {id}\n"));
+        self.send(&format!("join_game_pending {id}\n"));
 
         let game = self.games_light.0.get(&id).expect("the game must exist");
 
@@ -1125,24 +1125,24 @@ impl<'a> Client {
 
     fn resume(&mut self, id: u128) {
         self.game_id = id;
-        self.send(format!("resume_game {id}\n"));
+        self.send(&format!("resume_game {id}\n"));
     }
 
     fn watch(&mut self, id: u128) {
         self.game_id = id;
-        self.send(format!("watch_game {id}\n"));
+        self.send(&format!("watch_game {id}\n"));
     }
 
     fn login(&mut self) {
         if !self.connected_tcp {
-            self.send("tcp_connect\n".to_string());
+            self.send("tcp_connect\n");
             self.connected_tcp = true;
         }
 
         if self.text_input.trim().is_empty() {
             let username = format!("user-{:x}", rand::random::<u16>());
 
-            self.send(format!(
+            self.send(&format!(
                 "{VERSION_ID} create_account {username} {}\n",
                 self.password
             ));
@@ -1150,7 +1150,10 @@ impl<'a> Client {
         } else {
             let username = self.text_input.clone();
 
-            self.send(format!("{VERSION_ID} login {username} {}\n", self.password));
+            self.send(&format!(
+                "{VERSION_ID} login {username} {}\n",
+                self.password
+            ));
             self.username = username;
         }
 
@@ -1172,7 +1175,10 @@ impl<'a> Client {
         self.handle_play(None, &from.to_string(), &to.to_string());
 
         if self.archived_game_handle.is_none() {
-            self.send(format!("game {} play {} {from} {to}\n", self.game_id, turn));
+            self.send(&format!(
+                "game {} play {} {from} {to}\n",
+                self.game_id, turn
+            ));
 
             let game = self.game.as_ref().expect("you should have a game by now");
             if game.status == Status::Ongoing {
@@ -1722,9 +1728,9 @@ impl<'a> Client {
                 self.archived_games_filtered = None;
                 handle_error(self.save_client_postcard());
             }
-            Message::ArchivedGamesGet => self.send("archived_games\n".to_string()),
+            Message::ArchivedGamesGet => self.send("archived_games\n"),
             Message::ArchivedGameSelected(game) => self.archived_game_selected = Some(game),
-            Message::CancelGame(id) => self.send(format!("leave_game {id}\n")),
+            Message::CancelGame(id) => self.send(&format!("leave_game {id}\n")),
             Message::ChangeTheme(theme) => self.change_theme(theme),
             Message::BoardSizeSelected(size) => self.game_settings.board_size = size,
             Message::ConnectedTo(address) => self.connected_to = address,
@@ -1732,7 +1738,7 @@ impl<'a> Client {
             Message::DeleteAccount => self.delete_account(),
             Message::EmailEveryone => {
                 self.screen = Screen::EmailEveryone;
-                self.send("emails_bcc\n".to_string());
+                self.send("emails_bcc\n");
             }
             Message::EmailReset => self.reset_email(),
             Message::EstimateScore => self.estimate_score(),
@@ -1752,9 +1758,9 @@ impl<'a> Client {
             }
             Message::FocusNext => return focus_next(),
             Message::FocusPrevious => return focus_previous(),
-            Message::GameCancel(id) => self.send(format!("decline_game {id} switch\n")),
-            Message::GameAccept(id) => self.send(format!("join_game {id}\n")),
-            Message::GameDecline(id) => self.send(format!("decline_game {id}\n")),
+            Message::GameCancel(id) => self.send(&format!("decline_game {id} switch\n")),
+            Message::GameAccept(id) => self.send(&format!("join_game {id}\n")),
+            Message::GameDecline(id) => self.send(&format!("decline_game {id}\n")),
             Message::GameJoin(id) => self.join(id),
             Message::GameWatch(id) => self.watch(id),
             Message::HeatMap(_display) => self.heat_map_display = !self.heat_map_display,
@@ -1772,12 +1778,12 @@ impl<'a> Client {
                     self.request_draw = false;
 
                     if self.spectators.contains(&self.username) {
-                        self.send(format!("leave_game {}\n", self.game_id));
+                        self.send(&format!("leave_game {}\n", self.game_id));
                     }
                     self.spectators = Vec::new();
                 }
                 Screen::Games => {
-                    self.send("quit\n".to_string());
+                    self.send("quit\n");
                     self.connected_tcp = false;
                     self.text_input = self.username.clone();
                     self.screen = Screen::Login;
@@ -1818,7 +1824,7 @@ impl<'a> Client {
             Message::PasswordShow(_show) => self.toggle_show_password(),
             Message::PlayDraw => self.draw(),
             Message::PlayDrawDecision(draw) => {
-                self.send(format!("draw {} {draw}\n", self.game_id));
+                self.send(&format!("draw {} {draw}\n", self.game_id));
             }
             Message::PlayMoveFrom(vertex) => self.play_from = Some(vertex),
             Message::PlayMoveTo(to) => self.play_to(to),
@@ -2076,7 +2082,7 @@ impl<'a> Client {
             Message::Press1 => match self.screen {
                 Screen::AccountSettings | Screen::Login => self.reset_email(),
                 Screen::EmailEveryone | Screen::Users => {}
-                Screen::Games => self.send("archived_games\n".to_string()),
+                Screen::Games => self.send("archived_games\n"),
                 Screen::GameNew => self.game_settings.role_selected = Some(Role::Attacker),
                 Screen::Game | Screen::GameReview => {
                     if !(self.press_numbers[0]
@@ -2099,7 +2105,7 @@ impl<'a> Client {
             },
             Message::Press2 => match self.screen {
                 Screen::AccountSettings => {
-                    self.send(format!("change_password {}\n", self.password));
+                    self.send(&format!("change_password {}\n", self.password));
                 }
                 Screen::EmailEveryone | Screen::Users => {}
                 Screen::Games => self.my_games_only(),
@@ -2681,23 +2687,23 @@ impl<'a> Client {
             Message::TextSend => {
                 match self.screen {
                     Screen::AccountSettings => {
-                        self.send(format!("change_password {}\n", self.password));
+                        self.send(&format!("change_password {}\n", self.password));
                     }
                     Screen::EmailEveryone => {
                         // subject == self.text_input
                         let email = self.content.text().replace('\n', "\\n");
-                        self.send(format!("email_everyone {} {email}\n", self.text_input));
+                        self.send(&format!("email_everyone {} {email}\n", self.text_input));
                     }
                     Screen::Game => {
                         if !self.text_input.trim().is_empty() {
                             self.text_input.push('\n');
-                            self.send(format!("text_game {} {}", self.game_id, self.text_input));
+                            self.send(&format!("text_game {} {}", self.game_id, self.text_input));
                         }
                     }
                     Screen::Games => {
                         if !self.text_input.trim().is_empty() {
                             self.text_input.push('\n');
-                            self.send(format!("text {}", self.text_input));
+                            self.send(&format!("text {}", self.text_input));
                         }
                     }
                     Screen::GameNew | Screen::GameReview | Screen::Login | Screen::Users => {}
@@ -2708,13 +2714,13 @@ impl<'a> Client {
             Message::TextSendEmail => {
                 self.error_email = None;
 
-                self.send(format!("email {}\n", self.text_input));
+                self.send(&format!("email {}\n", self.text_input));
                 self.text_input.clear();
             }
             Message::TextSendEmailCode => {
                 self.error_email = None;
 
-                self.send(format!("email_code {}\n", self.text_input));
+                self.send(&format!("email_code {}\n", self.text_input));
             }
             Message::TextSendCreateAccount => self.create_account(),
             Message::TextSendLogin => self.login(),
@@ -2722,7 +2728,7 @@ impl<'a> Client {
                 self.counter = self.counter.wrapping_add(1);
                 if self.counter.is_multiple_of(25) {
                     self.now = Utc::now().timestamp_millis();
-                    self.send("ping\n".to_string());
+                    self.send("ping\n");
                 }
 
                 if let Some(game) = &mut self.game {
@@ -3012,7 +3018,7 @@ impl<'a> Client {
     fn resign(&mut self) {
         let game = self.game.as_ref().expect("you should have a game by now");
 
-        self.send(format!(
+        self.send(&format!(
             "game {} play {} resigns _\n",
             self.game_id, game.turn
         ));
@@ -3134,12 +3140,15 @@ impl<'a> Client {
 
     fn reset_password(&mut self) {
         if !self.connected_tcp {
-            self.send("tcp_connect\n".to_string());
+            self.send("tcp_connect\n");
             self.connected_tcp = true;
         }
 
         if self.screen == Screen::Login {
-            self.send(format!("{VERSION_ID} reset_password {}\n", self.text_input));
+            self.send(&format!(
+                "{VERSION_ID} reset_password {}\n",
+                self.text_input
+            ));
         }
     }
 
@@ -3667,7 +3676,7 @@ impl<'a> Client {
 
     fn reset_email(&mut self) {
         self.email = None;
-        self.send("email_reset\n".to_string());
+        self.send("email_reset\n");
     }
 
     fn reset_markers(&mut self) {
@@ -3727,15 +3736,18 @@ impl<'a> Client {
         Ok(())
     }
 
-    fn send(&mut self, string: String) {
-        handle_error(
-            self.tx
-                .as_mut()
-                .unwrap_or_else(|| {
-                    panic!("error sending {string:?}: you should have a tx available by now")
-                })
-                .send(string),
-        );
+    fn send(&mut self, string: &str) {
+        if let Err(error) = self
+            .tx
+            .as_mut()
+            .unwrap_or_else(|| {
+                panic!("error sending {string:?}: you should have a tx available by now")
+            })
+            .send(string.to_string())
+        {
+            error!("{error}: {string}");
+            exit(1);
+        }
     }
 
     fn send_estimate_score(&mut self, tree: Tree) {
