@@ -12,8 +12,7 @@ use std::{
     process::exit,
     str::{FromStr, SplitAsciiWhitespace},
     sync::mpsc,
-    thread::{self, sleep},
-    time::Duration,
+    thread,
 };
 
 use chrono::{Local, Utc};
@@ -447,11 +446,13 @@ fn pass_messages() -> impl Stream<Item = Message> {
                             }
 
                             if message_trim == "quit" {
-                                if cfg!(not(target_os = "redox")) {
-                                    tcp_stream
-                                        .shutdown(Shutdown::Both)
-                                        .expect("shutdown call failed");
+                                if cfg!(target_os = "redox") {
+                                    exit(0)
                                 }
+
+                                tcp_stream
+                                    .shutdown(Shutdown::Both)
+                                    .expect("shutdown call failed");
 
                                 return;
                             }
@@ -3738,7 +3739,6 @@ impl<'a> Client {
             .send(string.to_string())
         {
             error!("{error}: {string}");
-            sleep(Duration::from_millis(100));
             exit(1);
         }
     }
