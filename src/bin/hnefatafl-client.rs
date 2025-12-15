@@ -506,7 +506,7 @@ fn pass_messages() -> impl Stream<Item = Message> {
                             }
 
                             buffer.clear();
-                        } else {
+                        } else if cfg!(not(target_os = "redox")) {
                             info!("the TCP stream has closed");
                             continue 'start_over;
                         }
