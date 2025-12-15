@@ -1786,7 +1786,7 @@ impl<'a> Client {
                     self.heat_map_display = false;
                     self.screen = Screen::Login;
                 }
-                Screen::Login => exit(0),
+                Screen::Login => return iced::exit(),
             },
             Message::LocaleSelected(locale) => {
                 rust_i18n::set_locale(&locale.txt());
