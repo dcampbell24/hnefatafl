@@ -12,7 +12,8 @@ use std::{
     process::exit,
     str::{FromStr, SplitAsciiWhitespace},
     sync::mpsc,
-    thread,
+    thread::{self, sleep},
+    time::Duration,
 };
 
 use chrono::{Local, Utc};
@@ -3737,6 +3738,7 @@ impl<'a> Client {
             .send(string.to_string())
         {
             error!("{error}: {string}");
+            sleep(Duration::from_millis(100));
             exit(1);
         }
     }
