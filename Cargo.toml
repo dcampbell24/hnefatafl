@@ -78,6 +78,7 @@ default = ["client", "server"]
 client = ["dep:futures", "dep:iced", "dep:rodio", "dep:smol_str", "dep:webbrowser"]
 js = ["dep:wasm-bindgen", "getrandom/wasm_js"]
 server = ["dep:argon2", "dep:ctrlc", "dep:lettre", "dep:old_rand", "dep:password-hash"]
+website = []
 
 # client
 icon_2 = []
@@ -129,6 +130,7 @@ test = false
 
 [[bin]]
 name = "replace_strings"
+required-features = ["website"]
 bench = false
 test = false
 
