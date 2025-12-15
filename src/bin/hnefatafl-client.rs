@@ -380,7 +380,14 @@ fn estimate_score() -> impl Stream<Item = Message> {
                 };
 
                 loop {
-                    let tree = handle_error(rx.recv());
+                    let tree = match rx.recv() {
+                        Ok(tree) => tree,
+                        Err(error) => {
+                            error!("{error}");
+                            return;
+                        }
+                    };
+
                     let mut game = Game::from(&tree);
                     let generate_move = ai.generate_move(&mut game).expect("the game is ongoing");
 
@@ -402,6 +409,7 @@ fn open_url(url: &str) {
     }
 }
 
+#[allow(clippy::too_many_lines)]
 fn pass_messages() -> impl Stream<Item = Message> {
     stream::channel(
         100,
@@ -422,7 +430,14 @@ fn pass_messages() -> impl Stream<Item = Message> {
                     }
 
                     loop {
-                        let message = handle_error(rx.recv());
+                        let message = match rx.recv() {
+                            Ok(message) => message,
+                            Err(error) => {
+                                error!("{error}");
+                                let _ok = executor::block_on(sender.send(Message::Exit));
+                                return;
+                            }
+                        };
                         let message_trim = message.trim();
 
                         if message_trim == "tcp_connect" {
@@ -437,7 +452,14 @@ fn pass_messages() -> impl Stream<Item = Message> {
                     let mut sender_clone = sender.clone();
                     thread::spawn(move || {
                         loop {
-                            let message = handle_error(rx.recv());
+                            let message = match rx.recv() {
+                                Ok(message) => message,
+                                Err(error) => {
+                                    error!("{error}");
+                                    let _ok = executor::block_on(sender_clone.send(Message::Exit));
+                                    return;
+                                }
+                            };
                             let message_trim = message.trim();
 
                             if message_trim == "ping" {
