@@ -27,6 +27,7 @@ use hnefatafl_copenhagen::{
     draw::Draw,
     game::{Game, LegalMoves, TimeUnix},
     glicko::{CONFIDENCE_INTERVAL_95, Rating},
+    handle_error,
     heat_map::{Heat, HeatMap},
     locale::Locale,
     play::{BOARD_LETTERS, Plae, Plays, Vertex},
@@ -393,16 +394,6 @@ fn estimate_score() -> impl Stream<Item = Message> {
             });
         },
     )
-}
-
-fn handle_error<T, E: fmt::Display>(result: Result<T, E>) -> T {
-    match result {
-        Ok(value) => value,
-        Err(error) => {
-            error!("{error}");
-            exit(1)
-        }
-    }
 }
 
 fn open_url(url: &str) {
