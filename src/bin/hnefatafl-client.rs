@@ -455,9 +455,11 @@ fn pass_messages() -> impl Stream<Item = Message> {
                             }
 
                             if message_trim == "quit" {
-                                tcp_stream
-                                    .shutdown(Shutdown::Both)
-                                    .expect("shutdown call failed");
+                                if cfg!(not(target_os = "redox")) {
+                                    tcp_stream
+                                        .shutdown(Shutdown::Both)
+                                        .expect("shutdown call failed");
+                                }
 
                                 return;
                             }
