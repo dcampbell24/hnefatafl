@@ -12,7 +12,8 @@ use std::{
     process::exit,
     str::{FromStr, SplitAsciiWhitespace},
     sync::mpsc,
-    thread,
+    thread::{self, sleep},
+    time::Duration,
 };
 
 use chrono::{Local, Utc};
@@ -469,15 +470,11 @@ fn pass_messages() -> impl Stream<Item = Message> {
                             }
 
                             if message_trim == "quit" {
-                                if cfg!(target_os = "redox") {
-                                    drop(tcp_stream);
-                                    let _ok = executor::block_on(sender_clone.send(Message::Exit));
-                                    return;
+                                if cfg!(not(target_os = "redox")) {
+                                    tcp_stream
+                                        .shutdown(Shutdown::Both)
+                                        .expect("shutdown call failed");
                                 }
-
-                                tcp_stream
-                                    .shutdown(Shutdown::Both)
-                                    .expect("shutdown call failed");
 
                                 return;
                             }
@@ -490,6 +487,10 @@ fn pass_messages() -> impl Stream<Item = Message> {
                     handle_error(executor::block_on(
                         sender.send(Message::ConnectedTo(address.clone())),
                     ));
+
+                    if cfg!(target_os = "redox") {
+                        sleep(Duration::from_secs(1));
+                    }
 
                     let mut count = 0;
                     loop {
