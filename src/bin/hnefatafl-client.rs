@@ -529,6 +529,7 @@ fn pass_messages() -> impl Stream<Item = Message> {
                             continue 'start_over;
                         } else if cfg!(target_os = "redox") {
                             count += 1;
+                            buffer.clear();
                             println!("{count}");
                         } else {
                             info!("the TCP stream has closed");
