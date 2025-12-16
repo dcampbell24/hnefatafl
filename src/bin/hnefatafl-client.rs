@@ -434,7 +434,7 @@ fn pass_messages() -> impl Stream<Item = Message> {
                         let message = match rx.recv() {
                             Ok(message) => message,
                             Err(error) => {
-                                error!("rx: {error}");
+                                error!("rx (1): {error}");
                                 let _ok = executor::block_on(sender.send(Message::Exit));
                                 return;
                             }
@@ -456,7 +456,7 @@ fn pass_messages() -> impl Stream<Item = Message> {
                             let message = match rx.recv() {
                                 Ok(message) => message,
                                 Err(error) => {
-                                    error!("rx: {error}");
+                                    error!("rx (2): {error}");
                                     let _ok = executor::block_on(sender_clone.send(Message::Exit));
                                     return;
                                 }
@@ -492,7 +492,7 @@ fn pass_messages() -> impl Stream<Item = Message> {
                         sleep(Duration::from_secs(1));
                     }
 
-                    loop {
+                    for _ in 0..1_000_000 {
                         let bytes = handle_error(reader.read_line(&mut buffer));
                         if bytes > 0 {
                             let buffer_trim = buffer.trim();
