@@ -492,7 +492,7 @@ fn pass_messages() -> impl Stream<Item = Message> {
                         sleep(Duration::from_secs(1));
                     }
 
-                    loop {
+                    for _ in 0..100 {
                         let bytes = handle_error(reader.read_line(&mut buffer));
                         if bytes > 0 {
                             let buffer_trim = buffer.trim();
