@@ -492,7 +492,6 @@ fn pass_messages() -> impl Stream<Item = Message> {
                         sleep(Duration::from_secs(1));
                     }
 
-                    let mut count = 0;
                     loop {
                         let bytes = handle_error(reader.read_line(&mut buffer));
                         if bytes > 0 {
@@ -526,12 +525,9 @@ fn pass_messages() -> impl Stream<Item = Message> {
                             }
 
                             buffer.clear();
-                        } else if cfg!(not(target_os = "redox")) {
+                        } else {
                             info!("the TCP stream has closed");
                             continue 'start_over;
-                        } else {
-                            count += 1;
-                            println!("count: {count}");
                         }
                     }
                 }
