@@ -12,7 +12,8 @@ use std::{
     process::exit,
     str::{FromStr, SplitAsciiWhitespace},
     sync::mpsc,
-    thread,
+    thread::{self, sleep},
+    time::Duration,
 };
 
 use chrono::{Local, Utc};
@@ -470,9 +471,12 @@ fn pass_messages() -> impl Stream<Item = Message> {
 
                             if message_trim == "quit" {
                                 if cfg!(target_os = "redox") {
-                                    handle_error(executor::block_on(
-                                        sender_clone.send(Message::Exit),
-                                    ));
+                                    thread::spawn(async move || {
+                                        sleep(Duration::from_secs(1));
+                                        handle_error(executor::block_on(
+                                            sender_clone.send(Message::Exit),
+                                        ));
+                                    });
 
                                     return;
                                 }
