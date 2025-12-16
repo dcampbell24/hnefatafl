@@ -383,7 +383,7 @@ fn estimate_score() -> impl Stream<Item = Message> {
                     let tree = match rx.recv() {
                         Ok(tree) => tree,
                         Err(error) => {
-                            error!("{error}");
+                            error!("rx tree: {error}");
                             return;
                         }
                     };
@@ -433,7 +433,7 @@ fn pass_messages() -> impl Stream<Item = Message> {
                         let message = match rx.recv() {
                             Ok(message) => message,
                             Err(error) => {
-                                error!("{error}");
+                                error!("rx: {error}");
                                 let _ok = executor::block_on(sender.send(Message::Exit));
                                 return;
                             }
@@ -455,7 +455,7 @@ fn pass_messages() -> impl Stream<Item = Message> {
                             let message = match rx.recv() {
                                 Ok(message) => message,
                                 Err(error) => {
-                                    error!("{error}");
+                                    error!("rx: {error}");
                                     let _ok = executor::block_on(sender_clone.send(Message::Exit));
                                     return;
                                 }
