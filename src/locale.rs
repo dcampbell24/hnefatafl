@@ -19,6 +19,7 @@ pub enum Locale {
     Icelandic,
     IcelandicRunic,
     Swedish,
+    Korean,
 }
 
 impl Locale {
@@ -39,6 +40,7 @@ impl Locale {
             Self::Icelandic => "is-IS".to_string(),
             Self::IcelandicRunic => "is-RU".to_string(),
             Self::Swedish => "sv-SE".to_string(),
+            Self::Korean => "ko".to_string(),
         }
     }
 }
@@ -60,6 +62,7 @@ impl fmt::Display for Locale {
             Self::Icelandic => write!(f, "Íslenska"),
             Self::IcelandicRunic => write!(f, "ᛇᛋᛚᛂᚿᛋᚴᛁ ᚱᚤᛐᚢᚱᛁᚿᚿ (Íslenska Rúturinn)"),
             Self::Swedish => write!(f, "Svenska"),
+            Self::Korean => write!(f, "한국인"),
         }
     }
 }

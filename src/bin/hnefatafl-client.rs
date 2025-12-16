@@ -3590,6 +3590,7 @@ impl<'a> Client {
                     Locale::Icelandic,
                     Locale::IcelandicRunic,
                     Locale::Swedish,
+                    Locale::Korean,
                 ];
 
                 let locale = row![
