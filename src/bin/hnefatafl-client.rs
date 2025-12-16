@@ -471,6 +471,7 @@ fn pass_messages() -> impl Stream<Item = Message> {
                             if message_trim == "quit" {
                                 if cfg!(target_os = "redox") {
                                     drop(tcp_stream);
+                                    let _ok = executor::block_on(sender_clone.send(Message::Exit));
                                     return;
                                 }
 
@@ -490,7 +491,6 @@ fn pass_messages() -> impl Stream<Item = Message> {
                         sender.send(Message::ConnectedTo(address.clone())),
                     ));
 
-                    let mut count = 0;
                     loop {
                         let bytes = handle_error(reader.read_line(&mut buffer));
                         if bytes > 0 {
@@ -524,14 +524,7 @@ fn pass_messages() -> impl Stream<Item = Message> {
                             }
 
                             buffer.clear();
-                        } else if cfg!(target_os = "redox") && count > 5 {
-                            info!("the TCP stream has closed");
-                            continue 'start_over;
-                        } else if cfg!(target_os = "redox") {
-                            count += 1;
-                            buffer.clear();
-                            println!("{count}");
-                        } else {
+                        } else if cfg!(not(target_os = "redox")) {
                             info!("the TCP stream has closed");
                             continue 'start_over;
                         }
