@@ -96,7 +96,7 @@ In your terminal run the following to run the client with [Rust's][3] cargo:
 ```sh
 git clone https://github.com/dcampbell24/hnefatafl.git
 cd hnefatafl
-RUST_LOG=hnefatafl_client=debug cargo run --release --example hnefatafl-client
+RUST_LOG=hnefatafl_client=debug cargo run --release --bin hnefatafl-client
 ```
 
 [3]: https://www.rust-lang.org/learn/get-started
