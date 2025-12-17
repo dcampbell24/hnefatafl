@@ -1,5 +1,6 @@
 {
     "cSpell.words": [
+        "allocvec",
         "alsa",
         "bindgen",
         "devel",
@@ -34,6 +35,7 @@
         "signum",
         "skia",
         "smol",
+        "smolstr",
         "hnefatafl",
         "kcache",
         "pulseaudio",
