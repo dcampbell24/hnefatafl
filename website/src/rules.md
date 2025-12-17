@@ -1,4 +1,3 @@
-`
 <div id="google_translate_element"></div>
 <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 <script type="text/javascript">
@@ -6,7 +5,6 @@
     new google.translate.TranslateElement({pageLanguage: 'en'}, 'google_translate_element');
   }
 </script>
-`{=html}
 
 ## Rules
 
@@ -19,13 +17,13 @@ Based on the version that was last updated 21.12.2024.
 
 Copyright © 1998-2025 Aage Nielsen, All Rights Reserved;
 
-`A`: attacker\
-`a`: captured attacker\
-`K`: king\
-`k`: captured king\
-`D`: defender\
-`d`: captured defender\
-`R`: restricted space
+`A`: attacker  
+`a`: captured attacker  
+`K`: king  
+`k`: captured king  
+`D`: defender  
+`d`: captured defender  
+`R`: restricted space  
 
 [1]: https://aagenielsen.dk/copenhagen_rules.php
 
