@@ -5,7 +5,7 @@ use std::{
 };
 
 use anyhow::Error;
-use clap::{CommandFactory, Parser, command};
+use clap::{CommandFactory, Parser};
 use hnefatafl_copenhagen::{
     COPYRIGHT, LONG_VERSION, VERSION_ID,
     ai::AI,

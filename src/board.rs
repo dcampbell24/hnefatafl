@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 use crate::{
+    characters::Characters,
     game::PreviousBoards,
     play::{BOARD_LETTERS, Plae, Play, Vertex},
     role::Role,
@@ -712,6 +713,104 @@ impl Board {
                 }
             }
         }
+    }
+
+    #[must_use]
+    fn closed_off_exit(&self, exit: Vertex) -> bool {
+        let size = self.size();
+        let board_size_usize: usize = size.into();
+
+        let hasher = FxBuildHasher;
+        let mut already_checked =
+            FxHashSet::with_capacity_and_hasher(board_size_usize * board_size_usize, hasher);
+
+        already_checked.insert(exit);
+
+        let mut pre_stack = Vec::with_capacity(board_size_usize * board_size_usize);
+        let up = expand_flood_fill(exit.up(), &mut already_checked, &mut pre_stack);
+        let left = expand_flood_fill(exit.left(), &mut already_checked, &mut pre_stack);
+        let down = expand_flood_fill(exit.down(), &mut already_checked, &mut pre_stack);
+        let right = expand_flood_fill(exit.right(), &mut already_checked, &mut pre_stack);
+
+        if up
+            && left
+            && self.get(&pre_stack[0]) == Space::Attacker
+            && self.get(&pre_stack[1]) == Space::Attacker
+            && self.get(&pre_stack[0].up().unwrap()) == Space::Attacker
+            && self.get(&pre_stack[1].left().unwrap()) == Space::Attacker
+        {
+            return true;
+        }
+
+        if up
+            && right
+            && self.get(&pre_stack[0]) == Space::Attacker
+            && self.get(&pre_stack[1]) == Space::Attacker
+            && self.get(&pre_stack[0].up().unwrap()) == Space::Attacker
+            && self.get(&pre_stack[1].right().unwrap()) == Space::Attacker
+        {
+            return true;
+        }
+
+        if left
+            && down
+            && self.get(&pre_stack[0]) == Space::Attacker
+            && self.get(&pre_stack[1]) == Space::Attacker
+            && self.get(&pre_stack[0].left().unwrap()) == Space::Attacker
+            && self.get(&pre_stack[1].down().unwrap()) == Space::Attacker
+        {
+            return true;
+        }
+
+        if down
+            && right
+            && self.get(&pre_stack[0]) == Space::Attacker
+            && self.get(&pre_stack[1]) == Space::Attacker
+            && self.get(&pre_stack[0].down().unwrap()) == Space::Attacker
+            && self.get(&pre_stack[1].right().unwrap()) == Space::Attacker
+        {
+            return true;
+        }
+
+        let mut stack = Vec::with_capacity(board_size_usize * board_size_usize);
+        for vertex in pre_stack {
+            let space = self.get(&vertex);
+            if space == Space::Empty || space == Space::Attacker {
+                let _ = expand_flood_fill(vertex.up(), &mut already_checked, &mut stack);
+                let _ = expand_flood_fill(vertex.left(), &mut already_checked, &mut stack);
+                let _ = expand_flood_fill(vertex.down(), &mut already_checked, &mut stack);
+                let _ = expand_flood_fill(vertex.right(), &mut already_checked, &mut stack);
+            }
+        }
+
+        while !stack.is_empty() {
+            if let Some(vertex) = stack.pop() {
+                let space = self.get(&vertex);
+                if space == Space::Empty {
+                    let _ = expand_flood_fill(vertex.up(), &mut already_checked, &mut stack);
+                    let _ = expand_flood_fill(vertex.left(), &mut already_checked, &mut stack);
+                    let _ = expand_flood_fill(vertex.down(), &mut already_checked, &mut stack);
+                    let _ = expand_flood_fill(vertex.right(), &mut already_checked, &mut stack);
+                } else if Into::<Role>::into(space) == Role::Defender {
+                    return false;
+                }
+            }
+        }
+
+        true
+    }
+
+    #[must_use]
+    pub fn closed_off_exits(&self) -> u8 {
+        let mut closed_off_exits = 0;
+
+        for exit in self.exit_squares() {
+            if self.closed_off_exit(exit) {
+                closed_off_exits += 1;
+            }
+        }
+
+        closed_off_exits
     }
 
     #[must_use]
@@ -1525,15 +1624,16 @@ pub struct Captured {
 
 impl Captured {
     #[must_use]
-    pub fn attacker(&self) -> String {
-        format!("♟ {}", self.attacker)
+    pub fn attacker(&self, chars: &Characters) -> String {
+        format!("{} {}", chars.attacker, self.attacker)
     }
 
     #[must_use]
-    pub fn defender(&self) -> String {
-        let mut string = format!("♙ {}", self.defender);
+    pub fn defender(&self, chars: &Characters) -> String {
+        let mut string = format!("{} {}", chars.defender, self.defender);
         if self.king {
-            string.push_str(" ♔");
+            string.push(' ');
+            string.push_str(&chars.king);
         }
         string
     }

@@ -3,10 +3,10 @@ use std::fmt;
 use anyhow::Context;
 use serde::{Deserialize, Serialize};
 
-const DAY: i64 = 24 * 60 * 60 * 1_000;
-const HOUR: i64 = 60 * 60 * 1_000;
-const MINUTE: i64 = 60 * 1_000;
-const SECOND: i64 = 1_000;
+pub const DAY: i64 = 24 * 60 * 60 * 1_000;
+pub const HOUR: i64 = 60 * 60 * 1_000;
+pub const MINUTE: i64 = 60 * 1_000;
+pub const SECOND: i64 = 1_000;
 
 #[derive(Clone, Copy, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
 pub struct Time {
@@ -126,7 +126,7 @@ impl fmt::Display for TimeSettings {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Timed(time) => write!(f, "{time}"),
-            Self::UnTimed => write!(f, "-"),
+            Self::UnTimed => write!(f, "∞"),
         }
     }
 }

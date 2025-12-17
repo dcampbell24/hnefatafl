@@ -15,6 +15,7 @@ Accept:
   is-IS: Samþykkja
   is-RU: ᛋᛆᛘᚦᛣᚴᚴᛃᛆ
   sv-SE: Acceptera
+  ko: 수용하다
 
 Accept Draw:
   en-US: Accept Draw
@@ -31,6 +32,7 @@ Accept Draw:
   is-IS: amþykkja jafntefli
   is-RU: ᛆᛘᚦᛣᚴᚴᛃᛆ ᛃᛆᚠᚿᛐᛂᚠᛚᛁ
   sv-SE: Acceptera oavgjort
+  ko: 무승부 수락
 
 Account Settings:
   en-US: Account Settings
@@ -47,6 +49,7 @@ Account Settings:
   is-IS: Reikningsstillingar
   is-RU: ᚱᛂᛁᚴᚿᛁᚿᚵᛋᛋᛐᛁᛚᛚᛁᚿᚵᛆᚱ
   sv-SE: Kontoinställningar
+  ko: 계정 설정
 
 Archived Games:
   en-US: Archived Games
@@ -63,6 +66,24 @@ Archived Games:
   is-IS: Geymdir leikir
   is-RU: ᚵᛂᛣᛘᛑᛁᚱ ᛚᛂᛁᚴᛁᚱ
   sv-SE: Arkiverade spel
+  ko: 보관된 게임
+
+Attacker:
+  en-US: Attacker
+  zh-CN: 攻击者
+  es: Agresor
+  ar: مهاجم
+  id: Penyerang
+  pt-BR: Atacante
+  pt-PT: Atacante
+  fr: Attaquant
+  ja: アタッカー
+  ru: нападающий
+  de: Angreifer
+  is-IS: Árásarmaður
+  is-RU: ᚨᚱᚨᛋᛆᚱᛘᛆᚧᚢᚱ
+  sv-SE: Angripare
+  ko: 공격자
 
 Attacker wins!:
   en-US: Attacker wins!
@@ -79,6 +100,24 @@ Attacker wins!:
   is-IS: Sóknarmaðurinn vinnur!
   is-RU: ᛋᛟᚴᚿᛆᚱᛘᛆᚧᚢᚱᛁᚿᚿ ᚡᛁᚿᚿᚢᚱ!
   sv-SE: Anfallaren vinner!
+  ko: 공격자가 승리했습니다!
+
+Cancel:
+  en-US: Cancel
+  zh-CN: 取消
+  es: Cancelar
+  ar: يلغي
+  id: Membatalkan
+  pt-BR: Cancelar
+  pt-PT: Cancelar
+  fr: Annuler
+  ja: キャンセル
+  ru: Отмена
+  de: Stornieren
+  is-IS: Hætta við
+  is-RU: ᚼᛅᛐᛐᛆ ᚡᛁᚧ
+  sv-SE: Avboka
+  ko: 취소
 
 Change Password:
   en-US: Change Password
@@ -95,6 +134,24 @@ Change Password:
   is-IS: Breyta lykilorði
   is-RU: ᛒᚱᛂᛣᛐᛆ ᛚᛣᚴᛁᛚᚮᚱᚧᛁ
   sv-SE: Ändra lösenord
+  ko: 비밀번호 변경
+
+Coordinates:
+  en-US: Coordinates
+  zh-CN: 坐标
+  es: Coordenadas
+  ar: الإحداثيات
+  id: Koordinat
+  pt-BR: Coordenadas
+  pt-PT: Coordenadas
+  fr: Coordonnés
+  ja: 座標
+  ru: Координаты
+  de: Koordinaten
+  is-IS: Hnit
+  is-RU: ᚼᚿᛁᛐ
+  sv-SE: Koordinater
+  ko: 좌표
 
 Create Account:
   en-US: Create Account
@@ -111,6 +168,7 @@ Create Account:
   is-IS: Stofna aðgang
   is-RU: ᛋᛐᚮᚠᚿᛆ ᛆᚧᚵᛆᚿᚵ
   sv-SE: Skapa konto
+  ko: 계정 만들기
 
 Create Game:
   en-US: Create Game
@@ -127,6 +185,7 @@ Create Game:
   is-IS: Búa til leik
   is-RU: ᛒᚤᛆ ᛐᛁᛚ ᛚᛂᛁᚴ
   sv-SE: Skapa spel
+  ko: 게임 만들기
 
 Dark:
   en-US: Dark
@@ -143,6 +202,7 @@ Dark:
   is-IS: Dökkt
   is-RU: ᛑᚯᚴᚴᛐ
   sv-SE: Mörk
+  ko: 어두운
 
 Decline:
   en-US: Decline
@@ -159,6 +219,24 @@ Decline:
   is-IS: Hafna
   is-RU: ᚼᛆᚠᚿᛆ
   sv-SE: Nedgång
+  ko: 감소
+
+Defender:
+  en-US: Defender
+  zh-CN: 后卫
+  es: Defensor
+  ar: مناصر
+  id: Pembela
+  pt-BR: Defensor
+  pt-PT: Defensor
+  fr: Défenseur
+  ja: ディフェンダー
+  ru: защитник
+  de: Verteidiger
+  is-IS: Varnarmaður
+  is-RU: ᚡᛆᚱᚿᛆᚱᛘᛆᚧᚢᚱ
+  sv-SE: Försvarare
+  ko: 방어자
 
 Defender wins!:
   en-US: Defender wins!
@@ -175,6 +253,7 @@ Defender wins!:
   is-IS: Varnarmaðurinn vinnur!
   is-RU: ᚡᛆᚱᚿᛆᚱᛘᛆᚧᚢᚱᛁᚿᚿ ᚡᛁᚿᚿᚢᚱ!
   sv-SE: Försvararen vinner!
+  ko: 수비수가 승리했습니다!
 
 Delete Account:
   en-US: Delete Account
@@ -191,6 +270,7 @@ Delete Account:
   is-IS: Eyða reikningi
   is-RU: ᛂᛣᚧᛆ ᚱᛂᛁᚴᚿᛁᚿᚵᛁ
   sv-SE: Ta bort konto
+  ko: 계정 삭제
 
 Error opening the file:
   en-US: Error opening the file
@@ -207,6 +287,7 @@ Error opening the file:
   is-IS: Villa við að opna skrána
   is-RU: ᚡᛁᛚᛚᛆ ᚡᛁᚧ ᛆᚧ ᚮᛔᚿᛆ ᛋᚴᚱᚨᚿᛆ
   sv-SE: Det gick inte att öppna filen
+  ko: 파일을 여는 중 오류가 발생했습니다
 
 Get Archived Games:
   en-US: Get Archived Games
@@ -223,6 +304,7 @@ Get Archived Games:
   is-IS: Fáðu geymda leiki
   is-RU: ᚠᚨᚧᚢ ᚵᛂᛣᛘᛑᛆ ᛚᛂᛁᚴᛁ
   sv-SE: Hämta arkiverade spel
+  ko: 보관된 게임을 가져오세요
 
 Heat Map:
   en-US: Heat Map
@@ -239,6 +321,7 @@ Heat Map:
   is-IS: Hitakort
   is-RU: ᚼᛁᛐᛆᚴᚮᚱᛐ
   sv-SE: Värmekarta
+  ko: 히트 맵
 
 ID:
   en-US: ID
@@ -255,6 +338,7 @@ ID:
   is-IS: Auðkenni
   is-RU: ᛆᚢᚧᚴᛂᚿᚿᛁ
   sv-SE: ID
+  ko: ID
 
 It's a draw.:
   en-US: It's a draw.
@@ -271,6 +355,7 @@ It's a draw.:
   is-IS: Það er jafntefli.
   is-RU: ᚦᛆᚧ ᛂᚱ ᛃᛆᚠᚿᛐᛂᚠᛚᛁ.
   sv-SE: Det är oavgjort.
+  ko: 무승부입니다.
 
 Join:
   en-US: Join
@@ -287,6 +372,7 @@ Join:
   is-IS: Vertu með
   is-RU: ᚡᛂᚱᛐᚢ ᛘᛂᚧ
   sv-SE: Ansluta sig till
+  ko: 가입하다
 
 Join Discord:
   en-US: Join Discord
@@ -303,6 +389,7 @@ Join Discord:
   is-IS: Vertu með Discord
   is-RU: ᚡᛂᚱᛐᚢ ᛘᛂᚧ Discord
   sv-SE: Ansluta sig till Discord
+  ko: 가입하다 Discord
 
 Leave:
   en-US: Leave
@@ -319,6 +406,7 @@ Leave:
   is-IS: Fara
   is-RU: ᚠᛆᚱᛆ
   sv-SE: Lämna
+  ko: 떠나다
 
 Light:
   en-US: Light
@@ -335,6 +423,7 @@ Light:
   is-IS: Ljós
   is-RU: ᛚᛃᛟᛋ
   sv-SE: Ljus
+  ko: 빛
 
 Login:
   en-US: Login
@@ -351,6 +440,7 @@ Login:
   is-IS: Innskráning
   is-RU: ᛁᚿᚿᛋᚴᚱᚨᚿᛁᚿᚵ
   sv-SE: Inloggning
+  ko: 로그인
 
 Muted:
   en-US: Muted
@@ -367,22 +457,24 @@ Muted:
   is-IS: Þaggað
   is-RU: ᚦᛆᚵᚵᛆᚧ
   sv-SE: Ljudlös
+  ko: 음소거됨
 
 My Games Only:
   en-US: My Games Only
   zh-CN: 仅限我的游戏
-  es: Solo mis juegos
+  es: Solo Mis Juegos
   ar: ألعابي فقط
   id: Hanya Game Saya
-  pt-BR: Somente meus jogos
-  pt-PT: Somente os meus jogos
-  fr: Mes jeux uniquement
+  pt-BR: Somente Meus Jogos
+  pt-PT: Somente Os Meus Jogos
+  fr: Mes Jeux Uniquement
   ja: 私のゲームのみ
-  ru: Только мои игры
-  de: Nur meine Spiele
-  is-IS: Aðeins mínir leikir
+  ru: tолько мои игры
+  de: Nur Meine Spiele
+  is-IS: Aðeins Mínir Leikir
   is-RU: ᛆᚧᛂᛁᚿᛋ ᛘᛇᚿᛁᚱ ᛚᛂᛁᚴᛁᚱ
-  sv-SE: Bara mina spel
+  sv-SE: Bara Mina Spel
+  ko: 내 게임만 보기
 
 New Game:
   en-US: New Game
@@ -399,6 +491,24 @@ New Game:
   is-IS: Nýr leikur
   is-RU: ᚿᛨᚱ ᛚᛂᛁᚴᚢᚱ
   sv-SE: Nytt spel
+  ko: 새 게임
+
+Size:
+  en-US: Size
+  zh-CN: 尺寸
+  es: Tamaño
+  ar: مقاس
+  id: Ukuran
+  pt-BR: Tamanho
+  pt-PT: Tamanho
+  fr: Taille
+  ja: サイズ
+  ru: размер
+  de: Größe
+  is-IS: Stærð
+  is-RU: ᛋᛐᛅᚱᚧ
+  sv-SE: Storlek
+  ko: 크기
 
 Unable to find Archived Games file:
   en-US: Unable to find Archived Games file
@@ -415,6 +525,41 @@ Unable to find Archived Games file:
   is-IS: Finn ekki skrá úr skjalasafni leikja
   is-RU: ᚠᛁᚿᚿ ᛂᚴᚴᛁ ᛋᚴᚱᚨ ᚤᚱ ᛋᚴᛃᛆᛚᛆᛋᛆᚠᚿᛁ ᛚᛂᛁᚴᛃᛆ
   sv-SE: Det gick inte att hitta filen med arkiverade spel
+  ko: 보관된 게임 파일을 찾을 수 없습니다
+
+You must hold down the control (Ctrl) or command (⌘) key when pressing a lettered or numbered hotkey.:
+  en-US: You must hold down the control (Ctrl) or command (⌘) key when pressing a lettered or numbered hotkey.
+  zh-CN: 按下字母或数字快捷键时，必须同时按住控制键 (Ctrl) 或命令键 (⌘)。
+  es: Debes mantener pulsada la tecla Control (Ctrl) o Comando (⌘) al pulsar una tecla de acceso rápido con una letra o un número.
+  ar: يجب عليك الضغط باستمرار على مفتاح التحكم (Ctrl) أو مفتاح الأوامر (⌘) عند الضغط على مفتاح اختصار يتكون من حرف أو رقم.
+  id: Anda harus menekan dan menahan tombol kontrol (Ctrl) atau perintah (⌘) saat menekan tombol pintasan berupa huruf atau angka.
+  pt-BR: Você deve manter pressionada a tecla Control (Ctrl) ou Command (⌘) ao pressionar uma tecla de atalho com letra ou número.
+  pt-PT: Deve manter premida a tecla Control (Ctrl) ou Command (⌘) quando premir uma tecla de atalho com letra ou número.
+  fr: Vous devez maintenir la touche de contrôle (Ctrl) ou de commande (⌘) enfoncée lorsque vous appuyez sur une touche de raccourci comportant une lettre ou un chiffre.
+  ja: 文字または数字のショートカットキーを押す際は、コントロール（Ctrl）キーまたはコマンド（⌘）キーを押し続ける必要があります。
+  ru: При нажатии буквенной или цифровой горячей клавиши необходимо удерживать клавишу Control (Ctrl) или Command (⌘).
+  de: Sie müssen die Strg-Taste (Ctrl) oder die Befehlstaste (⌘) gedrückt halten, wenn Sie eine Tastenkombination mit einem Buchstaben oder einer Zahl verwenden.
+  is-IS: Þú verður að halda niðri Ctrl eða Command (⌘) takkanum þegar þú ýtir á flýtilykla með bókstöfum eða tölum.
+  is-RU: ᚦᚤ ᚡᛂᚱᚧᚢᚱ ᛆᚧ ᚼᛆᛚᛑᛆ ᚿᛁᚧᚱᛁ ᚴᛐᚱᛚ (Ctrl) ᛂᚧᛆ ᚴᚮᛘᛘᛆᚿᛑ (⌘) ᛐᛆᚴᚴᛆᚿᚢᛘ ᚦᛂᚵᛆᚱ ᚦᚤ ᛨᛐᛁᚱ ᚨ ᚠᛚᛨᛐᛁᛚᛣᚴᛚᛆ ᛘᛂᚧ ᛒᛟᚴᛋᛐᚯᚠᚢᛘ ᛂᚧᛆ ᛐᚯᛚᚢᛘ.
+  sv-SE: Du måste hålla ner Ctrl-tangenten (Ctrl) eller kommandotangenten (⌘) när du trycker på en snabbtangent med bokstäver eller siffror.
+  ko: 문자 또는 숫자가 포함된 단축키를 누를 때는 반드시 컨트롤(Ctrl) 키 또는 커맨드(⌘) 키를 누른 상태에서 눌러야 합니다.
+
+You can play on the board by pressing control (Ctrl) or command (⌘) and a letter then a number or vice versa.:
+  en-US: You can play on the board by pressing control (Ctrl) or command (⌘) and a letter then a number or vice versa.
+  zh-CN: 您可以通过按下控制键（Ctrl）或命令键（⌘）以及一个字母和一个数字（或反过来）来在棋盘上进行操作。
+  es: Puedes jugar en el tablero pulsando la tecla Control (Ctrl) o Comando (⌘) seguida de una letra y luego un número, o viceversa.
+  ar: يمكنك اللعب على اللوحة بالضغط على مفتاح التحكم (Ctrl) أو مفتاح الأوامر (⌘) وحرف ثم رقم أو العكس.
+  id: Anda dapat bermain di papan permainan dengan menekan tombol kontrol (Ctrl) atau perintah (⌘) dan sebuah huruf lalu sebuah angka atau sebaliknya.
+  pt-BR: Você pode jogar no tabuleiro pressionando a tecla Control (Ctrl) ou Command (⌘) e uma letra seguida de um número, ou vice-versa.
+  pt-PT: Pode jogar no tabuleiro premindo a tecla Control (Ctrl) ou Command (⌘) e uma letra seguida de um número, ou vice-versa.
+  fr: Vous pouvez jouer sur le plateau en appuyant sur la touche de contrôle (Ctrl) ou de commande (⌘) suivie d'une lettre puis d'un chiffre, ou inversement.
+  ja: ボード上で操作するには、コントロールキー（Ctrl）またはコマンドキー（⌘）を押しながら、文字と数字を順番に入力するか、あるいはその逆の順番で入力します。
+  ru: Вы можете играть на доске, нажимая клавишу Control (Ctrl) или Command (⌘), а затем букву и цифру или наоборот.
+  de: Sie können auf dem Spielbrett spielen, indem Sie die Steuerungstaste (Strg) oder die Befehlstaste (⌘) und anschließend einen Buchstaben und eine Zahl drücken oder umgekehrt.
+  is-IS: Þú getur spilað á borðinu með því að ýta á Ctrl eða Command (⌘) og staf og svo tölu eða öfugt.
+  is-RU: ᚦᚤ ᚵᛂᛐᚢᚱ ᛋᛔᛁᛚᛆᚧ ᚨ ᛒᚮᚱᚧᛁᚿᚢ ᛘᛂᚧ ᚦᚡᛇ ᛆᚧ ᛨᛐᛆ ᚨ ᚴᛐᚱᛚ (Ctrl) ᛂᚧᛆ ᚴᚮᛘᛘᛆᚿᛑ (⌘) ᚮᚵ ᛋᛐᛆᚠ ᚮᚵ ᛋᚡᚮ ᛐᚯᛚᚢ ᛂᚧᛆ ᚯᚠᚢᚵᛐ.
+  sv-SE: Du kan spela på spelplanen genom att trycka på Ctrl (Ctrl) eller Command (⌘) och en bokstav sedan en siffra eller vice versa.
+  ko: 키보드에서 Control(Ctrl) 키 또는 Command(⌘) 키를 누른 상태에서 글자 키와 숫자 키를 순서대로 누르거나, 숫자 키와 글자 키를 순서대로 누르면 보드에서 게임을 진행할 수 있습니다.
 
 Quit:
   en-US: Quit
@@ -431,6 +576,7 @@ Quit:
   is-IS: Hætta
   is-RU: ᚼᛅᛐᛐᛆ
   sv-SE: Sluta
+  ko: 그만두다
 
 REALLY DELETE ACCOUNT:
   en-US: REALLY DELETE ACCOUNT
@@ -447,6 +593,7 @@ REALLY DELETE ACCOUNT:
   is-IS: Eyða virkilega reikningi
   is-RU: ᛂᛣᚧᛆ ᚡᛁᚱᚴᛁᛚᛂᚵᛆ ᚱᛂᛁᚴᚿᛁᚿᚵᛁ
   sv-SE: Ta bort kontot på riktigt
+  ko: 정말로 계정을 삭제하시겠습니까
 
 Request Draw:
   en-US: Request Draw
@@ -463,6 +610,7 @@ Request Draw:
   is-IS: Beiðni um drátt
   is-RU: ᛒᛂᛁᚧᚿᛁ ᚢᛘ ᛑᚱᚨᛐᛐ
   sv-SE: Begär lottning
+  ko: 그림 요청
 
 Reset Email:
   en-US: Reset Email
@@ -479,6 +627,7 @@ Reset Email:
   is-IS: Endurstilla tölvupóst
   is-RU: ᛂᚿᛑᚢᚱᛋᛐᛁᛚᛚᛆ ᛐᚯᛚᚡᚢᛔᛟᛋᛐ
   sv-SE: Återställ e-post
+  ko: 이메일 재설정
 
 Reset Password:
   en-US: Reset Password
@@ -495,6 +644,7 @@ Reset Password:
   is-IS: Endurstilla lykilorð
   is-RU: ᛂᚿᛑᚢᚱᛋᛐᛁᛚᛚᛆ ᛚᛣᚴᛁᛚᚮᚱᚧ
   sv-SE: Återställ lösenord
+  ko: 비밀번호 재설정
 
 Resign:
   en-US: Resign
@@ -511,6 +661,7 @@ Resign:
   is-IS: Segja upp
   is-RU: ᛋᛂᚵᛃᛆ ᚢᛔᛔ
   sv-SE: Avgå
+  ko: 사직하다
 
 Resume:
   en-US: Resume
@@ -527,6 +678,7 @@ Resume:
   is-IS: Ferilskrá
   is-RU: ᚠᛂᚱᛁᛚᛋᚴᚱᚨ
   sv-SE: Resume
+  ko: 재개하다
 
 Review Game:
   en-US: Review Game
@@ -543,6 +695,7 @@ Review Game:
   is-IS: Umsögn um leik
   is-RU: ᚢᛘᛋᚯᚵᚿ ᚢᛘ ᛚᛂᛁᚴ
   sv-SE: Recensera spelet
+  ko: 게임 리뷰
 
 Rules:
   en-US: Rules
@@ -559,6 +712,7 @@ Rules:
   is-IS: Reglur
   is-RU: ᚱᛂᚵᛚᚢᚱ
   sv-SE: Regler
+  ko: 규칙
 
 Users:
   en-US: Users
@@ -575,6 +729,7 @@ Users:
   is-IS: Notendur
   is-RU: ᚿᚮᛐᛂᚿᛑᚢᚱ
   sv-SE: Användare
+  ko: 사용자
 
 Watch:
   en-US: Watch
@@ -591,6 +746,7 @@ Watch:
   is-IS: Horfa
   is-RU: ᚼᛆᚠᚿᛆ
   sv-SE: Titta
+  ko: 보다
 
 add hours:
   en-US: add hours
@@ -607,6 +763,7 @@ add hours:
   is-IS: bæta við opnunartíma
   is-RU: ᛒᛅᛐᛆ ᚡᛁᚧ ᚮᛔᚿᚢᚿᛆᚱᛐᛇᛘᛆ
   sv-SE: lägg till öppettider
+  ko: 시간 추가
 
 add minutes:
   en-US: add minutes
@@ -623,6 +780,7 @@ add minutes:
   is-IS: bæta við mínútum
   is-RU: ᛒᛅᛐᛆ ᚡᛁᚧ ᛘᛇᚿᚤᛐᚢᛘ
   sv-SE: lägg till minuter
+  ko: 분 추가
 
 add seconds:
   en-US: add seconds
@@ -639,6 +797,7 @@ add seconds:
   is-IS: bæta við sekúndum
   is-RU: ᛒᛅᛐᛆ ᚡᛁᚧ ᛋᛂᚴᚤᚿᛑᚢᛘ
   sv-SE: lägg till sekunder
+  ko: 초 추가
 
 attacker:
   en-US: attacker
@@ -655,6 +814,7 @@ attacker:
   is-IS: árásarmaður
   is-RU: ᚨᚱᚨᛋᛆᚱᛘᛆᚧᚢᚱ
   sv-SE: angripare
+  ko: 공격자
 
 board size:
   en-US: board size
@@ -671,6 +831,7 @@ board size:
   is-IS: stærð borðs
   is-RU: ᛋᛐᛅᚱᚧ ᛒᚮᚱᚧᛋ
   sv-SE: brädestorlek
+  ko: 보드 크기
 
 connected to:
   en-US: connected to
@@ -687,6 +848,7 @@ connected to:
   is-IS: tengdur við
   is-RU: ᛐᛂᚿᚵᛑᚢᚱ ᚡᛁᚧ
   sv-SE: ansluten till
+  ko: ~에 연결됨
 
 days:
   en-US: days
@@ -703,6 +865,7 @@ days:
   is-IS: dagar
   is-RU: ᛑᛆᚵᛆᚱ
   sv-SE: dagar
+  ko: 날
 
 defender:
   en-US: defender
@@ -719,6 +882,7 @@ defender:
   is-IS: varnarmaður
   is-RU: ᚡᛆᚱᚿᛆᚱᛘᛆᚧᚢᚱ
   sv-SE: försvarare
+  ko: 방어자
 
 draws:
   en-US: draws
@@ -735,6 +899,7 @@ draws:
   is-IS: teiknar
   is-RU: ᛐᛂᛁᚴᚿᛆᚱ
   sv-SE: dragningar
+  ko: 그림
 
 email address:
   en-US: email address
@@ -751,6 +916,7 @@ email address:
   is-IS: netfang
   is-RU: ᚿᛂᛐᚠᛆᚿᚵ
   sv-SE: e-postadress
+  ko: 이메일 주소
 
 email code:
   en-US: email code
@@ -767,6 +933,7 @@ email code:
   is-IS: netfangskóði
   is-RU: ᚿᛂᛐᚠᛆᚿᚵᛋᚴᛟᚧᛁ
   sv-SE: e-post koda
+  ko: 이메일 코드
 
 hours:
   en-US: hours
@@ -783,6 +950,7 @@ hours:
   is-IS: klukkustundir
   is-RU: ᚴᛚᚢᚴᚴᚢᛋᛐᚢᚿᛑᛁᚱ
   sv-SE: timmar
+  ko: 시간
 
 lag:
   en-US: lag
@@ -799,6 +967,7 @@ lag:
   is-IS: töf
   is-RU: ᛐᚯᚠ
   sv-SE: eftersläpning
+  ko: 지연
 
 locale:
   en-US: locale
@@ -815,6 +984,7 @@ locale:
   is-IS: staðsetning
   is-RU: ᛋᛐᛆᚧᛋᛂᛐᚿᛁᚿᚵ
   sv-SE: språk
+  ko: 장소
 
 logged in:
   en-US: logged in
@@ -831,6 +1001,7 @@ logged in:
   is-IS: innskráð(ur)
   is-RU: ᛁᚿᚿᛋᚴᚱᚨᚧ(ᚢᚱ)
   sv-SE: inloggad
+  ko: 로그인됨
 
 logged out:
   en-US: logged out
@@ -847,6 +1018,7 @@ logged out:
   is-IS: útskráð(ur)
   is-RU: ᚤᛐᛋᚴᚱᚨᚧ(ᚢᚱ)
   sv-SE: utloggad
+  ko: 로그아웃되었습니다
 
 losses:
   en-US: losses
@@ -863,6 +1035,7 @@ losses:
   is-IS: tap
   is-RU: ᛐᛆᛔ
   sv-SE: förluster
+  ko: 사상자 수
 
 message:
   en-US: message
@@ -879,6 +1052,7 @@ message:
   is-IS: skilaboð
   is-RU: ᛋᚴᛁᛚᛆᛒᚮᚧ
   sv-SE: meddelande
+  ko: 메시지
 
 minutes:
   en-US: minutes
@@ -895,6 +1069,7 @@ minutes:
   is-IS: mínútur
   is-RU: ᛘᛇᚿᚤᛐᚢᚱ
   sv-SE: minuter
+  ko: 분
 
 move:
   en-US: move
@@ -911,6 +1086,7 @@ move:
   is-IS: færa
   is-RU: ᚠᛅᚱᛆ
   sv-SE: flytta
+  ko: 이동하다
 
 no:
   en-US: no
@@ -927,6 +1103,7 @@ no:
   is-IS: nei
   is-RU: ᚿᛂᛁ
   sv-SE: inga
+  ko: 아니요
 
 none:
   en-US: none
@@ -943,6 +1120,7 @@ none:
   is-IS: enginn
   is-RU: ᛂᚿᚵᛁᚿᚿ
   sv-SE: ingen
+  ko: 없음
 
 password:
   en-US: password
@@ -959,22 +1137,24 @@ password:
   is-IS: lykilorð
   is-RU: ᛚᛣᚴᛁᛚᚮᚱᚧ
   sv-SE: lösenord
+  ko: 비밀번호
 
 rated:
- en-US: rated
- zh-CN: 额定
- es: calificado
- ar: مصنف
- id: dinilai
- pt-BR: classificado
- pt-PT: classificado
- fr: évalué
- ja: 評価
- ru: оцененный
- de: bewertet
- is-IS: metið
- is-RU: ᛘᛂᛐᛁᚧ
- sv-SE: betygsatt
+  en-US: rated
+  zh-CN: 额定
+  es: calificado
+  ar: مصنف
+  id: dinilai
+  pt-BR: classificado
+  pt-PT: classificado
+  fr: évalué
+  ja: 評価
+  ru: оцененный
+  de: bewertet
+  is-IS: metið
+  is-RU: ᛘᛂᛐᛁᚧ
+  sv-SE: betygsatt
+  ko: 평가됨
 
 rating:
   en-US: rating
@@ -991,6 +1171,7 @@ rating:
   is-IS: einkunn
   is-RU: ᛂᛁᚿᚴᚢᚿᚿ
   sv-SE: gradering
+  ko: 평가
 
 role:
   en-US: role
@@ -1007,6 +1188,7 @@ role:
   is-IS: hlutverk
   is-RU: ᚼᛚᚢᛐᚡᛂᚱᚴ
   sv-SE: roll
+  ko: 역할
 
 save password:
   en-US: save password
@@ -1023,6 +1205,7 @@ save password:
   is-IS: vista lykilorð
   is-RU: ᚡᛁᛋᛐᛆ ᛚᛣᚴᛁᛚᚮᚱᚧ
   sv-SE: spara lösenord
+  ko: 비밀번호 저장
 
 show password:
   en-US: show password
@@ -1039,6 +1222,7 @@ show password:
   is-IS: sýna lykilorð
   is-RU: ᛋᛨᚿᛆ ᛚᛣᚴᛁᛚᚮᚱᚧ
   sv-SE: dragningar
+  ko: 비밀번호 표시
 
 size:
   en-US: size
@@ -1055,6 +1239,7 @@ size:
   is-IS: stærð
   is-RU: ᛋᛐᛅᚱᚧ
   sv-SE: storlek
+  ko: 크기
 
 time:
   en-US: time
@@ -1071,22 +1256,24 @@ time:
   is-IS: tími
   is-RU: ᛐᛇᛘᛁ
   sv-SE: tid
+  ko: 시간
 
 timed:
- en-US: timed
- zh-CN: 定时
- es: cronometrado
- ar: موقوت
- id: waktunya
- pt-BR: cronometrado
- pt-PT: cronometrado
- fr: chronométré
- ja: 時間制限付き
- ru: рассчитанный по времени
- de: zeitgesteuert
- is-IS: tímasett
- is-RU: ᛐᛇᛘᛆᛋᛂᛐᛐ
- sv-SE: tidsbestämd
+  en-US: timed
+  zh-CN: 定时
+  es: cronometrado
+  ar: موقوت
+  id: waktunya
+  pt-BR: cronometrado
+  pt-PT: cronometrado
+  fr: chronométré
+  ja: 時間制限付き
+  ru: рассчитанный по времени
+  de: zeitgesteuert
+  is-IS: tímasett
+  is-RU: ᛐᛇᛘᛆᛋᛂᛐᛐ
+  sv-SE: tidsbestämd
+  ko: 시간이 정해진
 
 unverified:
   en-US: unverified
@@ -1103,6 +1290,7 @@ unverified:
   is-IS: óstaðfest
   is-RU: ᛟᛋᛐᛆᚧᚠᛂᛋᛐ
   sv-SE: obekräftad
+  ko: 확인되지 않음
 
 username:
   en-US: username
@@ -1119,6 +1307,7 @@ username:
   is-IS: notandanafn
   is-RU: ᚿᚮᛐᛆᚿᛑᛆᚿᛆᚠᚿ
   sv-SE: användarnamn
+  ko: 사용자 이름
 
 verified:
   en-US: verified
@@ -1135,6 +1324,7 @@ verified:
   is-IS: staðfest
   is-RU: ᛋᛐᛆᚧᚠᛂᛋᛐ
   sv-SE: verifierad
+  ko: 확인됨
 
 via:
   en-US: via
@@ -1151,6 +1341,7 @@ via:
   is-IS: í gegnum
   is-RU: ᛇ ᚵᛂᚵᚿᚢᛘ
   sv-SE: via
+  ko: ~을 통해
 
 wins:
   en-US: wins
@@ -1167,6 +1358,7 @@ wins:
   is-IS: sigrar
   is-RU: ᛋᛁᚵᚱᛆᚱ
   sv-SE: vinner
+  ko: 승리
 
 yes:
   en-US: yes
@@ -1183,53 +1375,4 @@ yes:
   is-IS: já
   is-RU: ᛃᚨ
   sv-SE: ja
-
-# Not used Translations.
-
-I rejoined.:
-  en-US: I rejoined.
-  zh-CN: 我重新加入。
-  es: Me reincorporé.
-  ar: لقد انضممت مرة أخرى.
-  id: Saya bergabung kembali.
-  pt-BR: Eu voltei.
-  pt-PT: Eu voltei.
-  fr: J'ai rejoint.
-  ja: 再参加しました。
-  ru: Я присоединился снова.
-  de: Ich bin wieder beigetreten.
-  is-IS: Ég gekk aftur til liðs við mig.
-  is-RU: ᛖᚵ ᚵᛂᚴᚴ ᛆᚠᛐᚢᚱ ᛐᛁᛚ ᛚᛁᚧᛋ ᚡᛁᚧ ᛘᛁᚵ.
-  sv-SE: Jag återförenades.
-
-I'm leaving.:
-  en-US: I'm leaving.
-  zh-CN: 我要走了。
-  es: Me voy.
-  ar: انا ذاهب.
-  id: Aku pergi.
-  pt-BR: Estou indo embora.
-  pt-PT: Vou embora.
-  fr: Je pars.
-  ja: 私は行きます。
-  ru: Я ухожу.
-  de: Ich gehe.
-  is-IS: Ég er að fara.
-  is-RU: ᛖᚵ ᛂᚱ ᛆᚧ ᚠᛆᚱᛆ.
-  sv-SE: Jag går.
-
-unrated:
-  en-US: unrated
-  zh-CN: 未分级
-  es: sin calificación
-  ar: غير مصنف
-  id: tidak diberi peringkat
-  pt-BR: sem classificação
-  pt-PT: sem classificação
-  fr: non classé
-  ja: 未評価
-  ru: без рейтинга
-  de: nicht bewertet
-  is-IS: óflokkað
-  is-RU: ᛟᚠᛚᚮᚴᚴᛆᚧ
-  sv-SE: oklassificerad
+  ko: 예

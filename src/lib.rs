@@ -19,7 +19,7 @@ rust_i18n::i18n!();
 pub mod accounts;
 pub mod ai;
 pub mod board;
-pub mod client;
+pub mod characters;
 pub mod draw;
 pub mod game;
 pub mod game_record;
@@ -2059,7 +2059,6 @@ mod tests {
         };
 
         game.read_line("play attacker c3 b3")?;
-        println!("{}", game.board);
         assert_eq!(game.status, Status::Ongoing);
 
         Ok(())
@@ -2364,6 +2363,95 @@ mod tests {
     }
 
     #[test]
+    fn closed_off_exits() -> anyhow::Result<()> {
+        let board: Board = [
+            "...........",
+            "...........",
+            "...........",
+            "...........",
+            "...........",
+            "...........",
+            "...........",
+            "...........",
+            "X..........",
+            ".X.........",
+            "..X..K.....",
+        ]
+        .try_into()?;
+
+        assert_eq!(board.closed_off_exits(), 1);
+
+        let board: Board = [
+            "..X....X...",
+            ".X......X..",
+            "X........X.",
+            "X.........X",
+            "X..........",
+            "X..........",
+            "X..........",
+            "X..........",
+            "X.........X",
+            ".X.......X.",
+            "..X..K..X..",
+        ]
+        .try_into()?;
+
+        assert_eq!(board.closed_off_exits(), 4);
+
+        let board: Board = [
+            ".XX.....XX.",
+            "X.........X",
+            "...........",
+            "...........",
+            "...........",
+            "...........",
+            "...........",
+            "...........",
+            "...........",
+            "X.........X",
+            ".XX..K..XX.",
+        ]
+        .try_into()?;
+
+        assert_eq!(board.closed_off_exits(), 0);
+
+        let board: Board = [
+            ".X.......X.",
+            "X.........X",
+            "X.........X",
+            "...........",
+            "...........",
+            "...........",
+            "...........",
+            "...........",
+            "X.........X",
+            "X.........X",
+            ".X...K...X.",
+        ]
+        .try_into()?;
+
+        assert_eq!(board.closed_off_exits(), 0);
+
+        let board: Board = [
+            ".XX.....XX.",
+            "X.........X",
+            "X.........X",
+            "...........",
+            "...........",
+            "...........",
+            "...........",
+            "...........",
+            "X.........X",
+            "X.........X",
+            ".XX..K..XX.",
+        ]
+        .try_into()?;
+
+        assert_eq!(board.closed_off_exits(), 4);
+
+        Ok(())
+    }
+    #[test]
     fn someone_wins() {
         let mut game = Game::default();
         let mut ai: Box<dyn AI> = Box::new(AiBanal);
@@ -2375,7 +2463,6 @@ mod tests {
             }
         }
 
-        println!("{}", game.status);
         assert!(game.status == Status::AttackerWins || game.status == Status::DefenderWins);
     }
 }

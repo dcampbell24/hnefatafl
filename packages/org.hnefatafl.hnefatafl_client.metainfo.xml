@@ -41,7 +41,7 @@
 
   <url type="bugtracker">https://github.com/dcampbell24/hnefatafl/issues</url>
   <url type="homepage">https://hnefatafl.org/</url>
-  <url type="donation">https://www.paypal.com/donate/?business=KKYGHNASN25TY&amp;no_recurring=0&amp;item_name=To+make+Hnefatafl+Copenhagen&amp;currency_code=USD</url>
+  <url type="donation">https://github.com/sponsors/dcampbell24</url>
   <url type="contact">https://dlc.name</url>
   <!-- <url type="faq">https://example.org/faq</url> -->
   <!-- <url type="translate">https://example.org/translate</url> -->
@@ -71,6 +71,27 @@
   </screenshots>
 
   <releases>
+    <release version="4.4.1" date="2025-12-05">
+      <url type="details">https://github.com/dcampbell24/hnefatafl/blob/main/CHANGELOG.md#430---2025-12-05</url>
+      <description>
+        <p>See the CHANGELOG.md file.</p>
+      </description>
+    </release>
+
+    <release version="4.4.0" date="2025-12-03">
+      <url type="details">https://github.com/dcampbell24/hnefatafl/blob/main/CHANGELOG.md#430---2025-12-03</url>
+      <description>
+        <p>See the CHANGELOG.md file.</p>
+      </description>
+    </release>
+
+    <release version="4.3.0" date="2025-11-24">
+      <url type="details">https://github.com/dcampbell24/hnefatafl/blob/main/CHANGELOG.md#430---2025-11-24</url>
+      <description>
+        <p>See the CHANGELOG.md file.</p>
+      </description>
+    </release>
+
     <release version="4.2.2" date="2025-10-22">
       <url type="details">https://github.com/dcampbell24/hnefatafl/blob/main/CHANGELOG.md#422---2025-10-22</url>
       <description>

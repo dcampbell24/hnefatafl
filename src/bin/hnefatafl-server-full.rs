@@ -14,7 +14,7 @@ use std::{
 
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use chrono::{Local, Utc};
-use clap::{CommandFactory, Parser, command};
+use clap::{CommandFactory, Parser};
 use hnefatafl_copenhagen::{
     COPYRIGHT, Id, LONG_VERSION, SERVER_PORT, VERSION_ID,
     accounts::{Account, Accounts, Email},
@@ -31,7 +31,7 @@ use hnefatafl_copenhagen::{
     },
     smtp::Smtp,
     status::Status,
-    time::TimeSettings,
+    time::{Time, TimeSettings},
     utils::{self, data_file},
 };
 use lettre::{
@@ -161,12 +161,10 @@ fn main() -> anyhow::Result<()> {
             let games: Vec<ServerGameSerialized> = postcard::from_bytes(data.as_slice())?;
             for game in games {
                 let id = game.id;
+                let server_game_light = ServerGameLight::from(&game);
                 let server_game = ServerGame::from(game);
 
-                server
-                    .games_light
-                    .0
-                    .insert(id, ServerGameLight::from(&server_game));
+                server.games_light.0.insert(id, server_game_light);
                 server.games.0.insert(id, server_game);
             }
         }
@@ -391,7 +389,7 @@ fn receiving_and_writing(
 
 /// Non-leap seconds since January 1, 1970 0:00:00 UTC.
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct UnixTimestamp(pub i64);
+struct UnixTimestamp(i64);
 
 impl Default for UnixTimestamp {
     fn default() -> Self {
@@ -609,7 +607,12 @@ impl Server {
             return Some((channel.clone(), false, command));
         };
 
-        info!("{index_supplied} {username} decline_game {id}");
+        let mut switch = false;
+        if let Some(&"switch") = the_rest.get(1) {
+            switch = true;
+        }
+
+        info!("{index_supplied} {username} decline_game {id} switch={switch}");
 
         if let Some(game_old) = self.games_light.0.remove(&id) {
             let mut attacker = None;
@@ -617,10 +620,18 @@ impl Server {
             let mut defender = None;
             let mut defender_channel = None;
 
-            if Some(username.to_string()) == game_old.attacker {
+            if switch {
+                if Some(username.to_string()) == game_old.attacker {
+                    defender = game_old.defender;
+                    defender_channel = game_old.defender_channel;
+                } else if Some(username.to_string()) == game_old.defender {
+                    attacker = game_old.attacker;
+                    attacker_channel = game_old.attacker_channel;
+                }
+            } else if Some(username.to_string()) == game_old.attacker {
                 attacker = game_old.attacker;
                 attacker_channel = game_old.attacker_channel;
-            } else {
+            } else if Some(username.to_string()) == game_old.defender {
                 defender = game_old.defender;
                 defender_channel = game_old.defender_channel;
             }
@@ -1332,7 +1343,13 @@ impl Server {
                     info!("saving active games...");
                     let mut active_games = Vec::new();
                     for game in self.games.0.values() {
-                        active_games.push(ServerGameSerialized::from(game));
+                        let mut serialized_game = ServerGameSerialized::from(game);
+
+                        if let Some(game_light) = self.games_light.0.get(&game.id) {
+                            serialized_game.timed = game_light.timed.clone();
+                        }
+
+                        active_games.push(serialized_game);
                     }
 
                     let mut file = handle_error(File::create(data_file(ACTIVE_GAMES_FILE)));
@@ -1692,12 +1709,16 @@ impl Server {
     ) -> Option<(mpsc::Sender<String>, bool, String)> {
         // The username is in the database and already logged in.
         if let Some(account) = self.accounts.0.get_mut(username) {
-            for game in &account.pending_games {
-                if let Some(tx) = &self.tx {
-                    let _ok = tx.send((
-                        format!("{index_supplied} {username} leave_game {game}"),
-                        None,
-                    ));
+            for id in &account.pending_games {
+                if let Some(tx) = &self.tx
+                    && let Some(game) = self.games_light.0.get(id)
+                    && let TimeSettings::Timed(Time {
+                        milliseconds_left, ..
+                    }) = game.timed
+                    && milliseconds_left < 1_000 * 60 * 60 * 24
+                {
+                    let _ok =
+                        tx.send((format!("{index_supplied} {username} leave_game {id}"), None));
                 }
             }
 
@@ -1707,7 +1728,6 @@ impl Server {
                 info!("{index_supplied} {username} logged out");
                 account.logged_in = None;
                 self.clients.remove(&index_database);
-
                 return None;
             }
         }

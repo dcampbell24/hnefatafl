@@ -2,7 +2,7 @@
 
 mdbook build --dest-dir /var/www/html/
 
-cargo build --bin replace_strings --no-default-features
+cargo build --bin replace_strings --features website --no-default-features
 ../target/debug/replace_strings
 
 cat << EOF > /var/www/html/robots.txt
@@ -12,22 +12,8 @@ Allow: /
 Sitemap: https://hnefatafl.org/sitemap.xml
 EOF
 
-mkdir --parents /var/www/html/binaries/debian/
-cp ../../hnefatafl-copenhagen_4.2.2-1_amd64.deb /var/www/html/binaries/debian/
-
 mkdir --parents /var/www/html/binaries/nsis/
-cp ../../hnefatafl-client-installer.exe /var/www/html/binaries/nsis/
-cp ../../hnefatafl-client-installer-0.13.4.exe /var/www/html/binaries/nsis/
-cp ../../hnefatafl-client-installer-1.0.0.exe /var/www/html/binaries/nsis/
-cp ../../hnefatafl-client-installer-1.1.3.exe /var/www/html/binaries/nsis/
-cp ../../hnefatafl-client-installer-1.1.4.exe /var/www/html/binaries/nsis/
-cp ../../hnefatafl-client-installer-1.2.1.exe /var/www/html/binaries/nsis/
-cp ../../hnefatafl-client-installer-2.0.3.exe /var/www/html/binaries/nsis/
-cp ../../hnefatafl-client-installer-2.1.0.exe /var/www/html/binaries/nsis/
-cp ../../hnefatafl-client-installer-3.0.1.exe /var/www/html/binaries/nsis/
-cp ../../hnefatafl-client-installer-4.0.0.exe /var/www/html/binaries/nsis/
-cp ../../hnefatafl-client-installer-4.1.0.exe /var/www/html/binaries/nsis/
-cp ../../hnefatafl-client-installer-4.2.2.exe /var/www/html/binaries/nsis/
+cp ../../hnefatafl-client-installer-4.4.1.exe /var/www/html/binaries/nsis/
 
 sscli -b https://hnefatafl.org -r /var/www/html/
 

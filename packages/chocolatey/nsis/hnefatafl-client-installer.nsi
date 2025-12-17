@@ -11,7 +11,7 @@
 
   ;Name and file
   Name "Hnefatafl"
-  OutFile "..\hnefatafl-copenhagen\tools\hnefatafl-client-installer-4.2.2.exe"
+  OutFile "..\hnefatafl-copenhagen\tools\hnefatafl-client-installer-4.4.1.exe"
   Unicode True
 
   ;Default installation folder
@@ -51,7 +51,7 @@ Section "Hnefatafl" SecHnefatafl
 
   SetOutPath "$INSTDIR"
 
-  File "..\..\..\target\release\examples\hnefatafl-client.exe"
+  File "..\..\..\target\release\hnefatafl-client.exe"
   File "king_256x256.ico"
 
   ;Store installation folder

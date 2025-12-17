@@ -3,7 +3,7 @@ use std::{
     net::TcpStream,
 };
 
-use clap::{self, CommandFactory, Parser, command};
+use clap::{self, CommandFactory, Parser};
 
 use hnefatafl_copenhagen::{
     COPYRIGHT, SERVER_PORT,
@@ -69,7 +69,7 @@ fn main() -> anyhow::Result<()> {
 
         let ai = match args.ai {
             Some(ai) => choose_ai(&ai, args.seconds, args.depth)?,
-            None => choose_ai("monte-carlo", args.seconds, args.depth)?,
+            None => choose_ai("basic", args.seconds, args.depth)?,
         };
 
         play_tcp(ai, &address, args.display_game)?;
@@ -183,7 +183,14 @@ fn play_tcp(mut ai: Box<dyn AI>, address: &str, display_game: bool) -> anyhow::R
                     println!("{generate_move}");
                     println!("{}", generate_move.heat_map);
                 }
-                _ => unreachable!("You can't get here!"),
+                _ => match game.read_line(&message) {
+                    Err(error) => println!("? {error}\n"),
+                    Ok(message) => {
+                        if let Some(message) = message {
+                            println!("= {message}");
+                        }
+                    }
+                },
             }
         }
 

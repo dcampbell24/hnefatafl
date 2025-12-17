@@ -5,7 +5,6 @@ use std::{
     hash::{DefaultHasher, Hash, Hasher},
     process::exit,
     str::FromStr,
-    time::Duration,
 };
 
 use chrono::Utc;
@@ -16,8 +15,9 @@ use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::wasm_bindgen;
 
 use crate::{
-    ai::{AI, AiMonteCarlo},
+    ai::{AI, AiBasic},
     board::{Board, BoardSize, InvalidMove},
+    characters::Characters,
     message::{COMMANDS, Message},
     play::{Captures, Plae, Play, PlayRecordTimed, Plays, Vertex},
     role::Role,
@@ -37,6 +37,8 @@ pub struct Game {
     pub attacker_time: TimeSettings,
     pub defender_time: TimeSettings,
     pub turn: Role,
+    #[serde(skip)]
+    pub chars: Characters,
 }
 
 #[cfg(feature = "js")]
@@ -60,6 +62,9 @@ pub struct Game {
     pub defender_time: TimeSettings,
     #[wasm_bindgen(skip)]
     pub turn: Role,
+    #[wasm_bindgen(skip)]
+    #[serde(skip)]
+    pub chars: Characters,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
@@ -90,8 +95,8 @@ impl fmt::Display for Game {
         writeln!(
             f,
             "captures: {} {}",
-            &captured.attacker(),
-            &captured.defender()
+            &captured.attacker(&self.chars),
+            &captured.defender(&self.chars)
         )?;
         writeln!(f, "status: {}", self.status)?;
         writeln!(f, "turn: {}", self.turn)?;
@@ -834,7 +839,7 @@ impl Game {
             Message::Empty => Ok(None),
             Message::FinalStatus => Ok(Some(format!("{}", self.status))),
             Message::GenerateMove => {
-                let mut ai = AiMonteCarlo::new(Duration::from_secs(10), 20);
+                let mut ai = AiBasic::new(4);
                 let generate_move = ai.generate_move(self)?;
                 Ok(Some(generate_move.to_string()))
             }
@@ -909,17 +914,19 @@ impl Game {
         let mut utility = 0.0;
 
         let captured = self.board.captured();
-        utility -= f64::from(captured.attacker) * 10_000.0;
-        utility += f64::from(captured.defender) * 10.0;
-        utility -= f64::from(self.board.spaces_around_the_king());
+        utility -= f64::from(captured.attacker) * 100_000.0;
 
         let (moves_to_escape, escape_vec) = self.moves_to_escape();
-
         utility += match moves_to_escape {
-            MovesToEscape::CanNotEscape => 2_000.0,
+            MovesToEscape::CanNotEscape => 20_000.0,
             MovesToEscape::GameOver => 0.0,
-            MovesToEscape::Moves(moves) => f64::from(moves) * 100.0,
+            MovesToEscape::Moves(moves) => f64::from(moves) * 1_000.0,
         };
+
+        utility += f64::from(self.board.closed_off_exits()) * 100.0;
+        // Todo: An extra 100.0 points for each corner that touches another corner.
+        utility += f64::from(captured.defender) * 10.0;
+        utility -= f64::from(self.board.spaces_around_the_king());
 
         (utility, escape_vec)
     }

@@ -1,15 +1,21 @@
 on: push
 name: Security Analysis with zizmor 🌈
 
+permissions:
+  actions: read # An explanation.
+
 jobs:
   zizmor:
     name: zizmor latest via PyPI
     runs-on: ubuntu-latest
+
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+
     permissions:
-      security-events: write
-      # required for workflows in private repositories
-      # contents: read
-      actions: read
+      security-events: write # An explanation.
+      actions: read # An explanation.
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # pin@v4
@@ -22,7 +28,7 @@ jobs:
       - name: Run zizmor 🌈
         run: |
           cd "$GITHUB_WORKSPACE"
-          uvx zizmor --gh-token "$GH_TOKEN" .github/workflows/*
+          uvx zizmor --pedantic --gh-token "$GH_TOKEN" .github/workflows/*
 
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

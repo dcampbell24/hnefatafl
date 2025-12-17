@@ -9,6 +9,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- hnefatafl-client: Korean.
+- hnefatafl-client: add time infinity.
+- hnefatafl-client: sort users by name or rank.
+- hnefatafl-client: win % to the player statistics.
+
+### Changed
+
+- hnefatafl-client: switch to a stable version of iced.
+- hnefatafl-client: on the users page display all users in one category.
+
+### Fixed
+
+- hnefatafl-client: on the users screen move Leave out of scrolling.
+
+## [4.4.1] - 2025-12-05
+
+### Fixed
+
+- decrease the cargo package size.
+- hnefatafl-client: put the time settings on multiple lines and don't set a default.
+- hnefatafl-server-full: quit pending games shorter than a day when quitting.
+
+## [4.4.0] - 2025-12-03
+
+### Added
+
+- Allow canceling join game.
+- hnefatafl-client: tol color theme for the color blind.
+- hnefatafl-client: All of the hotkeys.
+- hnefatafl-client: TinyWide.
+- hnefatafl-client: social preview and hide letters.
+- hnefatafl-client: draw a bordered box around the board.
+
+### Changed
+
+- hnefatafl-client: Allow the creation of multiple games at once.
+- hnefatafl-server-full: don't automatically quit all games when quitting.
+- hnefatafl-client: Don't show lag and spectators when reviewing a game.
+
+### Fixed
+
+- hnefatafl-client: JoinGame.
+- hnefatafl-server-full: This is a breaking change, but only for active games
+  file. Set the time correctly.
+- hnefatafl-text-protocol: don't overflow when doing ReviewGameBackward.
+
+## [4.3.0] - 2025-11-24
+
+### Added
+
+- hnefatafl-client: the option to only use ASCII characters to do rendering.
 - The engine and the server to the .deb package.
 - Basic AI.
 
@@ -19,6 +70,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- hnefatafl-text-protocol: pass all of the arguments onto htp for tcp.
 - hnefatafl-client: Update the board with the capture of the king.
 - board::difference().
 - Don't allow the Heat Map when the game is over.
@@ -505,7 +557,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - hnefatafl-client: Make users and games scrollable.
 - Make all the features dependencies.
 
-[unreleased]: https://github.com/dcampbell24/hnefatafl/compare/v4.2.2...main
+[unreleased]: https://github.com/dcampbell24/hnefatafl/compare/v4.4.1...main
+[4.4.1]: https://github.com/dcampbell24/hnefatafl/compare/v4.4.0...v4.4.1
+[4.4.0]: https://github.com/dcampbell24/hnefatafl/compare/v4.3.0...v4.4.0
+[4.3.0]: https://github.com/dcampbell24/hnefatafl/compare/v4.2.2...v4.3.0
 [4.2.2]: https://github.com/dcampbell24/hnefatafl/compare/v4.2.0...v4.2.2
 [4.2.0]: https://github.com/dcampbell24/hnefatafl/compare/v4.1.1...v4.2.0
 [4.1.1]: https://github.com/dcampbell24/hnefatafl/compare/v4.1.0...v4.1.1

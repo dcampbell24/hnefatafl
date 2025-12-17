@@ -57,12 +57,16 @@ impl fmt::Display for ArchivedGame {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(
             f,
-            "ID: {}, Attacker: {} {}, Defender: {} {}, Size: {}",
+            "{}: {}, {}: {} {}, {}: {} {}, {}: {}",
+            t!("ID"),
             self.id,
+            t!("Attacker"),
             self.attacker,
             self.attacker_rating.to_string_rounded(),
+            t!("Defender"),
             self.defender,
             self.defender_rating.to_string_rounded(),
+            t!("Size"),
             self.board_size,
         )
     }
@@ -239,6 +243,7 @@ pub struct ServerGameSerialized {
     pub rated: Rated,
     pub game: Game,
     pub texts: VecDeque<String>,
+    pub timed: TimeSettings,
 }
 
 impl From<&ServerGame> for ServerGameSerialized {
@@ -250,6 +255,7 @@ impl From<&ServerGame> for ServerGameSerialized {
             rated: game.rated,
             game: game.game.clone(),
             texts: game.texts.clone(),
+            timed: TimeSettings::default(),
         }
     }
 }
@@ -346,15 +352,15 @@ impl ServerGameLight {
     }
 }
 
-impl From<&ServerGame> for ServerGameLight {
-    fn from(game: &ServerGame) -> Self {
+impl From<&ServerGameSerialized> for ServerGameLight {
+    fn from(game: &ServerGameSerialized) -> Self {
         Self {
             id: game.id,
             attacker: Some(game.attacker.clone()),
             defender: Some(game.defender.clone()),
             challenger: Challenger::default(),
             rated: game.rated,
-            timed: TimeSettings::UnTimed,
+            timed: game.timed.clone(),
             board_size: game.game.board.size(),
             attacker_channel: None,
             defender_channel: None,

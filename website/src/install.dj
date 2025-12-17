@@ -12,6 +12,8 @@
 
 ## Arch and Derivatives (Linux)
 
+In your terminal run:
+
 ```sh
 yay --sync --mflags --nocheck hnefatafl-copenhagen
 ```
@@ -24,19 +26,18 @@ Then install [hnefatafl-copenhagen](https://community.chocolatey.org/packages/hn
 
 ## Debian and Derivatives (Linux)
 
-Download [hnefatafl-copenhagen][1], then run:
+Download [hnefatafl.list][1] to `/etc/apt/sources.list.d/`.
+
+Then, Download [packages.hnefatafl.org.asc][2] to `/etc/apt/keyrings/`.
+
+Then in your terminal run:
 
 ```sh
-sudo dpkg --install hnefatafl-copenhagen_4.2.2-1_amd64.deb
+sudo apt update && sudo apt install hnefatafl-copenhagen
 ```
 
-It can be removed by running:
-
-```sh
-sudo dpkg --remove hnefatafl-copenhagen
-```
-
-[1]: binaries/debian/hnefatafl-copenhagen_4.2.2-1_amd64.deb
+[1]: hnefatafl.list
+[2]: packages.hnefatafl.org.asc
 
 ## Flatpak (Linux)
 
@@ -56,7 +57,7 @@ package on Arch, Debian, Ubuntu, and Fedora.
 
 ### Run
 
-In your terminal run the following to run the client with [Rust's][2] cargo:
+In your terminal run the following to run the client with [Rust's][3] cargo:
 
 ```sh
 git clone https://github.com/dcampbell24/hnefatafl.git
@@ -64,7 +65,7 @@ cd hnefatafl
 RUST_LOG=hnefatafl_client=debug cargo run --release --example hnefatafl-client
 ```
 
-[2]: https://www.rust-lang.org/learn/get-started
+[3]: https://www.rust-lang.org/learn/get-started
 
 ## Note
 

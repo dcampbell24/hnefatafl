@@ -1,14 +1,21 @@
 on: push
 name: cargo fmt
 
+permissions:
+  actions: read # An explanation.
+
 jobs:
   cargo_fmt:
+    name: cargo fmt
     runs-on: ubuntu-latest
+
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+
     permissions:
-      security-events: write
-      # required for workflows in private repositories
-      # contents: read
-      actions: read
+      security-events: write # An explanation.
+      actions: read # An explanation.
+
     steps:
       - uses: actions/checkout@v4
         with:

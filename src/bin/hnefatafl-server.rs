@@ -4,7 +4,7 @@ use std::{
     thread,
 };
 
-use clap::{self, CommandFactory, Parser, command};
+use clap::{self, CommandFactory, Parser};
 
 use hnefatafl_copenhagen::{
     COPYRIGHT, SERVER_PORT, game::Game, read_response, status::Status, utils::clear_screen,
