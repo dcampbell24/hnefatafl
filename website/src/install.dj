@@ -69,6 +69,8 @@ apt reinstall ./hnefatafl-copenhagen*.deb
 
 ```
 
+Repeat this every time you want to run the program.
+
 ```sh
 export LIBGL_ALWAYS_SOFTWARE=1 DISPLAY=:0
 termux-x11 -xstartup xfce4-session &
