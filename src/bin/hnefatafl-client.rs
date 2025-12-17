@@ -105,10 +105,22 @@ const ALPHABET: [char; 26] = [
     't', 'u', 'v', 'w', 'x', 'y', 'z',
 ];
 
+#[cfg(not(feature = "icon_2"))]
+const APPLICATION_ID: &str = "hnefatafl-client";
+
+#[cfg(feature = "icon_2")]
+const APPLICATION_ID: &str = "org.hnefatafl.hnefatafl_client";
+
 const BLUE: Color = color!(38, 139, 210);
 const BOARD_LETTERS_LOWERCASE: [char; 13] = [
     'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
 ];
+
+#[cfg(not(feature = "icon_2"))]
+const KING: &[u8] = include_bytes!("icons/king_1_256x256.rgba");
+
+#[cfg(feature = "icon_2")]
+const KING: &[u8] = include_bytes!("icons/king_2_256x256.rgba");
 
 const USER_CONFIG_FILE_POSTCARD: &str = "hnefatafl.postcard";
 const USER_CONFIG_FILE_RON: &str = "hnefatafl.ron";
@@ -320,25 +332,16 @@ fn main() -> anyhow::Result<()> {
         return Ok(());
     }
 
-    #[cfg(not(feature = "icon_2"))]
-    let king = include_bytes!("icons/king_1_256x256.rgba").to_vec();
-
-    #[cfg(feature = "icon_2")]
-    let king = include_bytes!("icons/king_2_256x256.rgba").to_vec();
-
     let mut application = iced::application(init_client, Client::update, Client::view)
         .title("Hnefatafl Copenhagen")
         .subscription(Client::subscriptions)
         .window(window::Settings {
             #[cfg(target_os = "linux")]
             platform_specific: PlatformSpecific {
-                #[cfg(feature = "icon_2")]
-                application_id: "org.hnefatafl.hnefatafl_client".to_string(),
-                #[cfg(not(feature = "icon_2"))]
-                application_id: "hnefatafl-client".to_string(),
+                application_id: APPLICATION_ID.to_string(),
                 ..PlatformSpecific::default()
             },
-            icon: Some(icon::from_rgba(king, 256, 256)?),
+            icon: Some(icon::from_rgba(KING.to_vec(), 256, 256)?),
             ..window::Settings::default()
         })
         .theme(Client::theme);
