@@ -338,7 +338,7 @@ fn main() -> anyhow::Result<()> {
             icon: Some(icon::from_rgba(king, 256, 256)?),
             ..window::Settings::default()
         })
-        .font(include_bytes!("fonts/Alpha.otf").as_slice())
+        .font(include_bytes!("fonts/Alpha.ttf").as_slice())
         .theme(Client::theme);
 
     // For screenshots.
@@ -799,7 +799,7 @@ impl<'a> Client {
                     }
                 }
 
-                txt = txt.font(Font::MONOSPACE).center().size(d.piece_size);
+                txt = txt.center().size(d.piece_size);
                 let mut button = button(txt)
                     .width(d.board_dimension)
                     .height(d.board_dimension);
