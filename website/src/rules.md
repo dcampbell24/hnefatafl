@@ -242,12 +242,3 @@ If the defender would repeat a board position, the move is not allowed.
 ### 9. Automatic Loss
 
 If a player cannot move, he loses the game.
-
-NOT IMPLEMENTED YET BELOW THIS LINE
-
----
-
-### 10. Draw (not possible?)
-
-If it is not possible to end the game, for example because both sides have too
-few pieces left, it is a draw.
