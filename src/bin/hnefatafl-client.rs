@@ -118,6 +118,10 @@ const PADDING_SMALL: u16 = 2;
 const SPACING: Pixels = Pixels(10.0);
 const SPACING_B: Pixels = Pixels(20.0);
 
+const SOUND_CAPTURE: &[u8] = include_bytes!("sound/capture.ogg");
+const SOUND_GAME_OVER: &[u8] = include_bytes!("sound/game_over.ogg");
+const SOUND_MOVE: &[u8] = include_bytes!("sound/move.ogg");
+
 rust_i18n::i18n!();
 
 /// Hnefatafl Copenhagen Client
@@ -2457,8 +2461,7 @@ impl<'a> Client {
                                         let mut stream =
                                             rodio::OutputStreamBuilder::open_default_stream()?;
 
-                                        let game_over = include_bytes!("sound/game_over.ogg");
-                                        let cursor = Cursor::new(game_over);
+                                        let cursor = Cursor::new(SOUND_GAME_OVER);
                                         let sound = rodio::play(stream.mixer(), cursor)?;
                                         sound.set_volume(1.0);
                                         sound.sleep_until_end();
@@ -3020,11 +3023,9 @@ impl<'a> Client {
         thread::spawn(move || {
             let mut stream = rodio::OutputStreamBuilder::open_default_stream()?;
             let cursor = if capture {
-                let capture_ogg = include_bytes!("sound/capture.ogg").to_vec();
-                Cursor::new(capture_ogg)
+                Cursor::new(SOUND_CAPTURE)
             } else {
-                let move_ogg = include_bytes!("sound/move.ogg").to_vec();
-                Cursor::new(move_ogg)
+                Cursor::new(SOUND_MOVE)
             };
             let sound = rodio::play(stream.mixer(), cursor)?;
             sound.set_volume(1.0);
