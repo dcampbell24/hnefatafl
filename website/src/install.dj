@@ -43,6 +43,35 @@ sudo apt update && sudo apt install hnefatafl-copenhagen
 
 See [flathub.org](https://flathub.org/apps/org.hnefatafl.hnefatafl_client).
 
+## F-Droid (Android)
+
+1. Go to [Google](https://myaccount.google.com/security). Scroll down to `Enhanced
+   Safe Browsing for your account`. If it is on, turn it off.
+2. Go to [F-Droid](f-droid.org) and download F-Droid.
+3. Open F-Droid, go to search, and install `Termux: Terminal emulator with packages`.
+4. Open Termux, then run the following:
+
+```sh
+pkg upgrade
+termux-change-repo
+pkg install rust git x11-repo
+pkg install xfce termux-x11-nightly
+git clone https://github.com/termux/termux-packages termux-packages-hnefatafl-copenhagen-dest
+git clone -b hnefatafl-copenhagen https://github.com/robertkirkman/termux-packages termux-packages-hnefatafl-copenhagen-src
+cp -r termux-packages-hnefatafl-copenhagen-src/x11-packages/hnefatafl-copenhagen/ termux-packages-hnefatafl-copenhagen-dest/x11-packages/
+cd termux-packages-hnefatafl-copenhagen-dest
+scripts/setup-termux.sh
+./build-package.sh -I -f hnefatafl-copenhagen
+cd output/
+apt reinstall ./hnefatafl-copenhagen*.deb
+export LIBGL_ALWAYS_SOFTWARE=1 DISPLAY=:0
+termux-x11 -xstartup xfce4-session &
+hnefatafl-client --ascii
+```
+
+Then go to `Termux:X11` from the main menu. You may need to hold `Termux:11` to
+go to the `Preferences` -> `Output`, then increase the Display scale %.
+
 ## Cargo (Linux, macOS, Windows)
 
 ### Dependencies (Linux)
