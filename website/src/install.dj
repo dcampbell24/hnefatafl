@@ -52,6 +52,8 @@ See [flathub.org](https://flathub.org/apps/org.hnefatafl.hnefatafl_client).
 4. Open Termux, then run the following:
 
 ```sh
+## Only need to run this once per update.
+
 pkg upgrade
 termux-change-repo
 pkg install rust git x11-repo
@@ -64,8 +66,14 @@ scripts/setup-termux.sh
 ./build-package.sh -I -f hnefatafl-copenhagen
 cd output/
 apt reinstall ./hnefatafl-copenhagen*.deb
+
+##
+
 export LIBGL_ALWAYS_SOFTWARE=1 DISPLAY=:0
+
+# Don't need to run this if it is already running.
 termux-x11 -xstartup xfce4-session &
+
 hnefatafl-client --ascii
 ```
 
