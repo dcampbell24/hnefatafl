@@ -5,4 +5,4 @@
 cd packages/debian/
 ./generate-release.sh
 
-scp -r ./apt/ root@hnefatafl.org:/var/www/html/
+scp -r ./apt/ root@hnefatafl.org:~/www/

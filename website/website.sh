@@ -13,7 +13,8 @@ Sitemap: https://hnefatafl.org/sitemap.xml
 EOF
 
 mkdir --parents /var/www/html/binaries/nsis/
-cp ../../hnefatafl-client-installer-4.4.1.exe /var/www/html/binaries/nsis/
+cp ../../www/hnefatafl-client-installer-*.exe /var/www/html/binaries/nsis/
+cp -r ../../www/apt/ /var/www/html/
 
 sscli -b https://hnefatafl.org -r /var/www/html/
 
