@@ -1,5 +1,5 @@
 # Copenhagen Hnefatafl
 
-- [Homepage](README.dj)
+- [Homepage](README.md)
 - [Install](install.md)
 - [Rules](rules.dj)
