@@ -66,12 +66,14 @@ scripts/setup-termux.sh
 ./build-package.sh -I -f hnefatafl-copenhagen
 cd output/
 apt reinstall ./hnefatafl-copenhagen*.deb
+
 ```
 
 ```sh
 export LIBGL_ALWAYS_SOFTWARE=1 DISPLAY=:0
 termux-x11 -xstartup xfce4-session &
 hnefatafl-client --ascii
+
 ```
 
 Then go to `Termux:X11` from the main menu. You may need to hold `Termux:11` to
