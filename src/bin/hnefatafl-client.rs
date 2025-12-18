@@ -3654,7 +3654,7 @@ impl<'a> Client {
                     "You can play on the board by pressing control (Ctrl) or command (⌘) and a letter then a number or vice versa."
                 ));
 
-                // Fixme!
+                let help_text_4 = text(t!("You have a week to move, then you lose the game."));
 
                 column![
                     username,
@@ -3675,6 +3675,7 @@ impl<'a> Client {
                     help_text,
                     help_text_2,
                     help_text_3,
+                    help_text_4,
                     error,
                     error_persistent
                 ]

@@ -561,6 +561,23 @@ You can play on the board by pressing control (Ctrl) or command (⌘) and a lett
   sv-SE: Du kan spela på spelplanen genom att trycka på Ctrl (Ctrl) eller Command (⌘) och en bokstav sedan en siffra eller vice versa.
   ko: 키보드에서 Control(Ctrl) 키 또는 Command(⌘) 키를 누른 상태에서 글자 키와 숫자 키를 순서대로 누르거나, 숫자 키와 글자 키를 순서대로 누르면 보드에서 게임을 진행할 수 있습니다.
 
+You have a week to move, then you lose the game.:
+  en-US: You have a week to move, then you lose the game.
+  zh-CN: 你有一周的时间搬家，否则你就输掉比赛。
+  es: Tienes una semana para mudarte, de lo contrario perderás la partida.
+  ar: لديك أسبوع للانتقال، وإلا ستخسر اللعبة.
+  id: Anda punya waktu seminggu untuk pindah, setelah itu Anda akan kalah dalam permainan ini.
+  pt-BR: Você tem uma semana para se mudar, caso contrário, perderá o jogo.
+  pt-PT: Tem uma semana para se mudar, caso contrário perderá o jogo.
+  fr: Vous avez une semaine pour déménager, sinon vous perdez la partie.
+  ja: 引っ越しをするのに1週間猶予があります。それを過ぎるとゲームオーバーです。
+  ru: У вас есть неделя на переезд, иначе вы проиграете.
+  de: Sie haben eine Woche Zeit, um umzuziehen, danach verlieren Sie das Spiel.
+  is-IS: Þú hefur viku til að færa þig, svo taparðu leiknum.
+  is-RU: ᚦᚤ ᚼᛂᚠᚢᚱ ᚡᛁᚴᚢ ᛐᛁᛚ ᛆᚧ ᚠᛅᚱᛆ ᚦᛁᚵ, ᛋᚡᚮ ᛐᛆᛔᛆᚱᚧᚢ ᛚᛂᛁᚴᚿᚢᛘ.
+  sv-SE: Du har en vecka på dig att flytta, sedan förlorar du matchen.
+  ko: 일주일 안에 이사를 하지 않으면 게임에서 지게 됩니다.
+
 Quit:
   en-US: Quit
   zh-CN: 辞职
