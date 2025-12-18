@@ -52,6 +52,7 @@ const ARCHIVED_GAMES_FILE: &str = "hnefatafl-games.ron";
 const TWO_MONTHS: i64 = 5_256_058;
 const SEVEN_DAYS: i64 = 1_000 * 60 * 60 * 24 * 7;
 const USERS_FILE: &str = "hnefatafl-copenhagen.ron";
+const MESSAGE_FILE: &str = "hnefatafl-message.txt";
 
 /// Copenhagen Hnefatafl Server
 ///
@@ -63,6 +64,10 @@ struct Args {
     /// Whether to skip advertising updates
     #[arg(long)]
     skip_advertising_updates: bool,
+
+    /// Whether to skip messages
+    #[arg(long)]
+    skip_message: bool,
 
     /// Whether to use the data file
     #[arg(long)]
@@ -335,6 +340,7 @@ fn login(
 
     tx.send((format!("{id} {username_proper} email_get"), None))?;
     tx.send((format!("{id} {username_proper} texts"), None))?;
+    tx.send((format!("{id} {username_proper} message"), None))?;
 
     'outer: for _ in 0..1_000_000 {
         if let Err(err) = reader.read_line(&mut buf) {
@@ -1422,6 +1428,28 @@ impl Server {
                     option_tx,
                 ),
                 "logout" => self.logout(username, index_supplied, command),
+                "message" => {
+                    if Args::parse().skip_message {
+                        return None;
+                    }
+
+                    let message = data_file(MESSAGE_FILE);
+                    match fs::read_to_string(&message) {
+                        Ok(mut message) => {
+                            message = message.trim().replace('\n', "\\n");
+                            self.clients
+                                .get(&index_supplied)?
+                                .send(format!("= message {message}"))
+                                .ok()?;
+                        }
+                        Err(err) => match err.kind() {
+                            ErrorKind::NotFound => {}
+                            _ => error!("Error loading message: {err}"),
+                        },
+                    }
+
+                    None
+                }
                 "new_game" => self.new_game(username, index_supplied, command, the_rest.as_slice()),
                 "ping" => Some((
                     self.clients.get(&index_supplied)?.clone(),
@@ -2150,6 +2178,7 @@ mod tests {
                 .stderr(Stdio::null())
                 .arg("--skip-the-data-file")
                 .arg("--skip-advertising-updates")
+                .arg("--skip-message")
                 .spawn()
             {
                 Ok(child) => Server(child),

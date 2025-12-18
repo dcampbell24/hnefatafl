@@ -1,3 +1,5 @@
+#![cfg(test)]
+
 use std::{fmt, io::Cursor, str::FromStr};
 
 use rustc_hash::FxHashSet;

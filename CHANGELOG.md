@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Give the option of sending a message to the players.
 - hnefatafl-server-full: lose if you take a week to move.
 - hnefatafl-client: Korean.
 - hnefatafl-client: add time infinity.
