@@ -15,7 +15,6 @@ pub mod board;
 pub mod characters;
 pub mod draw;
 pub mod game;
-pub mod game_record;
 pub mod game_tree;
 pub mod glicko;
 pub mod heat_map;
