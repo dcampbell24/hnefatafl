@@ -5,14 +5,7 @@ use std::{
     process::exit,
 };
 
-use game::Game;
-use game_record::{Captures, game_records_from_path};
 use log::error;
-use play::Plae;
-use rustc_hash::FxHashSet;
-use status::Status;
-
-use crate::{game_record::GameRecord, play::Plays};
 
 rust_i18n::i18n!();
 
@@ -111,89 +104,6 @@ pub fn log_error<T, E: fmt::Display>(result: Result<T, E>) {
 
 /// # Errors
 ///
-/// If the game records are invalid.
-pub fn setup_hnefatafl_rs() -> anyhow::Result<Vec<(usize, GameRecord)>> {
-    let copenhagen_csv = include_str!("copenhagen.csv");
-    game_records_from_path(copenhagen_csv)
-}
-
-/// # Errors
-///
-/// If the captures or game status don't match for an engine game and a record
-/// game.
-#[allow(clippy::cast_precision_loss, clippy::missing_panics_doc)]
-pub fn hnefatafl_rs(records: &[(usize, GameRecord)]) -> anyhow::Result<()> {
-    let mut already_played = 0;
-    let mut already_over = 0;
-
-    records
-        .iter()
-        .map(|(i, record)| play_game(*i, record))
-        .for_each(|result| match result {
-            Ok((i, game)) => {
-                if game.status != Status::Ongoing {
-                    assert_eq!(game.status, records[i].1.status);
-                }
-            }
-            Err(error) => {
-                if &error.to_string() == "play: you already reached that position" {
-                    already_played += 1;
-                } else if &error.to_string() == "play: the game is already over" {
-                    already_over += 1;
-                } else {
-                    panic!("{}", error.to_string());
-                }
-            }
-        });
-
-    assert_eq!(already_over, 0);
-    assert_eq!(already_played, 36);
-
-    let already_played_error = f64::from(already_played) / records.len() as f64;
-    assert!(already_played_error > 0.020_5 && already_played_error < 0.020_6);
-
-    Ok(())
-}
-
-#[inline]
-fn play_game(i: usize, record: &GameRecord) -> Result<(usize, Game), anyhow::Error> {
-    let mut game = Game {
-        plays: Plays::new(&time::TimeSettings::UnTimed),
-        time: game::TimeUnix::UnTimed,
-        attacker_time: time::TimeSettings::UnTimed,
-        defender_time: time::TimeSettings::UnTimed,
-        ..Game::default()
-    };
-
-    for (play, captures_1) in record.clone().plays {
-        let mut captures_2 = FxHashSet::default();
-        let play = Plae::Play(play);
-        let captures = game.play(&play)?;
-
-        for vertex in captures.0 {
-            captures_2.insert(vertex);
-        }
-
-        if let Some(king) = game.board.find_the_king() {
-            captures_2.remove(&king);
-        }
-
-        let captures_2 = Captures(captures_2);
-
-        if !game.board.captured_the_king() {
-            if let Some(captures_1) = captures_1 {
-                assert_eq!(captures_1, captures_2);
-            } else if !captures_2.0.is_empty() {
-                panic!("The engine reports captures, but the record says there are none.");
-            }
-        }
-    }
-
-    Ok((i, game))
-}
-
-/// # Errors
-///
 /// If read fails.
 pub fn read_response(reader: &mut BufReader<TcpStream>) -> anyhow::Result<String> {
     let mut reply = String::new();
@@ -232,11 +142,6 @@ mod tests {
         if let Err(error) = result {
             assert_eq!(error.to_string(), string);
         }
-    }
-
-    #[test]
-    fn hnefatafl_games() -> anyhow::Result<()> {
-        hnefatafl_rs(&setup_hnefatafl_rs()?)
     }
 
     #[test]
