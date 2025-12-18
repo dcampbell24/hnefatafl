@@ -50,6 +50,7 @@ const ACTIVE_GAMES_FILE: &str = "hnefatafl-games-active.postcard";
 const ARCHIVED_GAMES_FILE: &str = "hnefatafl-games.ron";
 /// Seconds in two months: `60.0 * 60.0 * 24.0 * 30.417 * 2.0 = 5_256_057.6`
 const TWO_MONTHS: i64 = 5_256_058;
+const SEVEN_DAYS: i64 = 1_000 * 60 * 60 * 24 * 7;
 const USERS_FILE: &str = "hnefatafl-copenhagen.ron";
 
 /// Copenhagen Hnefatafl Server
@@ -677,14 +678,16 @@ impl Server {
             match game.game.turn {
                 Role::Attacker => {
                     if game.game.status == Status::Ongoing
-                        && let (TimeUnix::Time(game_time), TimeSettings::Timed(attacker_time)) =
-                            (&mut game.game.time, &mut game.game.attacker_time)
+                        && let TimeUnix::Time(game_time) = &mut game.game.time
                     {
-                        if attacker_time.milliseconds_left > 0 {
-                            let now = Local::now().to_utc().timestamp_millis();
-                            attacker_time.milliseconds_left -= now - *game_time;
-                            *game_time = now;
-                        } else if let Some(tx) = &mut self.tx {
+                        let now = Local::now().to_utc().timestamp_millis();
+                        let elapsed_time = now - *game_time;
+                        game.elapsed_time += elapsed_time;
+                        *game_time = now;
+
+                        if game.elapsed_time > SEVEN_DAYS
+                            && let Some(tx) = &mut self.tx
+                        {
                             let _ok = tx.send((
                                 format!(
                                     "0 {} game {} play attacker resigns _",
@@ -692,20 +695,37 @@ impl Server {
                                 ),
                                 None,
                             ));
+                            return None;
+                        }
+
+                        if let TimeSettings::Timed(attacker_time) = &mut game.game.attacker_time {
+                            if attacker_time.milliseconds_left > 0 {
+                                attacker_time.milliseconds_left -= elapsed_time;
+                            } else if let Some(tx) = &mut self.tx {
+                                let _ok = tx.send((
+                                    format!(
+                                        "0 {} game {} play attacker resigns _",
+                                        game.attacker, game.id
+                                    ),
+                                    None,
+                                ));
+                            }
                         }
                     }
                 }
                 Role::Roleless => {}
                 Role::Defender => {
                     if game.game.status == Status::Ongoing
-                        && let (TimeUnix::Time(game_time), TimeSettings::Timed(defender_time)) =
-                            (&mut game.game.time, &mut game.game.defender_time)
+                        && let TimeUnix::Time(game_time) = &mut game.game.time
                     {
-                        if defender_time.milliseconds_left > 0 {
-                            let now = Local::now().to_utc().timestamp_millis();
-                            defender_time.milliseconds_left -= now - *game_time;
-                            *game_time = now;
-                        } else if let Some(tx) = &mut self.tx {
+                        let now = Local::now().to_utc().timestamp_millis();
+                        let elapsed_time = now - *game_time;
+                        game.elapsed_time += elapsed_time;
+                        *game_time = now;
+
+                        if game.elapsed_time > SEVEN_DAYS
+                            && let Some(tx) = &mut self.tx
+                        {
                             let _ok = tx.send((
                                 format!(
                                     "0 {} game {} play defender resigns _",
@@ -713,6 +733,21 @@ impl Server {
                                 ),
                                 None,
                             ));
+                            return None;
+                        }
+
+                        if let TimeSettings::Timed(defender_time) = &mut game.game.defender_time {
+                            if defender_time.milliseconds_left > 0 {
+                                defender_time.milliseconds_left -= elapsed_time;
+                            } else if let Some(tx) = &mut self.tx {
+                                let _ok = tx.send((
+                                    format!(
+                                        "0 {} game {} play defender resigns _",
+                                        game.defender, game.id
+                                    ),
+                                    None,
+                                ));
+                            }
                         }
                     }
                 }
@@ -887,6 +922,7 @@ impl Server {
             ));
         };
 
+        game.elapsed_time = 0;
         let mut attackers_turn_next = true;
         if role == Role::Attacker {
             if *username == game.attacker {
@@ -897,6 +933,7 @@ impl Server {
                         error
                     })
                     .ok()?;
+
                 attackers_turn_next = false;
 
                 let message = format!("game {index} play attacker {from} {to}");
