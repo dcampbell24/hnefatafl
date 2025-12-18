@@ -105,10 +105,10 @@ const ALPHABET: [char; 26] = [
     't', 'u', 'v', 'w', 'x', 'y', 'z',
 ];
 
-#[cfg(not(feature = "icon_2"))]
+#[cfg(all(target_os = "linux", not(feature = "icon_2")))]
 const APPLICATION_ID: &str = "hnefatafl-client";
 
-#[cfg(feature = "icon_2")]
+#[cfg(all(target_os = "linux", feature = "icon_2"))]
 const APPLICATION_ID: &str = "org.hnefatafl.hnefatafl_client";
 
 const BLUE: Color = color!(38, 139, 210);
