@@ -89,7 +89,15 @@ hnefatafl-copenhagen = "source"
 You should be at least using the packages supplied via
 `include = ["desktop.toml"]`. Go to games and open Hnefatafl. After logging in
 and exiting the application, you'll have to restart Redox, because the
-application is bugged.
+application is buggy.
+
+There are also at least these bugs:
+
+1. There are no CJK fonts.
+2. On a button press two characters are read in instead of one.
+3. Backspace does not work.
+4. I think you have to restart Redox after entering the application, because
+   TcpStream shutdown is not implemented.
 
 ## Cargo (Linux, macOS, Windows)
 
