@@ -77,6 +77,20 @@ hnefatafl-client --ascii
 Then go to `Termux:X11` from the main menu. You may need to hold `Termux:11` to
 go to the `Preferences` -> `Output`, then increase the `Display scale %`.
 
+## Redox
+
+Edit your user config to include:
+
+```toml
+[packages]
+hnefatafl-copenhagen = "source"
+```
+
+You should be at least using the packages supplied via
+`include = ["desktop.toml"]`. Go to games and open Hnefatafl. After logging in
+and exiting the application, you'll have to restart Redox, because the
+application is bugged.
+
 ## Cargo (Linux, macOS, Windows)
 
 ### Dependencies (Linux)
