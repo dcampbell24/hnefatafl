@@ -611,6 +611,8 @@ struct Client {
     heat_map_display: bool,
     #[serde(default)]
     locale_selected: Locale,
+    #[serde(skip)]
+    message: String,
     #[serde(default)]
     my_games_only: bool,
     #[serde(skip)]
@@ -2599,6 +2601,11 @@ impl<'a> Client {
                                 }
                                 self.screen = Screen::Games;
                             }
+                            Some("message") => {
+                                let message =
+                                    text.collect::<Vec<&str>>().join(" ").replace("\\n", "\n");
+                                self.message = message;
+                            }
                             Some("new_game") => {
                                 // = new_game game 15 none david rated fischer 900_000 10
                                 if Some("game") == text.next() {
@@ -3437,11 +3444,14 @@ impl<'a> Client {
                 column.push(row_6).into()
             }
             Screen::Games => {
-                let mut email_everyone = Row::new().spacing(SPACING);
+                let mut column = Column::new().padding(PADDING).spacing(SPACING);
+
+                if !self.message.is_empty() {
+                    column = column.push(text(self.message.clone()));
+                }
 
                 if self.email_everyone {
-                    email_everyone = email_everyone
-                        .push(button("Email Everyone").on_press(Message::EmailEveryone));
+                    column = column.push(button("Email Everyone").on_press(Message::EmailEveryone));
                 }
 
                 let username =
@@ -3483,10 +3493,10 @@ impl<'a> Client {
                 let top = row![create_game, users, account_setting, website, quit].spacing(SPACING);
                 let user_area = self.user_area(false);
 
-                column![email_everyone, username, top, user_area]
-                    .padding(PADDING)
-                    .spacing(SPACING)
-                    .into()
+                column = column.push(username);
+                column = column.push(top);
+                column = column.push(user_area);
+                column.into()
             }
             Screen::Login => {
                 let username = row![
