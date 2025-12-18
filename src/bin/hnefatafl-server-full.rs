@@ -48,6 +48,8 @@ use std::fmt::Write as _;
 
 const ACTIVE_GAMES_FILE: &str = "hnefatafl-games-active.postcard";
 const ARCHIVED_GAMES_FILE: &str = "hnefatafl-games.ron";
+/// Seconds in two months: `60.0 * 60.0 * 24.0 * 30.417 * 2.0 = 5_256_057.6`
+const TWO_MONTHS: i64 = 5_256_058;
 const USERS_FILE: &str = "hnefatafl-copenhagen.ron";
 
 /// Copenhagen Hnefatafl Server
@@ -533,12 +535,8 @@ impl Server {
     /// deviation is the same as a new player and that a typical RD is 50.
     #[must_use]
     fn check_update_rd(&mut self) -> bool {
-        // Seconds in two months:
-        // 60.0 * 60.0 * 24.0 * 30.417 * 2.0 = 5_256_057.6
-        let two_months = 5_256_058;
-
         let now = Local::now().to_utc().timestamp();
-        if now - self.ran_update_rd.0 >= two_months {
+        if now - self.ran_update_rd.0 >= TWO_MONTHS {
             for account in self.accounts.0.values_mut() {
                 account.rating.update_rd();
             }
