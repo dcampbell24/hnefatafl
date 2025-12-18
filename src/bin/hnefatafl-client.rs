@@ -701,7 +701,6 @@ enum Screen {
 }
 
 impl<'a> Client {
-    #[cfg(debug_assertions)]
     fn add_infinity(&self, column: Column<'a, Message>) -> Column<'a, Message> {
         let infinity = radio(
             format!("{} (9)", TimeEnum::Infinity),
@@ -712,11 +711,6 @@ impl<'a> Client {
 
         let row = row![infinity].padding(PADDING).spacing(SPACING);
         column.push(row)
-    }
-
-    #[cfg(not(debug_assertions))]
-    fn add_infinity(&self, column: Column<'a, Message>) -> Column<'a, Message> {
-        column
     }
 
     fn archived_game_reset(&mut self) {
@@ -3659,6 +3653,8 @@ impl<'a> Client {
                 let help_text_3 = text(t!(
                     "You can play on the board by pressing control (Ctrl) or command (⌘) and a letter then a number or vice versa."
                 ));
+
+                // Fixme!
 
                 column![
                     username,

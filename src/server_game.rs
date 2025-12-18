@@ -155,6 +155,7 @@ pub struct ServerGame {
     pub attacker_tx: Messenger,
     pub defender: String,
     pub defender_tx: Messenger,
+    pub elapsed_time: i64,
     pub rated: Rated,
     pub game: Game,
     pub texts: VecDeque<String>,
@@ -168,6 +169,7 @@ impl From<ServerGameSerialized> for ServerGame {
             attacker_tx: Messenger(None),
             defender: game.defender,
             defender_tx: Messenger(None),
+            elapsed_time: 0,
             rated: game.rated,
             game: game.game,
             texts: game.texts,
@@ -212,6 +214,7 @@ impl ServerGame {
             attacker_tx: Messenger(Some(attacker_tx)),
             defender,
             defender_tx: Messenger(Some(defender_tx)),
+            elapsed_time: 0,
             rated: game.rated,
             game: Game {
                 attacker_time: game.timed.clone(),

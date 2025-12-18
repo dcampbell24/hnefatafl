@@ -371,12 +371,10 @@ impl Game {
                 TimeSettings::Timed(time) => {
                     game.attacker_time = TimeSettings::Timed(time);
                     game.defender_time = TimeSettings::Timed(time);
-                    game.time = TimeUnix::default();
                 }
                 TimeSettings::UnTimed => {
                     game.attacker_time = TimeSettings::UnTimed;
                     game.defender_time = TimeSettings::UnTimed;
-                    game.time = TimeUnix::UnTimed;
                 }
             }
 
