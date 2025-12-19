@@ -117,7 +117,7 @@ In your terminal run the following to run the client with [Rust's][3] cargo:
 
 ```sh
 cargo install hnefatafl-copenhagen
-RUST_LOG=hnefatafl_client=debug hnefatafl-client
+RUST_LOG=hnefatafl_client=info hnefatafl-client
 ```
 
 [3]: https://www.rust-lang.org/learn/get-started
