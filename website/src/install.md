@@ -116,9 +116,8 @@ package on Arch, Debian, Ubuntu, and Fedora.
 In your terminal run the following to run the client with [Rust's][3] cargo:
 
 ```sh
-git clone https://github.com/dcampbell24/hnefatafl.git
-cd hnefatafl
-RUST_LOG=hnefatafl_client=debug cargo run --release --bin hnefatafl-client
+cargo install hnefatafl-copenhagen
+RUST_LOG=hnefatafl_client=debug hnefatafl-client
 ```
 
 [3]: https://www.rust-lang.org/learn/get-started
