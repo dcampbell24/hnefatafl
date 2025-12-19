@@ -1,13 +1,15 @@
 #! /bin/bash -e
 
-PACKAGE='hnefatafl-copenhagen_4.4.1-1_amd64.deb'
+PACKAGE='hnefatafl-copenhagen_4.5.0-1_amd64.deb'
 
-mkdir --parents apt/pool/main
-mkdir --parents apt/dists/stable/main/binary-amd64
+packages/debian/deb.sh
 
-cp ../../target/debian/${PACKAGE} apt/pool/main
+mkdir --parents packages/debian/apt/pool/main
+mkdir --parents packages/debian/apt/dists/stable/main/binary-amd64
 
-cd apt
+cp target/debian/${PACKAGE} packages/debian/apt/pool/main
+
+cd packages/debian/apt
 dpkg-scanpackages --arch amd64 pool/ > dists/stable/main/binary-amd64/Packages
 cat dists/stable/main/binary-amd64/Packages | lzma --keep > dists/stable/main/binary-amd64/Packages.xz
 
@@ -18,7 +20,7 @@ Origin: Hnefatafl Org
 Label: Hnefatafl Copenhagen
 Suite: stable
 Codename: stable
-Version: 4.3.0-1
+Version: 4.5.0-1
 Architectures: amd64
 Components: main
 Description: A software repository containing Hnefatafl Copenhagen
@@ -44,6 +46,8 @@ do_hash 'SHA256' 'sha256sum' >> 'Release'
 
 cat Release | gpg -abs > Release.gpg
 cat Release | gpg -abs --clearsign > InRelease
+
+scp -r ../../../apt/ root@hnefatafl.org:~/www/
 
 # /etc/apt/sources.list.d/hnefatafl.list
 # deb [arch=amd64 signed-by=/etc/apt/keyrings/packages.hnefatafl.org.asc] http://127.0.0.1:8000/apt stable main
