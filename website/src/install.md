@@ -8,7 +8,7 @@
   }
 </script>
 
-## Arch and Derivatives (Linux)
+## Arch and Derivatives (Linux) [@](https://aur.archlinux.org/packages/hnefatafl-copenhagen)
 
 In your terminal run:
 
