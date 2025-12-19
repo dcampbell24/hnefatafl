@@ -8,9 +8,13 @@
   }
 </script>
 
-## [Install](install.html)
+## Install
 
-## [Rules](rules.html)
+See how to install the software [here](install.html).
+
+## Rules
+
+See the rules [here](rules.html).
 
 ## Translate
 
@@ -21,7 +25,9 @@ what you want to do. If it is a minor change, you can just update the
 [3]: https://github.com/dcampbell24/hnefatafl/blob/main/locales/app.yml
 [4]: https://github.com/dcampbell24/hnefatafl/pulls
 
-## [Discord](https://discord.gg/h56CAHEBXd)
+## Discord
+
+Join discord [here](https://discord.gg/h56CAHEBXd).
 
 ## Help Me
 
