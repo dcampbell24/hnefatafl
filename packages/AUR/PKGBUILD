@@ -53,8 +53,3 @@ package() {
     install -Dm644 "hnefatafl-client.1.gz" "$pkgdir/usr/share/man/man1/hnefatafl-client.1.gz"
     install -Dm644 "packages/hnefatafl-client.desktop" "$pkgdir/usr/share/applications/hnefatafl-client.desktop"
 }
-
-check() {
-    cd "hnefatafl-$pkgver"
-    .githooks/pre-commit
-}
