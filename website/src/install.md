@@ -77,7 +77,7 @@ hnefatafl-client --ascii
 Then go to `Termux:X11` from the main menu. You may need to hold `Termux:11` to
 go to the `Preferences` -> `Output`, then increase the `Display scale %`.
 
-## Redox
+## [Redox](https://www.redox-os.org/)
 
 Edit your user config to include:
 
