@@ -1433,20 +1433,21 @@ impl Server {
                         return None;
                     }
 
-                    let message = data_file(MESSAGE_FILE);
-                    match fs::read_to_string(&message) {
-                        Ok(mut message) => {
-                            message = message.trim().replace('\n', "\\n");
-                            self.clients
-                                .get(&index_supplied)?
-                                .send(format!("= message {message}"))
-                                .ok()?;
-                        }
+                    let message_file = data_file(MESSAGE_FILE);
+                    let mut message = String::new();
+
+                    match fs::read_to_string(&message_file) {
+                        Ok(new_message) => message = new_message.trim().replace('\n', "\\n"),
                         Err(err) => match err.kind() {
                             ErrorKind::NotFound => {}
                             _ => error!("Error loading message: {err}"),
                         },
                     }
+
+                    self.clients
+                        .get(&index_supplied)?
+                        .send(format!("= message {message}"))
+                        .ok()?;
 
                     None
                 }
