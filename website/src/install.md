@@ -13,7 +13,7 @@
 In your terminal run:
 
 ```sh
-yay --sync --mflags --nocheck hnefatafl-copenhagen
+yay --sync hnefatafl-copenhagen
 ```
 
 ## Chocolatey (Windows)
