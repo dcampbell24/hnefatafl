@@ -99,7 +99,7 @@ There are also at least these bugs:
 4. I think you have to restart Redox after entering the application, because
    TcpStream shutdown is not implemented.
 
-## Cargo (Linux, macOS, Windows)
+## Cargo (Linux, macOS, Windows) [@](https://crates.io/crates/hnefatafl-copenhagen)
 
 ### Dependencies (Linux)
 
