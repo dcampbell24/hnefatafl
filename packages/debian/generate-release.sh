@@ -1,6 +1,6 @@
 #! /bin/bash -e
 
-PACKAGE='hnefatafl-copenhagen_4.5.0-1_amd64.deb'
+PACKAGE='hnefatafl-copenhagen_4.5.0-2_amd64.deb'
 
 packages/debian/deb.sh
 
@@ -20,7 +20,7 @@ Origin: Hnefatafl Org
 Label: Hnefatafl Copenhagen
 Suite: stable
 Codename: stable
-Version: 4.5.0-1
+Version: 4.5.0-2
 Architectures: amd64
 Components: main
 Description: A software repository containing Hnefatafl Copenhagen
