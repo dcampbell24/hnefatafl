@@ -5,7 +5,7 @@ Documentation="https://hnefatafl.org"
 [Service]
 Type=simple
 Restart=always
-ExecStart=/usr/games/hnefatafl-ai --username stronger-00 --password PASSWORD --role attacker
+ExecStart=/usr/games/hnefatafl-ai --username stronger-00 --password PASSWORD --role attacker --parallel
 PrivateTmp=yes
 InaccessibleDirectories=/home
 DeviceAllow=/dev/null rw
