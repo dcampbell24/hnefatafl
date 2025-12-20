@@ -26,7 +26,7 @@ conflicts=("hnefatafl-copenhagen")
 depends=("glibc" "gcc-libs" "hicolor-icon-theme" "alsa-lib")
 makedepends=("base-devel" "clang" "llvm" "mold" "rustup")
 source=("https://github.com/dcampbell24/hnefatafl/archive/refs/tags/v$pkgver-arch.tar.gz")
-sha256sums=("")
+sha256sums=("62071f7141c3b7c3f6921faf797049ccc84dd7afff78e947347f02133b97c129")
 
 build() {
     tar -xvzf v$pkgver.tar.gz
