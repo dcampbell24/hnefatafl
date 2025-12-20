@@ -43,6 +43,5 @@ android:
 	set ANDROID_NDK ${HOME}/Android/Sdk/ndk \
 	cargo build --example hnefatafl-client --target aarch64-linux-android --no-default-features
 
-
 macos:
 	cargo bundle --bin hnefatafl-client --features client --no-default-features --release
