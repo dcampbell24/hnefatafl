@@ -33,7 +33,15 @@ build() {
     cd "hnefatafl-$pkgver"
 
     cargo build --release --features client --no-default-features
-    ./target/release/hnefatafl-client --man
+
+    cargo run --release --bin hnefatafl-ai -- --man --username ""
+    cargo run --release --bin hnefatafl-client -- --man
+    cargo run --release --bin hnefatafl-server -- --man
+    cargo run --release --bin hnefatafl-text-protocol -- --man
+
+    gzip --no-name --best hnefatafl-ai.1
+    gzip --no-name --best hnefatafl-server.1
+    gzip --no-name --best hnefatafl-text-protocol.1
     gzip --no-name --best hnefatafl-client.1
 }
 
