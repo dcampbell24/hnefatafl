@@ -207,7 +207,7 @@ assets = [
     ["target/release/hnefatafl-text-protocol", "usr/games/", "755"],
 ]
 changelog = "packages/debian/changelog"
-revision = 2
+revision = "2"
 section = "games"
 
 [package.metadata.bundle]
