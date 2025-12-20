@@ -379,7 +379,7 @@ fn estimate_score() -> impl Stream<Item = Message> {
             }
 
             thread::spawn(move || {
-                let mut ai = match choose_ai(&args.ai, args.seconds, args.depth) {
+                let mut ai = match choose_ai(&args.ai, args.seconds, args.depth, true) {
                     Ok(ai) => ai,
                     Err(error) => {
                         error!("{error}");

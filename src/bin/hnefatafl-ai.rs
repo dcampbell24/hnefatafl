@@ -59,6 +59,10 @@ struct Args {
     #[arg(long)]
     challenger: Option<String>,
 
+    /// Challenge the AI with AI CHALLENGER
+    #[arg(long)]
+    parallel: bool,
+
     /// Build the manpage
     #[arg(long)]
     man: bool,
@@ -96,7 +100,7 @@ fn main() -> anyhow::Result<()> {
     buf.clear();
 
     if let Some(ai_2) = args.challenger {
-        let ai_2 = choose_ai(&ai_2, args.seconds, args.depth)?;
+        let ai_2 = choose_ai(&ai_2, args.seconds, args.depth, args.parallel)?;
         new_game(&mut tcp, args.role, &mut reader, &mut buf)?;
 
         let message: Vec<_> = buf.split_ascii_whitespace().collect();
@@ -106,7 +110,7 @@ fn main() -> anyhow::Result<()> {
         let game_id_2 = game_id.clone();
         let tcp_clone = tcp.try_clone()?;
 
-        let ai = choose_ai(&args.ai, args.seconds, args.depth)?;
+        let ai = choose_ai(&args.ai, args.seconds, args.depth, args.parallel)?;
         thread::spawn(move || accept_challenger(ai, &mut reader, &mut buf, &mut tcp, &game_id));
 
         let mut buf_2 = String::new();
@@ -136,7 +140,7 @@ fn main() -> anyhow::Result<()> {
 
             wait_for_challenger(&mut reader, &mut buf, &mut tcp, &game_id)?;
 
-            let ai = choose_ai(&args.ai, args.seconds, args.depth)?;
+            let ai = choose_ai(&args.ai, args.seconds, args.depth, args.parallel)?;
             handle_messages(ai, &game_id, &mut reader, &mut tcp)?;
         }
     }

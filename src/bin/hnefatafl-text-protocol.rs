@@ -68,13 +68,13 @@ fn main() -> anyhow::Result<()> {
         address.push_str(SERVER_PORT);
 
         let ai = match args.ai {
-            Some(ai) => choose_ai(&ai, args.seconds, args.depth)?,
-            None => choose_ai("basic", args.seconds, args.depth)?,
+            Some(ai) => choose_ai(&ai, args.seconds, args.depth, true)?,
+            None => choose_ai("basic", args.seconds, args.depth, true)?,
         };
 
         play_tcp(ai, &address, args.display_game)?;
     } else if let Some(ai) = args.ai {
-        let ai = choose_ai(&ai, args.seconds, args.depth)?;
+        let ai = choose_ai(&ai, args.seconds, args.depth, true)?;
 
         play_ai(ai, args.display_game)?;
     } else {

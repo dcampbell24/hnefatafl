@@ -837,7 +837,7 @@ impl Game {
             Message::Empty => Ok(None),
             Message::FinalStatus => Ok(Some(format!("{}", self.status))),
             Message::GenerateMove => {
-                let mut ai = AiBasic::new(4);
+                let mut ai = AiBasic::new(4, true);
                 let generate_move = ai.generate_move(self)?;
                 Ok(Some(generate_move.to_string()))
             }
