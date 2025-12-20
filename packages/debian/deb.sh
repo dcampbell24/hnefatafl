@@ -24,13 +24,3 @@ rm hnefatafl-server-full.1.gz
 
 echo $PACKAGE
 lintian -EviIL +pedantic $PACKAGE
-
-if [ -z $1 ]; then
-    exit
-fi
-
-if [ $1 = 'install' ]; then
-    sudo dpkg --remove hnefatafl-copenhagen
-    sudo dpkg --install $PACKAGE
-    sudo systemctl daemon-reload
-fi
