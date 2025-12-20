@@ -11,13 +11,18 @@ use crate::ai::{AI, AiBanal, AiBasic, AiMonteCarlo};
 /// # Errors
 ///
 /// If you don't choose banal, basic, or monte-carlo.
-pub fn choose_ai(ai: &str, seconds: Option<u64>, depth: Option<u8>) -> anyhow::Result<Box<dyn AI>> {
+pub fn choose_ai(
+    ai: &str,
+    seconds: Option<u64>,
+    depth: Option<u8>,
+    parallel: bool,
+) -> anyhow::Result<Box<dyn AI>> {
     match ai {
         "banal" => Ok(Box::new(AiBanal)),
         "basic" => {
             let depth = depth.unwrap_or(4);
 
-            Ok(Box::new(AiBasic::new(depth)))
+            Ok(Box::new(AiBasic::new(depth, parallel)))
         }
         "monte-carlo" => {
             let seconds = seconds.unwrap_or(10);

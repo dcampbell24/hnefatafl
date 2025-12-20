@@ -77,12 +77,13 @@ impl AI for AiBanal {
 
 pub struct AiBasic {
     depth: u8,
+    parallel: bool,
 }
 
 impl AiBasic {
     #[must_use]
-    pub fn new(depth: u8) -> Self {
-        Self { depth }
+    pub fn new(depth: u8, parallel: bool) -> Self {
+        Self { depth, parallel }
     }
 }
 
@@ -118,13 +119,23 @@ impl AI for AiBasic {
             });
         }
 
-        let (play, score, escape_vec) = game.alpha_beta_parallel(
-            self.depth as usize,
-            self.depth,
-            None,
-            -f64::INFINITY,
-            f64::INFINITY,
-        );
+        let (play, score, escape_vec) = if self.parallel {
+            game.alpha_beta_parallel(
+                self.depth as usize,
+                self.depth,
+                None,
+                -f64::INFINITY,
+                f64::INFINITY,
+            )
+        } else {
+            game.alpha_beta(
+                self.depth as usize,
+                self.depth,
+                None,
+                -f64::INFINITY,
+                f64::INFINITY,
+            )
+        };
 
         let play = match play {
             Some(play) => play,
