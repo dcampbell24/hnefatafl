@@ -13,6 +13,7 @@
 In your terminal run:
 
 ```sh
+sudo pacman --sync yay
 yay --sync hnefatafl-copenhagen
 ```
 
