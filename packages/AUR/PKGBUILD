@@ -46,7 +46,7 @@ build() {
 }
 
 package() {
-    cd "hnefatafl-$pkgver"
+    cd "hnefatafl-$pkgver-arch"
     install -Dm755 "target/release/hnefatafl-ai" -t "$pkgdir/usr/bin"
     install -Dm755 "target/release/hnefatafl-client" -t "$pkgdir/usr/bin"
     install -Dm755 "target/release/hnefatafl-server" -t "$pkgdir/usr/bin"
