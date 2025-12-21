@@ -76,7 +76,7 @@ password-hash = { version = "0.5", optional = true }
 [features]
 default = ["client", "server"]
 client = ["dep:futures", "dep:iced", "dep:rodio", "dep:smol_str", "dep:webbrowser"]
-js = ["dep:wasm-bindgen", "getrandom/wasm_js", "iced/web-colors", "iced/webgl"]
+js = ["dep:wasm-bindgen", "getrandom/wasm_js", "iced?/web-colors", "iced?/webgl"]
 server = ["dep:argon2", "dep:ctrlc", "dep:lettre", "dep:old_rand", "dep:password-hash"]
 website = []
 
