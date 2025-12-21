@@ -49,5 +49,3 @@ cat Release | gpg -abs --clearsign > InRelease
 
 scp -r ../../../apt/ root@hnefatafl.org:~/www/
 
-# /etc/apt/sources.list.d/hnefatafl.list
-# deb [arch=amd64 signed-by=/etc/apt/keyrings/packages.hnefatafl.org.asc] http://127.0.0.1:8000/apt stable main
