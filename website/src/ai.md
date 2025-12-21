@@ -35,3 +35,7 @@ If you want to change the settings for the AI further, you can edit
 `/usr/lib/systemd/system/hnefatafl-ai-attacker.service` or
 `/usr/lib/systemd/system/hnefatafl-ai-defender.service` and change the value of
 `ExecStart`.
+
+By default this runs basic AI with a search depth of 4. The AI seems pretty
+weak if you go below 4. You can increase the depth, but the AI may run very
+slowly.
