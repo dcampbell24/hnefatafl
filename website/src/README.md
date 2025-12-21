@@ -16,6 +16,10 @@ See how to install the software [here](install.html).
 
 See the rules [here](rules.html).
 
+## Artificial Intelligence
+
+Learn about AI [here](ai.html).
+
 ## Translate
 
 If you want to add, update, or fix a translation, open an [issue][1] and state
