@@ -77,13 +77,13 @@ impl AI for AiBanal {
 
 pub struct AiBasic {
     depth: u8,
-    parallel: bool,
+    sequential: bool,
 }
 
 impl AiBasic {
     #[must_use]
-    pub fn new(depth: u8, parallel: bool) -> Self {
-        Self { depth, parallel }
+    pub fn new(depth: u8, sequential: bool) -> Self {
+        Self { depth, sequential }
     }
 }
 
@@ -119,8 +119,8 @@ impl AI for AiBasic {
             });
         }
 
-        let (play, score, escape_vec) = if self.parallel {
-            game.alpha_beta_parallel(
+        let (play, score, escape_vec) = if self.sequential {
+            game.alpha_beta(
                 self.depth as usize,
                 self.depth,
                 None,
@@ -128,7 +128,7 @@ impl AI for AiBasic {
                 f64::INFINITY,
             )
         } else {
-            game.alpha_beta(
+            game.alpha_beta_parallel(
                 self.depth as usize,
                 self.depth,
                 None,

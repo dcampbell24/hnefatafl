@@ -15,14 +15,14 @@ pub fn choose_ai(
     ai: &str,
     seconds: Option<u64>,
     depth: Option<u8>,
-    parallel: bool,
+    sequential: bool,
 ) -> anyhow::Result<Box<dyn AI>> {
     match ai {
         "banal" => Ok(Box::new(AiBanal)),
         "basic" => {
             let depth = depth.unwrap_or(4);
 
-            Ok(Box::new(AiBasic::new(depth, parallel)))
+            Ok(Box::new(AiBasic::new(depth, sequential)))
         }
         "monte-carlo" => {
             let seconds = seconds.unwrap_or(10);
