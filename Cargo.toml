@@ -77,6 +77,7 @@ password-hash = { version = "0.5", optional = true }
 default = ["client", "server"]
 client = ["dep:futures", "dep:iced", "dep:rodio", "dep:smol_str", "dep:webbrowser"]
 js = ["dep:wasm-bindgen", "getrandom/wasm_js", "iced?/web-colors", "iced?/webgl"]
+runic = []
 server = ["dep:argon2", "dep:ctrlc", "dep:lettre", "dep:old_rand", "dep:password-hash"]
 website = []
 
@@ -119,6 +120,7 @@ bench = false
 
 [[bin]]
 name = "icelandic-runic"
+required-features = ["runic"]
 bench = false
 test = false
 
