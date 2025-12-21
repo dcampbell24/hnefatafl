@@ -39,3 +39,6 @@ If you want to change the settings for the AI further, you can edit
 By default this runs basic AI with a search depth of 4. The AI seems pretty
 weak if you go below 4. You can increase the depth, but the AI may run very
 slowly.
+
+Be warned that by default this runs in parallel using all available CPUs. If
+you only want to use one CPU, you can pass `--sequential`.
