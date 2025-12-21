@@ -17,6 +17,8 @@ USERNAME=username
 PASSWORD=password
 ```
 
+Don't prefix the `USERNAME` with `ai-` here.
+
 Then run
 
 ```sh
