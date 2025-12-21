@@ -1,7 +1,6 @@
 use std::{
-    io::{self, BufRead, BufReader, Write},
+    io::{BufRead, BufReader, Write},
     net::TcpStream,
-    thread,
 };
 
 use anyhow::Error;
@@ -52,16 +51,19 @@ struct Args {
     seconds: Option<u64>,
 
     /// How deep in the game tree to go with Ai
+    ///
+    /// [default basic: 4]
+    /// [default monte-carlo: 20]
     #[arg(long)]
     depth: Option<u8>,
 
-    /// Challenge the AI with AI CHALLENGER
+    /// Join game with id
     #[arg(long)]
-    challenger: Option<String>,
+    join_game: Option<u128>,
 
-    /// Challenge the AI with AI CHALLENGER
+    /// Run the basic AI sequentially
     #[arg(long)]
-    parallel: bool,
+    sequential: bool,
 
     /// Build the manpage
     #[arg(long)]
@@ -99,65 +101,27 @@ fn main() -> anyhow::Result<()> {
     assert_eq!(buf, "= login\n");
     buf.clear();
 
-    if let Some(ai_2) = args.challenger {
-        let ai_2 = choose_ai(&ai_2, args.seconds, args.depth, args.parallel)?;
-        new_game(&mut tcp, args.role, &mut reader, &mut buf)?;
+    if let Some(game_id) = args.join_game {
+        tcp.write_all(format!("join_game_pending {game_id}\n").as_bytes())?;
 
-        let message: Vec<_> = buf.split_ascii_whitespace().collect();
-        let game_id = message[3].to_string();
-        buf.clear();
-
-        let game_id_2 = game_id.clone();
-        let tcp_clone = tcp.try_clone()?;
-
-        let ai = choose_ai(&args.ai, args.seconds, args.depth, args.parallel)?;
-        thread::spawn(move || accept_challenger(ai, &mut reader, &mut buf, &mut tcp, &game_id));
-
-        let mut buf_2 = String::new();
-        let mut tcp_2 = TcpStream::connect(address)?;
-        let mut reader_2 = BufReader::new(tcp_2.try_clone()?);
-
-        tcp_2.write_all(format!("{VERSION_ID} login ai-01 PASSWORD\n").as_bytes())?;
-        reader_2.read_line(&mut buf_2)?;
-        assert_eq!(buf_2, "= login\n");
-
-        tcp_2.write_all(format!("join_game_pending {game_id_2}\n").as_bytes())?;
-        let tcp_2_clone = tcp_2.try_clone()?;
-        thread::spawn(move || handle_messages(ai_2, &game_id_2, &mut reader_2, &mut tcp_2));
-
-        let mut buffer = String::new();
-        io::stdin().read_line(&mut buffer)?;
-        tcp_clone.shutdown(std::net::Shutdown::Both)?;
-        tcp_2_clone.shutdown(std::net::Shutdown::Both)?;
+        let ai = choose_ai(&args.ai, args.seconds, args.depth, args.sequential)?;
+        handle_messages(ai, game_id, &mut reader, &mut tcp)?;
     } else {
         loop {
             new_game(&mut tcp, args.role, &mut reader, &mut buf)?;
 
             let message: Vec<_> = buf.split_ascii_whitespace().collect();
             info!("{message:?}");
-            let game_id = message[3].to_string();
+            let game_id = message[3].parse::<u128>()?;
             buf.clear();
 
-            wait_for_challenger(&mut reader, &mut buf, &mut tcp, &game_id)?;
+            wait_for_challenger(&mut reader, &mut buf, &mut tcp, game_id)?;
 
-            let ai = choose_ai(&args.ai, args.seconds, args.depth, args.parallel)?;
-            handle_messages(ai, &game_id, &mut reader, &mut tcp)?;
+            let ai = choose_ai(&args.ai, args.seconds, args.depth, args.sequential)?;
+            handle_messages(ai, game_id, &mut reader, &mut tcp)?;
         }
     }
 
-    Ok(())
-}
-
-fn accept_challenger(
-    ai: Box<dyn AI>,
-    reader: &mut BufReader<TcpStream>,
-    buf: &mut String,
-    tcp: &mut TcpStream,
-    game_id: &str,
-) -> anyhow::Result<()> {
-    wait_for_challenger(reader, buf, tcp, game_id)?;
-
-    handle_messages(ai, game_id, reader, tcp)?;
     Ok(())
 }
 
@@ -189,7 +153,7 @@ fn wait_for_challenger(
     reader: &mut BufReader<TcpStream>,
     buf: &mut String,
     tcp: &mut TcpStream,
-    game_id: &str,
+    game_id: u128,
 ) -> anyhow::Result<()> {
     loop {
         reader.read_line(buf)?;
@@ -215,7 +179,7 @@ fn wait_for_challenger(
 
 fn handle_messages(
     mut ai: Box<dyn AI>,
-    game_id: &str,
+    game_id: u128,
     reader: &mut BufReader<TcpStream>,
     tcp: &mut TcpStream,
 ) -> anyhow::Result<()> {
