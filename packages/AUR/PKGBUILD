@@ -45,6 +45,10 @@ build() {
     gzip --no-name --best hnefatafl-server-full.1
     gzip --no-name --best hnefatafl-text-protocol.1
     gzip --no-name --best hnefatafl-client.1
+
+    sed -i 's/games/bin/g' packages/hnefatafl-ai-attacker.service
+    sed -i 's/games/bin/g' packages/hnefatafl-ai-defender.service
+    sed -i 's/games/bin/g' packages/hnefatafl.service
 }
 
 package() {
