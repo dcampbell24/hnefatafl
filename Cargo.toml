@@ -205,7 +205,7 @@ assets = [
     ["target/release/hnefatafl-ai", "usr/bin/", "755"],
     ["target/release/hnefatafl-client", "usr/games/", "755"],
     ["target/release/hnefatafl-server", "usr/games/", "755"],
-    ["target/release/hnefatafl-server-full", "usr/games/", "755"],
+    ["target/release/hnefatafl-server-full", "usr/bin/", "755"],
     ["target/release/hnefatafl-text-protocol", "usr/games/", "755"],
 ]
 changelog = "packages/debian/changelog"
