@@ -42,6 +42,10 @@ struct Args {
     #[arg(long)]
     host: Option<String>,
 
+    /// Render everything in ASCII
+    #[arg(long)]
+    ascii: bool,
+
     /// Build the manpage
     #[arg(long)]
     man: bool,
@@ -64,6 +68,14 @@ fn main() -> anyhow::Result<()> {
         return Ok(());
     }
 
+    let args = Args::parse();
+
+    let mut game = Game::default();
+    if args.ascii {
+        game.chars.ascii();
+        game.board.display_ascii = true;
+    }
+
     if let Some(mut address) = args.host {
         address.push_str(SERVER_PORT);
 
@@ -72,22 +84,21 @@ fn main() -> anyhow::Result<()> {
             None => choose_ai("basic", args.seconds, args.depth, true)?,
         };
 
-        play_tcp(ai, &address, args.display_game)?;
+        play_tcp(game, ai, &address, args.display_game)?;
     } else if let Some(ai) = args.ai {
         let ai = choose_ai(&ai, args.seconds, args.depth, true)?;
 
-        play_ai(ai, args.display_game)?;
+        play_ai(game, ai, args.display_game)?;
     } else {
-        play(args.display_game)?;
+        play(game, args.display_game)?;
     }
 
     Ok(())
 }
 
-fn play(display_game: bool) -> anyhow::Result<()> {
+fn play(mut game: Game, display_game: bool) -> anyhow::Result<()> {
     let mut buffer = String::new();
     let stdin = io::stdin();
-    let mut game = Game::default();
 
     if display_game {
         clear_screen()?;
@@ -122,9 +133,8 @@ fn play(display_game: bool) -> anyhow::Result<()> {
     }
 }
 
-fn play_ai(mut ai: Box<dyn AI>, display_game: bool) -> anyhow::Result<()> {
+fn play_ai(mut game: Game, mut ai: Box<dyn AI>, display_game: bool) -> anyhow::Result<()> {
     let mut buffer = String::new();
-    let mut game = Game::default();
 
     if display_game {
         clear_screen()?;
@@ -149,8 +159,12 @@ fn play_ai(mut ai: Box<dyn AI>, display_game: bool) -> anyhow::Result<()> {
     }
 }
 
-fn play_tcp(mut ai: Box<dyn AI>, address: &str, display_game: bool) -> anyhow::Result<()> {
-    let mut game = Game::default();
+fn play_tcp(
+    mut game: Game,
+    mut ai: Box<dyn AI>,
+    address: &str,
+    display_game: bool,
+) -> anyhow::Result<()> {
     let mut stream = TcpStream::connect(address)?;
     println!("connected to {address} ...");
 

@@ -152,6 +152,8 @@ const RESTRICTED_SQUARES_13X13: [Vertex; 5] = [
 #[derive(Clone, Deserialize, Eq, Hash, PartialEq, Serialize)]
 pub struct Board {
     pub spaces: Vec<Space>,
+    #[serde(skip)]
+    pub display_ascii: bool,
 }
 
 impl Default for Board {
@@ -211,7 +213,13 @@ impl fmt::Display for Board {
                         && self.spaces[y * board_size + x] == Space::Empty
                         && board_size == 13)
                 {
-                    write!(f, "⌘")?;
+                    if self.display_ascii {
+                        write!(f, "#")?;
+                    } else {
+                        write!(f, "⌘")?;
+                    }
+                } else if self.display_ascii {
+                    write!(f, "{}", self.spaces[y * board_size + x].display_ascii())?;
                 } else {
                     write!(f, "{}", self.spaces[y * board_size + x])?;
                 }
@@ -258,7 +266,10 @@ impl TryFrom<[&str; 11]> for Board {
             }
         }
 
-        Ok(Self { spaces })
+        Ok(Self {
+            spaces,
+            display_ascii: false,
+        })
     }
 }
 
@@ -298,7 +309,10 @@ impl TryFrom<[&str; 13]> for Board {
             }
         }
 
-        Ok(Self { spaces })
+        Ok(Self {
+            spaces,
+            display_ascii: false,
+        })
     }
 }
 
@@ -1537,7 +1551,10 @@ impl From<&[u8]> for Board {
             spaces.push(Space::from(space));
         }
 
-        Board { spaces }
+        Board {
+            spaces,
+            display_ascii: false,
+        }
     }
 }
 
@@ -1602,7 +1619,10 @@ fn board_11x11() -> Board {
         .flat_map(|space| space.chars().map(|ch| ch.try_into().unwrap()))
         .collect();
 
-    Board { spaces }
+    Board {
+        spaces,
+        display_ascii: false,
+    }
 }
 
 #[must_use]
@@ -1613,7 +1633,10 @@ fn board_13x13() -> Board {
         .flat_map(|space| space.chars().map(|ch| ch.try_into().unwrap()))
         .collect();
 
-    Board { spaces }
+    Board {
+        spaces,
+        display_ascii: false,
+    }
 }
 
 pub struct Captured {

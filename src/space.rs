@@ -12,6 +12,18 @@ pub enum Space {
     Defender,
 }
 
+impl Space {
+    #[must_use]
+    pub fn display_ascii(&self) -> &str {
+        match self {
+            Self::Attacker => "A",
+            Self::Empty => ".",
+            Self::King => "K",
+            Self::Defender => "D",
+        }
+    }
+}
+
 impl TryFrom<char> for Space {
     type Error = anyhow::Error;
 
