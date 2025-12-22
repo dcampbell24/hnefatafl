@@ -88,9 +88,9 @@ hnefatafl-copenhagen = "source"
 ```
 
 You should be at least using the packages supplied via
-`include = ["desktop.toml"]`. Go to games and open Hnefatafl. After logging in
-and exiting the application, you'll have to restart Redox, because the
-application is buggy.
+`include = ["desktop-minimal.toml"]`. Go to games and open Hnefatafl. After
+logging in and exiting the application, you'll have to restart Redox, because
+the application is buggy.
 
 There are also at least these bugs:
 
