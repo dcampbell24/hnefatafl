@@ -1191,6 +1191,20 @@ impl Server {
         }
     }
 
+    fn tournament_players(&self, index_supplied: usize) -> Option<(Sender<String>, bool, String)> {
+        if let Some(tx) = self.clients.get(&index_supplied) {
+            let mut players: Vec<_> = self.tournament_players.iter().cloned().collect();
+            players.sort();
+            let players = players.join(" ");
+            let mut tournament_players = "tournament_players ".to_string();
+            tournament_players.push_str(&players);
+
+            Some((tx.clone(), true, tournament_players))
+        } else {
+            None
+        }
+    }
+
     fn handle_messages(
         &mut self,
         rx: &mpsc::Receiver<(String, Option<mpsc::Sender<String>>)>,
@@ -1425,6 +1439,7 @@ impl Server {
                 "join_tournament" => {
                     self.tournament_players.insert(username.to_string());
                     self.save_server();
+
                     self.clients
                         .get(&index_supplied)
                         .map(|tx| (tx.clone(), true, "join_tournament".to_string()))
@@ -1435,6 +1450,11 @@ impl Server {
                     (*command).to_string(),
                     the_rest.as_slice(),
                 ),
+                "leave_tournament" => {
+                    self.tournament_players.remove(*username);
+                    self.save_server();
+                    self.tournament_players(index_supplied)
+                }
                 "login" => self.login(
                     username,
                     index_supplied,
@@ -1556,19 +1576,7 @@ impl Server {
                     None
                 }
                 "text_game" => self.text_game(username, index_supplied, command, the_rest),
-                "tournament_players" => {
-                    if let Some(tx) = self.clients.get(&index_supplied) {
-                        let mut players: Vec<_> = self.tournament_players.iter().cloned().collect();
-                        players.sort();
-                        let players = players.join(" ");
-                        let mut tournament_players = "tournament_players ".to_string();
-                        tournament_players.push_str(&players);
-
-                        Some((tx.clone(), true, tournament_players))
-                    } else {
-                        None
-                    }
-                }
+                "tournament_players" => self.tournament_players(index_supplied),
                 "watch_game" => self.watch_game(
                     username,
                     index_supplied,

@@ -234,6 +234,10 @@ fn i18n_buttons() -> HashMap<String, String> {
         "Join Tournament".to_string(),
         t!("Join Tournament").to_string(),
     );
+    strings.insert(
+        "Leave Tournament".to_string(),
+        t!("Leave Tournament").to_string(),
+    );
 
     strings
 }
@@ -2360,6 +2364,7 @@ impl<'a> Client {
                 self.screen = Screen::Tournament;
             }
             Message::TournamentJoin => self.send("join_tournament\n"),
+            Message::TournamentLeave => self.send("leave_tournament\n"),
             Message::RatedSelected(rated) => self.game_settings.rated = rated.into(),
             Message::ResetPassword => self.reset_password(),
             Message::ReviewGame => self.review_game(),
@@ -3795,9 +3800,21 @@ impl<'a> Client {
                 .into()
             }
             Screen::Tournament => {
+                let mut button_1 =
+                    button(text!("{} (1)", self.strings["Join Tournament"].as_str()));
+
+                let mut button_2 =
+                    button(text!("{} (2)", self.strings["Leave Tournament"].as_str()));
+
+                if self.tournament_players.contains(&self.username) {
+                    button_2 = button_2.on_press(Message::TournamentLeave);
+                } else {
+                    button_1 = button_1.on_press(Message::TournamentJoin);
+                }
+
                 let buttons = row![
-                    button(text!("{} (1)", self.strings["Join Tournament"].as_str()))
-                        .on_press(Message::TournamentJoin),
+                    button_1,
+                    button_2,
                     button(text!("{} (Esc)", self.strings["Leave"].as_str()))
                         .on_press(Message::Leave),
                 ]
@@ -4141,6 +4158,7 @@ enum Message {
     Time(TimeEnum),
     Tournament,
     TournamentJoin,
+    TournamentLeave,
     Users,
     UsersSortedBy(SortBy),
     WindowResized((f32, f32)),
