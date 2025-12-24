@@ -13,7 +13,7 @@ use std::{
 };
 
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
-use chrono::{Local, Utc};
+use chrono::{Local, NaiveDate, Utc};
 use clap::{CommandFactory, Parser};
 use hnefatafl_copenhagen::{
     COPYRIGHT, Id, LONG_VERSION, SERVER_PORT, VERSION_ID,
@@ -414,6 +414,8 @@ struct Server {
     ran_update_rd: UnixTimestamp,
     #[serde(default)]
     smtp: Smtp,
+    #[serde(default)]
+    tournament_date: i64,
     #[serde(default)]
     tournament_players: HashSet<String>,
     #[serde(default)]
@@ -1191,13 +1193,19 @@ impl Server {
         }
     }
 
-    fn tournament_players(&self, index_supplied: usize) -> Option<(Sender<String>, bool, String)> {
+    fn tournament_date_players(
+        &self,
+        index_supplied: usize,
+    ) -> Option<(Sender<String>, bool, String)> {
         if let Some(tx) = self.clients.get(&index_supplied) {
             let mut players: Vec<_> = self.tournament_players.iter().cloned().collect();
             players.sort();
             let players = players.join(" ");
             let mut tournament_players = "tournament_players ".to_string();
             tournament_players.push_str(&players);
+
+            tx.send(format!("= tournament_date {}", self.tournament_date))
+                .ok()?;
 
             Some((tx.clone(), true, tournament_players))
         } else {
@@ -1453,7 +1461,7 @@ impl Server {
                 "leave_tournament" => {
                     self.tournament_players.remove(*username);
                     self.save_server();
-                    self.tournament_players(index_supplied)
+                    self.tournament_date_players(index_supplied)
                 }
                 "login" => self.login(
                     username,
@@ -1576,7 +1584,34 @@ impl Server {
                     None
                 }
                 "text_game" => self.text_game(username, index_supplied, command, the_rest),
-                "tournament_players" => self.tournament_players(index_supplied),
+                "tournament_date" => {
+                    let date = the_rest.first()?;
+                    let date_fields: Vec<_> = date.split('-').collect();
+
+                    let year = date_fields.first()?;
+                    let year = year.parse().ok()?;
+
+                    let month = date_fields.get(1)?;
+                    let month = month.parse().ok()?;
+
+                    let day = date_fields.get(2)?;
+                    let day = day.parse().ok()?;
+
+                    let date = NaiveDate::from_ymd_opt(year, month, day)?;
+                    let date = date.and_hms_opt(0, 0, 0)?;
+                    self.tournament_date = date.and_utc().timestamp();
+                    self.save_server();
+
+                    if let Some(tx) = self.clients.get(&index_supplied) {
+                        let mut tournament_date = "tournament_date ".to_string();
+                        tournament_date.push_str(&self.tournament_date.to_string());
+
+                        Some((tx.clone(), true, tournament_date))
+                    } else {
+                        None
+                    }
+                }
+                "tournament_players" => self.tournament_date_players(index_supplied),
                 "watch_game" => self.watch_game(
                     username,
                     index_supplied,

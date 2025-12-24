@@ -16,7 +16,7 @@ use std::{
     time::Duration,
 };
 
-use chrono::{Local, Utc};
+use chrono::{DateTime, Local, TimeZone, Utc, offset::LocalResult};
 use clap::{CommandFactory, Parser};
 use futures::{SinkExt, executor};
 use hnefatafl_copenhagen::{
@@ -672,6 +672,8 @@ struct Client {
     time_attacker: TimeSettings,
     #[serde(skip)]
     time_defender: TimeSettings,
+    #[serde(skip)]
+    tournament_date: DateTime<Utc>,
     #[serde(skip)]
     tournament_players: Vec<String>,
     #[serde(skip)]
@@ -2712,6 +2714,14 @@ impl<'a> Client {
                             }
                             Some("text") => self.texts.push_front(text_collect(text)),
                             Some("text_game") => self.texts_game.push_front(text_collect(text)),
+                            Some("tournament_date") => {
+                                if let Some(date) = text.next()
+                                    && let Ok(date) = date.parse::<i64>()
+                                    && let LocalResult::Single(date) = Utc.timestamp_opt(date, 0)
+                                {
+                                    self.tournament_date = date;
+                                }
+                            }
                             Some("tournament_players") => {
                                 let players: Vec<_> = text.map(ToString::to_string).collect();
                                 self.tournament_players = players;
@@ -2826,11 +2836,13 @@ impl<'a> Client {
                             self.send(&format!("text {}", self.text_input));
                         }
                     }
-                    Screen::GameNew
-                    | Screen::GameReview
-                    | Screen::Login
-                    | Screen::Tournament
-                    | Screen::Users => {}
+                    Screen::Tournament => {
+                        if !self.text_input.trim().is_empty() {
+                            self.text_input.push('\n');
+                            self.send(&format!("tournament_date {}", self.text_input));
+                        }
+                    }
+                    Screen::GameNew | Screen::GameReview | Screen::Login | Screen::Users => {}
                 }
 
                 self.text_input.clear();
@@ -3800,6 +3812,18 @@ impl<'a> Client {
                 .into()
             }
             Screen::Tournament => {
+                let mut column = Column::new().padding(PADDING).spacing(SPACING);
+                column = column.push(text!("date: {}", self.tournament_date.to_rfc2822()));
+
+                if self.username == "david" {
+                    let input = iced::widget::text_input("????-??-??", &self.text_input)
+                        .on_input(Message::TextChanged)
+                        .on_paste(Message::TextChanged)
+                        .on_submit(Message::TextSend);
+
+                    column = column.push(input);
+                }
+
                 let mut button_1 =
                     button(text!("{} (1)", self.strings["Join Tournament"].as_str()));
 
@@ -3831,10 +3855,10 @@ impl<'a> Client {
                 }
                 let players = scrollable(players);
 
-                column![buttons, title, players]
-                    .padding(PADDING)
-                    .spacing(SPACING)
-                    .into()
+                column = column.push(buttons);
+                column = column.push(title);
+                column = column.push(players);
+                column.into()
             }
             Screen::Users => row![
                 self.users(&LoggedIn::None),
