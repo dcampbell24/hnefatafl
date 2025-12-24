@@ -1424,6 +1424,7 @@ impl Server {
                 ),
                 "join_tournament" => {
                     self.tournament_players.insert(username.to_string());
+                    self.save_server();
                     self.clients
                         .get(&index_supplied)
                         .map(|tx| (tx.clone(), true, "join_tournament".to_string()))
