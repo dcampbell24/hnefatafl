@@ -2051,14 +2051,14 @@ impl Server {
                         match File::create(&users_file) {
                             Ok(mut file) => {
                                 if let Err(error) = file.write_all(string.as_bytes()) {
-                                    error!("{error}");
+                                    error!("save file (3): {error}");
                                 }
                             }
-                            Err(error) => error!("{error}"),
+                            Err(error) => error!("save file (2): {error}"),
                         }
                     }
                 }
-                Err(error) => error!("{error}"),
+                Err(error) => error!("save file (1): {error}"),
             }
         }
     }
