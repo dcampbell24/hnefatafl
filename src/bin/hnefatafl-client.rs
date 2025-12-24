@@ -3813,7 +3813,10 @@ impl<'a> Client {
             }
             Screen::Tournament => {
                 let mut column = Column::new().padding(PADDING).spacing(SPACING);
-                column = column.push(text!("date: {}", self.tournament_date.to_rfc2822()));
+                column = column.push(text!(
+                    "Tournament Start Date: {}",
+                    self.tournament_date.to_rfc2822()
+                ));
 
                 if self.username == "david" {
                     let input = iced::widget::text_input("????-??-??", &self.text_input)
