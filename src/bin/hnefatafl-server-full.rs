@@ -1585,12 +1585,12 @@ impl Server {
                 ),
                 "=" => None,
                 _ => self.clients.get(&index_supplied).map(|channel| {
-                    info!("{index_supplied} {username} {command}");
+                    error!("{index_supplied} {username} {command}");
                     (channel.clone(), false, (*command).to_string())
                 }),
             }
         } else {
-            info!("{index_username_command:?}");
+            error!("{index_username_command:?}");
             None
         }
     }
