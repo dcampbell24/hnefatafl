@@ -2043,17 +2043,22 @@ impl Server {
                 account.logged_in = None;
             }
 
-            if let Ok(string) =
-                ron::ser::to_string_pretty(&server, ron::ser::PrettyConfig::default())
-                && !string.trim().is_empty()
-            {
-                let users_file = data_file(USERS_FILE);
+            match ron::ser::to_string_pretty(&server, ron::ser::PrettyConfig::default()) {
+                Ok(string) => {
+                    if !string.trim().is_empty() {
+                        let users_file = data_file(USERS_FILE);
 
-                if let Ok(mut file) = File::create(&users_file)
-                    && let Err(error) = file.write_all(string.as_bytes())
-                {
-                    error!("{error}");
+                        match File::create(&users_file) {
+                            Ok(mut file) => {
+                                if let Err(error) = file.write_all(string.as_bytes()) {
+                                    error!("{error}");
+                                }
+                            }
+                            Err(error) => error!("{error}"),
+                        }
+                    }
                 }
+                Err(error) => error!("{error}"),
             }
         }
     }
