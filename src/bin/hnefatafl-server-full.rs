@@ -1,7 +1,7 @@
 #![deny(clippy::indexing_slicing)]
 
 use std::{
-    collections::{HashMap, VecDeque},
+    collections::{HashMap, HashSet, VecDeque},
     fs::{self, File, OpenOptions},
     io::{BufRead, BufReader, ErrorKind, Read, Write},
     net::{TcpListener, TcpStream},
@@ -39,7 +39,7 @@ use lettre::{
     message::{Mailbox, header::ContentType},
     transport::smtp::authentication::Credentials,
 };
-use log::{debug, error, info};
+use log::{debug, error, info, trace};
 use old_rand::rngs::OsRng;
 use password_hash::SaltString;
 use rand::random;
@@ -415,6 +415,8 @@ struct Server {
     #[serde(default)]
     smtp: Smtp,
     #[serde(default)]
+    tournament_players: HashSet<String>,
+    #[serde(default)]
     accounts: Accounts,
     #[serde(skip)]
     archived_games: Vec<ArchivedGame>,
@@ -671,7 +673,7 @@ impl Server {
     }
 
     fn display_server(&mut self, username: &str) -> Option<(mpsc::Sender<String>, bool, String)> {
-        debug!("0 {username} display_server");
+        trace!("0 {username} display_server");
         for tx in &mut self.clients.values() {
             tx.send(format!("= display_games {:?}", &self.games_light))
                 .ok()?;
@@ -1217,6 +1219,12 @@ impl Server {
             index_username_command.get(1),
             index_username_command.get(2),
         ) {
+            if *command == "display_server" {
+                trace!("{index_supplied} {username} {command}");
+            } else {
+                debug!("{index_supplied} {username} {command}");
+            }
+
             let index_supplied = index_supplied.parse::<usize>().ok()?;
             let the_rest: Vec<_> = index_username_command.clone().into_iter().skip(3).collect();
 
@@ -1414,6 +1422,12 @@ impl Server {
                     (*command).to_string(),
                     the_rest.as_slice(),
                 ),
+                "join_tournament" => {
+                    self.tournament_players.insert(username.to_string());
+                    self.clients
+                        .get(&index_supplied)
+                        .map(|tx| (tx.clone(), true, "join_tournament".to_string()))
+                }
                 "leave_game" => self.leave_game(
                     username,
                     index_supplied,
@@ -1541,6 +1555,19 @@ impl Server {
                     None
                 }
                 "text_game" => self.text_game(username, index_supplied, command, the_rest),
+                "tournament_players" => {
+                    if let Some(tx) = self.clients.get(&index_supplied) {
+                        let mut players: Vec<_> = self.tournament_players.iter().cloned().collect();
+                        players.sort();
+                        let players = players.join(" ");
+                        let mut tournament_players = "tournament_players ".to_string();
+                        tournament_players.push_str(&players);
+
+                        Some((tx.clone(), true, tournament_players))
+                    } else {
+                        None
+                    }
+                }
                 "watch_game" => self.watch_game(
                     username,
                     index_supplied,
