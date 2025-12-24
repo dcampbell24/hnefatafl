@@ -669,6 +669,8 @@ struct Client {
     #[serde(skip)]
     time_defender: TimeSettings,
     #[serde(skip)]
+    tournament_players: Vec<String>,
+    #[serde(skip)]
     tx: Option<mpsc::Sender<String>>,
     #[serde(default)]
     username: String,
@@ -2353,7 +2355,11 @@ impl<'a> Client {
             },
             Message::SoundMuted(_muted) => self.sound_muted(),
             Message::StreamConnected(tx) => self.tx = Some(tx),
-            Message::Tournament => self.screen = Screen::Tournament,
+            Message::Tournament => {
+                self.send("tournament_players\n");
+                self.screen = Screen::Tournament;
+            }
+            Message::TournamentJoin => self.send("join_tournament\n"),
             Message::RatedSelected(rated) => self.game_settings.rated = rated.into(),
             Message::ResetPassword => self.reset_password(),
             Message::ReviewGame => self.review_game(),
@@ -2668,6 +2674,10 @@ impl<'a> Client {
                                 self.game_id = id;
                                 self.challenger = true;
                             }
+                            Some("join_tournament") => {
+                                self.tournament_players.push(self.username.clone());
+                                self.tournament_players.sort();
+                            }
                             Some("leave_game") => self.game_id = 0,
                             Some("login") => {
                                 if self.username == "david" {
@@ -2697,6 +2707,10 @@ impl<'a> Client {
                             }
                             Some("text") => self.texts.push_front(text_collect(text)),
                             Some("text_game") => self.texts_game.push_front(text_collect(text)),
+                            Some("tournament_players") => {
+                                let players: Vec<_> = text.map(ToString::to_string).collect();
+                                self.tournament_players = players;
+                            }
                             _ => error!("(2) unexpected text: {}", string.trim()),
                         }
                     }
@@ -3780,13 +3794,31 @@ impl<'a> Client {
                 .spacing(SPACING)
                 .into()
             }
-            Screen::Tournament => row![
-                button(text!("{} (1)", self.strings["Join Tournament"].as_str())),
-                button(text!("{} (Esc)", self.strings["Leave"].as_str())).on_press(Message::Leave),
-            ]
-            .padding(PADDING)
-            .spacing(SPACING)
-            .into(),
+            Screen::Tournament => {
+                let buttons = row![
+                    button(text!("{} (1)", self.strings["Join Tournament"].as_str()))
+                        .on_press(Message::TournamentJoin),
+                    button(text!("{} (Esc)", self.strings["Leave"].as_str()))
+                        .on_press(Message::Leave),
+                ]
+                .spacing(SPACING);
+
+                let title = t!("Players");
+                let dashes = text("-".repeat(title.len())).font(Font::MONOSPACE);
+                let title = text(title);
+                let title = column![title, dashes];
+
+                let mut players = Column::new();
+                for player in &self.tournament_players {
+                    players = players.push(text(player));
+                }
+                let players = scrollable(players);
+
+                column![buttons, title, players]
+                    .padding(PADDING)
+                    .spacing(SPACING)
+                    .into()
+            }
             Screen::Users => row![
                 self.users(&LoggedIn::None),
                 button(text!("{} (Esc)", self.strings["Leave"].as_str())).on_press(Message::Leave)
@@ -4108,6 +4140,7 @@ enum Message {
     Tick,
     Time(TimeEnum),
     Tournament,
+    TournamentJoin,
     Users,
     UsersSortedBy(SortBy),
     WindowResized((f32, f32)),
