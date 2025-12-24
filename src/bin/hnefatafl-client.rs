@@ -3695,13 +3695,10 @@ impl<'a> Client {
             }
             Screen::Users => row![
                 self.users(&LoggedIn::None),
-                row![
-                    button(text!("{} (Esc)", self.strings["Leave"].as_str()))
-                        .on_press(Message::Leave)
-                ]
-                .padding(PADDING)
-                .spacing(SPACING),
+                button(text!("{} (Esc)", self.strings["Leave"].as_str())).on_press(Message::Leave)
             ]
+            .padding(PADDING)
+            .spacing(SPACING)
             .into(),
         }
     }
