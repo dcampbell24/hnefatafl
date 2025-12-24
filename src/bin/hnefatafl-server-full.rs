@@ -2036,22 +2036,24 @@ impl Server {
     }
 
     fn save_server(&self) {
-        let mut server = self.clone();
-        for account in server.accounts.0.values_mut() {
-            account.logged_in = None;
-        }
+        if !self.skip_the_data_file {
+            let mut server = self.clone();
 
-        if !self.skip_the_data_file
-            && let Ok(string) =
+            for account in server.accounts.0.values_mut() {
+                account.logged_in = None;
+            }
+
+            if let Ok(string) =
                 ron::ser::to_string_pretty(&server, ron::ser::PrettyConfig::default())
-            && !string.trim().is_empty()
-        {
-            let users_file = data_file(USERS_FILE);
-
-            if let Ok(mut file) = File::create(&users_file)
-                && let Err(error) = file.write_all(string.as_bytes())
+                && !string.trim().is_empty()
             {
-                error!("{error}");
+                let users_file = data_file(USERS_FILE);
+
+                if let Ok(mut file) = File::create(&users_file)
+                    && let Err(error) = file.write_all(string.as_bytes())
+                {
+                    error!("{error}");
+                }
             }
         }
     }
