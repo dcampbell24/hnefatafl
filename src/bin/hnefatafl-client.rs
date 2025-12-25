@@ -1193,6 +1193,7 @@ impl<'a> Client {
             self.username = username;
         }
 
+        self.texts.clear();
         self.text_input.clear();
         self.archived_game_reset();
         handle_error(self.save_client_ron());

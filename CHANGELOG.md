@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- hnefatafl-client: clear the texts before logging in.
+
 ## [4.5.0] - 2025-12-18
 
 ### Added
