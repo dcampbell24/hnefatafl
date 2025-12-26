@@ -32,6 +32,7 @@ use hnefatafl_copenhagen::{
     smtp::Smtp,
     status::Status,
     time::{Time, TimeSettings},
+    tournament::Tournament,
     utils::{self, data_file},
 };
 use lettre::{
@@ -418,6 +419,8 @@ struct Server {
     tournament_date: i64,
     #[serde(default)]
     tournament_players: HashSet<String>,
+    #[serde(default)]
+    tournament: Tournament,
     #[serde(default)]
     accounts: Accounts,
     #[serde(skip)]
@@ -1611,6 +1614,17 @@ impl Server {
                         None
                     }
                 }
+                "tournament_new" => {
+                    self.tournament_tree();
+
+                    if let Ok(string) = ron::ser::to_string(&self.tournament) {
+                        self.clients
+                            .get(&index_supplied)
+                            .map(|tx| (tx.clone(), true, format!("tournament_new {string}")))
+                    } else {
+                        None
+                    }
+                }
                 "tournament_players" => self.tournament_date_players(index_supplied),
                 "watch_game" => self.watch_game(
                     username,
@@ -2170,6 +2184,42 @@ impl Server {
         }
 
         None
+    }
+
+    fn tournament_tree(&mut self) {
+        let mut players_1 = Vec::new();
+        for player in &self.tournament_players {
+            if let Some(account) = self.accounts.0.get(player) {
+                players_1.push((player, account.rating.rating));
+            }
+        }
+        players_1.sort_by(|a, b| a.1.total_cmp(&b.1));
+
+        let mut players_2 = VecDeque::new();
+        for (name, rating) in players_1 {
+            players_2.push_back((name.clone(), rating));
+        }
+
+        let mut challenges = Vec::new();
+        loop {
+            match (players_2.pop_front(), players_2.pop_back()) {
+                (Some((name_1, _)), Some((name_2, _))) => {
+                    challenges.push(Some(name_1));
+                    challenges.push(Some(name_2));
+                }
+                (Some((name_1, _)), None) => {
+                    challenges.push(Some(name_1));
+                    challenges.push(None);
+                    break;
+                }
+                _ => {
+                    self.tournament = Tournament::default();
+                    return;
+                }
+            }
+        }
+
+        self.tournament = Tournament::new(challenges);
     }
 
     fn watch_game(

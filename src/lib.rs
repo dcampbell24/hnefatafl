@@ -28,6 +28,7 @@ pub mod smtp;
 pub mod space;
 pub mod status;
 pub mod time;
+pub mod tournament;
 pub mod tree;
 pub mod utils;
 
