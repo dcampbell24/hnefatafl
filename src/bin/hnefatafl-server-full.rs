@@ -195,7 +195,7 @@ fn main() -> anyhow::Result<()> {
         thread::spawn(move || {
             loop {
                 handle_error(tx_messages_1.send(("0 server display_server".to_string(), None)));
-                thread::sleep(Duration::from_secs(1));
+                thread::sleep(Duration::from_millis(250));
             }
         });
     }
