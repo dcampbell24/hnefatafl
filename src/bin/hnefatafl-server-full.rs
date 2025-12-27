@@ -342,6 +342,7 @@ fn login(
     tx.send((format!("{id} {username_proper} email_get"), None))?;
     tx.send((format!("{id} {username_proper} texts"), None))?;
     tx.send((format!("{id} {username_proper} message"), None))?;
+    tx.send((format!("{id} {username_proper} display_games"), None))?;
 
     'outer: for _ in 0..1_000_000 {
         if let Err(err) = reader.read_line(&mut buf) {
@@ -433,6 +434,8 @@ struct Server {
     games: ServerGames,
     #[serde(skip)]
     games_light: ServerGamesLight,
+    #[serde(skip)]
+    games_light_old: ServerGamesLight,
     #[serde(skip)]
     skip_the_data_file: bool,
     #[serde(skip)]
@@ -679,8 +682,14 @@ impl Server {
         self.save_server();
     }
 
+    #[allow(clippy::too_many_lines)]
     fn display_server(&mut self, username: &str) -> Option<(mpsc::Sender<String>, bool, String)> {
         trace!("0 {username} display_server");
+
+        let mut changed_games = false;
+        if self.games_light != self.games_light_old {
+            changed_games = true;
+        }
 
         let mut changed_account = false;
         if self.accounts != self.accounts_old {
@@ -688,13 +697,19 @@ impl Server {
         }
 
         for tx in &mut self.clients.values() {
-            tx.send(format!("= display_games {:?}", &self.games_light))
-                .ok()?;
+            if changed_games {
+                tx.send(format!("= display_games {:?}", &self.games_light))
+                    .ok()?;
+            }
 
             if changed_account {
                 tx.send(format!("= display_users {}", &self.accounts))
                     .ok()?;
             }
+        }
+
+        if changed_games {
+            self.games_light_old = self.games_light.clone();
         }
 
         if changed_account {
@@ -1250,6 +1265,8 @@ impl Server {
         &mut self,
         rx: &mpsc::Receiver<(String, Option<mpsc::Sender<String>>)>,
     ) -> Option<(mpsc::Sender<String>, bool, String)> {
+        let args = Args::parse();
+
         let (message, option_tx) = rx.recv().ok()?;
         let index_username_command: Vec<_> = message.split_ascii_whitespace().collect();
 
@@ -1305,6 +1322,21 @@ impl Server {
                 "delete_account" => {
                     self.delete_account(username, index_supplied);
                     None
+                }
+                "display_games" => {
+                    if let Some(tx) = self.clients.get(&index_supplied) {
+                        if args.skip_advertising_updates {
+                            None
+                        } else {
+                            Some((
+                                tx.clone(),
+                                true,
+                                format!("display_games {:?}", &self.games_light),
+                            ))
+                        }
+                    } else {
+                        None
+                    }
                 }
                 "display_server" => self.display_server(username),
                 "draw" => self.draw(index_supplied, command, the_rest.as_slice()),
@@ -2424,6 +2456,7 @@ mod tests {
         assert_eq!(buf, "= login\n");
         buf.clear();
 
+        //
         tcp_2.write_all(b"join_game_pending 0\n")?;
         reader_2.read_line(&mut buf)?;
         assert_eq!(buf, "= join_game_pending 0\n");
