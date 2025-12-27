@@ -7,9 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed
+### Changed
 
 - hnefatafl-server-full: do display_games, display_users every quarter second.
+
+### Fixed
+
 - hnefatafl-server-full: don't send display_users or display_games unless
   something has changed or you log in.
 - hnefatafl-client: clear the texts before logging in.
