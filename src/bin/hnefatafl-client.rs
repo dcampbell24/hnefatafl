@@ -993,38 +993,37 @@ impl<'a> Client {
             return Column::new();
         }
 
-        let mut power = 2;
-
-        while power < players_len {
-            power *= 2;
-        }
-
-        if power > players_len {
-            power /= 2;
-        }
-
-        let byes = players_len - power;
         let mut column_2 = Column::new();
 
-        if self.tournament.tree.is_empty() {
+        if self.tournament.round_one.is_empty() {
             return Column::new();
         }
 
-        for (i, player) in self.tournament.tree[byes..].iter().enumerate() {
-            if let Some(player) = player {
-                let mut row = row![
-                    text(player.clone()).font(Font::MONOSPACE),
-                    text("─".repeat(16 - player.len())),
-                ];
+        let mut byes = self.tournament.byes.clone();
 
-                if i % 2 == 0 {
-                    row = row.push(text("┐"));
-                } else {
-                    row = row.push(text("┘"));
-                }
+        for (i, player) in self.tournament.round_one.iter().enumerate() {
+            if let Some(bye) = byes.pop() {
+                let row = row![
+                    text(bye.clone()).font(Font::MONOSPACE),
+                    text("─".repeat(33 - bye.len())),
+                    text("┐"),
+                ];
 
                 column_2 = column_2.push(row);
             }
+
+            let mut row = row![
+                text(player.clone()).font(Font::MONOSPACE),
+                text("─".repeat(16 - player.len())),
+            ];
+
+            if i % 2 == 0 {
+                row = row.push(text("┐"));
+            } else {
+                row = row.push(text("┘"));
+            }
+
+            column_2 = column_2.push(row);
         }
 
         column![column_1, column_2].spacing(SPACING)
