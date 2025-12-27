@@ -2233,39 +2233,62 @@ impl Server {
     }
 
     fn tournament_tree(&mut self) {
+        if self.tournament_players.is_empty() {
+            self.tournament = Tournament {
+                byes: Vec::new(),
+                round_one: Vec::new(),
+            };
+            return;
+        }
+
         let mut players_1 = Vec::new();
         for player in &self.tournament_players {
             if let Some(account) = self.accounts.0.get(player) {
-                players_1.push((player, account.rating.rating));
+                players_1.push((player.clone(), account.rating.rating));
             }
         }
         players_1.sort_by(|a, b| a.1.total_cmp(&b.1));
 
-        let mut players_2 = VecDeque::new();
-        for (name, rating) in players_1 {
-            players_2.push_back((name.clone(), rating));
+        let players_len = players_1.len();
+        let mut power = 2;
+        while power < players_len {
+            power *= 2;
+        }
+        if power > players_len {
+            power /= 2;
         }
 
-        let mut challenges = Vec::new();
-        loop {
-            match (players_2.pop_front(), players_2.pop_back()) {
-                (Some((name_1, _)), Some((name_2, _))) => {
-                    challenges.push(Some(name_1));
-                    challenges.push(Some(name_2));
-                }
-                (Some((name_1, _)), None) => {
-                    challenges.push(Some(name_1));
-                    challenges.push(None);
-                    break;
-                }
-                _ => {
-                    self.tournament = Tournament::default();
-                    return;
-                }
+        let byes = players_len - power;
+        let mut round_one = players_1.split_off(byes);
+        let byes = players_1;
+
+        let mut players_2 = VecDeque::new();
+        while let Some(player) = round_one.pop() {
+            players_2.push_front(player);
+        }
+
+        for i in 0..players_2.len() {
+            if i % 2 == 0 {
+                round_one.push(players_2.pop_back().unwrap());
+            } else {
+                round_one.push(players_2.pop_front().unwrap());
             }
         }
 
-        self.tournament = Tournament::new(challenges);
+        let mut byes_names = Vec::new();
+        for (name, _) in byes {
+            byes_names.push(name);
+        }
+
+        let mut round_one_names = Vec::new();
+        for (name, _) in round_one {
+            round_one_names.push(name);
+        }
+
+        self.tournament = Tournament {
+            byes: byes_names,
+            round_one: round_one_names,
+        }
     }
 
     fn watch_game(
