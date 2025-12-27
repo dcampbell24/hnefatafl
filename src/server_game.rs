@@ -266,7 +266,7 @@ impl From<&ServerGame> for ServerGameSerialized {
 #[derive(Clone, Debug, Default)]
 pub struct ServerGames(pub HashMap<Id, ServerGame>);
 
-#[derive(Clone, Default)]
+#[derive(Clone, Default, Eq, PartialEq)]
 pub struct Challenger(pub Option<String>);
 
 impl fmt::Debug for Challenger {
@@ -294,7 +294,7 @@ impl fmt::Display for Challenger {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Eq, PartialEq)]
 pub struct ServerGameLight {
     pub id: Id,
     pub attacker: Option<String>,
@@ -507,7 +507,7 @@ impl TryFrom<&[&str]> for ServerGameLight {
     }
 }
 
-#[derive(Clone, Default)]
+#[derive(Clone, Default, Eq, PartialEq)]
 pub struct ServerGamesLight(pub HashMap<Id, ServerGameLight>);
 
 impl fmt::Debug for ServerGamesLight {

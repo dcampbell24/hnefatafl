@@ -3351,8 +3351,6 @@ impl<'a> Client {
     #[must_use]
     #[allow(clippy::too_many_lines)]
     pub fn view(&self) -> Element<'_, Message> {
-        println!("HERE!");
-
         match self.screen {
             Screen::AccountSettings => {
                 let mut rating = String::new();
