@@ -424,6 +424,8 @@ struct Server {
     #[serde(default)]
     accounts: Accounts,
     #[serde(skip)]
+    accounts_old: Accounts,
+    #[serde(skip)]
     archived_games: Vec<ArchivedGame>,
     #[serde(skip)]
     clients: HashMap<usize, mpsc::Sender<String>>,
@@ -679,12 +681,22 @@ impl Server {
 
     fn display_server(&mut self, username: &str) -> Option<(mpsc::Sender<String>, bool, String)> {
         trace!("0 {username} display_server");
+        let mut changed_account = false;
+
         for tx in &mut self.clients.values() {
             tx.send(format!("= display_games {:?}", &self.games_light))
                 .ok()?;
 
-            tx.send(format!("= display_users {}", &self.accounts))
-                .ok()?;
+            if self.accounts != self.accounts_old {
+                changed_account = true;
+
+                tx.send(format!("= display_users {}", &self.accounts))
+                    .ok()?;
+            }
+        }
+
+        if changed_account {
+            self.accounts_old = self.accounts.clone();
         }
 
         for game in self.games.0.values_mut() {

@@ -22,7 +22,7 @@ impl fmt::Display for Accounts {
     }
 }
 
-#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
 pub struct Account {
     #[serde(default)]
     pub email: Option<Email>,
@@ -64,7 +64,7 @@ impl fmt::Display for Account {
     }
 }
 
-#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
 pub struct Accounts(pub HashMap<String, Account>);
 
 #[derive(Clone, Debug, Default, Deserialize, Hash, PartialEq, Eq, Serialize)]

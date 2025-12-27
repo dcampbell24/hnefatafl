@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 const Q: f64 = 0.005_756_5;
 pub const CONFIDENCE_INTERVAL_95: f64 = 1.96;
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 pub struct Rating {
     pub rating: f64,
     /// Ratings Deviation
