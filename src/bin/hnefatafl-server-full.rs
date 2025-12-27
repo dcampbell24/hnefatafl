@@ -681,15 +681,17 @@ impl Server {
 
     fn display_server(&mut self, username: &str) -> Option<(mpsc::Sender<String>, bool, String)> {
         trace!("0 {username} display_server");
+
         let mut changed_account = false;
+        if self.accounts != self.accounts_old {
+            changed_account = true;
+        }
 
         for tx in &mut self.clients.values() {
             tx.send(format!("= display_games {:?}", &self.games_light))
                 .ok()?;
 
-            if self.accounts != self.accounts_old {
-                changed_account = true;
-
+            if changed_account {
                 tx.send(format!("= display_users {}", &self.accounts))
                     .ok()?;
             }
