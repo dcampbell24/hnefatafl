@@ -40,7 +40,7 @@ use lettre::{
     message::{Mailbox, header::ContentType},
     transport::smtp::authentication::Credentials,
 };
-use log::{debug, error, info, trace};
+use log::{debug, error, info};
 use old_rand::rngs::OsRng;
 use password_hash::SaltString;
 use rand::random;
@@ -1262,9 +1262,7 @@ impl Server {
             index_username_command.get(1),
             index_username_command.get(2),
         ) {
-            if *command == "display_server" {
-                trace!("{index_supplied} {username} {command}");
-            } else {
+            if *command != "display_server" {
                 debug!("{index_supplied} {username} {command}");
             }
 
