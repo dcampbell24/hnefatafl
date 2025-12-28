@@ -684,36 +684,24 @@ impl Server {
 
     #[allow(clippy::too_many_lines)]
     fn display_server(&mut self, username: &str) -> Option<(mpsc::Sender<String>, bool, String)> {
-        trace!("0 {username} display_server");
-
-        let mut changed_games = false;
         if self.games_light != self.games_light_old {
-            changed_games = true;
-        }
+            debug!("0 {username} display_games");
+            self.games_light_old = self.games_light.clone();
 
-        let mut changed_account = false;
-        if self.accounts != self.accounts_old {
-            changed_account = true;
-        }
-
-        for tx in &mut self.clients.values() {
-            if changed_games {
+            for tx in &mut self.clients.values() {
                 tx.send(format!("= display_games {:?}", &self.games_light))
                     .ok()?;
             }
+        }
 
-            if changed_account {
+        if self.accounts != self.accounts_old {
+            debug!("0 {username} display_users");
+            self.accounts_old = self.accounts.clone();
+
+            for tx in &mut self.clients.values() {
                 tx.send(format!("= display_users {}", &self.accounts))
                     .ok()?;
             }
-        }
-
-        if changed_games {
-            self.games_light_old = self.games_light.clone();
-        }
-
-        if changed_account {
-            self.accounts_old = self.accounts.clone();
         }
 
         for game in self.games.0.values_mut() {
