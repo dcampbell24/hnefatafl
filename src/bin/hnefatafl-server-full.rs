@@ -1332,18 +1332,16 @@ impl Server {
                     None
                 }
                 "display_games" => {
-                    if let Some(tx) = self.clients.get(&index_supplied) {
-                        if args.skip_advertising_updates {
-                            None
-                        } else {
-                            Some((
+                    if args.skip_advertising_updates {
+                        None
+                    } else {
+                        self.clients.get(&index_supplied).map(|tx| {
+                            (
                                 tx.clone(),
                                 true,
                                 format!("display_games {:?}", &self.games_light),
-                            ))
-                        }
-                    } else {
-                        None
+                            )
+                        })
                     }
                 }
                 "display_server" => self.display_server(username),
