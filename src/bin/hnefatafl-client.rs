@@ -2414,7 +2414,7 @@ impl<'a> Client {
             Message::SoundMuted(_muted) => self.sound_muted(),
             Message::StreamConnected(tx) => self.tx = Some(tx),
             Message::Tournament => {
-                self.send("tournament_players\n");
+                self.send("tournament_players_single\n");
                 self.screen = Screen::Tournament;
             }
             Message::TournamentJoin => self.send("join_tournament\n"),

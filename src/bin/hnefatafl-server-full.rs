@@ -1233,6 +1233,28 @@ impl Server {
         None
     }
 
+    fn tournament_players_single(
+        &self,
+        index_supplied: usize,
+    ) -> Option<(Sender<String>, bool, String)> {
+        let mut players = if let Some(player) = self.tournament_players.iter().nth(0) {
+            vec![player.as_str()]
+        } else {
+            return None;
+        };
+
+        for player in self.tournament_players.iter().skip(1) {
+            players.push(player.as_str());
+        }
+
+        let players = players.join(" ");
+        let tournament_players = format!("tournament_players {players}");
+
+        self.clients
+            .get(&index_supplied)
+            .map(|tx| (tx.clone(), true, tournament_players))
+    }
+
     fn handle_messages(
         &mut self,
         rx: &mpsc::Receiver<(String, Option<mpsc::Sender<String>>)>,
@@ -1643,6 +1665,7 @@ impl Server {
                     }
                 }
                 "tournament_players" => self.tournament_players(),
+                "tournament_players_single" => self.tournament_players_single(index_supplied),
                 "watch_game" => self.watch_game(
                     username,
                     index_supplied,
