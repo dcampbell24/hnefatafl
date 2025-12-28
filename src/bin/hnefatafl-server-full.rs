@@ -1212,24 +1212,25 @@ impl Server {
         }
     }
 
-    fn tournament_date_players(
-        &self,
-        index_supplied: usize,
-    ) -> Option<(Sender<String>, bool, String)> {
-        if let Some(tx) = self.clients.get(&index_supplied) {
-            let mut players: Vec<_> = self.tournament_players.iter().cloned().collect();
-            players.sort();
-            let players = players.join(" ");
-            let mut tournament_players = "tournament_players ".to_string();
-            tournament_players.push_str(&players);
-
-            tx.send(format!("= tournament_date {}", self.tournament_date))
-                .ok()?;
-
-            Some((tx.clone(), true, tournament_players))
+    fn tournament_players(&self) -> Option<(Sender<String>, bool, String)> {
+        let mut players = if let Some(player) = self.tournament_players.iter().nth(0) {
+            vec![player.as_str()]
         } else {
-            None
+            return None;
+        };
+
+        for player in self.tournament_players.iter().skip(1) {
+            players.push(player.as_str());
         }
+
+        let players = players.join(" ");
+        let tournament_players = format!("= tournament_players {players}");
+
+        for tx in self.clients.values() {
+            tx.send(tournament_players.clone()).ok()?;
+        }
+
+        None
     }
 
     fn handle_messages(
@@ -1482,9 +1483,7 @@ impl Server {
                     self.tournament_players.insert(username.to_string());
                     self.save_server();
 
-                    self.clients
-                        .get(&index_supplied)
-                        .map(|tx| (tx.clone(), true, "join_tournament".to_string()))
+                    self.tournament_players()
                 }
                 "leave_game" => self.leave_game(
                     username,
@@ -1495,7 +1494,8 @@ impl Server {
                 "leave_tournament" => {
                     self.tournament_players.remove(*username);
                     self.save_server();
-                    self.tournament_date_players(index_supplied)
+
+                    self.tournament_players()
                 }
                 "login" => self.login(
                     username,
@@ -1636,14 +1636,13 @@ impl Server {
                     self.tournament_date = date.and_utc().timestamp();
                     self.save_server();
 
-                    if let Some(tx) = self.clients.get(&index_supplied) {
-                        let mut tournament_date = "tournament_date ".to_string();
-                        tournament_date.push_str(&self.tournament_date.to_string());
+                    let tournament_date = format!("= tournament_date {}", self.tournament_date);
 
-                        Some((tx.clone(), true, tournament_date))
-                    } else {
-                        None
+                    for tx in self.clients.values() {
+                        tx.send(tournament_date.clone()).ok()?;
                     }
+
+                    None
                 }
                 "tournament_new" => {
                     self.tournament_tree();
@@ -1656,7 +1655,7 @@ impl Server {
                         None
                     }
                 }
-                "tournament_players" => self.tournament_date_players(index_supplied),
+                "tournament_players" => self.tournament_players(),
                 "watch_game" => self.watch_game(
                     username,
                     index_supplied,
