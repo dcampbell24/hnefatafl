@@ -2784,7 +2784,9 @@ impl<'a> Client {
                                 }
                             }
                             Some("tournament_players") => {
-                                let players: Vec<_> = text.map(ToString::to_string).collect();
+                                let mut players: Vec<_> = text.map(ToString::to_string).collect();
+                                players.sort();
+
                                 self.tournament_players = players;
                             }
                             _ => error!("(2) unexpected text: {}", string.trim()),
