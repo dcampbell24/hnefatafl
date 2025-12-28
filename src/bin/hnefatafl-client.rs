@@ -674,7 +674,7 @@ struct Client {
     #[serde(skip)]
     time_defender: TimeSettings,
     #[serde(skip)]
-    tournament: Tournament,
+    tournament: Option<Tournament>,
     #[serde(skip)]
     tournament_date: DateTime<Utc>,
     #[serde(skip)]
@@ -995,13 +995,13 @@ impl<'a> Client {
 
         let mut column_2 = Column::new();
 
-        if self.tournament.round_one.is_empty() {
+        let Some(tournament) = &self.tournament else {
             return Column::new();
-        }
+        };
 
-        let mut byes = self.tournament.byes.clone();
+        let mut byes = tournament.byes.clone();
 
-        for (i, player) in self.tournament.round_one.iter().enumerate() {
+        for (i, player) in tournament.round_one.iter().enumerate() {
             if let Some(bye) = byes.pop() {
                 let row = row![
                     text(bye.clone()).font(Font::MONOSPACE),
@@ -2778,9 +2778,10 @@ impl<'a> Client {
                             }
                             Some("tournament_new") => {
                                 if let Some(tournament) = text.next() {
-                                    let tournament: Tournament = ron::from_str(tournament).unwrap();
-                                    self.tournament = tournament;
+                                    let tournament: Option<Tournament> =
+                                        ron::from_str(tournament).unwrap();
 
+                                    self.tournament = tournament;
                                     self.display_tournament();
                                 }
                             }

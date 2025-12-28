@@ -421,7 +421,7 @@ struct Server {
     #[serde(default)]
     tournament_players: HashSet<String>,
     #[serde(default)]
-    tournament: Tournament,
+    tournament: Option<Tournament>,
     #[serde(default)]
     accounts: Accounts,
     #[serde(skip)]
@@ -2252,10 +2252,7 @@ impl Server {
 
     fn tournament_tree(&mut self) {
         if self.tournament_players.is_empty() {
-            self.tournament = Tournament {
-                byes: Vec::new(),
-                round_one: Vec::new(),
-            };
+            self.tournament = None;
             return;
         }
 
@@ -2303,10 +2300,11 @@ impl Server {
             round_one_names.push(name);
         }
 
-        self.tournament = Tournament {
+        self.tournament = Some(Tournament {
             byes: byes_names,
             round_one: round_one_names,
-        }
+            rounds: Vec::new(),
+        });
     }
 
     fn watch_game(

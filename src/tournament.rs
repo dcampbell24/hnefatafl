@@ -4,4 +4,5 @@ use serde::{Deserialize, Serialize};
 pub struct Tournament {
     pub byes: Vec<String>,
     pub round_one: Vec<String>,
+    pub rounds: Vec<Option<String>>,
 }
