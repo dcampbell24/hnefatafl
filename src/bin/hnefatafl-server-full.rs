@@ -682,7 +682,6 @@ impl Server {
         self.save_server();
     }
 
-    #[allow(clippy::too_many_lines)]
     fn display_server(&mut self, username: &str) -> Option<(mpsc::Sender<String>, bool, String)> {
         if self.games_light != self.games_light_old {
             debug!("0 {username} display_games");
