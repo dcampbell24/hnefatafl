@@ -3874,20 +3874,20 @@ impl<'a> Client {
             }
             Screen::Tournament => {
                 let mut column = Column::new().padding(PADDING).spacing(SPACING);
-                column = column.push(text!(
+
+                let mut date = Row::new().spacing(SPACING);
+                date = date.push(text!(
                     "Tournament Start Date: {}",
                     self.tournament_date.to_rfc2822()
                 ));
 
                 if self.username == "david" {
-                    let new_tournament = button("New Tournament").on_press(Message::TournamentNew);
-
                     let input = iced::widget::text_input("????-??-??", &self.text_input)
                         .on_input(Message::TextChanged)
                         .on_paste(Message::TextChanged)
                         .on_submit(Message::TextSend);
 
-                    column = column.push(row![new_tournament, input].spacing(SPACING));
+                    date = date.push(input);
                 }
 
                 let mut button_1 =
@@ -3921,11 +3921,17 @@ impl<'a> Client {
                 }
                 let players = scrollable(players);
 
+                column = column.push(date);
                 column = column.push(buttons);
                 column = column.push(title);
                 column = column.push(players);
-                column = column.push(self.display_tournament());
 
+                if self.username == "david" {
+                    column =
+                        column.push(button("Start Tournament").on_press(Message::TournamentNew));
+                }
+
+                column = column.push(self.display_tournament());
                 column.into()
             }
             Screen::Users => row![
