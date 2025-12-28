@@ -1653,6 +1653,13 @@ impl Server {
 
                     None
                 }
+                "tournament_date_single" => self.clients.get(&index_supplied).map(|tx| {
+                    (
+                        tx.clone(),
+                        true,
+                        format!("tournament_date {}", self.tournament_date),
+                    )
+                }),
                 "tournament_new" => {
                     self.tournament_tree();
 
