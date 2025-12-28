@@ -13,7 +13,7 @@ use std::{
 };
 
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
-use chrono::{Local, NaiveDate, Utc};
+use chrono::{DateTime, Local, Utc};
 use clap::{CommandFactory, Parser};
 use hnefatafl_copenhagen::{
     COPYRIGHT, Id, LONG_VERSION, SERVER_PORT, VERSION_ID,
@@ -1619,22 +1619,9 @@ impl Server {
                 }
                 "text_game" => self.text_game(username, index_supplied, command, the_rest),
                 "tournament_date" => {
-                    let date = the_rest.first()?;
-                    let date_fields: Vec<_> = date.split('-').collect();
-
-                    let year = date_fields.first()?;
-                    let year = year.parse().ok()?;
-
-                    let month = date_fields.get(1)?;
-                    let month = month.parse().ok()?;
-
-                    let day = date_fields.get(2)?;
-                    let day = day.parse().ok()?;
-
-                    let date = NaiveDate::from_ymd_opt(year, month, day)?;
-                    let date = date.and_hms_opt(0, 0, 0)?;
-                    self.tournament_date = date.and_utc().timestamp();
-                    self.save_server();
+                    if let Err(error) = self.tournament_date(&the_rest) {
+                        error!("{error}");
+                    }
 
                     let tournament_date = format!("= tournament_date {}", self.tournament_date);
 
@@ -2214,6 +2201,25 @@ impl Server {
         }
 
         None
+    }
+
+    fn tournament_date(&mut self, the_rest: &[&str]) -> anyhow::Result<()> {
+        let Some(date) = the_rest.first() else {
+            return Err(anyhow::Error::msg("tournament_date: date is empty"));
+        };
+
+        let datetime = match DateTime::parse_from_str(
+            &format!("{date} 00:00:00 +0000"),
+            "%Y-%m-%d %H:%M:%S %z",
+        ) {
+            Ok(datetime) => datetime,
+            Err(error) => return Err(anyhow::Error::msg(format!("tournament_date: {error}"))),
+        };
+
+        self.tournament_date = datetime.timestamp();
+        self.save_server();
+
+        Ok(())
     }
 
     fn tournament_tree(&mut self) {
