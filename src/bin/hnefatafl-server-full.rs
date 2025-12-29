@@ -1541,6 +1541,10 @@ impl Server {
                         },
                     }
 
+                    if message.trim().is_empty() {
+                        return None;
+                    }
+
                     self.clients
                         .get(&index_supplied)?
                         .send(format!("= message {message}"))
