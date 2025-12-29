@@ -1660,6 +1660,7 @@ impl Server {
                 }),
                 "tournament_new" => {
                     self.tournament_tree();
+                    self.save_server();
 
                     if let Ok(string) = ron::ser::to_string(&self.tournament) {
                         self.clients
