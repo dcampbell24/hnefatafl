@@ -16,7 +16,7 @@ use std::{
     time::Duration,
 };
 
-use chrono::{DateTime, Local, TimeZone, Utc, offset::LocalResult};
+use chrono::{Local, Utc};
 use clap::{CommandFactory, Parser};
 use futures::{SinkExt, executor};
 use hnefatafl_copenhagen::{
@@ -676,10 +676,6 @@ struct Client {
     #[serde(skip)]
     tournament: Option<Tournament>,
     #[serde(skip)]
-    tournament_date: DateTime<Utc>,
-    #[serde(skip)]
-    tournament_players: Vec<String>,
-    #[serde(skip)]
     tx: Option<mpsc::Sender<String>>,
     #[serde(default)]
     username: String,
@@ -982,12 +978,16 @@ impl<'a> Client {
     }
 
     fn display_tournament(&self) -> Column<'_, Message> {
+        let Some(tournament) = &self.tournament else {
+            return Column::new();
+        };
+
         let tournament_string = "Tournament";
         let row_1 = text(tournament_string);
         let row_2 = text("-".repeat(tournament_string.len())).font(Font::MONOSPACE);
         let column_1 = column![row_1, row_2];
 
-        let players_len = self.tournament_players.len();
+        let players_len = tournament.players.len();
 
         if players_len == 0 {
             return Column::new();
@@ -995,13 +995,13 @@ impl<'a> Client {
 
         let mut column_2 = Column::new();
 
-        let Some(tournament) = &self.tournament else {
+        let Some(tree) = &tournament.tree else {
             return Column::new();
         };
 
-        let mut byes = tournament.byes.clone();
+        let mut byes = tree.byes.clone();
 
-        for (i, player) in tournament.round_one.iter().enumerate() {
+        for (i, player) in tree.round_one.iter().enumerate() {
             if let Some(bye) = byes.pop() {
                 let row = row![
                     text(bye.clone()).font(Font::MONOSPACE),
@@ -2416,7 +2416,7 @@ impl<'a> Client {
             Message::Tournament => self.screen = Screen::Tournament,
             Message::TournamentJoin => self.send("join_tournament\n"),
             Message::TournamentLeave => self.send("leave_tournament\n"),
-            Message::TournamentNew => self.send("tournament_new\n"),
+            Message::TournamentStart => self.send("tournament_start\n"),
             Message::RatedSelected(rated) => self.game_settings.rated = rated.into(),
             Message::ResetPassword => self.reset_password(),
             Message::ReviewGame => self.review_game(),
@@ -2731,10 +2731,6 @@ impl<'a> Client {
                                 self.game_id = id;
                                 self.challenger = true;
                             }
-                            Some("join_tournament") => {
-                                self.tournament_players.push(self.username.clone());
-                                self.tournament_players.sort();
-                            }
                             Some("leave_game") => self.game_id = 0,
                             Some("login") => {
                                 if self.username == "david" {
@@ -2764,28 +2760,13 @@ impl<'a> Client {
                             }
                             Some("text") => self.texts.push_front(text_collect(text)),
                             Some("text_game") => self.texts_game.push_front(text_collect(text)),
-                            Some("tournament_date") => {
-                                if let Some(date) = text.next()
-                                    && let Ok(date) = date.parse::<i64>()
-                                    && let LocalResult::Single(date) = Utc.timestamp_opt(date, 0)
-                                {
-                                    self.tournament_date = date;
-                                }
-                            }
                             Some("tournament_status") => {
                                 if let Some(tournament) = text.next() {
                                     let tournament: Option<Tournament> =
                                         ron::from_str(tournament).unwrap();
 
                                     self.tournament = tournament;
-                                    self.display_tournament();
                                 }
-                            }
-                            Some("tournament_players") => {
-                                let mut players: Vec<_> = text.map(ToString::to_string).collect();
-                                players.sort();
-
-                                self.tournament_players = players;
                             }
                             _ => error!("(2) unexpected text: {}", string.trim()),
                         }
@@ -3875,20 +3856,30 @@ impl<'a> Client {
             Screen::Tournament => {
                 let mut column = Column::new().padding(PADDING).spacing(SPACING);
 
-                let mut date = Row::new().spacing(SPACING);
-                date = date.push(text!(
-                    "Tournament Start Date: {}",
-                    self.tournament_date.to_rfc2822()
-                ));
-
                 if self.username == "david" {
                     let input = iced::widget::text_input("????-??-??", &self.text_input)
                         .on_input(Message::TextChanged)
                         .on_paste(Message::TextChanged)
                         .on_submit(Message::TextSend);
 
-                    date = date.push(input);
+                    column = column.push(input);
                 }
+
+                let Some(tournament) = &self.tournament else {
+                    column = column.push(text(t!("There is no tournament.")));
+                    column = column.push(
+                        button(text!("{} (Esc)", self.strings["Leave"].as_str()))
+                            .on_press(Message::Leave),
+                    );
+
+                    return column.into();
+                };
+
+                let mut date = Row::new().spacing(SPACING);
+                date = date.push(text!(
+                    "Tournament Start Date: {}",
+                    tournament.date.to_rfc2822()
+                ));
 
                 let mut button_1 =
                     button(text!("{} (1)", self.strings["Join Tournament"].as_str()));
@@ -3896,7 +3887,7 @@ impl<'a> Client {
                 let mut button_2 =
                     button(text!("{} (2)", self.strings["Leave Tournament"].as_str()));
 
-                if self.tournament_players.contains(&self.username) {
+                if tournament.players.contains(&self.username) {
                     button_2 = button_2.on_press(Message::TournamentLeave);
                 } else {
                     button_1 = button_1.on_press(Message::TournamentJoin);
@@ -3916,7 +3907,7 @@ impl<'a> Client {
                 let title = column![title, dashes];
 
                 let mut players = Column::new();
-                for player in &self.tournament_players {
+                for player in &tournament.players {
                     players = players.push(text(player));
                 }
                 let players = scrollable(players);
@@ -3928,7 +3919,7 @@ impl<'a> Client {
 
                 if self.username == "david" {
                     column =
-                        column.push(button("Start Tournament").on_press(Message::TournamentNew));
+                        column.push(button("Start Tournament").on_press(Message::TournamentStart));
                 }
 
                 column = column.push(self.display_tournament());
@@ -4257,7 +4248,7 @@ enum Message {
     Tournament,
     TournamentJoin,
     TournamentLeave,
-    TournamentNew,
+    TournamentStart,
     Users,
     UsersSortedBy(SortBy),
     WindowResized((f32, f32)),
