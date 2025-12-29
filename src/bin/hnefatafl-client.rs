@@ -2413,11 +2413,7 @@ impl<'a> Client {
             },
             Message::SoundMuted(_muted) => self.sound_muted(),
             Message::StreamConnected(tx) => self.tx = Some(tx),
-            Message::Tournament => {
-                self.send("tournament_players_single\n");
-                self.send("tournament_date_single\n");
-                self.screen = Screen::Tournament;
-            }
+            Message::Tournament => self.screen = Screen::Tournament,
             Message::TournamentJoin => self.send("join_tournament\n"),
             Message::TournamentLeave => self.send("leave_tournament\n"),
             Message::TournamentNew => self.send("tournament_new\n"),
@@ -2776,7 +2772,7 @@ impl<'a> Client {
                                     self.tournament_date = date;
                                 }
                             }
-                            Some("tournament_new") => {
+                            Some("tournament_status") => {
                                 if let Some(tournament) = text.next() {
                                     let tournament: Option<Tournament> =
                                         ron::from_str(tournament).unwrap();
