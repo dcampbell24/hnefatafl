@@ -2932,6 +2932,8 @@ impl<'a> Client {
                 }
             }
             Message::Time(time) => self.game_settings.time = Some(time),
+            Message::TournamentDelete => self.send("tournament_delete {}\n"),
+            Message::TournamentTreeDelete => self.send("tournament_tree_delete {}\n"),
             Message::Users => self.screen = Screen::Users,
             Message::UsersSortedBy(sort_by) => self.users_sort_by = sort_by,
             Message::WindowResized((width, height)) => {
@@ -3862,7 +3864,15 @@ impl<'a> Client {
                         .on_paste(Message::TextChanged)
                         .on_submit(Message::TextSend);
 
-                    column = column.push(input);
+                    let mut delete_button = button("Delete Tournament");
+
+                    if self.tournament.is_some() {
+                        delete_button = delete_button.on_press(Message::TournamentDelete);
+                    }
+
+                    let row = row![input, delete_button].spacing(SPACING);
+
+                    column = column.push(row);
                 }
 
                 let Some(tournament) = &self.tournament else {
@@ -3918,8 +3928,21 @@ impl<'a> Client {
                 column = column.push(players);
 
                 if self.username == "david" {
-                    column =
-                        column.push(button("Start Tournament").on_press(Message::TournamentStart));
+                    let mut delete_button = button("Delete Tournament Tree");
+
+                    if let Some(tournament) = &self.tournament
+                        && tournament.tree.is_some()
+                    {
+                        delete_button = delete_button.on_press(Message::TournamentTreeDelete);
+                    }
+
+                    column = column.push(
+                        row![
+                            button("Start Tournament").on_press(Message::TournamentStart),
+                            delete_button,
+                        ]
+                        .spacing(SPACING),
+                    );
                 }
 
                 column = column.push(self.display_tournament());
@@ -4249,6 +4272,8 @@ enum Message {
     TournamentJoin,
     TournamentLeave,
     TournamentStart,
+    TournamentDelete,
+    TournamentTreeDelete,
     Users,
     UsersSortedBy(SortBy),
     WindowResized((f32, f32)),
