@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- hnefatafl-server-full: don't send an empty message.
 - hnefatafl-server-full: don't send display_users or display_games unless
   something has changed or you log in.
 - hnefatafl-client: clear the texts before logging in.
