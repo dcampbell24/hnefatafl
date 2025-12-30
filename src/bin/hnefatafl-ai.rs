@@ -72,7 +72,7 @@ struct Args {
 
 fn main() -> anyhow::Result<()> {
     let args = Args::parse();
-    utils::init_logger(false);
+    utils::init_logger("hnefatafl_ai", false);
 
     if args.man {
         let mut buffer: Vec<u8> = Vec::default();

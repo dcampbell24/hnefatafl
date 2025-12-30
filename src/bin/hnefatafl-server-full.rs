@@ -93,7 +93,7 @@ fn main() -> anyhow::Result<()> {
     // return Ok(());
 
     let args = Args::parse();
-    utils::init_logger(args.systemd);
+    utils::init_logger("hnefatafl_server_full", args.systemd);
 
     if args.man {
         let mut buffer: Vec<u8> = Vec::default();

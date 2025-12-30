@@ -327,7 +327,7 @@ fn init_client() -> Client {
 }
 
 fn main() -> anyhow::Result<()> {
-    utils::init_logger(false);
+    utils::init_logger("hnefatafl_client", false);
     let args = Args::parse();
 
     if args.man {
