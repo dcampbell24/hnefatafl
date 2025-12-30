@@ -1240,7 +1240,7 @@ impl Server {
             index_username_command.get(1),
             index_username_command.get(2),
         ) {
-            if *command != "display_server" {
+            if *command != "display_server" && *command != "login" {
                 debug!("{index_supplied} {username} {command}");
             }
 
