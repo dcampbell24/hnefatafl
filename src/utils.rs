@@ -75,7 +75,7 @@ pub fn init_logger(module: &str, systemd: bool) {
     if let Ok(var) = env::var("RUST_LOG") {
         builder.parse_filters(&var);
     } else {
-        // if no RUST_LOG provided, default to logging at the Info level
+        // If no RUST_LOG provided, default to logging at the Info level.
         builder.filter(Some(module), LevelFilter::Info);
     }
 
