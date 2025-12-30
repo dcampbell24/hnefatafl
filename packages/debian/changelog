@@ -1,5 +1,12 @@
-hnefatafl-copenhagen (4.2.2-1) trixie unstable experimental; urgency=medium
+hnefatafl-copenhagen (4.6.0-1) trixie unstable experimental; urgency=medium
+
+   * Added Tournaments.
+   * See https://github.com/dcampbell24/hnefatafl/blob/main/CHANGELOG.md for complete details.
+
+ -- David Campbell <dcampbell24@gmail.com>  Tue, 4 Feb 2025 20:00:00 -0500
+
+hnefatafl-copenhagen (0.4.1-1) bookworm unstable experimental; urgency=medium
 
    * Initial Release.
 
- -- David Campbell <dcampbell24@gmail.com>  Fri, 21 Nov 2025 20:00:00 -0500
+ -- David Campbell <dcampbell24@gmail.com>  Tue, 4 Feb 2025 20:00:00 -0500
