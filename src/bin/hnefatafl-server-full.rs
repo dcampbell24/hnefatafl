@@ -180,6 +180,9 @@ fn main() -> anyhow::Result<()> {
 
         let tx_signals = tx.clone();
         ctrlc::set_handler(move || {
+            if !args.systemd {
+                println!();
+            }
             handle_error(tx_signals.send(("0 server exit".to_string(), None)));
         })?;
     }
