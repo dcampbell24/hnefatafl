@@ -77,7 +77,10 @@ pub fn init_logger(module: &str, systemd: bool) {
         builder.parse_filters(&var);
     } else {
         // If no RUST_LOG provided, default to logging at the Info level.
+        #[cfg(not(feature = "debug"))]
         builder.filter(Some(module), LevelFilter::Info);
+        #[cfg(feature = "debug")]
+        builder.filter(Some(module), LevelFilter::Debug);
     }
 
     builder.init();
