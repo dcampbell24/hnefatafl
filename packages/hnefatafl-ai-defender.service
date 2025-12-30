@@ -5,7 +5,7 @@ Documentation="https://hnefatafl.org"
 [Service]
 Type=simple
 Restart=always
-ExecStart=/usr/games/hnefatafl-ai --username ${USERNAME} --password ${PASSWORD} --role defender
+ExecStart=/usr/games/hnefatafl-ai --username ${USERNAME} --password ${PASSWORD} --role defender --systemd
 PrivateTmp=yes
 InaccessibleDirectories=/home
 DeviceAllow=/dev/null rw
