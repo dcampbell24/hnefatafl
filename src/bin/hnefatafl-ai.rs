@@ -65,6 +65,10 @@ struct Args {
     #[arg(long)]
     sequential: bool,
 
+    /// Whether the application is being run by systemd
+    #[arg(long)]
+    systemd: bool,
+
     /// Build the manpage
     #[arg(long)]
     man: bool,
@@ -72,7 +76,7 @@ struct Args {
 
 fn main() -> anyhow::Result<()> {
     let args = Args::parse();
-    utils::init_logger("hnefatafl_ai", false);
+    utils::init_logger("hnefatafl_ai", args.systemd);
 
     if args.man {
         let mut buffer: Vec<u8> = Vec::default();
