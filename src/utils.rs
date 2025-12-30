@@ -70,6 +70,7 @@ pub fn init_logger(module: &str, systemd: bool) {
 
     if systemd {
         builder.format_timestamp(None);
+        builder.format_target(false);
     }
 
     if let Ok(var) = env::var("RUST_LOG") {
