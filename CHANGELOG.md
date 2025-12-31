@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The license from Apache 2 or MIT to AGPLv3.
 - Use more generic logging
 - Log only the module being used by default.
 
