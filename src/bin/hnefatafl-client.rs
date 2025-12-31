@@ -148,6 +148,10 @@ struct Args {
     #[arg(default_value = "hnefatafl.org", long)]
     host: String,
 
+    /// Whether to log on the debug level
+    #[arg(long)]
+    debug: bool,
+
     /// What AI to use for Heat Map
     #[arg(default_value = "monte-carlo", long)]
     ai: String,
@@ -327,8 +331,8 @@ fn init_client() -> Client {
 }
 
 fn main() -> anyhow::Result<()> {
-    utils::init_logger("hnefatafl_client", false);
     let args = Args::parse();
+    utils::init_logger("hnefatafl_client", args.debug, false);
 
     if args.man {
         let mut buffer: Vec<u8> = Vec::default();

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Make `--debug` an argument to hnefatafl-{ai, client, server-full}.
+
 ### Changed
 
 - The license from Apache 2 or MIT to AGPLv3.

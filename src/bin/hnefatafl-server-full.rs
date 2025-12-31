@@ -62,6 +62,10 @@ const MESSAGE_FILE: &str = "hnefatafl-message.txt";
 #[derive(Parser, Debug)]
 #[command(long_version = LONG_VERSION, about = "Copenhagen Hnefatafl Server")]
 struct Args {
+    /// Whether to log on the debug level
+    #[arg(long)]
+    debug: bool,
+
     /// Whether to skip advertising updates
     #[arg(long)]
     skip_advertising_updates: bool,
@@ -93,7 +97,7 @@ fn main() -> anyhow::Result<()> {
     // return Ok(());
 
     let args = Args::parse();
-    utils::init_logger("hnefatafl_server_full", args.systemd);
+    utils::init_logger("hnefatafl_server_full", args.debug, args.systemd);
 
     if args.man {
         let mut buffer: Vec<u8> = Vec::default();

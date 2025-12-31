@@ -23,6 +23,7 @@ const PORT: &str = ":49152";
 /// Copenhagen Hnefatafl AI
 ///
 /// This is an AI client that connects to a server.
+#[allow(clippy::struct_excessive_bools)]
 #[derive(Parser, Debug)]
 #[command(long_version = LONG_VERSION, about = "Copenhagen Hnefatafl AI")]
 struct Args {
@@ -45,6 +46,10 @@ struct Args {
     /// Choose an AI to play as
     #[arg(default_value = "basic", long)]
     ai: String,
+
+    /// Whether to log on the debug level
+    #[arg(long)]
+    debug: bool,
 
     /// How many seconds to run the monte-carlo AI
     #[arg(long)]
@@ -76,7 +81,7 @@ struct Args {
 
 fn main() -> anyhow::Result<()> {
     let args = Args::parse();
-    utils::init_logger("hnefatafl_ai", args.systemd);
+    utils::init_logger("hnefatafl_ai", args.debug, args.systemd);
 
     if args.man {
         let mut buffer: Vec<u8> = Vec::default();
