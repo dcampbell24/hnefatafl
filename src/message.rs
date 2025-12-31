@@ -19,7 +19,7 @@ use crate::{
 ///
 /// Valid **ROLE** strings are `a`, `attacker`, `d`, and `defender`. Case does not matter.
 ///
-/// Valid **TO** and **FROM** coordinates are a letter, uppercase or lowercase, `A` though `M`
+/// Valid **TO** and **FROM** coordinates are a letter, uppercase or lowercase, `A` through `M`
 /// followed by a number `1` through `13`. For example, `A1`.
 ///
 /// **MILLISECONDS** and **ADD_SECONDS** are numbers.
