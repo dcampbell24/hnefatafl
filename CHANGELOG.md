@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Make `--debug` an argument to hnefatafl-{ai, client, server-full}.
+- hnefatafl-client: optionally on windows display console out by passing
+  `--feature console`.
 
 ### Changed
 
