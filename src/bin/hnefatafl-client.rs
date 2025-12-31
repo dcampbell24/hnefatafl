@@ -1,5 +1,5 @@
 // Don't open the terminal on Windows.
-#![windows_subsystem = "windows"]
+#![cfg_attr(all(windows, not(feature = "console")), windows_subsystem = "windows")]
 
 use std::{
     collections::{HashMap, HashSet, VecDeque},
