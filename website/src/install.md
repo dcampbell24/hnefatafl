@@ -50,7 +50,8 @@ or in a terminal run `\usr\games\hnefatafl-client`.
 
 See [flathub.org](https://flathub.org/apps/org.hnefatafl.hnefatafl_client).
 
-Or after installing the application under KDE go to `Application Launcher -> Games -> Hnefatafl Copenhagen`
+Or after installing the application under KDE go to
+`Application Launcher -> Games -> Hnefatafl Copenhagen`
 
 ## F-Droid (Android)
 
