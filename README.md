@@ -29,6 +29,9 @@ git clone https://github.com/dcampbell24/hnefatafl.git
 cd hnefatafl
 ```
 
+You can pass `-- --help` to any of the following commands to get all of the
+runtime options.
+
 Then you can run the engine with:
 
 ```sh
@@ -38,7 +41,6 @@ cargo run --release --bin hnefatafl-text-protocol -- --display-game
 or you can start a local server:
 
 ```sh
-# optionally pass to cargo `--features debug`
 cargo run --release
 ```
 
