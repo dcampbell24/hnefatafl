@@ -10,6 +10,12 @@
 //! * js - enable options for generating javascript code
 //! * runic - enable the `icelandic-runic` binary for translating Icelandic to Icelandic Runic
 //! * server - enable the `hnefatafl-server-full` binary
+//!
+//! ## Message Protocol
+//!
+//! Get more information about the [message protocol] used by the engine.
+//!
+//! [message protocol]: https://docs.rs/hnefatafl-copenhagen/latest/hnefatafl_copenhagen/message/enum.Message.html
 
 use std::{
     fmt,
