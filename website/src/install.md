@@ -17,11 +17,16 @@ sudo pacman --sync yay
 yay --sync hnefatafl-copenhagen
 ```
 
+Then under KDE go to `Application Launcher -> Games -> Hnefatafl Copenhagen`
+or in a terminal run `\usr\bin\hnefatafl-client`.
+
 ## Chocolatey (Windows)
 
 Install [Chocolatey](https://chocolatey.org/install).
 
 Then install [hnefatafl-copenhagen](https://community.chocolatey.org/packages/hnefatafl-copenhagen/).
+
+Go to the Start menu and run Hnefatafl.
 
 ## Debian and Derivatives (Linux)
 
@@ -38,9 +43,14 @@ sudo apt update && sudo apt install hnefatafl-copenhagen
 [1]: hnefatafl.list
 [2]: packages.hnefatafl.org.asc
 
+Then under KDE go to `Application Launcher -> Games -> Hnefatafl Copenhagen`
+or in a terminal run `\usr\games\hnefatafl-client`.
+
 ## Flatpak (Linux)
 
 See [flathub.org](https://flathub.org/apps/org.hnefatafl.hnefatafl_client).
+
+Or after installing the application under KDE go to `Application Launcher -> Games -> Hnefatafl Copenhagen`
 
 ## F-Droid (Android)
 
@@ -88,9 +98,9 @@ hnefatafl-copenhagen = "source"
 ```
 
 You should be at least using the packages supplied via
-`include = ["desktop-minimal.toml"]`. Go to games and open Hnefatafl. After
-logging in and exiting the application, you'll have to restart Redox, because
-the application is buggy.
+`include = ["desktop-minimal.toml"]`. Go to games and open Hnefatafl or run
+`/usr/games/hnefatafl-client`. After logging in and exiting the application,
+you'll have to restart Redox, because the application is buggy.
 
 There are also at least these bugs:
 
