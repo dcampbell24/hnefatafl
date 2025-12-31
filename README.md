@@ -47,7 +47,8 @@ cargo run --release
 and run a client:
 
 ```sh
-# optionally pass to cargo `--features debug`
+# On Windows pass to cargo `--features console` to see console output.
+# Pass to cargo `--features debug` to enable iced debugging.
 cargo run --release --example hnefatafl-client -- --host localhost
 ```
 
