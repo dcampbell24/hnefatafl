@@ -65,7 +65,7 @@ pub fn data_file(file: &str) -> PathBuf {
     data_file
 }
 
-pub fn init_logger(module: &str, systemd: bool) {
+pub fn init_logger(module: &str, debug: bool, systemd: bool) {
     let mut builder = Builder::new();
 
     if systemd {
@@ -75,6 +75,8 @@ pub fn init_logger(module: &str, systemd: bool) {
 
     if let Ok(var) = env::var("RUST_LOG") {
         builder.parse_filters(&var);
+    } else if debug {
+        builder.filter(Some(module), LevelFilter::Debug);
     } else {
         // If no RUST_LOG provided, default to logging at the Info level.
         #[cfg(not(feature = "debug"))]
