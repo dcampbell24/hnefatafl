@@ -9,7 +9,7 @@
   <summary>Play the game</summary>
 
   <metadata_license>MIT</metadata_license>
-  <project_license>MIT OR Apache-2.0</project_license>
+  <project_license>AGPL-3.0-or-later</project_license>
 
   <branding>
     <color type="primary" scheme_preference="light">#5ad4ce</color>
