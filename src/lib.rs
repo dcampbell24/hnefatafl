@@ -18,13 +18,9 @@
 //! [message protocol]: https://docs.rs/hnefatafl-copenhagen/latest/hnefatafl_copenhagen/message/enum.Message.html
 
 use std::{
-    fmt,
     io::{BufRead, BufReader, Write},
     net::TcpStream,
-    process::exit,
 };
-
-use log::error;
 
 rust_i18n::i18n!();
 
@@ -104,22 +100,6 @@ pub const LONG_VERSION: &str = concat!(
 Copyright (c) 2025 David Lawrence Campbell
 Licensed under the MIT license or the Apache-2.0 license"
 );
-
-pub fn handle_error<T, E: fmt::Display>(result: Result<T, E>) -> T {
-    match result {
-        Ok(value) => value,
-        Err(error) => {
-            error!("{error}");
-            exit(1)
-        }
-    }
-}
-
-pub fn log_error<T, E: fmt::Display>(result: Result<T, E>) {
-    if let Err(error) = result {
-        error!("{error}");
-    }
-}
 
 /// # Errors
 ///
