@@ -3944,8 +3944,11 @@ impl<'a> Client {
                 let title = column![title, dashes];
 
                 let mut players = Column::new();
-                for player in &tournament.players {
-                    players = players.push(text(player));
+                let mut player_names: Vec<_> = tournament.players.iter().collect();
+                player_names.sort();
+
+                for player in &player_names {
+                    players = players.push(text(*player));
                 }
                 let players = scrollable(players);
 
