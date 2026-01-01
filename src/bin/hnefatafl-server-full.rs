@@ -2295,8 +2295,16 @@ impl Server {
             let mut round = Vec::new();
 
             if second_round {
-                for _ in 0..(len / 2 + byes_names.len()) {
-                    round.push(None);
+                let total_len = len / 2 + byes_names.len();
+                for i in 0..total_len {
+                    if total_len - i > ((len - i) / 2)
+                        && i % 2 == 0
+                        && let Some(name) = byes_names.get(i / 2)
+                    {
+                        round.push(Some(name.clone()));
+                    } else {
+                        round.push(None);
+                    }
                 }
             } else {
                 for _ in 0..(len / 2) {
