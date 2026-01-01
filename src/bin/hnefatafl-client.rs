@@ -28,7 +28,6 @@ use hnefatafl_copenhagen::{
     draw::Draw,
     game::{Game, LegalMoves, TimeUnix},
     glicko::{CONFIDENCE_INTERVAL_95, Rating},
-    handle_error,
     heat_map::{Heat, HeatMap},
     locale::Locale,
     play::{BOARD_LETTERS, Plae, Plays, Vertex},
@@ -401,15 +400,7 @@ fn estimate_score() -> impl Stream<Item = Message> {
                     }
                 };
 
-                loop {
-                    let tree = match rx.recv() {
-                        Ok(tree) => tree,
-                        Err(error) => {
-                            error!("rx tree: {error}");
-                            return;
-                        }
-                    };
-
+                for tree in &rx {
                     let mut game = Game::from(&tree);
                     let generate_move = ai.generate_move(&mut game).expect("the game is ongoing");
 
@@ -423,6 +414,16 @@ fn estimate_score() -> impl Stream<Item = Message> {
             });
         },
     )
+}
+
+fn handle_error<T, E: fmt::Display>(result: Result<T, E>) -> T {
+    match result {
+        Ok(value) => value,
+        Err(error) => {
+            error!("{error}");
+            exit(1)
+        }
+    }
 }
 
 fn open_url(url: &str) {
@@ -455,7 +456,7 @@ fn pass_messages() -> impl Stream<Item = Message> {
                         let message = match rx.recv() {
                             Ok(message) => message,
                             Err(error) => {
-                                error!("rx (1): {error}");
+                                error!("rx: {error}");
                                 let _ok = executor::block_on(sender.send(Message::Exit));
                                 return;
                             }
@@ -473,15 +474,7 @@ fn pass_messages() -> impl Stream<Item = Message> {
 
                     let mut sender_clone = sender.clone();
                     thread::spawn(move || {
-                        loop {
-                            let message = match rx.recv() {
-                                Ok(message) => message,
-                                Err(error) => {
-                                    error!("rx (2): {error}");
-                                    let _ok = executor::block_on(sender_clone.send(Message::Exit));
-                                    return;
-                                }
-                            };
+                        for message in rx {
                             let message_trim = message.trim();
 
                             if message_trim == "ping" {
@@ -502,6 +495,8 @@ fn pass_messages() -> impl Stream<Item = Message> {
 
                             handle_error(tcp_stream.write_all(message.as_bytes()));
                         }
+
+                        let _ok = executor::block_on(sender_clone.send(Message::Exit));
                     });
 
                     let mut buffer = String::new();

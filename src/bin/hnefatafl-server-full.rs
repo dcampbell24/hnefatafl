@@ -2,6 +2,7 @@
 
 use std::{
     collections::{HashMap, VecDeque},
+    fmt,
     fs::{self, File, OpenOptions},
     io::{BufRead, BufReader, ErrorKind, Read, Write},
     net::{TcpListener, TcpStream},
@@ -22,7 +23,6 @@ use hnefatafl_copenhagen::{
     draw::Draw,
     game::TimeUnix,
     glicko::Outcome,
-    handle_error, log_error,
     rating::Rated,
     role::Role,
     server_game::{
@@ -2373,6 +2373,22 @@ impl Server {
             .ok()?;
 
         None
+    }
+}
+
+fn handle_error<T, E: fmt::Display>(result: Result<T, E>) -> T {
+    match result {
+        Ok(value) => value,
+        Err(error) => {
+            error!("{error}");
+            exit(1)
+        }
+    }
+}
+
+fn log_error<T, E: fmt::Display>(result: Result<T, E>) {
+    if let Err(error) = result {
+        error!("{error}");
     }
 }
 
