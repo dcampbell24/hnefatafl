@@ -167,7 +167,7 @@ debug = true
 # To update the icon cache: rm ~/.cache/icon-cache.kcache
 # Then log out and in.
 [package.metadata.deb]
-copyright = "2025 David Lawrence Campbell"
+copyright = "2025-2026 David Lawrence Campbell"
 maintainer = "David Campbell <dcampbell24@gmail.com>"
 extended-description = """This package contains an engine, server, client, artificial intelligence and systemd services to run them.
 
