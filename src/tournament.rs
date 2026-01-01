@@ -14,5 +14,5 @@ pub struct Tournament {
 pub struct TournamentTree {
     pub byes: Vec<String>,
     pub round_one: Vec<String>,
-    pub rounds: Vec<Option<String>>,
+    pub rounds: Vec<Vec<Option<String>>>,
 }
