@@ -2287,10 +2287,32 @@ impl Server {
             round_one_names.push(name);
         }
 
+        let mut rounds = Vec::new();
+        let mut len = round_one_names.len();
+
+        let mut second_round = true;
+        while len > 1 {
+            let mut round = Vec::new();
+
+            if second_round {
+                for _ in 0..(len / 2 + byes_names.len()) {
+                    round.push(None);
+                }
+            } else {
+                for _ in 0..(len / 2) {
+                    round.push(None);
+                }
+            }
+
+            second_round = false;
+            rounds.push(round);
+            len /= 2;
+        }
+
         tournament.tree = Some(TournamentTree {
             byes: byes_names,
             round_one: round_one_names,
-            rounds: Vec::new(),
+            rounds,
         });
     }
 

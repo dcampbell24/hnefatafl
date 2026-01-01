@@ -1030,7 +1030,30 @@ impl<'a> Client {
             column_2 = column_2.push(row);
         }
 
-        column![column_1, column_2].spacing(SPACING)
+        let mut columns = column![column_1, column_2].spacing(SPACING);
+
+        for round in &tree.rounds {
+            for (i, player) in round.iter().enumerate() {
+                let mut row = if let Some(player) = player {
+                    row![
+                        text(player.clone()).font(Font::MONOSPACE),
+                        text("─".repeat(16 - player.len())),
+                    ]
+                } else {
+                    row![text("─".repeat(16))]
+                };
+
+                if i % 2 == 0 {
+                    row = row.push(text("┐"));
+                } else {
+                    row = row.push(text("┘"));
+                }
+
+                columns = columns.push(row);
+            }
+        }
+
+        columns
     }
 
     fn draw(&mut self) {
