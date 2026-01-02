@@ -2298,12 +2298,8 @@ impl Server {
                             }
                         }
 
-                        if move_forward {
-                            if let Some(player) = &player {
-                                updates.push((i + 1, j, player.clone()));
-                            } else {
-                                // Fixme!
-                            }
+                        if move_forward && let Some(player) = &player {
+                            updates.push((i + 1, j, player.clone()));
                         }
                     }
                 }
