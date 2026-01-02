@@ -31,7 +31,7 @@ use hnefatafl_copenhagen::{
     },
     smtp::Smtp,
     status::Status,
-    time::{Time, TimeSettings},
+    time::{Time, TimeEnum, TimeSettings},
     tournament::{self, Player, StatusEnum, Tournament, TournamentTree},
     utils::{self, data_file},
 };
@@ -1244,7 +1244,7 @@ impl Server {
             index_username_command.get(1),
             index_username_command.get(2),
         ) {
-            if *command != "display_server" && *command != "login" {
+            if *command != "display_server" && *command != "login" && *command != "ping" {
                 debug!("{index_supplied} {username} {command}");
             }
 
@@ -1647,6 +1647,9 @@ impl Server {
                     self.save_server();
                     self.tournament_status_all();
 
+                    // Fixme!
+                    self.new_tournament_game("david", "player-1");
+
                     None
                 }
                 "watch_game" => self.watch_game(
@@ -1707,8 +1710,8 @@ impl Server {
         }
 
         let new_game = ServerGame::new(
-            self.clients.get(&attacker_tx)?.clone(),
-            self.clients.get(&defender_tx)?.clone(),
+            Some(self.clients.get(&attacker_tx)?.clone()),
+            Some(self.clients.get(&defender_tx)?.clone()),
             game.clone(),
         );
         self.games.0.insert(id, new_game);
@@ -1985,6 +1988,42 @@ impl Server {
 
         self.game_id += 1;
         Some((self.clients.get(&index_supplied)?.clone(), true, command))
+    }
+
+    fn new_tournament_game(
+        &mut self,
+        attacker: &str,
+        defender: &str,
+    ) -> Option<(mpsc::Sender<String>, bool, String)> {
+        let id = self.game_id;
+        self.game_id += 1;
+
+        let game_light = ServerGameLight {
+            id,
+            attacker: Some(attacker.to_string()),
+            defender: Some(defender.to_string()),
+            challenger: Challenger(None),
+            rated: Rated::Yes,
+            timed: TimeEnum::Long.into(),
+            attacker_channel: None,
+            defender_channel: None,
+            spectators: HashMap::new(),
+            challenge_accepted: true,
+            game_over: false,
+            board_size: BoardSize::_11,
+        };
+
+        info!(
+            "0 server new_tournament_game {id} {} {:?} {}",
+            game_light.rated, game_light.timed, game_light.board_size
+        );
+
+        let game = ServerGame::new(None, None, game_light.clone());
+
+        self.games_light.0.insert(id, game_light);
+        self.games.0.insert(id, game);
+
+        None
     }
 
     fn resume_game(
