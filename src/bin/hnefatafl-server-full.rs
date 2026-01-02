@@ -2270,6 +2270,7 @@ impl Server {
             for (i, round) in tree.rounds.iter_mut().enumerate() {
                 let mut player = None;
                 let mut move_forward = false;
+                let new_round_length = round.len() / 2;
 
                 for (mut j, status) in round.iter_mut().enumerate() {
                     if j % 2 == 0 {
@@ -2277,8 +2278,10 @@ impl Server {
                         player = None;
                     }
 
-                    // Fixme!
                     j /= 2;
+                    if j % 2 != 0 {
+                        j = new_round_length - j;
+                    }
 
                     if !status.processed {
                         match &status.status {
@@ -2313,7 +2316,7 @@ impl Server {
                     len = round.len() / 2;
                 } else {
                     #[cfg(debug_assertions)]
-                    panic!("tree.rounds.get(i - 1) is None");
+                    panic!("tree.rounds.get({i} - 1) is None");
 
                     #[cfg(not(debug_assertions))]
                     return;
@@ -2341,7 +2344,7 @@ impl Server {
                     };
                 } else {
                     #[cfg(debug_assertions)]
-                    panic!("tree.rounds[i][j] is None");
+                    panic!("tree.rounds[{i}][{j}] is None");
 
                     #[cfg(not(debug_assertions))]
                     return;
