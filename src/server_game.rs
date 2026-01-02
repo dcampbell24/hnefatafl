@@ -189,8 +189,8 @@ impl ServerGame {
     #[allow(clippy::missing_panics_doc)]
     #[must_use]
     pub fn new(
-        attacker_tx: Sender<String>,
-        defender_tx: Sender<String>,
+        attacker_tx: Option<Sender<String>>,
+        defender_tx: Option<Sender<String>>,
         game: ServerGameLight,
     ) -> Self {
         let (Some(attacker), Some(defender)) = (game.attacker, game.defender) else {
@@ -211,9 +211,9 @@ impl ServerGame {
         Self {
             id: game.id,
             attacker,
-            attacker_tx: Messenger(Some(attacker_tx)),
+            attacker_tx: Messenger(attacker_tx),
             defender,
-            defender_tx: Messenger(Some(defender_tx)),
+            defender_tx: Messenger(defender_tx),
             elapsed_time: 0,
             rated: game.rated,
             game: Game {
