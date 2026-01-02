@@ -1627,7 +1627,6 @@ impl Server {
                     if let Err(error) = self.tournament_date(&the_rest) {
                         error!("{error}");
                     } else {
-                        self.save_server();
                         self.tournament_status_all();
                     }
 
