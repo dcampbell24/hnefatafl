@@ -992,50 +992,20 @@ impl<'a> Client {
             return Column::new();
         }
 
-        let mut column_2 = Column::new();
-
         let Some(tree) = &tournament.tree else {
             return Column::new();
         };
 
-        let mut byes = tree.byes.clone();
-
-        for (i, player) in tree.round_one.iter().enumerate() {
-            if let Some(bye) = byes.pop() {
-                let row = row![
-                    text(bye.clone()).font(Font::MONOSPACE),
-                    text("─".repeat(33 - bye.len())),
-                    text("┐"),
-                ];
-
-                column_2 = column_2.push(row);
-            }
-
-            let mut row = row![
-                text(player.clone()).font(Font::MONOSPACE),
-                text("─".repeat(16 - player.len())),
-            ];
-
-            if i % 2 == 0 {
-                row = row.push(text("┐"));
-            } else {
-                row = row.push(text("┘"));
-            }
-
-            column_2 = column_2.push(row);
-        }
-
-        let mut columns = column![column_1, column_2].spacing(SPACING);
+        let mut column_2 = Column::new();
 
         for round in &tree.rounds {
             for (i, player) in round.iter().enumerate() {
                 let mut row = if let Some(player) = player {
-                    row![
-                        text(player.clone()).font(Font::MONOSPACE),
-                        text("─".repeat(16 - player.len())),
-                    ]
+                    let name = player.to_string();
+                    let len = 32 - name.len();
+                    row![text(name).font(Font::MONOSPACE), text("─".repeat(len)),]
                 } else {
-                    row![text("─".repeat(16))]
+                    row![text("─".repeat(32))]
                 };
 
                 if i % 2 == 0 {
@@ -1044,11 +1014,11 @@ impl<'a> Client {
                     row = row.push(text("┘"));
                 }
 
-                columns = columns.push(row);
+                column_2 = column_2.push(row);
             }
         }
 
-        columns
+        column![column_1, column_2]
     }
 
     fn draw(&mut self) {

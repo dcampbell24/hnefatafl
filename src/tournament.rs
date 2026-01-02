@@ -1,3 +1,4 @@
+use core::fmt;
 use std::collections::HashSet;
 
 use chrono::{DateTime, Utc};
@@ -12,7 +13,17 @@ pub struct Tournament {
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct TournamentTree {
-    pub byes: Vec<String>,
-    pub round_one: Vec<String>,
-    pub rounds: Vec<Vec<Option<String>>>,
+    pub rounds: Vec<Vec<Option<Player>>>,
+}
+
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+pub struct Player {
+    pub name: String,
+    pub rating: f64,
+}
+
+impl fmt::Display for Player {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{} {:0}", self.name, self.rating)
+    }
 }
