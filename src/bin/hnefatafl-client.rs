@@ -3501,7 +3501,7 @@ impl<'a> Client {
                     column = column.push(text(email));
                 }
 
-                scrollable(column).into()
+                scrollable(column).spacing(SPACING).into()
             }
             Screen::Game | Screen::GameReview => self.display_game(),
             Screen::GameNew => {
@@ -3924,7 +3924,6 @@ impl<'a> Client {
                 for player in &player_names {
                     players = players.push(text(*player));
                 }
-                let players = scrollable(players);
 
                 column = column.push(date);
                 column = column.push(buttons);
@@ -3950,7 +3949,7 @@ impl<'a> Client {
                 }
 
                 column = column.push(self.display_tournament());
-                scrollable(column).into()
+                scrollable(column).spacing(SPACING).into()
             }
             Screen::Users => row![
                 self.users(&LoggedIn::None),
