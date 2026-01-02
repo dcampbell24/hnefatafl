@@ -16,7 +16,7 @@ pub struct TournamentTree {
     pub rounds: Vec<Vec<Status>>,
 }
 
-#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
 pub struct Player {
     pub name: String,
     pub rating: f64,
@@ -34,7 +34,7 @@ pub struct Status {
     pub status: StatusEnum,
 }
 
-#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
 pub enum StatusEnum {
     Lost(Player),
     #[default]
