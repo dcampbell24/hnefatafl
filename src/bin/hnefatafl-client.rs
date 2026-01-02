@@ -37,7 +37,7 @@ use hnefatafl_copenhagen::{
     space::Space,
     status::Status,
     time::{DAY, HOUR, MINUTE, Time, TimeSettings},
-    tournament::Tournament,
+    tournament::{StatusEnum, Tournament},
     tree::{Node, Tree},
     utils::{self, choose_ai, data_file},
 };
@@ -996,11 +996,19 @@ impl<'a> Client {
             return Column::new();
         };
 
-        let mut column_2 = Column::new();
+        let mut column_2 = Column::new().spacing(SPACING);
 
-        for round in &tree.rounds {
+        for (i, round) in tree.rounds.iter().enumerate() {
+            let title = format!("{} {}", t!("Round"), i + 1);
+            let title_len = title.len();
+            let column_title = column![
+                text(title),
+                text("-".repeat(title_len)).font(Font::MONOSPACE)
+            ];
+
+            let mut add_column = column![column_title];
             for (i, player) in round.iter().enumerate() {
-                let mut row = if let Some(player) = player {
+                let mut row = if let StatusEnum::Ready(player) = &player.status {
                     let name = player.to_string();
                     let len = 22 - name.len();
                     row![text(name).font(Font::MONOSPACE), text("─".repeat(len)),]
@@ -1014,8 +1022,9 @@ impl<'a> Client {
                     row = row.push(text("┘"));
                 }
 
-                column_2 = column_2.push(row);
+                add_column = add_column.push(row);
             }
+            column_2 = column_2.push(add_column);
         }
 
         column![column_1, column_2]
