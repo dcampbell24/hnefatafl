@@ -32,7 +32,7 @@ use hnefatafl_copenhagen::{
     smtp::Smtp,
     status::Status,
     time::{Time, TimeSettings},
-    tournament::{Tournament, TournamentTree},
+    tournament::{Player, Tournament, TournamentTree},
     utils::{self, data_file},
 };
 use lettre::{
@@ -2246,81 +2246,39 @@ impl Server {
         let mut players_1 = Vec::new();
         for player in &tournament.players {
             if let Some(account) = self.accounts.0.get(player) {
-                players_1.push((player.clone(), account.rating.rating));
+                players_1.push(Player {
+                    name: player.clone(),
+                    rating: account.rating.rating.round_ties_even(),
+                });
             }
         }
-        players_1.sort_by(|a, b| a.1.total_cmp(&b.1));
+        players_1.sort_by(|a, b| a.rating.total_cmp(&b.rating));
 
         let players_len = players_1.len();
         let mut power = 1;
         while power < players_len {
             power *= 2;
         }
-        if power > players_len {
-            power /= 2;
+
+        let mut tournament_players = VecDeque::new();
+        for player in players_1 {
+            tournament_players.push_front(Some(player));
+        }
+        for _ in 0..(power - players_len) {
+            tournament_players.push_back(None);
         }
 
-        let byes = players_len - power;
-        let mut round_one = players_1.split_off(byes);
-        let byes = players_1;
-
-        let mut players_2 = VecDeque::new();
-        while let Some(player) = round_one.pop() {
-            players_2.push_front(player);
-        }
-
-        for i in 0..players_2.len() {
+        let mut round_one = Vec::new();
+        for i in 0..tournament_players.len() {
             if i % 2 == 0 {
-                round_one.push(players_2.pop_back().unwrap());
+                round_one.push(tournament_players.pop_back().unwrap());
             } else {
-                round_one.push(players_2.pop_front().unwrap());
+                round_one.push(tournament_players.pop_front().unwrap());
             }
-        }
-
-        let mut byes_names = Vec::new();
-        for (name, _) in byes {
-            byes_names.push(name);
-        }
-
-        let mut round_one_names = Vec::new();
-        for (name, _) in round_one {
-            round_one_names.push(name);
-        }
-
-        let mut rounds = Vec::new();
-        let mut len = round_one_names.len();
-
-        let mut second_round = true;
-        while len > 1 {
-            let mut round = Vec::new();
-
-            if second_round {
-                let total_len = len / 2 + byes_names.len();
-                for i in 0..total_len {
-                    if total_len - i > ((len - i) / 2)
-                        && i % 2 == 0
-                        && let Some(name) = byes_names.get(i / 2)
-                    {
-                        round.push(Some(name.clone()));
-                    } else {
-                        round.push(None);
-                    }
-                }
-            } else {
-                for _ in 0..(len / 2) {
-                    round.push(None);
-                }
-            }
-
-            second_round = false;
-            rounds.push(round);
-            len /= 2;
         }
 
         tournament.tree = Some(TournamentTree {
-            byes: byes_names,
-            round_one: round_one_names,
-            rounds,
+            rounds: vec![round_one],
         });
     }
 
