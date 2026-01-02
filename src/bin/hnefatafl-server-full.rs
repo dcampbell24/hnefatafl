@@ -1609,6 +1609,7 @@ impl Server {
                 "text_game" => self.text_game(username, index_supplied, command, the_rest),
                 "tournament_delete" => {
                     self.tournament = None;
+                    self.save_server();
                     self.tournament_status_all();
 
                     None
@@ -1616,6 +1617,7 @@ impl Server {
                 "tournament_tree_delete" => {
                     if let Some(tournament) = &mut self.tournament {
                         tournament.tree = None;
+                        self.save_server();
                         self.tournament_status_all();
                     }
 
@@ -1624,8 +1626,10 @@ impl Server {
                 "tournament_date" => {
                     if let Err(error) = self.tournament_date(&the_rest) {
                         error!("{error}");
+                    } else {
+                        self.save_server();
+                        self.tournament_status_all();
                     }
-                    self.tournament_status_all();
 
                     None
                 }
