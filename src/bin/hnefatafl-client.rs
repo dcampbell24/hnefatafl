@@ -1002,10 +1002,10 @@ impl<'a> Client {
             for (i, player) in round.iter().enumerate() {
                 let mut row = if let Some(player) = player {
                     let name = player.to_string();
-                    let len = 32 - name.len();
+                    let len = 22 - name.len();
                     row![text(name).font(Font::MONOSPACE), text("─".repeat(len)),]
                 } else {
-                    row![text("─".repeat(32))]
+                    row![text("─".repeat(22))]
                 };
 
                 if i % 2 == 0 {
@@ -3941,7 +3941,7 @@ impl<'a> Client {
                 }
 
                 column = column.push(self.display_tournament());
-                column.into()
+                scrollable(column).into()
             }
             Screen::Users => row![
                 self.users(&LoggedIn::None),
