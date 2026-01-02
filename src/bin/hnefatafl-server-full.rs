@@ -2277,6 +2277,7 @@ impl Server {
                         player = None;
                     }
 
+                    // Fixme!
                     j /= 2;
 
                     if !status.processed {
@@ -2330,8 +2331,6 @@ impl Server {
 
                     tree.rounds.push(round);
                 }
-
-                println!("tree: {tree:#?}, i: {i}, j: {j}");
 
                 if let Some(round) = tree.rounds.get_mut(i)
                     && let Some(status) = round.get_mut(j)
@@ -2479,21 +2478,16 @@ mod tests {
     struct Server(Child);
 
     impl Server {
-        fn new() -> Server {
-            match std::process::Command::new("./target/debug/hnefatafl-server-full")
+        fn new() -> anyhow::Result<Server> {
+            let server = std::process::Command::new("./target/debug/hnefatafl-server-full")
                 .stdout(Stdio::null())
                 .stderr(Stdio::null())
                 .arg("--skip-the-data-file")
                 .arg("--skip-advertising-updates")
                 .arg("--skip-message")
-                .spawn()
-            {
-                Ok(child) => Server(child),
-                Err(err) => {
-                    eprintln!("Failed to spawn the server: {err}");
-                    exit(1);
-                }
-            }
+                .spawn()?;
+
+            Ok(Server(server))
         }
     }
 
