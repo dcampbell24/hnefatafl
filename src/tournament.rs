@@ -13,7 +13,7 @@ pub struct Tournament {
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct TournamentTree {
-    pub rounds: Vec<Vec<Option<Player>>>,
+    pub rounds: Vec<Vec<Status>>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
@@ -26,4 +26,20 @@ impl fmt::Display for Player {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{} {:0}", self.name, self.rating)
     }
+}
+
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+pub struct Status {
+    pub processed: bool,
+    pub status: StatusEnum,
+}
+
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+pub enum StatusEnum {
+    Lost(Player),
+    #[default]
+    None,
+    Ready(Player),
+    Waiting,
+    Won(Player),
 }

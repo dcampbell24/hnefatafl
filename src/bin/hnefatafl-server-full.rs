@@ -32,7 +32,7 @@ use hnefatafl_copenhagen::{
     smtp::Smtp,
     status::Status,
     time::{Time, TimeSettings},
-    tournament::{Player, Tournament, TournamentTree},
+    tournament::{self, Player, StatusEnum, Tournament, TournamentTree},
     utils::{self, data_file},
 };
 use lettre::{
@@ -2243,43 +2243,112 @@ impl Server {
             return;
         };
 
-        let mut players_1 = Vec::new();
+        let mut players = Vec::new();
         for player in &tournament.players {
             if let Some(account) = self.accounts.0.get(player) {
-                players_1.push(Player {
+                players.push(Player {
                     name: player.clone(),
                     rating: account.rating.rating.round_ties_even(),
                 });
             }
         }
-        players_1.sort_by(|a, b| a.rating.total_cmp(&b.rating));
-
-        let players_len = players_1.len();
-        let mut power = 1;
-        while power < players_len {
-            power *= 2;
-        }
-
-        let mut tournament_players = VecDeque::new();
-        for player in players_1 {
-            tournament_players.push_front(Some(player));
-        }
-        for _ in 0..(power - players_len) {
-            tournament_players.push_back(None);
-        }
-
-        let mut round_one = Vec::new();
-        for i in 0..tournament_players.len() {
-            if i % 2 == 0 {
-                round_one.push(tournament_players.pop_back().unwrap());
-            } else {
-                round_one.push(tournament_players.pop_front().unwrap());
-            }
-        }
+        players.sort_by(|a, b| a.rating.total_cmp(&b.rating));
 
         tournament.tree = Some(TournamentTree {
-            rounds: vec![round_one],
+            rounds: vec![generate_round_one(players)],
         });
+
+        self.tournament_tree_extend();
+    }
+
+    fn tournament_tree_extend(&mut self) {
+        if let Some(tournament) = &mut self.tournament
+            && let Some(tree) = &mut tournament.tree
+        {
+            let mut updates = Vec::new();
+
+            for (i, round) in tree.rounds.iter_mut().enumerate() {
+                let mut player = None;
+                let mut move_forward = false;
+
+                for (mut j, status) in round.iter_mut().enumerate() {
+                    if j % 2 == 0 {
+                        move_forward = false;
+                        player = None;
+                    }
+
+                    j /= 2;
+
+                    if !status.processed {
+                        match &status.status {
+                            StatusEnum::Lost(_) => status.processed = true,
+                            StatusEnum::None => {
+                                move_forward = true;
+                                status.processed = true;
+                            }
+                            StatusEnum::Ready(p) => player = Some(p.clone()),
+                            StatusEnum::Waiting => continue,
+                            StatusEnum::Won(player) => {
+                                updates.push((i + 1, j, player.clone()));
+                                status.processed = true;
+                            }
+                        }
+
+                        if move_forward {
+                            if let Some(player) = &player {
+                                updates.push((i + 1, j, player.clone()));
+                            } else {
+                                // Fixme!
+                            }
+                        }
+                    }
+                }
+            }
+
+            for (i, j, player) in updates {
+                let len;
+
+                if let Some(round) = tree.rounds.get(i - 1) {
+                    len = round.len() / 2;
+                } else {
+                    #[cfg(debug_assertions)]
+                    panic!("tree.rounds.get(i - 1) is None");
+
+                    #[cfg(not(debug_assertions))]
+                    return;
+                }
+
+                if tree.rounds.get(i).is_none() {
+                    let mut round = Vec::new();
+
+                    for _ in 0..len {
+                        round.push(tournament::Status {
+                            processed: false,
+                            status: StatusEnum::Waiting,
+                        });
+                    }
+
+                    tree.rounds.push(round);
+                }
+
+                println!("tree: {tree:#?}, i: {i}, j: {j}");
+
+                if let Some(round) = tree.rounds.get_mut(i)
+                    && let Some(status) = round.get_mut(j)
+                {
+                    *status = tournament::Status {
+                        processed: false,
+                        status: StatusEnum::Ready(player),
+                    };
+                } else {
+                    #[cfg(debug_assertions)]
+                    panic!("tree.rounds[i][j] is None");
+
+                    #[cfg(not(debug_assertions))]
+                    return;
+                }
+            }
+        }
     }
 
     fn watch_game(
@@ -2332,6 +2401,39 @@ impl Server {
 
         None
     }
+}
+
+fn generate_round_one(players: Vec<Player>) -> Vec<tournament::Status> {
+    let players_len = players.len();
+    let mut power = 1;
+    while power < players_len {
+        power *= 2;
+    }
+
+    let mut tournament_players = VecDeque::new();
+    for player in players {
+        tournament_players.push_front(tournament::Status {
+            processed: false,
+            status: StatusEnum::Ready(player),
+        });
+    }
+    for _ in 0..(power - players_len) {
+        tournament_players.push_back(tournament::Status {
+            processed: false,
+            status: StatusEnum::None,
+        });
+    }
+
+    let mut round = Vec::new();
+    for i in 0..tournament_players.len() {
+        if i % 2 == 0 {
+            round.push(tournament_players.pop_back().unwrap());
+        } else {
+            round.push(tournament_players.pop_front().unwrap());
+        }
+    }
+
+    round
 }
 
 fn handle_error<T, E: fmt::Display>(result: Result<T, E>) -> T {
