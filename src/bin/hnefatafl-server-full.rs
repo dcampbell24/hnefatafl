@@ -2563,14 +2563,25 @@ mod tests {
     struct Server(Child);
 
     impl Server {
-        fn new() -> anyhow::Result<Server> {
-            let server = std::process::Command::new("./target/debug/hnefatafl-server-full")
-                .stdout(Stdio::null())
-                .stderr(Stdio::null())
-                .arg("--skip-the-data-file")
-                .arg("--skip-advertising-updates")
-                .arg("--skip-message")
-                .spawn()?;
+        fn new(release: bool) -> anyhow::Result<Server> {
+            let server = if release {
+                std::process::Command::new("./target/debug/hnefatafl-server-full")
+                    .stdout(Stdio::null())
+                    .stderr(Stdio::null())
+                    .arg("--release")
+                    .arg("--skip-the-data-file")
+                    .arg("--skip-advertising-updates")
+                    .arg("--skip-message")
+                    .spawn()?
+            } else {
+                std::process::Command::new("./target/debug/hnefatafl-server-full")
+                    .stdout(Stdio::null())
+                    .stderr(Stdio::null())
+                    .arg("--skip-the-data-file")
+                    .arg("--skip-advertising-updates")
+                    .arg("--skip-message")
+                    .spawn()?
+            };
 
             Ok(Server(server))
         }
@@ -2634,7 +2645,7 @@ mod tests {
             .arg("hnefatafl-server-full")
             .output()?;
 
-        let _server = Server::new();
+        let _server = Server::new(false);
         thread::sleep(Duration::from_millis(10));
 
         let mut buf = String::new();
@@ -2727,7 +2738,7 @@ mod tests {
             .arg("hnefatafl-server-full")
             .output()?;
 
-        let _server = Server::new();
+        let _server = Server::new(true);
         thread::sleep(Duration::from_millis(10));
 
         let t0 = Instant::now();
