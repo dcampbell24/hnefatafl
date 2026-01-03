@@ -983,10 +983,17 @@ impl<'a> Client {
             ];
 
             let mut add_column = column![column_title];
+            let round_length = round.len();
             for (i, player) in round.iter().enumerate() {
-                let brace = if i % 2 == 0 { "┐" } else { "┘" };
+                let brace = if round_length == 1 {
+                    ""
+                } else if i % 2 == 0 {
+                    "┐"
+                } else {
+                    "┘"
+                };
 
-                let row = match &player.status {
+                let mut row = match &player.status {
                     StatusEnum::Lost(player) => {
                         let name = player.to_string();
                         let len = 22 - name.len();
@@ -1018,6 +1025,10 @@ impl<'a> Client {
                         ]
                     }
                 };
+
+                if round_length == 1 {
+                    row = row.push(text("🏆").size(32));
+                }
 
                 add_column = add_column.push(row);
             }

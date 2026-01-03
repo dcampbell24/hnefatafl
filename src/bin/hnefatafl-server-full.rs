@@ -2445,6 +2445,14 @@ impl Server {
 
 fn generate_round_one(players: Vec<Player>) -> Vec<tournament::Status> {
     let players_len = players.len();
+
+    if players_len == 1 {
+        return vec![tournament::Status {
+            processed: true,
+            status: StatusEnum::Won(players.first().unwrap().clone()),
+        }];
+    }
+
     let mut power = 1;
     while power < players_len {
         power *= 2;
