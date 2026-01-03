@@ -17,6 +17,7 @@ include = ["src/**/*", "README.md", "CHANGELOG.md", "COPYING"]
 
 [dev-dependencies]
 criterion = { version = "0.8", features = ["html_reports"] }
+csv = "1"
 
 # client
 [target.'cfg(not(target_os = "redox"))'.dependencies.iced]
@@ -40,7 +41,6 @@ anyhow = "1"
 chrono = { version = "0.4", features = ["serde"] }
 clap = { version = "4", features = ["derive"] }
 clap_mangen = "0.2"
-csv = "1"
 dirs = "6"
 env_logger = "0.11"
 log = "0.4"
