@@ -2564,7 +2564,7 @@ mod tests {
 
     impl Server {
         fn new() -> anyhow::Result<Server> {
-            let server = std::process::Command::new("./target/debug/hnefatafl-server-full")
+            let server = std::process::Command::new("./target/release/hnefatafl-server-full")
                 .stdout(Stdio::null())
                 .stderr(Stdio::null())
                 .arg("--skip-the-data-file")
@@ -2630,6 +2630,7 @@ mod tests {
     fn server_full() -> anyhow::Result<()> {
         std::process::Command::new("cargo")
             .arg("build")
+            .arg("--release")
             .arg("--bin")
             .arg("hnefatafl-server-full")
             .output()?;
@@ -2713,15 +2714,27 @@ mod tests {
         Ok(())
     }
 
+    // echo "* soft nofile 1000000" >> /etc/security/limits.conf
+    // echo "* hard nofile 1000000" >> /etc/security/limits.conf
+    // fish
     // ulimit --file-descriptor-count 1000000
-    // cargo test many_clients
-    #[ignore = "too slow, too challenging"]
+    #[ignore = "too many tcp connections"]
     #[test]
-    fn many_clients() {
+    fn many_clients() -> anyhow::Result<()> {
+        std::process::Command::new("cargo")
+            .arg("build")
+            .arg("--release")
+            .arg("--bin")
+            .arg("hnefatafl-server-full")
+            .output()?;
+
+        let _server = Server::new();
+        thread::sleep(Duration::from_millis(10));
+
         let t0 = Instant::now();
 
         let mut handles = Vec::new();
-        for i in 0..10_000 {
+        for i in 0..1_000 {
             handles.push(thread::spawn(move || {
                 let mut buf = String::new();
                 let mut tcp = TcpStream::connect(ADDRESS).unwrap();
@@ -2741,5 +2754,7 @@ mod tests {
 
         let t1 = Instant::now();
         println!("many clients: {:?}", t1 - t0);
+
+        Ok(())
     }
 }
