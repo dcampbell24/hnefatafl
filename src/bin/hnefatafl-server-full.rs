@@ -2726,7 +2726,7 @@ mod tests {
     // echo "* hard nofile 1000000" >> /etc/security/limits.conf
     // fish
     // ulimit --file-descriptor-count 1000000
-    #[ignore = "too slow"]
+    #[ignore = "too slow, too many tcp connections"]
     #[test]
     fn many_clients() -> anyhow::Result<()> {
         std::process::Command::new("cargo")
