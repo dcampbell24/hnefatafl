@@ -74,7 +74,7 @@ pub const LONG_VERSION: &str = concat!(
     env!("CARGO_PKG_VERSION"),
     "
 Copyright (c) 2025 David Lawrence Campbell
-Licensed under the MIT license or the Apache-2.0 license"
+Licensed under the AGPLv3"
 );
 
 /// # Errors
