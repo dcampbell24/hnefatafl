@@ -2443,7 +2443,6 @@ impl Server {
     }
 }
 
-#[allow(clippy::indexing_slicing)]
 fn generate_round_one(players: Vec<Player>) -> Vec<tournament::Status> {
     let players_len = players.len();
     let mut power = 1;
@@ -2476,7 +2475,11 @@ fn generate_round_one(players: Vec<Player>) -> Vec<tournament::Status> {
 
     let mut round_new = Vec::new();
     for statuses in round.chunks(2) {
-        let (status_1, status_2) = match (&statuses[0].status, &statuses[1].status) {
+        let (Some(status_1), Some(status_2)) = (&statuses.first(), &statuses.get(1)) else {
+            return round_new;
+        };
+
+        let (status_1, status_2) = match (&status_1.status, &status_2.status) {
             (StatusEnum::Ready(player), StatusEnum::None) => (
                 tournament::Status {
                     processed: false,
