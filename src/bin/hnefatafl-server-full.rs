@@ -2565,10 +2565,9 @@ mod tests {
     impl Server {
         fn new(release: bool) -> anyhow::Result<Server> {
             let server = if release {
-                std::process::Command::new("./target/debug/hnefatafl-server-full")
+                std::process::Command::new("./target/release/hnefatafl-server-full")
                     .stdout(Stdio::null())
                     .stderr(Stdio::null())
-                    .arg("--release")
                     .arg("--skip-the-data-file")
                     .arg("--skip-advertising-updates")
                     .arg("--skip-message")
@@ -2678,7 +2677,6 @@ mod tests {
         assert_eq!(buf, "= login\n");
         buf.clear();
 
-        //
         tcp_2.write_all(b"join_game_pending 0\n")?;
         reader_2.read_line(&mut buf)?;
         assert_eq!(buf, "= join_game_pending 0\n");
@@ -2728,7 +2726,7 @@ mod tests {
     // echo "* hard nofile 1000000" >> /etc/security/limits.conf
     // fish
     // ulimit --file-descriptor-count 1000000
-    #[ignore = "too many tcp connections"]
+    #[ignore = "too slow"]
     #[test]
     fn many_clients() -> anyhow::Result<()> {
         std::process::Command::new("cargo")
