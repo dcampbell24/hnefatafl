@@ -110,6 +110,8 @@ const SOUND_CAPTURE: &[u8] = include_bytes!("sound/capture.ogg");
 const SOUND_GAME_OVER: &[u8] = include_bytes!("sound/game_over.ogg");
 const SOUND_MOVE: &[u8] = include_bytes!("sound/move.ogg");
 
+const TROPHY_SIZE: u32 = 32;
+
 rust_i18n::i18n!();
 
 /// Hnefatafl Copenhagen Client
@@ -1027,7 +1029,7 @@ impl<'a> Client {
                 };
 
                 if round_length == 1 {
-                    row = row.push(text("🏆").size(32));
+                    row = row.push(text("🏆").size(TROPHY_SIZE));
                 }
 
                 add_column = add_column.push(row);
