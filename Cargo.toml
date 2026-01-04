@@ -13,7 +13,12 @@ license = "AGPL-3.0-or-later"
 keywords = ["board-game", "copenhagen", "hnefatafl", "strategy", "tafl"]
 categories = ["game-engines", "games", "wasm"]
 default-run = "hnefatafl-server-full"
+
+# Only these files are covered by the AGPLv3.
 include = ["src/**/*", "README.md", "CHANGELOG.md", "COPYING"]
+
+# The website is covered by the
+# Creative Commons Attribution 4.0 International Public License
 
 [dev-dependencies]
 criterion = { version = "0.8", features = ["html_reports"] }
