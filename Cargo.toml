@@ -14,7 +14,7 @@ keywords = ["board-game", "copenhagen", "hnefatafl", "strategy", "tafl"]
 categories = ["game-engines", "games", "wasm"]
 default-run = "hnefatafl-server-full"
 
-# Only these files are covered by the AGPLv3.
+# Only these files are covered by the AGPLv3:
 include = ["src/**/*", "README.md", "CHANGELOG.md", "COPYING"]
 
 # The website is covered by the
