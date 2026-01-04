@@ -1,7 +1,7 @@
 #![deny(clippy::indexing_slicing)]
 
 use std::{
-    collections::{HashMap, VecDeque},
+    collections::{HashMap, HashSet, VecDeque},
     fmt,
     fs::{self, File, OpenOptions},
     io::{BufRead, BufReader, ErrorKind, Read, Write},
@@ -48,6 +48,7 @@ use serde::{Deserialize, Serialize};
 use std::fmt::Write as _;
 
 const ACTIVE_GAMES_FILE: &str = "hnefatafl-games-active.postcard";
+const ADMINS_FILE: &str = "hnefatafl-admins.txt";
 const ARCHIVED_GAMES_FILE: &str = "hnefatafl-games.ron";
 /// Seconds in two months: `60.0 * 60.0 * 24.0 * 30.417 * 2.0 = 5_256_057.6`
 const TWO_MONTHS: i64 = 5_256_058;
@@ -193,6 +194,18 @@ fn main() -> anyhow::Result<()> {
 
     if args.skip_the_data_file {
         server.skip_the_data_file = true;
+    }
+
+    match fs::read_to_string(data_file(ADMINS_FILE)) {
+        Ok(string) => {
+            for name in string.split_whitespace() {
+                server.admins.insert(name.to_string());
+            }
+        }
+        Err(err) => match err.kind() {
+            ErrorKind::NotFound => {}
+            _ => return Err(err.into()),
+        },
     }
 
     thread::spawn(move || handle_error(server.handle_messages(&rx)));
@@ -430,6 +443,8 @@ struct Server {
     accounts: Accounts,
     #[serde(skip)]
     accounts_old: Accounts,
+    #[serde(skip)]
+    admins: HashSet<String>,
     #[serde(skip)]
     archived_games: Vec<ArchivedGame>,
     #[serde(skip)]
@@ -1310,13 +1325,16 @@ impl Server {
                     self.set_email(index_supplied, username, command, the_rest.first().copied())
                 }
                 "email_everyone" => {
-                    let emails_bcc = self.bcc_mailboxes(username);
+                    if self.admins.contains(*username) {
+                        info!("{index_supplied} {username} email_everyone");
+                    } else {
+                        error!("{index_supplied} {username} email_everyone");
+                        return None;
+                    }
 
+                    let emails_bcc = self.bcc_mailboxes(username);
                     let subject = the_rest.first()?;
                     let email_string = the_rest.get(1..)?.join(" ").replace("\\n", "\n");
-
-                    info!("{index_supplied} {username} email_everyone");
-
                     let mut email = lettre::Message::builder();
 
                     for email_bcc in emails_bcc {
@@ -1608,14 +1626,18 @@ impl Server {
                 }
                 "text_game" => self.text_game(username, index_supplied, command, the_rest),
                 "tournament_delete" => {
-                    self.tournament = None;
-                    self.save_server();
-                    self.tournament_status_all();
+                    if self.admins.contains(*username) {
+                        self.tournament = None;
+                        self.save_server();
+                        self.tournament_status_all();
+                    }
 
                     None
                 }
                 "tournament_tree_delete" => {
-                    if let Some(tournament) = &mut self.tournament {
+                    if self.admins.contains(*username)
+                        && let Some(tournament) = &mut self.tournament
+                    {
                         tournament.tree = None;
                         self.save_server();
                         self.tournament_status_all();
@@ -1624,10 +1646,12 @@ impl Server {
                     None
                 }
                 "tournament_date" => {
-                    if let Err(error) = self.tournament_date(&the_rest) {
-                        error!("{error}");
-                    } else {
-                        self.tournament_status_all();
+                    if self.admins.contains(*username) {
+                        if let Err(error) = self.tournament_date(&the_rest) {
+                            error!("{error}");
+                        } else {
+                            self.tournament_status_all();
+                        }
                     }
 
                     None
@@ -1643,9 +1667,11 @@ impl Server {
                     }
                 }
                 "tournament_start" => {
-                    self.tournament_tree();
-                    self.save_server();
-                    self.tournament_status_all();
+                    if self.admins.contains(*username) {
+                        self.tournament_tree();
+                        self.save_server();
+                        self.tournament_status_all();
+                    }
 
                     // Fixme!
                     self.new_tournament_game("david", "player-1");
