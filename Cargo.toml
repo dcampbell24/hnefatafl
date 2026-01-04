@@ -17,8 +17,11 @@ default-run = "hnefatafl-server-full"
 # Only these files are covered by the AGPLv3:
 include = ["src/**/*", "README.md", "CHANGELOG.md", "COPYING"]
 
-# The website is covered by the
+# The website is licensed under the
 # Creative Commons Attribution 4.0 International Public License
+
+# ./documents/gtp2-spec-draft2.pdf is licensed under the
+# GNU Free Documentation License
 
 [dev-dependencies]
 criterion = { version = "0.8", features = ["html_reports"] }
