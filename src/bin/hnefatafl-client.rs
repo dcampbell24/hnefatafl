@@ -65,16 +65,28 @@ use rust_i18n::t;
 use serde::{Deserialize, Serialize};
 use smol_str::ToSmolStr;
 
-/// The [Tol] variant of a [`Palette`]. A palette for the color blind
+/// The Muted qualitative color scheme of [Tol]. A color scheme for the
+/// color blind.
 ///
-/// [Tol]: https://www.nceas.ucsb.edu/sites/default/files/2022-06/Colorblind%20Safe%20Color%20Schemes.pdf
+/// [Tol]: https://sronpersonalpages.nl/~pault/
+pub const INDIGO: u32 = 0x0033_2288;
+pub const CYAN: u32 = 0x0088_CCEE;
+pub const TEAL: u32 = 0x0044_AA99;
+pub const GREEN: u32 = 0x0011_7733;
+pub const OLIVE: u32 = 0x0099_9933;
+pub const SAND: u32 = 0x00DD_CC77;
+pub const ROSE: u32 = 0x00CC_6677;
+pub const WINE: u32 = 0x0088_2255;
+pub const PURPLE: u32 = 0x00AA_4499;
+pub const PALE_GREY: u32 = 0x00DD_DDDD;
+
 pub const TOL: Palette = Palette {
-    background: color!(46, 37, 133), // Background
-    text: color!(221, 221, 221),     // Foreground
-    primary: color!(148, 203, 236),  // Blue
-    success: color!(51, 117, 56),    // Green
-    warning: color!(220, 205, 125),  // Yellow
-    danger: color!(194, 106, 119),   // Red
+    background: color!(0x00DD_DDDD), // PALE_GREY
+    text: color!(0x0000_0000),       // BLACK
+    primary: color!(0x0088_CCEE),    // CYAN
+    success: color!(0x0011_7733),    // GREEN
+    warning: color!(0x00DD_CC77),    // SAND
+    danger: color!(0x00CC_6677),     // ROSE
 };
 
 const ALPHABET: [char; 26] = [
