@@ -48,7 +48,6 @@ pub mod tree;
 pub mod utils;
 
 pub type Id = u128;
-
 pub const HOME: &str = "hnefatafl-copenhagen";
 pub const SERVER_PORT: &str = ":49152";
 pub const VERSION_ID: &str = "ad746a65";

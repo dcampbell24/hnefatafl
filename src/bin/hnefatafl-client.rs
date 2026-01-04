@@ -538,6 +538,8 @@ fn text_collect(text: SplitAsciiWhitespace<'_>) -> String {
 #[allow(clippy::struct_excessive_bools)]
 #[derive(Debug, Default, Deserialize, Serialize)]
 struct Client {
+    #[serde(default)]
+    admins: HashSet<String>,
     #[serde(skip)]
     attacker: String,
     #[serde(default)]
@@ -2744,7 +2746,7 @@ impl<'a> Client {
                             }
                             Some("leave_game") => self.game_id = 0,
                             Some("login") => {
-                                if self.username == "david" {
+                                if self.admins.contains(&self.username) {
                                     self.email_everyone = true;
                                 }
                                 self.screen = Screen::Games;
@@ -2943,8 +2945,8 @@ impl<'a> Client {
                 }
             }
             Message::Time(time) => self.game_settings.time = Some(time),
-            Message::TournamentDelete => self.send("tournament_delete {}\n"),
-            Message::TournamentTreeDelete => self.send("tournament_tree_delete {}\n"),
+            Message::TournamentDelete => self.send("tournament_delete\n"),
+            Message::TournamentTreeDelete => self.send("tournament_tree_delete\n"),
             Message::Users => self.screen = Screen::Users,
             Message::UsersSortedBy(sort_by) => self.users_sort_by = sort_by,
             Message::WindowResized((width, height)) => {
@@ -3869,7 +3871,7 @@ impl<'a> Client {
             Screen::Tournament => {
                 let mut column = Column::new().padding(PADDING).spacing(SPACING);
 
-                if self.username == "david" {
+                if self.admins.contains(&self.username) {
                     let input = iced::widget::text_input("????-??-??", &self.text_input)
                         .on_input(Message::TextChanged)
                         .on_paste(Message::TextChanged)
@@ -3940,7 +3942,7 @@ impl<'a> Client {
                 column = column.push(title);
                 column = column.push(players);
 
-                if self.username == "david" {
+                if self.admins.contains(&self.username) {
                     let mut delete_button = button("Delete Tournament Tree");
 
                     if let Some(tournament) = &self.tournament
@@ -4011,6 +4013,7 @@ impl<'a> Client {
         };
 
         let client = Client {
+            admins: self.admins.clone(),
             archived_games: Vec::new(),
             coordinates: self.coordinates,
             locale_selected: self.locale_selected,
