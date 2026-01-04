@@ -5,11 +5,11 @@ enable-git-hooks:
 
 profile-games:
 	echo '1' | sudo tee /proc/sys/kernel/perf_event_paranoid
-	samply record cargo test hnefatafl_games --profile profiling
+	samply record cargo test hnefatafl_games --no-default-features --profile profiling
 
 profile-monte-carlo:
 	echo '1' | sudo tee /proc/sys/kernel/perf_event_paranoid
-	samply record cargo test monte_carlo_long --profile profiling -- --ignored
+	samply record cargo test monte_carlo_long --no-default-features --profile profiling -- --ignored
 
 logs:
 	sudo journalctl --unit=hnefatafl.service --reverse
