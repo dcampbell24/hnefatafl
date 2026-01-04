@@ -21,3 +21,12 @@ rustflags = ["-C", "link-arg=-fuse-ld=/usr/bin/mold", "-C", "link-arg=-Wl,--no-r
 
 [profile.release]
 lto = "thin"
+panic = "abort"
+
+[profile.bench]
+inherits = "release"
+panic = "unwind"
+
+[profile.profiling]
+inherits = "bench"
+debug = true
