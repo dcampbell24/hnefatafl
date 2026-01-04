@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- hnefatafl-admins.txt file to the server and admins setting to the client.
+- admins to the server and client ron settings file.
 - Document the feature flags.
 - Make `--debug` an argument to hnefatafl-{ai, client, server-full}.
 - hnefatafl-client: optionally on windows display console out by passing

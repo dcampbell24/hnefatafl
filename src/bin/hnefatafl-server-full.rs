@@ -48,7 +48,6 @@ use serde::{Deserialize, Serialize};
 use std::fmt::Write as _;
 
 const ACTIVE_GAMES_FILE: &str = "hnefatafl-games-active.postcard";
-const ADMINS_FILE: &str = "hnefatafl-admins.txt";
 const ARCHIVED_GAMES_FILE: &str = "hnefatafl-games.ron";
 /// Seconds in two months: `60.0 * 60.0 * 24.0 * 30.417 * 2.0 = 5_256_057.6`
 const TWO_MONTHS: i64 = 5_256_058;
@@ -194,18 +193,6 @@ fn main() -> anyhow::Result<()> {
 
     if args.skip_the_data_file {
         server.skip_the_data_file = true;
-    }
-
-    match fs::read_to_string(data_file(ADMINS_FILE)) {
-        Ok(string) => {
-            for name in string.split_whitespace() {
-                server.admins.insert(name.to_string());
-            }
-        }
-        Err(err) => match err.kind() {
-            ErrorKind::NotFound => {}
-            _ => return Err(err.into()),
-        },
     }
 
     thread::spawn(move || handle_error(server.handle_messages(&rx)));
@@ -436,6 +423,8 @@ struct Server {
     #[serde(default)]
     ran_update_rd: UnixTimestamp,
     #[serde(default)]
+    admins: HashSet<String>,
+    #[serde(default)]
     smtp: Smtp,
     #[serde(default)]
     tournament: Option<Tournament>,
@@ -443,8 +432,6 @@ struct Server {
     accounts: Accounts,
     #[serde(skip)]
     accounts_old: Accounts,
-    #[serde(skip)]
-    admins: HashSet<String>,
     #[serde(skip)]
     archived_games: Vec<ArchivedGame>,
     #[serde(skip)]
