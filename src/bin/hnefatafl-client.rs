@@ -68,7 +68,7 @@ use smol_str::ToSmolStr;
 /// The Muted qualitative color scheme of [Tol]. A color scheme for the
 /// color blind.
 ///
-/// [Tol]: https://sronpersonalpages.nl/~pault/
+/// [Tol]: https://sronpersonalpages.nl/~pault/#sec:qualitative
 pub const INDIGO: u32 = 0x0033_2288;
 pub const CYAN: u32 = 0x0088_CCEE;
 pub const TEAL: u32 = 0x0044_AA99;
