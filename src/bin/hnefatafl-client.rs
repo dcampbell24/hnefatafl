@@ -69,24 +69,13 @@ use smol_str::ToSmolStr;
 /// color blind.
 ///
 /// [Tol]: https://sronpersonalpages.nl/~pault/#sec:qualitative
-pub const INDIGO: u32 = 0x0033_2288;
-pub const CYAN: u32 = 0x0088_CCEE;
-pub const TEAL: u32 = 0x0044_AA99;
-pub const GREEN: u32 = 0x0011_7733;
-pub const OLIVE: u32 = 0x0099_9933;
-pub const SAND: u32 = 0x00DD_CC77;
-pub const ROSE: u32 = 0x00CC_6677;
-pub const WINE: u32 = 0x0088_2255;
-pub const PURPLE: u32 = 0x00AA_4499;
-pub const PALE_GREY: u32 = 0x00DD_DDDD;
-
 pub const TOL: Palette = Palette {
-    background: color!(0x00DD_DDDD), // PALE_GREY
-    text: color!(0x0000_0000),       // BLACK
-    primary: color!(0x0088_CCEE),    // CYAN
-    success: color!(0x0011_7733),    // GREEN
-    warning: color!(0x00DD_CC77),    // SAND
-    danger: color!(0x00CC_6677),     // ROSE
+    background: color!(0xDD, 0xDD, 0xDD), // PALE_GREY
+    text: color!(0x00, 0x00, 0x00),       // BLACK
+    primary: color!(0x88, 0xCC, 0xEE),    // CYAN
+    success: color!(0x11, 0x77, 0x33),    // GREEN
+    warning: color!(0xDD, 0xCC, 0x77),    // SAND
+    danger: color!(0xCC, 0x66, 0x77),     // ROSE
 };
 
 const ALPHABET: [char; 26] = [
