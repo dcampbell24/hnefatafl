@@ -74,7 +74,7 @@ Click to join our [Discord server].
 
 ## [Packaging Status](https://repology.org/project/hnefatafl-copenhagen/versions)
 
-[AUR] (client)  
+[AUR] (attacker AI, Defender AI, client, engine, server)  
 [crates.io] (AI, client, engine, server)  
 [chocolatey.org] (client)  
 [deb] (attacker AI, defender AI, client, engine, server)  
