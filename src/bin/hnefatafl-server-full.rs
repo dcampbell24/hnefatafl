@@ -5,7 +5,8 @@ use std::{
     fmt,
     fs::{self, File, OpenOptions},
     io::{BufRead, BufReader, ErrorKind, Read, Write},
-    net::{TcpListener, TcpStream},
+    net::TcpListener,
+    os::unix::net::UnixListener,
     process::exit,
     str::FromStr,
     sync::mpsc::{self, Receiver, Sender},
@@ -17,7 +18,7 @@ use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use chrono::{DateTime, Local, Utc};
 use clap::{CommandFactory, Parser};
 use hnefatafl_copenhagen::{
-    COPYRIGHT, Id, LONG_VERSION, SERVER_PORT, VERSION_ID,
+    COPYRIGHT, Id, LONG_VERSION, SERVER_PORT, SOCKET_PATH, VERSION_ID,
     accounts::{Account, Accounts, Email},
     board::BoardSize,
     draw::Draw,
@@ -85,6 +86,10 @@ struct Args {
     /// Whether the application is being run by systemd
     #[arg(long)]
     systemd: bool,
+
+    /// Whether to a use Unix socket instead of TCP
+    #[arg(long)]
+    socket: bool,
 
     /// Build the manpage
     #[arg(long)]
@@ -215,28 +220,47 @@ fn main() -> anyhow::Result<()> {
         }
     });
 
-    let mut address = args.host;
-    address.push_str(SERVER_PORT);
+    if args.socket {
+        if std::path::Path::new(SOCKET_PATH).exists() {
+            fs::remove_file(SOCKET_PATH)?;
+        }
 
-    let listener = TcpListener::bind(&address)?;
-    info!("listening on {address} ...");
+        let listener = UnixListener::bind(SOCKET_PATH)?;
+        info!("listening on {SOCKET_PATH} ...");
 
-    for (index, stream) in (1..).zip(listener.incoming()) {
-        let stream = stream?;
-        let tx = tx.clone();
-        thread::spawn(move || log_error(login(index, stream, &tx)));
+        for (index, stream) in (1..).zip(listener.incoming()) {
+            let stream = stream?;
+            let tx = tx.clone();
+            let reader = BufReader::new(stream.try_clone()?);
+
+            thread::spawn(move || log_error(login(index, stream, reader, &tx)));
+        }
+    } else {
+        let mut address = args.host;
+        address.push_str(SERVER_PORT);
+
+        let listener = TcpListener::bind(&address)?;
+        info!("listening on {address} ...");
+
+        for (index, stream) in (1..).zip(listener.incoming()) {
+            let stream = stream?;
+            let tx = tx.clone();
+            let reader = BufReader::new(stream.try_clone()?);
+
+            thread::spawn(move || log_error(login(index, stream, reader, &tx)));
+        }
     }
 
     Ok(())
 }
 
 #[allow(clippy::too_many_lines)]
-fn login(
+fn login<T1: 'static + Send + Write, T2: BufRead>(
     id: Id,
-    mut stream: TcpStream,
+    mut stream: T1,
+    mut reader: T2,
     tx: &mpsc::Sender<(String, Option<mpsc::Sender<String>>)>,
 ) -> anyhow::Result<()> {
-    let mut reader = BufReader::new(stream.try_clone()?);
     let mut buf = String::new();
     let (client_tx, client_rx) = mpsc::channel();
     let mut username_proper = "_".to_string();
@@ -378,8 +402,8 @@ fn login(
     Ok(())
 }
 
-fn receiving_and_writing(
-    mut stream: TcpStream,
+fn receiving_and_writing<T: Send + Write>(
+    mut stream: T,
     client_rx: &Receiver<String>,
 ) -> anyhow::Result<()> {
     loop {
@@ -2575,6 +2599,8 @@ fn timestamp() -> String {
 mod tests {
     use super::*;
 
+    use std::net::TcpStream;
+    use std::os::unix::net::UnixStream;
     use std::process::{Child, Stdio};
     use std::thread;
     use std::time::{Duration, Instant};
@@ -2600,6 +2626,7 @@ mod tests {
                     .arg("--skip-the-data-file")
                     .arg("--skip-advertising-updates")
                     .arg("--skip-message")
+                    .arg("--socket")
                     .spawn()?
             };
 
@@ -2669,20 +2696,20 @@ mod tests {
         thread::sleep(Duration::from_millis(10));
 
         let mut buf = String::new();
-        let mut tcp_1 = TcpStream::connect(ADDRESS)?;
-        let mut reader_1 = BufReader::new(tcp_1.try_clone()?);
+        let mut socket_1 = UnixStream::connect(SOCKET_PATH)?;
+        let mut reader_1 = BufReader::new(socket_1.try_clone()?);
 
-        tcp_1.write_all(format!("{VERSION_ID} create_account player-1\n").as_bytes())?;
+        socket_1.write_all(format!("{VERSION_ID} create_account player-1\n").as_bytes())?;
         reader_1.read_line(&mut buf)?;
         assert_eq!(buf, "= login\n");
         buf.clear();
 
-        tcp_1.write_all(b"change_password\n")?;
+        socket_1.write_all(b"change_password\n")?;
         reader_1.read_line(&mut buf)?;
         assert_eq!(buf, "= change_password\n");
         buf.clear();
 
-        tcp_1.write_all(b"new_game attacker rated fischer 900000 10 11\n")?;
+        socket_1.write_all(b"new_game attacker rated fischer 900000 10 11\n")?;
         reader_1.read_line(&mut buf)?;
         assert_eq!(
             buf,
@@ -2690,15 +2717,15 @@ mod tests {
         );
         buf.clear();
 
-        let mut tcp_2 = TcpStream::connect(ADDRESS)?;
-        let mut reader_2 = BufReader::new(tcp_2.try_clone()?);
+        let mut socket_2 = UnixStream::connect(SOCKET_PATH)?;
+        let mut reader_2 = BufReader::new(socket_2.try_clone()?);
 
-        tcp_2.write_all(format!("{VERSION_ID} create_account player-2\n").as_bytes())?;
+        socket_2.write_all(format!("{VERSION_ID} create_account player-2\n").as_bytes())?;
         reader_2.read_line(&mut buf)?;
         assert_eq!(buf, "= login\n");
         buf.clear();
 
-        tcp_2.write_all(b"join_game_pending 0\n")?;
+        socket_2.write_all(b"join_game_pending 0\n")?;
         reader_2.read_line(&mut buf)?;
         assert_eq!(buf, "= join_game_pending 0\n");
         buf.clear();
@@ -2708,7 +2735,7 @@ mod tests {
         buf.clear();
 
         // Fixme: "join_game_pending 0\n" should not be allowed!
-        tcp_1.write_all(b"join_game 0\n")?;
+        socket_1.write_all(b"join_game 0\n")?;
         reader_1.read_line(&mut buf)?;
         assert_eq!(
             buf,
@@ -2727,7 +2754,7 @@ mod tests {
         assert_eq!(buf, "game 0 generate_move attacker\n");
         buf.clear();
 
-        tcp_1.write_all(b"game 0 play attacker resigns _\n")?;
+        socket_1.write_all(b"game 0 play attacker resigns _\n")?;
         reader_1.read_line(&mut buf)?;
         assert_eq!(buf, "= game_over 0 defender_wins\n");
         buf.clear();
