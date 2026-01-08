@@ -11,6 +11,7 @@ hnefatafl-ai-old
 names.txt
 perf.data
 
+cargo-test-*
 hnefatafl-copenhagen.*.nupkg
 hnefatafl-client-installer-*.exe
 v*.tar.gz
