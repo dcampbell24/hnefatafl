@@ -1,0 +1,20 @@
+# Parser settings.
+cff-version: 1.2.0
+message: Please cite this crate using these information.
+
+# Version information.
+date-released: 2025-12-18
+version: 4.5.0
+
+# Project information.
+abstract: Copenhagen Hnefatafl; artificial intelligence, client, engine, server
+authors:
+  - alias: dcampbell24
+    family-names: Campbell
+    given-names: David Lawrence
+license:
+  - AGPLv3
+repository-artifact: https://crates.io/crates/hnefatafl-copenhagen
+repository-code: https://github.com/dcampbell24/hnefatafl
+title: hnefatafl-copenhagen
+url: https://hnefatafl.org
