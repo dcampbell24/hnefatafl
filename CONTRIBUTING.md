@@ -14,7 +14,7 @@ Made with [contrib.rocks](https://contrib.rocks).
 
 ## Copyright and Licenses
 
-Only These files are licensed under the AGPLv3:
+These files are licensed under the AGPLv3:
 
 ```toml
 include = ["src/**/*", "README.md", "CHANGELOG.md", "COPYING"]
