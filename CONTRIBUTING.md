@@ -24,11 +24,11 @@ The website is licensed under the
 Creative Commons Attribution 4.0 International Public License.
 
 `./documents/gtp2-spec-draft2.pdf` is licensed under the
-GNU Free Documentation License.
-Taken from <https://www.lysator.liu.se/~gunnar/gtp/gtp2-spec-draft2.pdf>.
+GNU Free Documentation License,
+taken from <https://www.lysator.liu.se/~gunnar/gtp/gtp2-spec-draft2.pdf>.
 
-`./documents/glicko.pdf` is in the Public Domain.
-Taken from <https://www.glicko.net/glicko/glicko.pdf>.
+`./documents/glicko.pdf` is in the Public Domain,
+taken from <https://www.glicko.net/glicko/glicko.pdf>.
 See <https://www.glicko.net/glicko.html>.
 
 All other files where applicable are licensed under the
