@@ -32,7 +32,7 @@ taken from <https://www.glicko.net/glicko/glicko.pdf>.
 See <https://www.glicko.net/glicko.html>.
 
 All other files where applicable are licensed under the
-MIT license.
+MIT license:
 
 ```plain
 Copyright 2025-2026 Developers of the hnefatafl-copenhagen project
