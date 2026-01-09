@@ -27,7 +27,7 @@ Creative Commons Attribution 4.0 International Public License.
 GNU Free Documentation License.
 Taken from <https://www.lysator.liu.se/~gunnar/gtp/gtp2-spec-draft2.pdf>.
 
-`./documents/glicko.pdf` is in the Public Domain
+`./documents/glicko.pdf` is in the Public Domain.
 Taken from <https://www.glicko.net/glicko/glicko.pdf>.
 See <https://www.glicko.net/glicko.html>.
 
