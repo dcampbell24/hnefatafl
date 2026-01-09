@@ -101,7 +101,7 @@ Marvin T. [@marvintubat123].
 Licensed under [AGPLv3](COPYING).
 
 ```plain
-Copyright (C) 2025-2026 David Lawrence Campbell
+Copyright (C) 2025-2026 Developers of the hnefatafl-copenhagen project
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published by
