@@ -31,7 +31,7 @@ include = ["src/**/*", "README.md", "CHANGELOG.md", "COPYING"]
 # All other files where applicable are licensed under the
 # MIT license
 #
-# Copyright 2025-2026 David Lawrence Campbell
+# Copyright 2025-2026 Developers of the hnefatafl-copenhagen project
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the “Software”), to deal
@@ -50,6 +50,12 @@ include = ["src/**/*", "README.md", "CHANGELOG.md", "COPYING"]
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
+# Copyrights in the hnefatafl-copenhagen project are retained by their
+# contributors. No copyright assignment is required to contribute to the
+# hnefatafl-copenhagen project.
+#
+# For full authorship information, see the version control history.
 
 [dev-dependencies]
 criterion = { version = "0.8", features = ["html_reports"] }
@@ -192,7 +198,7 @@ multiple_crate_versions = { level = "allow", priority = 1 }
 # To update the icon cache: rm ~/.cache/icon-cache.kcache
 # Then log out and in.
 [package.metadata.deb]
-copyright = "2025-2026 David Lawrence Campbell"
+copyright = "2025-2026 Developers of the hnefatafl-copenhagen project"
 maintainer = "David Campbell <dcampbell24@gmail.com>"
 extended-description = """This package contains an engine, server, client, artificial intelligence and systemd services to run them.
 
