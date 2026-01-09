@@ -21,7 +21,7 @@ include = ["src/**/*", "README.md", "CHANGELOG.md", "COPYING"]
 ```
 
 The website is licensed under the
-Creative Commons Attribution 4.0 International Public License
+Creative Commons Attribution 4.0 International Public License.
 
 `./documents/gtp2-spec-draft2.pdf` is licensed under the
 GNU Free Documentation License.
