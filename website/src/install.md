@@ -30,9 +30,19 @@ Go to the Start menu and run Hnefatafl.
 
 ## Debian and Derivatives (Linux)
 
-Download [hnefatafl.list][1] to `/etc/apt/sources.list.d/`.
+Download [hnefatafl.list][1] to `/etc/apt/sources.list.d/` or:
 
-Then, Download [packages.hnefatafl.org.asc][2] to `/etc/apt/keyrings/`.
+```sh
+echo 'deb [arch=amd64 signed-by=/etc/apt/keyrings/packages.hnefatafl.org.asc] https://hnefatafl.org/apt stable main' \
+| sudo tee /etc/apt/sources.list.d/hnefatafl.list
+```
+
+Then, Download [packages.hnefatafl.org.asc][2] to `/etc/apt/keyrings/` or:
+
+```sh
+wget https://hnefatafl.org/packages.hnefatafl.org.asc
+sudo mv packages.hnefatafl.org.asc /etc/apt/keyrings/
+```
 
 Then in your terminal run:
 
