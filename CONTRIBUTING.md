@@ -20,21 +20,21 @@ Only These files are licensed under the AGPLv3:
 include = ["src/**/*", "README.md", "CHANGELOG.md", "COPYING"]
 ```
 
-```plain
 The website is licensed under the
 Creative Commons Attribution 4.0 International Public License
 
-./documents/gtp2-spec-draft2.pdf is licensed under the
-GNU Free Documentation License
-taken from https://www.lysator.liu.se/~gunnar/gtp/gtp2-spec-draft2.pdf
+`./documents/gtp2-spec-draft2.pdf` is licensed under the
+GNU Free Documentation License.
+Taken from <https://www.lysator.liu.se/~gunnar/gtp/gtp2-spec-draft2.pdf>.
 
-./documents/glicko.pdf is in the Public Domain
-taken from https://www.glicko.net/glicko/glicko.pdf
-See https://www.glicko.net/glicko.html
+`./documents/glicko.pdf` is in the Public Domain
+Taken from <https://www.glicko.net/glicko/glicko.pdf>.
+See <https://www.glicko.net/glicko.html>.
 
 All other files where applicable are licensed under the
-MIT license
+MIT license.
 
+```plain
 Copyright 2025-2026 Developers of the hnefatafl-copenhagen project
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -54,10 +54,10 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+```
 
 Copyrights in the hnefatafl-copenhagen project are retained by their
 contributors. No copyright assignment is required to contribute to the
 hnefatafl-copenhagen project.
 
 For full authorship information, see the version control history.
-```
