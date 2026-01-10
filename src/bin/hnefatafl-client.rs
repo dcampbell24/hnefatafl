@@ -52,7 +52,7 @@ use hnefatafl_copenhagen::{
     space::Space,
     status::Status,
     time::{TimeEnum, TimeSettings},
-    tournament::{StatusEnum, Tournament},
+    tournament::{self, Tournament},
     tree::{Node, Tree},
     utils::{self, choose_ai, data_file},
 };
@@ -1004,7 +1004,7 @@ impl<'a> Client {
 
             let mut add_column = column![column_title];
             let round_length = round.len();
-            for (i, player) in round.iter().enumerate() {
+            for (i, status) in round.iter().enumerate() {
                 let brace = if round_length == 1 {
                     ""
                 } else if i % 2 == 0 {
@@ -1013,8 +1013,8 @@ impl<'a> Client {
                     "┘"
                 };
 
-                let mut row = match &player.status {
-                    StatusEnum::Lost(player) => {
+                let mut row = match &status {
+                    tournament::Status::Lost(player) => {
                         let name = player.to_string();
                         let len = 22 - name.len();
                         row![
@@ -1023,19 +1023,10 @@ impl<'a> Client {
                             text(brace),
                         ]
                     }
-                    StatusEnum::None | StatusEnum::Waiting => {
+                    tournament::Status::None | tournament::Status::Waiting => {
                         row![text("─".repeat(22)), text(brace)]
                     }
-                    StatusEnum::Playing(player) => {
-                        let name = player.to_string();
-                        let len = 22 - name.len();
-                        row![
-                            text(name).font(Font::MONOSPACE),
-                            text("─".repeat(len)).style(text::warning),
-                            text(brace).style(text::warning),
-                        ]
-                    }
-                    StatusEnum::Ready(player) => {
+                    tournament::Status::Playing(player) => {
                         let name = player.to_string();
                         let len = 22 - name.len();
                         row![
@@ -1044,7 +1035,16 @@ impl<'a> Client {
                             text(brace),
                         ]
                     }
-                    StatusEnum::Won(player) => {
+                    tournament::Status::Ready(player) => {
+                        let name = player.to_string();
+                        let len = 22 - name.len();
+                        row![
+                            text(name).font(Font::MONOSPACE),
+                            text("─".repeat(len)).style(text::warning),
+                            text(brace).style(text::warning),
+                        ]
+                    }
+                    tournament::Status::Won(player) => {
                         let name = player.to_string();
                         let len = 22 - name.len();
                         row![

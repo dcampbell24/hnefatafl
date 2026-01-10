@@ -43,14 +43,8 @@ impl fmt::Display for Player {
     }
 }
 
-#[derive(Clone, Debug, Default, Deserialize, Serialize)]
-pub struct Status {
-    pub processed: bool,
-    pub status: StatusEnum,
-}
-
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
-pub enum StatusEnum {
+pub enum Status {
     Lost(Player),
     #[default]
     None,
