@@ -2320,6 +2320,41 @@ impl Server {
         Ok(())
     }
 
+    fn tournament_ready_to_playing(&mut self) {
+        let mut new_games = Vec::new();
+
+        if let Some(tournament) = &mut self.tournament
+            && let Some(tree) = &mut tournament.tree
+        {
+            for round in &mut tree.rounds {
+                for statuses in round.chunks_mut(2) {
+                    let (status_1, status_2) = statuses.split_at_mut(1);
+                    let (Some(status_1), Some(status_2)) =
+                        (status_1.first_mut(), status_2.first_mut())
+                    else {
+                        continue;
+                    };
+
+                    if let StatusEnum::Ready(player_1) = status_1.status.clone()
+                        && let StatusEnum::Ready(player_2) = status_2.status.clone()
+                    {
+                        status_1.status = StatusEnum::Playing(player_1.clone());
+                        status_1.processed = true;
+                        status_2.status = StatusEnum::Playing(player_2.clone());
+                        status_2.processed = true;
+
+                        new_games.push((player_1.name, player_2.name));
+                    }
+                }
+            }
+        }
+
+        for players in new_games {
+            self.new_tournament_game(&players.0, &players.1);
+            self.new_tournament_game(&players.1, &players.0);
+        }
+    }
+
     fn tournament_status_all(&self) {
         if let Ok(mut tournament) = ron::ser::to_string(&self.tournament) {
             tournament = format!("= tournament_status {tournament}");
@@ -2354,8 +2389,11 @@ impl Server {
     }
 
     fn tournament_tree_extend(&mut self) {
-        let mut new_games = Vec::new();
+        self.tournament_update_wins();
+        self.tournament_ready_to_playing();
+    }
 
+    fn tournament_update_wins(&mut self) {
         if let Some(tournament) = &mut self.tournament
             && let Some(tree) = &mut tournament.tree
         {
@@ -2440,33 +2478,6 @@ impl Server {
                     return;
                 }
             }
-
-            for round in &mut tree.rounds {
-                for statuses in round.chunks_mut(2) {
-                    let (status_1, status_2) = statuses.split_at_mut(1);
-                    let (Some(status_1), Some(status_2)) =
-                        (status_1.first_mut(), status_2.first_mut())
-                    else {
-                        continue;
-                    };
-
-                    if let StatusEnum::Ready(player_1) = status_1.status.clone()
-                        && let StatusEnum::Ready(player_2) = status_2.status.clone()
-                    {
-                        status_1.status = StatusEnum::Playing(player_1.clone());
-                        status_1.processed = true;
-                        status_2.status = StatusEnum::Playing(player_2.clone());
-                        status_2.processed = true;
-
-                        new_games.push((player_1.name, player_2.name));
-                    }
-                }
-            }
-        }
-
-        for players in new_games {
-            self.new_tournament_game(&players.0, &players.1);
-            self.new_tournament_game(&players.1, &players.0);
         }
     }
 
