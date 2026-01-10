@@ -2385,10 +2385,6 @@ impl Server {
             rounds: vec![generate_round_one(players)],
         });
 
-        self.tournament_tree_extend();
-    }
-
-    fn tournament_tree_extend(&mut self) {
         self.tournament_update_wins();
         self.tournament_ready_to_playing();
     }
