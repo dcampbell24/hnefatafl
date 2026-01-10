@@ -1026,6 +1026,15 @@ impl<'a> Client {
                     StatusEnum::None | StatusEnum::Waiting => {
                         row![text("─".repeat(22)), text(brace)]
                     }
+                    StatusEnum::Playing(player) => {
+                        let name = player.to_string();
+                        let len = 22 - name.len();
+                        row![
+                            text(name).font(Font::MONOSPACE),
+                            text("─".repeat(len)).style(text::warning),
+                            text(brace).style(text::warning),
+                        ]
+                    }
                     StatusEnum::Ready(player) => {
                         let name = player.to_string();
                         let len = 22 - name.len();

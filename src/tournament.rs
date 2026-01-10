@@ -54,6 +54,7 @@ pub enum StatusEnum {
     Lost(Player),
     #[default]
     None,
+    Playing(Player),
     Ready(Player),
     Waiting,
     Won(Player),
