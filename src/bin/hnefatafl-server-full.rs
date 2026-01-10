@@ -48,7 +48,7 @@ use hnefatafl_copenhagen::{
     smtp::Smtp,
     status::Status,
     time::{Time, TimeEnum, TimeSettings},
-    tournament::{self, Player, StatusEnum, Tournament, TournamentTree},
+    tournament::{self, Player, Tournament, TournamentTree},
     utils::{self, data_file},
 };
 use lettre::{
@@ -2335,13 +2335,11 @@ impl Server {
                         continue;
                     };
 
-                    if let StatusEnum::Ready(player_1) = status_1.status.clone()
-                        && let StatusEnum::Ready(player_2) = status_2.status.clone()
+                    if let tournament::Status::Ready(player_1) = status_1.clone()
+                        && let tournament::Status::Ready(player_2) = status_2.clone()
                     {
-                        status_1.status = StatusEnum::Playing(player_1.clone());
-                        status_1.processed = true;
-                        status_2.status = StatusEnum::Playing(player_2.clone());
-                        status_2.processed = true;
+                        *status_1 = tournament::Status::Playing(player_1.clone());
+                        *status_2 = tournament::Status::Playing(player_2.clone());
 
                         new_games.push((player_1.name, player_2.name));
                     }
@@ -2411,24 +2409,21 @@ impl Server {
                         j = new_round_length - j;
                     }
 
-                    if !status.processed {
-                        match &status.status {
-                            StatusEnum::Lost(_) => status.processed = true,
-                            StatusEnum::None => {
-                                move_forward = true;
-                                status.processed = true;
-                            }
-                            StatusEnum::Playing(_) | StatusEnum::Waiting => continue,
-                            StatusEnum::Ready(p) => player = Some(p.clone()),
-                            StatusEnum::Won(player) => {
-                                updates.push((i + 1, j, player.clone()));
-                                status.processed = true;
-                            }
+                    match &status {
+                        tournament::Status::Lost(_)
+                        | tournament::Status::Playing(_)
+                        | tournament::Status::Waiting => continue,
+                        tournament::Status::None => {
+                            move_forward = true;
                         }
-
-                        if move_forward && let Some(player) = &player {
+                        tournament::Status::Ready(p) => player = Some(p.clone()),
+                        tournament::Status::Won(player) => {
                             updates.push((i + 1, j, player.clone()));
                         }
+                    }
+
+                    if move_forward && let Some(player) = &player {
+                        updates.push((i + 1, j, player.clone()));
                     }
                 }
             }
@@ -2450,10 +2445,7 @@ impl Server {
                     let mut round = Vec::new();
 
                     for _ in 0..len {
-                        round.push(tournament::Status {
-                            processed: false,
-                            status: StatusEnum::Waiting,
-                        });
+                        round.push(tournament::Status::Waiting);
                     }
 
                     tree.rounds.push(round);
@@ -2462,10 +2454,7 @@ impl Server {
                 if let Some(round) = tree.rounds.get_mut(i)
                     && let Some(status) = round.get_mut(j)
                 {
-                    *status = tournament::Status {
-                        processed: false,
-                        status: StatusEnum::Ready(player),
-                    };
+                    *status = tournament::Status::Ready(player);
                 } else {
                     #[cfg(debug_assertions)]
                     panic!("tree.rounds[{i}][{j}] is None");
@@ -2533,10 +2522,7 @@ fn generate_round_one(players: Vec<Player>) -> Vec<tournament::Status> {
     let players_len = players.len();
 
     if players_len == 1 {
-        return vec![tournament::Status {
-            processed: true,
-            status: StatusEnum::Won(players.first().unwrap().clone()),
-        }];
+        return vec![tournament::Status::Won(players.first().unwrap().clone())];
     }
 
     let mut power = 1;
@@ -2546,16 +2532,10 @@ fn generate_round_one(players: Vec<Player>) -> Vec<tournament::Status> {
 
     let mut tournament_players = VecDeque::new();
     for player in players {
-        tournament_players.push_front(tournament::Status {
-            processed: false,
-            status: StatusEnum::Ready(player),
-        });
+        tournament_players.push_front(tournament::Status::Ready(player));
     }
     for _ in 0..(power - players_len) {
-        tournament_players.push_back(tournament::Status {
-            processed: false,
-            status: StatusEnum::None,
-        });
+        tournament_players.push_back(tournament::Status::None);
     }
 
     let mut round = Vec::new();
@@ -2569,41 +2549,23 @@ fn generate_round_one(players: Vec<Player>) -> Vec<tournament::Status> {
 
     let mut round_new = Vec::new();
     for statuses in round.chunks(2) {
-        let (Some(status_1), Some(status_2)) = (&statuses.first(), &statuses.get(1)) else {
+        let (Some(status_1), Some(status_2)) = (statuses.first(), statuses.get(1)) else {
             return round_new;
         };
 
-        let (status_1, status_2) = match (&status_1.status, &status_2.status) {
-            (StatusEnum::Ready(player), StatusEnum::None) => (
-                tournament::Status {
-                    processed: false,
-                    status: StatusEnum::Won(player.clone()),
-                },
-                tournament::Status {
-                    processed: false,
-                    status: StatusEnum::None,
-                },
+        let status_1 = status_1.clone();
+        let status_2 = status_2.clone();
+
+        let (status_1, status_2) = match (status_1, status_2) {
+            (tournament::Status::Ready(player), tournament::Status::None) => (
+                tournament::Status::Won(player.clone()),
+                tournament::Status::None,
             ),
-            (StatusEnum::None, StatusEnum::Ready(player)) => (
-                tournament::Status {
-                    processed: false,
-                    status: StatusEnum::None,
-                },
-                tournament::Status {
-                    processed: false,
-                    status: StatusEnum::Won(player.clone()),
-                },
+            (tournament::Status::None, tournament::Status::Ready(player)) => (
+                tournament::Status::None,
+                tournament::Status::Won(player.clone()),
             ),
-            (status_1, status_2) => (
-                tournament::Status {
-                    processed: false,
-                    status: status_1.clone(),
-                },
-                tournament::Status {
-                    processed: false,
-                    status: status_2.clone(),
-                },
-            ),
+            (status_1, status_2) => (status_1, status_2),
         };
 
         round_new.push(status_1);
