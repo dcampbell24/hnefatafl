@@ -1699,9 +1699,6 @@ impl Server {
                         self.tournament_status_all();
                     }
 
-                    // Fixme!
-                    self.new_tournament_game("david", "player-1");
-
                     None
                 }
                 "watch_game" => self.watch_game(
@@ -2042,6 +2039,7 @@ impl Server {
         Some((self.clients.get(&index_supplied)?.clone(), true, command))
     }
 
+    // Fixme!
     fn new_tournament_game(
         &mut self,
         attacker: &str,
@@ -2356,6 +2354,8 @@ impl Server {
     }
 
     fn tournament_tree_extend(&mut self) {
+        let mut new_games = Vec::new();
+
         if let Some(tournament) = &mut self.tournament
             && let Some(tree) = &mut tournament.tree
         {
@@ -2384,8 +2384,8 @@ impl Server {
                                 move_forward = true;
                                 status.processed = true;
                             }
+                            StatusEnum::Playing(_) | StatusEnum::Waiting => continue,
                             StatusEnum::Ready(p) => player = Some(p.clone()),
-                            StatusEnum::Waiting => continue,
                             StatusEnum::Won(player) => {
                                 updates.push((i + 1, j, player.clone()));
                                 status.processed = true;
@@ -2440,6 +2440,33 @@ impl Server {
                     return;
                 }
             }
+
+            for round in &mut tree.rounds {
+                for statuses in round.chunks_mut(2) {
+                    let (status_1, status_2) = statuses.split_at_mut(1);
+                    let (Some(status_1), Some(status_2)) =
+                        (status_1.first_mut(), status_2.first_mut())
+                    else {
+                        continue;
+                    };
+
+                    if let StatusEnum::Ready(player_1) = status_1.status.clone()
+                        && let StatusEnum::Ready(player_2) = status_2.status.clone()
+                    {
+                        status_1.status = StatusEnum::Playing(player_1.clone());
+                        status_1.processed = true;
+                        status_2.status = StatusEnum::Playing(player_2.clone());
+                        status_2.processed = true;
+
+                        new_games.push((player_1.name, player_2.name));
+                    }
+                }
+            }
+        }
+
+        for players in new_games {
+            self.new_tournament_game(&players.0, &players.1);
+            self.new_tournament_game(&players.1, &players.0);
         }
     }
 
