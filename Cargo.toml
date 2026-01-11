@@ -66,7 +66,7 @@ getrandom = { version = "0.3", optional = true }
 wasm-bindgen = { version = "0.2", optional = true }
 
 # send-website-urls
-reqwest = { version = "0.12", features = ["blocking"], optional = true }
+reqwest = { version = "0.13", features = ["blocking"], optional = true }
 
 # server
 argon2 = { version = "0.5", optional = true }
