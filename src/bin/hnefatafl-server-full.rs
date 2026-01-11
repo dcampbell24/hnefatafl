@@ -24,7 +24,10 @@ use std::{
     os::unix::net::UnixListener,
     process::exit,
     str::FromStr,
-    sync::mpsc::{self, Receiver, Sender},
+    sync::{
+        Arc, Mutex,
+        mpsc::{self, Receiver, Sender},
+    },
     thread,
     time::Duration,
 };
@@ -48,7 +51,7 @@ use hnefatafl_copenhagen::{
     smtp::Smtp,
     status::Status,
     time::{Time, TimeEnum, TimeSettings},
-    tournament::{self, Player, Tournament, TournamentTree},
+    tournament::{self, Player, Players, Tournament, TournamentTree},
     utils::{self, data_file},
 };
 use lettre::{
@@ -1046,6 +1049,9 @@ impl Server {
             ));
         }
 
+        let mut game_over = false;
+        let mut winner = Role::Roleless;
+
         match game.game.status {
             Status::AttackerWins => {
                 let accounts = &mut self.accounts.0;
@@ -1086,25 +1092,8 @@ impl Server {
                     }
                 }
 
-                let Some(game) = self.games.0.remove(&index) else {
-                    panic!("the game should exist")
-                };
-
-                if let Some(game) = self.games_light.0.get_mut(&index) {
-                    game.game_over = true;
-                }
-
-                if !self.skip_the_data_file {
-                    self.append_archived_game(game)
-                        .map_err(|err| {
-                            error!("{err}");
-                        })
-                        .ok()?;
-                }
-
-                self.save_server();
-
-                return None;
+                game_over = true;
+                winner = Role::Attacker;
             }
             Status::Draw => {
                 // Handled in the draw fn.
@@ -1157,26 +1146,57 @@ impl Server {
                     }
                 }
 
-                let Some(game) = self.games.0.remove(&index) else {
-                    panic!("the game should exist")
-                };
-
-                if let Some(game) = self.games_light.0.get_mut(&index) {
-                    game.game_over = true;
-                }
-
-                if !self.skip_the_data_file {
-                    self.append_archived_game(game)
-                        .map_err(|err| {
-                            error!("{err}");
-                        })
-                        .ok()?;
-                }
-
-                self.save_server();
-
-                return None;
+                game_over = true;
+                winner = Role::Defender;
             }
+        }
+
+        if game_over {
+            let Some(game) = self.games.0.remove(&index) else {
+                panic!("the game should exist")
+            };
+
+            if let Some(game_light) = self.games_light.0.get_mut(&index) {
+                game_light.game_over = true;
+            }
+
+            if let Some(tournament) = &mut self.tournament
+                && let Some(tree) = &mut tournament.tree
+                && let Some(active_game) = tree.active_games.get_mut(&game.id)
+            {
+                match active_game.lock() {
+                    Err(_) => error!("failed to get the active_game lock"),
+                    Ok(mut active_game) => match winner {
+                        Role::Attacker => {
+                            if game.attacker == active_game.player_1 {
+                                active_game.attacker_wins_1 += 1;
+                            } else {
+                                active_game.attacker_wins_2 += 1;
+                            }
+                        }
+                        Role::Defender => {
+                            if game.defender == active_game.player_1 {
+                                active_game.defender_wins_1 += 1;
+                            } else {
+                                active_game.defender_wins_2 += 1;
+                            }
+                        }
+                        Role::Roleless => {}
+                    },
+                }
+            }
+
+            if !self.skip_the_data_file {
+                self.append_archived_game(game)
+                    .map_err(|err| {
+                        error!("{err}");
+                    })
+                    .ok()?;
+            }
+
+            self.save_server();
+
+            return None;
         }
 
         Some((
@@ -2039,12 +2059,8 @@ impl Server {
         Some((self.clients.get(&index_supplied)?.clone(), true, command))
     }
 
-    // Fixme!
-    fn new_tournament_game(
-        &mut self,
-        attacker: &str,
-        defender: &str,
-    ) -> Option<(mpsc::Sender<String>, bool, String)> {
+    #[must_use]
+    fn new_tournament_game(&mut self, attacker: &str, defender: &str) -> Id {
         let id = self.game_id;
         self.game_id += 1;
 
@@ -2073,7 +2089,7 @@ impl Server {
         self.games_light.0.insert(id, game_light);
         self.games.0.insert(id, game);
 
-        None
+        id
     }
 
     fn resume_game(
@@ -2326,8 +2342,8 @@ impl Server {
         if let Some(tournament) = &mut self.tournament
             && let Some(tree) = &mut tournament.tree
         {
-            for round in &mut tree.rounds {
-                for statuses in round.chunks_mut(2) {
+            for (i, round) in tree.rounds.iter_mut().enumerate() {
+                for (j, statuses) in round.chunks_mut(2).enumerate() {
                     let (status_1, status_2) = statuses.split_at_mut(1);
                     let (Some(status_1), Some(status_2)) =
                         (status_1.first_mut(), status_2.first_mut())
@@ -2341,15 +2357,35 @@ impl Server {
                         *status_1 = tournament::Status::Playing(player_1.clone());
                         *status_2 = tournament::Status::Playing(player_2.clone());
 
-                        new_games.push((player_1.name, player_2.name));
+                        new_games.push((player_1.name, player_2.name, i, j));
                     }
                 }
             }
         }
 
-        for players in new_games {
-            self.new_tournament_game(&players.0, &players.1);
-            self.new_tournament_game(&players.1, &players.0);
+        for (player_1, player_2, round, chunk) in new_games {
+            let id_1 = self.new_tournament_game(&player_1, &player_2);
+            let id_2 = self.new_tournament_game(&player_2, &player_1);
+
+            let game_players = Players {
+                round,
+                chunk,
+                player_1,
+                player_2,
+                attacker_wins_1: 0,
+                attacker_wins_2: 0,
+                defender_wins_1: 0,
+                defender_wins_2: 0,
+            };
+
+            let game_players = Arc::new(Mutex::new(game_players));
+
+            if let Some(tournament) = &mut self.tournament
+                && let Some(tree) = &mut tournament.tree
+            {
+                tree.active_games.insert(id_1, game_players.clone());
+                tree.active_games.insert(id_2, game_players.clone());
+            }
         }
     }
 
@@ -2380,6 +2416,7 @@ impl Server {
         players.sort_by(|a, b| a.rating.total_cmp(&b.rating));
 
         tournament.tree = Some(TournamentTree {
+            active_games: HashMap::new(),
             rounds: vec![generate_round_one(players)],
         });
 

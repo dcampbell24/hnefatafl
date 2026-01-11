@@ -52,7 +52,7 @@ rayon = "1"
 ron = { version = "0.12", features = ["integer128"] }
 rustc-hash = "2"
 rust-i18n = "3"
-serde = { version = "1", features = ["derive"] }
+serde = { version = "1", features = ["derive", "rc"] }
 thiserror = "2"
 
 # client

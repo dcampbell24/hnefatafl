@@ -14,10 +14,15 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use core::fmt;
-use std::collections::HashSet;
+use std::{
+    collections::{HashMap, HashSet},
+    sync::{Arc, Mutex},
+};
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+
+use crate::Id;
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct Tournament {
@@ -28,6 +33,7 @@ pub struct Tournament {
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct TournamentTree {
+    pub active_games: HashMap<Id, Arc<Mutex<Players>>>,
     pub rounds: Vec<Vec<Status>>,
 }
 
@@ -35,6 +41,18 @@ pub struct TournamentTree {
 pub struct Player {
     pub name: String,
     pub rating: f64,
+}
+
+#[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
+pub struct Players {
+    pub round: usize,
+    pub chunk: usize,
+    pub player_1: String,
+    pub player_2: String,
+    pub attacker_wins_1: u8,
+    pub attacker_wins_2: u8,
+    pub defender_wins_1: u8,
+    pub defender_wins_2: u8,
 }
 
 impl fmt::Display for Player {
