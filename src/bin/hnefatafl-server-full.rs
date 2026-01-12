@@ -393,6 +393,7 @@ fn login<T1: 'static + Send + Write, T2: BufRead>(
     tx.send((format!("{id} {username_proper} message"), None))?;
     tx.send((format!("{id} {username_proper} display_games"), None))?;
     tx.send((format!("{id} {username_proper} tournament_status"), None))?;
+    tx.send((format!("{id} {username_proper} admin"), None))?;
 
     'outer: for _ in 0..1_000_000 {
         if let Err(err) = reader.read_line(&mut buf) {
@@ -1313,6 +1314,16 @@ impl Server {
             let the_rest: Vec<_> = index_username_command.clone().into_iter().skip(3).collect();
 
             match *command {
+                "admin" => {
+                    if self.admins.contains(*username) {
+                        self.clients
+                            .get(&index_supplied)?
+                            .send("= admin".to_string())
+                            .ok()?;
+                    }
+
+                    None
+                }
                 "archived_games" => {
                     self.clients
                         .get(&index_supplied)?
