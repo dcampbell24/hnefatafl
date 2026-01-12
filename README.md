@@ -90,10 +90,10 @@ Click to join our [Discord server].
 
 ## Icon
 
-The [icon] used for the flathub version of the hnefatafl-client was created by
-Marvin T. [@marvintubat123].
+<img src="icons/king.svg" alt="drawing" width="100"/> used for the
+flathub version of the hnefatafl-client was created by Marvin T.
+[@marvintubat123].
 
-[icon]: https://raw.githubusercontent.com/dcampbell24/hnefatafl/refs/heads/main/icons/king.svg
 [@marvintubat123]: https://www.freelancer.com/u/marvintubat123
 
 ## License
