@@ -554,8 +554,8 @@ fn text_collect(text: SplitAsciiWhitespace<'_>) -> String {
 #[allow(clippy::struct_excessive_bools)]
 #[derive(Debug, Default, Deserialize, Serialize)]
 struct Client {
-    #[serde(default)]
-    admins: HashSet<String>,
+    #[serde(skip)]
+    admin: bool,
     #[serde(skip)]
     attacker: String,
     #[serde(default)]
@@ -572,8 +572,6 @@ struct Client {
     defender: String,
     #[serde(skip)]
     delete_account: bool,
-    #[serde(skip)]
-    email_everyone: bool,
     #[serde(skip)]
     estimate_score: bool,
     #[serde(skip)]
@@ -1912,6 +1910,7 @@ impl<'a> Client {
                 }
                 Screen::Games => {
                     self.send("quit\n");
+                    self.admin = false;
                     self.connected_tcp = false;
                     self.text_input = self.username.clone();
                     self.screen = Screen::Login;
@@ -2528,6 +2527,7 @@ impl<'a> Client {
                                 | "game"
                                 | "request_draw",
                             ) => {}
+                            Some("admin") => self.admin = true,
                             Some("display_games") => {
                                 self.games_light.0.clear();
                                 let games: Vec<&str> = text.collect();
@@ -2770,12 +2770,7 @@ impl<'a> Client {
                                 self.challenger = true;
                             }
                             Some("leave_game") => self.game_id = 0,
-                            Some("login") => {
-                                if self.admins.contains(&self.username) {
-                                    self.email_everyone = true;
-                                }
-                                self.screen = Screen::Games;
-                            }
+                            Some("login") => self.screen = Screen::Games,
                             Some("message") => {
                                 let message =
                                     text.collect::<Vec<&str>>().join(" ").replace("\\n", "\n");
@@ -3641,7 +3636,7 @@ impl<'a> Client {
                     column = column.push(text(self.message.clone()));
                 }
 
-                if self.email_everyone {
+                if self.admin {
                     column = column.push(button("Email Everyone").on_press(Message::EmailEveryone));
                 }
 
@@ -3896,7 +3891,7 @@ impl<'a> Client {
             Screen::Tournament => {
                 let mut column = Column::new().padding(PADDING).spacing(SPACING);
 
-                if self.admins.contains(&self.username) {
+                if self.admin {
                     let input = iced::widget::text_input("????-??-??", &self.text_input)
                         .on_input(Message::TextChanged)
                         .on_paste(Message::TextChanged)
@@ -3967,7 +3962,7 @@ impl<'a> Client {
                 column = column.push(title);
                 column = column.push(players);
 
-                if self.admins.contains(&self.username) {
+                if self.admin {
                     let mut delete_button = button("Delete Tournament Tree");
 
                     if let Some(tournament) = &self.tournament
@@ -4038,7 +4033,6 @@ impl<'a> Client {
         };
 
         let client = Client {
-            admins: self.admins.clone(),
             archived_games: Vec::new(),
             coordinates: self.coordinates,
             locale_selected: self.locale_selected,
