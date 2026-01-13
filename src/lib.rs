@@ -17,8 +17,6 @@
 //!
 //! [message protocol]: https://docs.rs/hnefatafl-copenhagen/latest/hnefatafl_copenhagen/message/enum.Message.html
 
-#![deny(clippy::panic)]
-
 // This file is part of hnefatafl-copenhagen.
 //
 // hnefatafl-copenhagen is free software: you can redistribute it and/or modify
@@ -33,6 +31,8 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+#![deny(clippy::panic)]
 
 use std::{
     io::{BufRead, BufReader, Write},
