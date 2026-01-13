@@ -1,8 +1,3 @@
-#![deny(clippy::expect_used)]
-#![deny(clippy::indexing_slicing)]
-#![deny(clippy::panic)]
-#![deny(clippy::unwrap_used)]
-
 // This file is part of hnefatafl-copenhagen.
 //
 // hnefatafl-copenhagen is free software: you can redistribute it and/or modify
@@ -17,6 +12,11 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+#![deny(clippy::expect_used)]
+#![deny(clippy::indexing_slicing)]
+#![deny(clippy::panic)]
+#![deny(clippy::unwrap_used)]
 
 use std::{
     collections::{HashMap, HashSet, VecDeque},

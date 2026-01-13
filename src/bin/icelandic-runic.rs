@@ -1,5 +1,3 @@
-//! Icelandic Runic created by Alexander R. (<https://www.omniglot.com/conscripts/icelandicrunic.htm>)
-
 // This file is part of hnefatafl-copenhagen.
 //
 // hnefatafl-copenhagen is free software: you can redistribute it and/or modify
@@ -14,6 +12,8 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+//! Icelandic Runic created by Alexander R. (<https://www.omniglot.com/conscripts/icelandicrunic.htm>)
 
 use std::io;
 
