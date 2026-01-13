@@ -209,7 +209,7 @@ impl ServerGame {
         game: ServerGameLight,
     ) -> Self {
         let (Some(attacker), Some(defender)) = (game.attacker, game.defender) else {
-            panic!("attacker and defender should be set");
+            unreachable!();
         };
 
         let plays = match game.timed {
@@ -404,7 +404,7 @@ impl fmt::Debug for ServerGameLight {
         };
 
         let Ok(spectators) = ron::ser::to_string(&self.spectators) else {
-            panic!("we should be able to serialize the spectators")
+            unreachable!();
         };
 
         write!(
@@ -455,6 +455,10 @@ impl TryFrom<&[&str]> for ServerGameLight {
     type Error = anyhow::Error;
 
     fn try_from(vector: &[&str]) -> anyhow::Result<Self> {
+        if vector.len() < 12 {
+            return Err(anyhow::Error::msg("ServerGameLight has too few words."));
+        }
+
         let id = vector[1];
         let attacker = vector[2];
         let defender = vector[3];
@@ -493,11 +497,10 @@ impl TryFrom<&[&str]> for ServerGameLight {
         let board_size = BoardSize::from_str(board_size)?;
 
         let Ok(challenge_accepted) = <bool as FromStr>::from_str(challenge_accepted) else {
-            panic!("the value should be a bool");
+            return Err(anyhow::Error::msg("challenge_accepted is not a bool."));
         };
 
-        let spectators =
-            ron::from_str(spectators).expect("we should be able to deserialize the spectators");
+        let spectators = ron::from_str(spectators)?;
 
         let mut game = Self {
             id,

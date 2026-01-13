@@ -764,7 +764,7 @@ impl<'a> Client {
                             text(arrow)
                         } else if self.captures.contains(&vertex) {
                             text(&self.chars.captured)
-                        } else if board.on_restricted_square(&vertex) {
+                        } else if vertex.on_restricted_square() {
                             text(&self.chars.restricted_square)
                         } else {
                             text(" ")

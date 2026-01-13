@@ -683,7 +683,7 @@ impl Game {
                 let (kings_position, move_to) = self.kings_legal_moves();
 
                 for play in move_to {
-                    if self.board.on_exit_square(&play) {
+                    if play.on_exit_square() {
                         return Some(Plae::Play(Play {
                             role: Role::Defender,
                             from: kings_position,

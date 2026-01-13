@@ -17,6 +17,8 @@
 //!
 //! [message protocol]: https://docs.rs/hnefatafl-copenhagen/latest/hnefatafl_copenhagen/message/enum.Message.html
 
+#![deny(clippy::panic)]
+
 // This file is part of hnefatafl-copenhagen.
 //
 // hnefatafl-copenhagen is free software: you can redistribute it and/or modify
