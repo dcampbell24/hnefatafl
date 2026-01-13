@@ -1,4 +1,7 @@
+#![deny(clippy::expect_used)]
 #![deny(clippy::indexing_slicing)]
+#![deny(clippy::panic)]
+#![deny(clippy::unwrap_used)]
 
 // This file is part of hnefatafl-copenhagen.
 //
@@ -903,7 +906,7 @@ impl Server {
             {
                 (attacker.rating.rating, defender.rating.rating)
             } else {
-                panic!("the attacker and defender accounts should exist");
+                unreachable!();
             };
 
             if let Some(attacker) = accounts.get_mut(&game.attacker) {
@@ -1061,7 +1064,7 @@ impl Server {
                 {
                     (attacker.rating.rating, defender.rating.rating)
                 } else {
-                    panic!("the attacker and defender accounts should exist");
+                    unreachable!();
                 };
 
                 if let Some(attacker) = accounts.get_mut(&game.attacker) {
@@ -1115,7 +1118,7 @@ impl Server {
                 {
                     (attacker.rating.rating, defender.rating.rating)
                 } else {
-                    panic!("the attacker and defender accounts should exist");
+                    unreachable!();
                 };
 
                 if let Some(attacker) = accounts.get_mut(&game.attacker) {
@@ -1154,7 +1157,7 @@ impl Server {
 
         if game_over {
             let Some(game) = self.games.0.remove(&index) else {
-                panic!("the game should exist")
+                unreachable!()
             };
 
             if let Some(game_light) = self.games_light.0.get_mut(&index) {
@@ -1766,13 +1769,13 @@ impl Server {
 
         info!("{index_supplied} {username} join_game {id}");
         let Some(game) = self.games_light.0.get_mut(&id) else {
-            panic!("the id must refer to a valid pending game");
+            unreachable!();
         };
         game.challenge_accepted = true;
 
         let (Some(attacker_tx), Some(defender_tx)) = (game.attacker_channel, game.defender_channel)
         else {
-            panic!("the attacker and defender channels must be set")
+            unreachable!()
         };
 
         for tx in [&attacker_tx, &defender_tx] {
@@ -2126,21 +2129,21 @@ impl Server {
         };
 
         let Some(server_game) = self.games.0.get(&id) else {
-            panic!("we must have a board at this point")
+            unreachable!()
         };
 
         let game = &server_game.game;
         let Ok(board) = ron::ser::to_string(game) else {
-            panic!("we should be able to serialize the board")
+            unreachable!()
         };
         let texts = &server_game.texts;
         let Ok(texts) = ron::ser::to_string(&texts) else {
-            panic!("we should be able to serialize the texts")
+            unreachable!()
         };
 
         info!("{index_supplied} {username} watch_game {id}");
         let Some(game_light) = self.games_light.0.get_mut(&id) else {
-            panic!("the id must refer to a valid pending game");
+            unreachable!();
         };
 
         if Some((*username).to_string()) == game_light.attacker {
@@ -2482,10 +2485,7 @@ impl Server {
                 if let Some(round) = tree.rounds.get(i - 1) {
                     len = round.len() / 2;
                 } else {
-                    #[cfg(debug_assertions)]
-                    panic!("tree.rounds.get({i} - 1) is None");
-
-                    #[cfg(not(debug_assertions))]
+                    error!("tree.rounds.get({i} - 1) is None");
                     return;
                 }
 
@@ -2504,10 +2504,7 @@ impl Server {
                 {
                     *status = tournament::Status::Ready(player);
                 } else {
-                    #[cfg(debug_assertions)]
-                    panic!("tree.rounds[{i}][{j}] is None");
-
-                    #[cfg(not(debug_assertions))]
+                    error!("tree.rounds[{i}][{j}] is None");
                     return;
                 }
             }
@@ -2533,21 +2530,21 @@ impl Server {
         }
 
         let Some(server_game) = self.games.0.get(&id) else {
-            panic!("we must have a board at this point")
+            unreachable!()
         };
 
         let game = &server_game.game;
         let Ok(board) = ron::ser::to_string(game) else {
-            panic!("we should be able to serialize the board")
+            unreachable!()
         };
         let texts = &server_game.texts;
         let Ok(texts) = ron::ser::to_string(&texts) else {
-            panic!("we should be able to serialize the texts")
+            unreachable!()
         };
 
         info!("{index_supplied} {username} watch_game {id}");
         let Some(game) = self.games_light.0.get_mut(&id) else {
-            panic!("the id must refer to a valid pending game");
+            unreachable!()
         };
 
         self.clients
@@ -2569,8 +2566,10 @@ impl Server {
 fn generate_round_one(players: Vec<Player>) -> Vec<tournament::Status> {
     let players_len = players.len();
 
-    if players_len == 1 {
-        return vec![tournament::Status::Won(players.first().unwrap().clone())];
+    if players_len == 1
+        && let Some(player) = players.first()
+    {
+        return vec![tournament::Status::Won(player.clone())];
     }
 
     let mut power = 1;
@@ -2589,9 +2588,17 @@ fn generate_round_one(players: Vec<Player>) -> Vec<tournament::Status> {
     let mut round = Vec::new();
     for i in 0..tournament_players.len() {
         if i % 2 == 0 {
-            round.push(tournament_players.pop_back().unwrap());
+            let Some(player) = tournament_players.pop_back() else {
+                unreachable!()
+            };
+
+            round.push(player);
         } else {
-            round.push(tournament_players.pop_front().unwrap());
+            let Some(player) = tournament_players.pop_front() else {
+                unreachable!()
+            };
+
+            round.push(player);
         }
     }
 
@@ -2654,6 +2661,7 @@ fn timestamp() -> String {
     Utc::now().format("[%F %T UTC]").to_string()
 }
 
+#[allow(clippy::unwrap_used)]
 #[cfg(test)]
 mod tests {
     use super::*;
