@@ -15,6 +15,11 @@
 
 //! Icelandic Runic created by Alexander R. (<https://www.omniglot.com/conscripts/icelandicrunic.htm>)
 
+#![deny(clippy::expect_used)]
+#![deny(clippy::indexing_slicing)]
+#![deny(clippy::panic)]
+#![deny(clippy::unwrap_used)]
+
 use std::io;
 
 fn main() {
