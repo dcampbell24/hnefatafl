@@ -38,10 +38,10 @@ pub struct Tree {
 
 impl Tree {
     fn insert_child(&mut self, child_index: u64, parent_index: u64, play: Plae) {
-        let node = self
-            .arena
-            .get_mut(&parent_index)
-            .unwrap_or_else(|| panic!("The hashmap should have the node {parent_index}."));
+        let node = self.arena.get_mut(&parent_index).unwrap_or_else(|| {
+            println!("The hashmap should have the node {parent_index}.");
+            unreachable!();
+        });
 
         node.children.push(child_index);
         let board_size = node.board_size;
