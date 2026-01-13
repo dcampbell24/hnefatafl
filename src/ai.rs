@@ -205,10 +205,10 @@ impl AI for AiMonteCarlo {
         let mut trees = AiMonteCarlo::make_trees(game)?;
         let (tx, rx) = channel();
 
-        trees.par_iter_mut().for_each_with(tx, |tx, tree| {
+        trees.par_iter_mut().try_for_each_with(tx, |tx, tree| {
             let nodes = tree.monte_carlo_tree_search(self.duration, self.depth);
-            tx.send(nodes).unwrap();
-        });
+            tx.send(nodes)
+        })?;
 
         let mut loops_total = 0;
         let mut nodes_master = FxHashMap::default();
@@ -245,13 +245,17 @@ impl AI for AiMonteCarlo {
         nodes.sort_by(|a, b| a.score.total_cmp(&b.score));
 
         let turn = game.turn;
+        let message = anyhow::Error::msg("The nodes are empty.");
         let node = match turn {
-            Role::Attacker => nodes.last().unwrap(),
-            Role::Defender => nodes.first().unwrap(),
+            Role::Attacker => nodes.last().ok_or(message)?,
+            Role::Defender => nodes.first().ok_or(message)?,
             Role::Roleless => unreachable!(),
         };
 
-        let play = node.play.as_ref().unwrap();
+        let play = node
+            .play
+            .as_ref()
+            .ok_or(anyhow::Error::msg("A move has not been played yet."))?;
         game.play(play)?;
 
         let here_tree = Tree::from(game.clone());
