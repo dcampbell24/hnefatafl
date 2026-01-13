@@ -13,6 +13,11 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+#![deny(clippy::expect_used)]
+#![deny(clippy::indexing_slicing)]
+#![deny(clippy::panic)]
+#![deny(clippy::unwrap_used)]
+
 use std::{
     io::{BufReader, Write},
     net::{Shutdown, TcpListener, TcpStream},
@@ -114,17 +119,17 @@ fn start(address: &str) -> anyhow::Result<()> {
     let mut players = Vec::new();
 
     for stream in listener.incoming() {
-        let stream = stream?;
+        let stream_1 = stream?;
 
-        if players.is_empty() {
-            players.push(stream);
-        } else {
+        if let Some(stream_2) = players.pop() {
             let mut game = Htp {
-                attacker_connection: players.pop().unwrap(),
-                defender_connection: stream,
+                attacker_connection: stream_1,
+                defender_connection: stream_2,
             };
 
             thread::spawn(move || game.start());
+        } else {
+            players.push(stream_1);
         }
     }
 
