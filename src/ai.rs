@@ -256,6 +256,7 @@ impl AI for AiMonteCarlo {
             .play
             .as_ref()
             .ok_or(anyhow::Error::msg("A move has not been played yet."))?;
+
         game.play(play)?;
 
         let here_tree = Tree::from(game.clone());
@@ -268,7 +269,7 @@ impl AI for AiMonteCarlo {
         let heat_map = HeatMap::from(&nodes);
 
         Ok(GenerateMove {
-            play: node.play.clone().expect("there should be a play"),
+            play: play.clone(),
             score: node.score,
             delay_milliseconds,
             loops: loops_total,
