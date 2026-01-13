@@ -105,6 +105,7 @@ pub struct ArchivedGameHandle {
 impl ArchivedGameHandle {
     #[must_use]
     #[allow(clippy::missing_panics_doc)]
+    #[allow(clippy::unwrap_used)]
     pub fn new(game: &ArchivedGame) -> ArchivedGameHandle {
         let mut board = Board::new(game.board_size);
         let mut boards = Tree::new(game.board_size);

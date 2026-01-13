@@ -33,6 +33,8 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #![deny(clippy::panic)]
+// #![deny(clippy::expect_used)]
+#![deny(clippy::unwrap_used)]
 
 use std::{
     io::{BufRead, BufReader, Write},
