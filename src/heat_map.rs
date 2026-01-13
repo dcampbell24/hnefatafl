@@ -175,8 +175,7 @@ impl HeatMap {
                     let heat = board[y * board_size + x];
                     if let Heat::Score(score) = heat {
                         let vertex = Vertex {
-                            size: BoardSize::try_from(board_size)
-                                .expect("we should have a valid board size"),
+                            size: self.board_size,
                             x,
                             y,
                         };
