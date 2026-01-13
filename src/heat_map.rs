@@ -104,6 +104,7 @@ pub struct HeatMap {
 }
 
 impl HeatMap {
+    #[allow(clippy::expect_used)]
     #[allow(clippy::type_complexity)]
     #[allow(clippy::missing_panics_doc)]
     #[must_use]
@@ -232,6 +233,7 @@ impl From<(&Game, &Plae)> for HeatMap {
 }
 
 impl From<&Vec<&Node>> for HeatMap {
+    #[allow(clippy::expect_used)]
     #[allow(clippy::float_cmp)]
     fn from(nodes: &Vec<&Node>) -> Self {
         let mut heat_map = if let Some(node) = nodes.first() {

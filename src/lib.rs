@@ -33,7 +33,7 @@
 //! [message protocol]: https://docs.rs/hnefatafl-copenhagen/latest/hnefatafl_copenhagen/message/enum.Message.html
 
 #![deny(clippy::panic)]
-// #![deny(clippy::expect_used)]
+#![deny(clippy::expect_used)]
 #![deny(clippy::unwrap_used)]
 
 use std::{

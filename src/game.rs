@@ -165,6 +165,7 @@ impl Game {
 }
 
 impl Game {
+    #[allow(clippy::expect_used)]
     #[allow(clippy::missing_panics_doc)]
     #[must_use]
     pub fn alpha_beta(
@@ -185,6 +186,7 @@ impl Game {
             for plae in self.all_legal_plays() {
                 let mut child = self.clone();
                 child.play(&plae).expect("this play should be valid");
+
                 let (play_option_2, value_2, escape_vec_2) =
                     child.alpha_beta(original_depth, depth - 1, Some(plae.clone()), alpha, beta);
 
@@ -212,6 +214,7 @@ impl Game {
             for plae in self.all_legal_plays() {
                 let mut child = self.clone();
                 child.play(&plae).expect("this play should be valid");
+
                 let (play_option_2, value_2, escape_vec_2) =
                     child.alpha_beta(original_depth, depth - 1, Some(plae.clone()), alpha, beta);
 
@@ -236,6 +239,7 @@ impl Game {
         }
     }
 
+    #[allow(clippy::expect_used)]
     #[allow(clippy::missing_panics_doc)]
     #[must_use]
     pub fn alpha_beta_parallel(
@@ -259,6 +263,7 @@ impl Game {
                 .map(|plae| {
                     let mut child = self.clone();
                     child.play(plae).expect("this play should be valid");
+
                     child.alpha_beta(original_depth, depth - 1, Some(plae.clone()), alpha, beta)
                 })
                 .collect();
@@ -292,6 +297,7 @@ impl Game {
                 .map(|plae| {
                     let mut child = self.clone();
                     child.play(plae).expect("this play should be valid");
+
                     child.alpha_beta(original_depth, depth - 1, Some(plae.clone()), alpha, beta)
                 })
                 .collect();
@@ -496,15 +502,12 @@ impl Game {
 
     #[allow(clippy::missing_panics_doc)]
     #[must_use]
-    pub fn kings_legal_moves(&self) -> (Vertex, Vec<Vertex>) {
+    pub fn kings_legal_moves(&self) -> Option<(Vertex, Vec<Vertex>)> {
         let size = self.board.size();
         let board_size_usize = size.into();
-        let kings_position = self
-            .board
-            .find_the_king()
-            .expect("The king must still be on the board.");
-
+        let kings_position = self.board.find_the_king()?;
         let mut vertexes_to = Vec::new();
+
         for y in 0..board_size_usize {
             let vertex_to = Vertex {
                 size,
@@ -547,7 +550,7 @@ impl Game {
             }
         }
 
-        (kings_position, vertexes_to)
+        Some((kings_position, vertexes_to))
     }
 
     #[allow(clippy::missing_panics_doc)]
@@ -694,7 +697,7 @@ impl Game {
                 }
             }
             Role::Defender => {
-                let (kings_position, move_to) = self.kings_legal_moves();
+                let (kings_position, move_to) = self.kings_legal_moves()?;
 
                 for play in move_to {
                     if play.on_exit_square() {
@@ -953,7 +956,10 @@ impl Game {
         utility += f64::from(self.board.closed_off_exits()) * 100.0;
         // Todo: An extra 100.0 points for each corner that touches another corner.
         utility += f64::from(captured.defender) * 10.0;
-        utility -= f64::from(self.board.spaces_around_the_king());
+
+        if let Some(spaces) = self.board.spaces_around_the_king() {
+            utility -= f64::from(spaces);
+        }
 
         (utility, escape_vec)
     }

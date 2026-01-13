@@ -1385,24 +1385,21 @@ impl Board {
         }
     }
 
-    #[allow(clippy::missing_panics_doc)]
     #[must_use]
-    pub fn spaces_around_the_king(&self) -> u8 {
-        let king = self
-            .find_the_king()
-            .expect("the king should still be on the board");
+    pub fn spaces_around_the_king(&self) -> Option<u8> {
+        let king = self.find_the_king()?;
 
         let Some(up) = king.up() else {
-            return 5;
+            return Some(5);
         };
         let Some(left) = king.left() else {
-            return 5;
+            return Some(5);
         };
         let Some(down) = king.down() else {
-            return 5;
+            return Some(5);
         };
         let Some(right) = king.right() else {
-            return 5;
+            return Some(5);
         };
 
         let mut sum = 4;
@@ -1412,7 +1409,7 @@ impl Board {
             }
         }
 
-        sum
+        Some(sum)
     }
 }
 
