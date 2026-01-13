@@ -1485,6 +1485,7 @@ fn board_11x11() -> Board {
 
 #[must_use]
 #[allow(clippy::missing_panics_doc)]
+#[allow(clippy::unwrap_used)]
 fn board_13x13() -> Board {
     let spaces: Vec<Space> = STARTING_POSITION_13X13
         .iter()
