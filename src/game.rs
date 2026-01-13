@@ -361,11 +361,25 @@ impl Game {
     #[must_use]
     pub fn play_n(&self, n: usize) -> Option<Plae> {
         match &self.plays {
-            Plays::PlayRecordsTimed(plaes_timed) => plaes_timed
-                .iter()
-                .map(|plae_timed| plae_timed.play.clone().unwrap())
-                .nth(n),
-            Plays::PlayRecords(plaes) => plaes.iter().map(|plae| plae.clone().unwrap()).nth(n),
+            Plays::PlayRecordsTimed(plaes_timed) => {
+                let plaes: Vec<_> = plaes_timed
+                    .iter()
+                    .map(|plae_timed| &plae_timed.play)
+                    .collect();
+
+                if let Some(Some(plae)) = plaes.get(n) {
+                    Some(plae.clone())
+                } else {
+                    None
+                }
+            }
+            Plays::PlayRecords(plaes) => {
+                if let Some(Some(plae)) = plaes.get(n) {
+                    Some(plae.clone())
+                } else {
+                    None
+                }
+            }
         }
     }
 
