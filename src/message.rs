@@ -186,11 +186,11 @@ impl FromStr for Message {
     fn from_str(message: &str) -> anyhow::Result<Self> {
         let args: Vec<&str> = message.split_whitespace().collect();
 
-        if args.is_empty() {
+        let Some(first) = args.first() else {
             return Ok(Self::Empty);
-        }
+        };
 
-        match *args.first().unwrap() {
+        match *first {
             "board_size" => Ok(Self::BoardSize(
                 (*args
                     .get(1)

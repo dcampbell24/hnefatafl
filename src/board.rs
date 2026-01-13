@@ -1471,6 +1471,7 @@ impl TryFrom<usize> for BoardSize {
 
 #[must_use]
 #[allow(clippy::missing_panics_doc)]
+#[allow(clippy::unwrap_used)]
 fn board_11x11() -> Board {
     let spaces: Vec<Space> = STARTING_POSITION_11X11
         .iter()
