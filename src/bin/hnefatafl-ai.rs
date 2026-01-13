@@ -13,6 +13,11 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+#![deny(clippy::expect_used)]
+#![deny(clippy::indexing_slicing)]
+#![deny(clippy::panic)]
+#![deny(clippy::unwrap_used)]
+
 use std::{
     io::{BufRead, BufReader, Write},
     net::TcpStream,
@@ -134,9 +139,14 @@ fn main() -> anyhow::Result<()> {
         loop {
             new_game(&mut tcp, args.role, &mut reader, &mut buf)?;
 
+            info!("{buf}");
+
             let message: Vec<_> = buf.split_ascii_whitespace().collect();
-            info!("{message:?}");
-            let game_id = message[3].parse::<u128>()?;
+            let Some(message) = message.get(3) else {
+                return Err(anyhow::Error::msg("Expecting message[3] to be a game_id"));
+            };
+
+            let game_id = message.parse()?;
             buf.clear();
 
             wait_for_challenger(&mut reader, &mut buf, &mut tcp, game_id)?;
@@ -165,7 +175,9 @@ fn new_game(
         }
 
         let message: Vec<_> = buf.split_ascii_whitespace().collect();
-        if message[1] == "new_game" {
+        if let Some(message) = message.get(1)
+            && *message == "new_game"
+        {
             return Ok(());
         }
 
@@ -219,7 +231,7 @@ fn handle_messages(
             return Err(Error::msg("the TCP stream has closed"));
         }
 
-        let message: Vec<_> = buf.split_ascii_whitespace().collect();
+        let mut message: Vec<_> = buf.split_ascii_whitespace().collect();
 
         if Some("generate_move") == message.get(2).copied() {
             let generate_move = ai.generate_move(&mut game)?;
@@ -234,8 +246,8 @@ fn handle_messages(
                 return Ok(());
             }
         } else if Some("play") == message.get(2).copied() {
-            let words = &message[2..];
-            let play = Plae::try_from(words.to_vec())?;
+            let words = message.split_off(2);
+            let play = Plae::try_from(words)?;
             ai.play(&mut game, &play)?;
 
             debug!("{game}\n");
