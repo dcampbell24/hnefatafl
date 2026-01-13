@@ -629,6 +629,7 @@ impl Board {
         }
     }
 
+    #[allow(clippy::unwrap_used)]
     #[must_use]
     fn closed_off_exit(&self, exit: Vertex) -> bool {
         let size = self.size();
