@@ -1415,21 +1415,6 @@ impl Board {
     }
 }
 
-impl From<&[u8]> for Board {
-    fn from(board: &[u8]) -> Self {
-        let mut spaces = Vec::with_capacity(board.len());
-
-        for space in board {
-            spaces.push(Space::from(space));
-        }
-
-        Board {
-            spaces,
-            display_ascii: false,
-        }
-    }
-}
-
 #[derive(
     Clone, Copy, Debug, Default, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize,
 )]
