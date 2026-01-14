@@ -13,6 +13,11 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+// #![deny(clippy::expect_used)]
+// #![deny(clippy::indexing_slicing)]
+#![deny(clippy::panic)]
+// #![deny(clippy::unwrap_used)]
+
 // Don't open the terminal on Windows.
 #![cfg_attr(all(windows, not(feature = "console")), windows_subsystem = "windows")]
 
@@ -2550,7 +2555,8 @@ impl<'a> Client {
                                     let rating = user_wins_losses_rating[4];
                                     let (mut rating, mut deviation) =
                                         rating.split_once("±").unwrap_or_else(|| {
-                                            panic!("the ratings has this form: {rating}")
+                                            error!("The ratings has this form: {rating}");
+                                            unreachable!();
                                         });
 
                                     rating = rating.trim();
@@ -2559,9 +2565,10 @@ impl<'a> Client {
                                     let (Ok(rating), Ok(deviation)) =
                                         (rating.parse::<f64>(), deviation.parse::<f64>())
                                     else {
-                                        panic!(
-                                            "the ratings has this form: ({rating}, {deviation})"
+                                        error!(
+                                            "The ratings has this form: ({rating}, {deviation})"
                                         );
+                                        unreachable!();
                                     };
 
                                     let logged_in = if "logged_in" == user_wins_losses_rating[5] {
@@ -4060,7 +4067,8 @@ impl<'a> Client {
             .tx
             .as_mut()
             .unwrap_or_else(|| {
-                panic!("error sending {string:?}: you should have a tx available by now")
+                error!("Error sending {string:?}: you should have a tx available by now");
+                unreachable!();
             })
             .send(string.to_string())
         {
@@ -4074,7 +4082,8 @@ impl<'a> Client {
             self.estimate_score_tx
                 .as_mut()
                 .unwrap_or_else(|| {
-                    panic!("error sending {tree:?}: you should have a tx available by now")
+                    error!("Error sending {tree:?}: you should have a tx available by now");
+                    unreachable!();
                 })
                 .send(tree),
         );
