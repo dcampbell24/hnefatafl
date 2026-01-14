@@ -1395,7 +1395,7 @@ impl Server {
                 "connection_remove" => {
                     if let Some(connection) = the_rest.first() {
                         let entry = self.connections.entry(connection.to_string());
-                        entry.and_modify(|value| *value -= 1);
+                        entry.and_modify(|value| *value = value.saturating_sub(1));
 
                         if let Some(value) = self.connections.get(*connection)
                             && *value == 0
