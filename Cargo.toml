@@ -218,7 +218,7 @@ icon = [
     "icons/king_128x128.png",
     "icons/king_256x256.png",
 ]
-copyright = "2025 David Lawrence Campbell"
+copyright = "2025-2026 Developers of the hnefatafl-copenhagen project"
 category = "public.app-category.board-games"
 short_description = "Client that connects to a Copenhagen Hnefatafl Server."
 osx_url_schemes = ["org.hnefatafl.hnefatafl_client"]

@@ -16,6 +16,7 @@
 // Don't open the terminal on Windows.
 #![cfg_attr(all(windows, not(feature = "console")), windows_subsystem = "windows")]
 #![deny(clippy::panic)]
+#![deny(clippy::unwrap_used)]
 
 use std::{
     collections::{HashMap, HashSet, VecDeque},
@@ -1117,18 +1118,25 @@ impl<'a> Client {
     }
 
     fn game_submit(&mut self) {
-        self.screen = Screen::Games;
+        let Some(role) = self.game_settings.role_selected else {
+            error!("No role selected.");
+            unreachable!();
+        };
 
-        let role = self.game_settings.role_selected.unwrap();
-        self.game_settings.timed = self.game_settings.time.unwrap().into();
-        let board_size = self.game_settings.board_size;
+        let Some(time_settings) = self.game_settings.time else {
+            error!("No time settings selected.");
+            unreachable!();
+        };
+        self.game_settings.timed = time_settings.into();
 
         // <- new_game (attacker | defender) (rated | unrated) (TIME_MINUTES | _) (ADD_SECONDS_AFTER_EACH_MOVE | _) board_size
         // -> game id rated attacker defender un-timed _ _ board_size challenger challenge_accepted spectators
         self.send(&format!(
-            "new_game {role} {} {:?} {board_size}\n",
-            self.game_settings.rated, self.game_settings.timed,
+            "new_game {role} {} {:?} {}\n",
+            self.game_settings.rated, self.game_settings.timed, self.game_settings.board_size
         ));
+
+        self.screen = Screen::Games;
     }
 
     fn press_letter(&mut self, letter: char) {
@@ -2767,7 +2775,7 @@ impl<'a> Client {
                             }
                             Some("join_game_pending") => {
                                 let id = text.next().expect("there should be an id supplied");
-                                let id = id.parse().expect("id should be a valid usize");
+                                let id = id.parse().expect("id should be a valid u128");
 
                                 self.game_id = id;
                                 self.challenger = true;
@@ -2798,8 +2806,8 @@ impl<'a> Client {
                             Some("text_game") => self.texts_game.push_front(text_collect(text)),
                             Some("tournament_status") => {
                                 if let Some(tournament) = text.next() {
-                                    let tournament: Option<Tournament> =
-                                        ron::from_str(tournament).unwrap();
+                                    let tournament: Option<Tournament> = ron::from_str(tournament)
+                                        .expect("This is a valid tournament.");
 
                                     self.tournament = tournament;
                                 }
@@ -2998,12 +3006,22 @@ impl<'a> Client {
 
         match self.users_sort_by {
             SortBy::Name => {
-                users.sort_by(|a, b| b.rating.rating.partial_cmp(&a.rating.rating).unwrap());
+                users.sort_by(|a, b| {
+                    b.rating
+                        .rating
+                        .partial_cmp(&a.rating.rating)
+                        .expect("The number should be comparable.")
+                });
                 users.sort_by(|a, b| a.name.cmp(&b.name));
             }
             SortBy::Rating => {
                 users.sort_by(|a, b| a.name.cmp(&b.name));
-                users.sort_by(|a, b| b.rating.rating.partial_cmp(&a.rating.rating).unwrap());
+                users.sort_by(|a, b| {
+                    b.rating
+                        .rating
+                        .partial_cmp(&a.rating.rating)
+                        .expect("The number should be comparable.")
+                });
             }
         }
 
@@ -3196,8 +3214,9 @@ impl<'a> Client {
             game.turn
         };
 
-        let play = Plae::try_from(vec!["play", &role.to_string(), from, to]).unwrap();
-        let captures = game.play(&play).unwrap();
+        let play = Plae::try_from(vec!["play", &role.to_string(), from, to])
+            .expect("This is a valid plae.");
+        let captures = game.play(&play).expect("This should be a legal play.");
         for vertex in captures.0 {
             self.captures.insert(vertex);
         }
@@ -3254,9 +3273,9 @@ impl<'a> Client {
 
         for user in self.users_sorted() {
             if *logged_in == user.logged_in || *logged_in == LoggedIn::None {
-                let wins_number = f64::from_str(&user.wins).unwrap();
-                let mut win_percentage =
-                    wins_number / (wins_number + f64::from_str(&user.losses).unwrap());
+                let wins_number = f64::from_str(&user.wins).expect("This is a f64.");
+                let mut win_percentage = wins_number
+                    / (wins_number + f64::from_str(&user.losses).expect("This is a f64."));
 
                 win_percentage *= 100.0;
                 win_percentage = win_percentage.round_ties_even();

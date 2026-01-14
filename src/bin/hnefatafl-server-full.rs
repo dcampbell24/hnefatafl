@@ -23,8 +23,7 @@ use std::{
     fmt,
     fs::{self, File, OpenOptions},
     io::{BufRead, BufReader, ErrorKind, Read, Write},
-    net::TcpListener,
-    os::unix::net::UnixListener,
+    net::{IpAddr, TcpListener, TcpStream},
     process::exit,
     str::FromStr,
     sync::{
@@ -39,7 +38,7 @@ use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use chrono::{DateTime, Local, Utc};
 use clap::{CommandFactory, Parser};
 use hnefatafl_copenhagen::{
-    COPYRIGHT, Id, LONG_VERSION, SERVER_PORT, SOCKET_PATH, VERSION_ID,
+    COPYRIGHT, Id, LONG_VERSION, SERVER_PORT, VERSION_ID,
     accounts::{Account, Accounts, Email},
     board::BoardSize,
     draw::Draw,
@@ -108,9 +107,11 @@ struct Args {
     #[arg(long)]
     systemd: bool,
 
-    /// Whether to a use Unix socket instead of TCP
+    /// Add additional security checks
+    ///
+    /// limit the number of TCP connections from a host
     #[arg(long)]
-    socket: bool,
+    secure: bool,
 
     /// Build the manpage
     #[arg(long)]
@@ -241,47 +242,68 @@ fn main() -> anyhow::Result<()> {
         }
     });
 
-    if args.socket {
-        if std::path::Path::new(SOCKET_PATH).exists() {
-            fs::remove_file(SOCKET_PATH)?;
+    let mut address = args.host;
+    address.push_str(SERVER_PORT);
+
+    let listener = TcpListener::bind(&address)?;
+    info!("listening on {address} ...");
+
+    for (index, stream) in (1..).zip(listener.incoming()) {
+        let stream = stream?;
+
+        if args.secure {
+            let peer_address = stream.peer_addr()?.ip();
+
+            let (tx_close, rx_close) = mpsc::channel();
+            tx.send((
+                format!("0 server connection_add {peer_address}"),
+                Some(tx_close),
+            ))?;
+
+            match rx_close.recv() {
+                Ok(close) => match close.parse() {
+                    Ok(close) => {
+                        if close {
+                            continue;
+                        }
+                    }
+                    Err(error) => {
+                        error!("{error}");
+                        continue;
+                    }
+                },
+                Err(error) => {
+                    error!("{error}");
+                    continue;
+                }
+            }
         }
 
-        let listener = UnixListener::bind(SOCKET_PATH)?;
-        info!("listening on {SOCKET_PATH} ...");
+        let tx = tx.clone();
+        let reader = BufReader::new(stream.try_clone()?);
 
-        for (index, stream) in (1..).zip(listener.incoming()) {
-            let stream = stream?;
-            let tx = tx.clone();
-            let reader = BufReader::new(stream.try_clone()?);
-
-            thread::spawn(move || log_error(login(index, stream, reader, &tx)));
-        }
-    } else {
-        let mut address = args.host;
-        address.push_str(SERVER_PORT);
-
-        let listener = TcpListener::bind(&address)?;
-        info!("listening on {address} ...");
-
-        for (index, stream) in (1..).zip(listener.incoming()) {
-            let stream = stream?;
-            let tx = tx.clone();
-            let reader = BufReader::new(stream.try_clone()?);
-
-            thread::spawn(move || log_error(login(index, stream, reader, &tx)));
-        }
+        thread::spawn(move || log_error(login(index, stream, reader, &tx)));
     }
 
     Ok(())
 }
 
 #[allow(clippy::too_many_lines)]
-fn login<T1: 'static + Send + Write, T2: BufRead>(
+fn login(
     id: Id,
-    mut stream: T1,
-    mut reader: T2,
+    mut stream: TcpStream,
+    mut reader: BufReader<TcpStream>,
     tx: &mpsc::Sender<(String, Option<mpsc::Sender<String>>)>,
 ) -> anyhow::Result<()> {
+    let args = Args::parse();
+    let _remove_connection;
+    if args.secure {
+        _remove_connection = RemoveConnection {
+            address: stream.peer_addr()?.ip(),
+            tx: tx.clone(),
+        };
+    }
+
     let mut buf = String::new();
     let (client_tx, client_rx) = mpsc::channel();
     let mut username_proper = "_".to_string();
@@ -482,6 +504,8 @@ struct Server {
     archived_games: Vec<ArchivedGame>,
     #[serde(skip)]
     clients: HashMap<usize, mpsc::Sender<String>>,
+    #[serde(skip)]
+    connections: HashMap<String, u128>,
     #[serde(skip)]
     games: ServerGames,
     #[serde(skip)]
@@ -1346,6 +1370,42 @@ impl Server {
                 "check_update_rd" => {
                     let bool = self.check_update_rd();
                     info!("0 {username} check_update_rd {bool}");
+                    None
+                }
+                "connection_add" => {
+                    if let Some(address) = the_rest.first()
+                        && let Some(tx) = option_tx
+                    {
+                        if let Some(connections) = self.connections.get(*address)
+                            && *connections > 3
+                        {
+                            tx.send("true".to_string()).ok()?;
+                        } else {
+                            tx.send("false".to_string()).ok()?;
+
+                            let entry = self.connections.entry(address.to_string());
+                            entry.and_modify(|value| *value += 1).or_insert(1);
+                        }
+                    }
+
+                    debug!("connections: {:?}", self.connections);
+
+                    None
+                }
+                "connection_remove" => {
+                    if let Some(connection) = the_rest.first() {
+                        let entry = self.connections.entry(connection.to_string());
+                        entry.and_modify(|value| *value -= 1);
+
+                        if let Some(value) = self.connections.get(*connection)
+                            && *value == 0
+                        {
+                            self.connections.remove(*connection);
+                        }
+                    }
+
+                    debug!("connections: {:?}", self.connections);
+
                     None
                 }
                 "create_account" => self.create_account(
@@ -2563,6 +2623,19 @@ impl Server {
     }
 }
 
+struct RemoveConnection {
+    address: IpAddr,
+    tx: Sender<(String, Option<Sender<String>>)>,
+}
+
+impl Drop for RemoveConnection {
+    fn drop(&mut self) {
+        let _ok = self
+            .tx
+            .send((format!("0 server connection_remove {}", self.address), None));
+    }
+}
+
 fn generate_round_one(players: Vec<Player>) -> Vec<tournament::Status> {
     let players_len = players.len();
 
@@ -2667,7 +2740,6 @@ mod tests {
     use super::*;
 
     use std::net::TcpStream;
-    use std::os::unix::net::UnixStream;
     use std::process::{Child, Stdio};
     use std::thread;
     use std::time::{Duration, Instant};
@@ -2693,7 +2765,6 @@ mod tests {
                     .arg("--skip-the-data-file")
                     .arg("--skip-advertising-updates")
                     .arg("--skip-message")
-                    .arg("--socket")
                     .spawn()?
             };
 
@@ -2763,7 +2834,7 @@ mod tests {
         thread::sleep(Duration::from_millis(10));
 
         let mut buf = String::new();
-        let mut socket_1 = UnixStream::connect(SOCKET_PATH)?;
+        let mut socket_1 = TcpStream::connect(ADDRESS)?;
         let mut reader_1 = BufReader::new(socket_1.try_clone()?);
 
         socket_1.write_all(format!("{VERSION_ID} create_account player-1\n").as_bytes())?;
@@ -2784,7 +2855,7 @@ mod tests {
         );
         buf.clear();
 
-        let mut socket_2 = UnixStream::connect(SOCKET_PATH)?;
+        let mut socket_2 = TcpStream::connect(ADDRESS)?;
         let mut reader_2 = BufReader::new(socket_2.try_clone()?);
 
         socket_2.write_all(format!("{VERSION_ID} create_account player-2\n").as_bytes())?;
