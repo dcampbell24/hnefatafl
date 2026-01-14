@@ -95,13 +95,9 @@ struct Args {
     #[arg(long)]
     skip_message: bool,
 
-    /// Whether to use the data file
+    /// Whether to skip the data file
     #[arg(long)]
     skip_the_data_file: bool,
-
-    /// Listen for client connections on host
-    #[arg(default_value = "0.0.0.0", long)]
-    host: String,
 
     /// Whether the application is being run by systemd
     #[arg(long)]
@@ -109,7 +105,7 @@ struct Args {
 
     /// Add additional security checks
     ///
-    /// limit the number of TCP connections from a host
+    /// - limit the number of TCP connections from a host
     #[arg(long)]
     secure: bool,
 
@@ -242,7 +238,7 @@ fn main() -> anyhow::Result<()> {
         }
     });
 
-    let mut address = args.host;
+    let mut address = "0.0.0.0".to_string();
     address.push_str(SERVER_PORT);
 
     let listener = TcpListener::bind(&address)?;
