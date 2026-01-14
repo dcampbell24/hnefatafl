@@ -391,6 +391,23 @@ Join Discord:
   sv-SE: Ansluta sig till Discord
   ko: 가입하다 Discord
 
+Join Tournament:
+  en-US: Join Tournament
+  zh-CN: 参加锦标赛
+  es: Unirse al torneo
+  ar: انضم إلى البطولة
+  id: Bergabunglah dengan Turnamen
+  pt-BR: Participar do torneio
+  pt-PT: Participar no torneio
+  fr: Participer au tournoi
+  ja: トーナメントに参加する
+  ru: Принять участие в турнире
+  de: Am Turnier teilnehmen
+  is-IS: Taktu þátt í mótinu
+  is-RU: ᛐᛆᚴᛐᚢ ᚦᚨᛐᛐ ᛇ ᛘᛟᛐᛁᚿᚢ
+  sv-SE: Gå med i turneringen
+  ko: 토너먼트에 참가하세요
+
 Leave:
   en-US: Leave
   zh-CN: 撤走
@@ -407,6 +424,23 @@ Leave:
   is-RU: ᚠᛆᚱᛆ
   sv-SE: Lämna
   ko: 떠나다
+
+Leave Tournament:
+  en-US: Leave Tournament
+  zh-CN: 退出锦标赛
+  es: Abandonar el torneo
+  ar: مغادرة البطولة
+  id: Keluar dari Turnamen
+  pt-BR: Sair do torneio
+  pt-PT: Sair do torneio
+  fr: Quitter le tournoi
+  ja: トーナメントを退出する
+  ru: Покинуть турнир
+  de: Turnier verlassen
+  is-IS: Farið frá mótinu
+  is-RU: ᚠᛆᚱᛁᚧ ᚠᚱᚨ ᛘᛟᛐᛁᚿᚢ
+  sv-SE: Lämna turneringen
+  ko: 토너먼트 나가기
 
 Light:
   en-US: Light
@@ -493,6 +527,40 @@ New Game:
   sv-SE: Nytt spel
   ko: 새 게임
 
+Players:
+  en-US: Players
+  zh-CN: 
+  es: 
+  ar: 
+  id: 
+  pt-BR: 
+  pt-PT: 
+  fr: 
+  ja: 
+  ru: 
+  de: 
+  is-IS: 
+  is-RU: 
+  sv-SE: 
+  ko: 
+
+Round:
+  en-US: Round
+  zh-CN: 
+  es: 
+  ar: 
+  id: 
+  pt-BR: 
+  pt-PT: 
+  fr: 
+  ja: 
+  ru: 
+  de: 
+  is-IS: 
+  is-RU: 
+  sv-SE: 
+  ko: 
+
 Size:
   en-US: Size
   zh-CN: 尺寸
@@ -509,6 +577,40 @@ Size:
   is-RU: ᛋᛐᛅᚱᚧ
   sv-SE: Storlek
   ko: 크기
+
+There is no tournament.:
+  en-US: There is no tournament.
+  zh-CN: 
+  es: 
+  ar: 
+  id: 
+  pt-BR: 
+  pt-PT: 
+  fr: 
+  ja: 
+  ru: 
+  de: 
+  is-IS: 
+  is-RU: 
+  sv-SE: 
+  ko: 
+
+Tournament:
+  en-US: Tournament
+  zh-CN: 
+  es: 
+  ar: 
+  id: 
+  pt-BR: 
+  pt-PT: 
+  fr: 
+  ja: 
+  ru: 
+  de: 
+  is-IS: 
+  is-RU: 
+  sv-SE: 
+  ko: 
 
 Unable to find Archived Games file:
   en-US: Unable to find Archived Games file
