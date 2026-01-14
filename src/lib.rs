@@ -73,7 +73,7 @@ pub const SOCKET_PATH: &str = "/tmp/hnefatafl.sock";
 pub const VERSION_ID: &str = "ad746a65";
 
 pub const COPYRIGHT: &str = r".SH COPYRIGHT
-Copyright (C) 2025-2026 David Lawrence Campbell
+Copyright (C) 2025-2026 Developers of the hnefatafl-copenhagen project
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published by
@@ -92,7 +92,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 pub const LONG_VERSION: &str = concat!(
     env!("CARGO_PKG_VERSION"),
     "
-Copyright (c) 2025 David Lawrence Campbell
+Copyright (c) 2025-2026 Developers of the hnefatafl-copenhagen project
 Licensed under the AGPLv3"
 );
 
