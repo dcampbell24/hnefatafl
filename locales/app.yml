@@ -546,20 +546,20 @@ Players:
 
 Round:
   en-US: Round
-  zh-CN: 
-  es: 
-  ar: 
-  id: 
-  pt-BR: 
-  pt-PT: 
-  fr: 
-  ja: 
-  ru: 
-  de: 
-  is-IS: 
-  is-RU: 
-  sv-SE: 
-  ko: 
+  zh-CN: 圆形的
+  es: Redondo
+  ar: دائري
+  id: Bulat
+  pt-BR: Redondo
+  pt-PT: Redondo
+  fr: Rond
+  ja: ラウンド
+  ru: Круглый
+  de: Runden
+  is-IS: Umferð
+  is-RU: ᚢᛘᚠᛂᚱᚧ
+  sv-SE: Runda
+  ko: 둥근
 
 Size:
   en-US: Size
