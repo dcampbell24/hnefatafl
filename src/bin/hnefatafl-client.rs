@@ -468,7 +468,12 @@ fn pass_messages() -> impl Stream<Item = Message> {
                         }
                     }
 
-                    let mut tcp_stream = handle_error(TcpStream::connect(&address));
+                    let Ok(mut tcp_stream) = TcpStream::connect(&address) else {
+                        handle_error(executor::block_on(sender.send(Message::TcpDisconnect)));
+                        handle_error(executor::block_on(sender.send(Message::ServerShutdown)));
+                        continue 'start_over;
+                    };
+
                     let mut reader = BufReader::new(handle_error(tcp_stream.try_clone()));
                     info!("connected to {address} ...");
 
@@ -505,7 +510,7 @@ fn pass_messages() -> impl Stream<Item = Message> {
                         }
 
                         if let Err(error) =
-                            executor::block_on(sender_clone.send(Message::ServerError))
+                            executor::block_on(sender_clone.send(Message::ServerShutdown))
                         {
                             error!("{error}");
                         }
@@ -2473,16 +2478,13 @@ impl<'a> Client {
                     self.press_letter_and_number();
                 }
             },
-            Message::ServerError => {
-                self.error = Some(
-                    t!(
-                        "The server was shut down or you have too many connections from the same IP."
-                    )
-                    .to_string(),
-                );
+            Message::ServerShutdown => {
+                self.error_persistent
+                    .push(t!("The server was shut down.").to_string());
             }
             Message::SoundMuted(_muted) => self.sound_muted(),
             Message::StreamConnected(tx) => self.tx = Some(tx),
+            Message::TcpDisconnect => self.connected_tcp = false,
             Message::Tournament => self.screen = Screen::Tournament,
             Message::TournamentJoin => self.send("join_tournament\n"),
             Message::TournamentLeave => self.send("leave_tournament\n"),
@@ -4340,8 +4342,9 @@ enum Message {
     ReviewGameForward,
     ReviewGameForwardAll,
     RoleSelected(Role),
-    ServerError,
+    ServerShutdown,
     StreamConnected(mpsc::Sender<String>),
+    TcpDisconnect,
     TextChanged(String),
     TextEdit(text_editor::Action),
     TextReceived(String),
