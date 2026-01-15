@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- hnefatafl-client: an error message for too many connections or server quit.
 - admins to the server and client ron settings file.
 - Document the feature flags.
 - Make `--debug` an argument to hnefatafl-{ai, client, server-full}.
@@ -23,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Don't quit, but log out when the server exits.
 - hnefatafl-server-full: don't send an empty message.
 - hnefatafl-server-full: don't send display_users or display_games unless
   something has changed or you log in.
