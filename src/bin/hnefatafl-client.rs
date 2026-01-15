@@ -442,7 +442,7 @@ fn pass_messages() -> impl Stream<Item = Message> {
                     let (tx, rx) = mpsc::channel();
 
                     if let Err(error) =
-                        executor::block_on(sender.send(Message::StreamConnected(tx)))
+                        executor::block_on(sender.send(Message::StreamConnected(tx.clone())))
                     {
                         error!("failed to send channel: {error}");
                         exit(1);
@@ -496,7 +496,12 @@ fn pass_messages() -> impl Stream<Item = Message> {
                             handle_error(tcp_stream.write_all(message.as_bytes()));
                         }
 
-                        let _ok = executor::block_on(sender_clone.send(Message::Exit));
+                        if let Err(error) = executor::block_on(sender_clone.send(Message::Leave)) {
+                            error!("{error}");
+                        }
+                        if let Err(error) = executor::block_on(sender_clone.send(Message::Leave)) {
+                            error!("{error}");
+                        }
                     });
 
                     let mut buffer = String::new();
@@ -1933,7 +1938,7 @@ impl<'a> Client {
                     self.heat_map_display = false;
                     self.screen = Screen::Login;
                 }
-                Screen::Login => return iced::exit(),
+                Screen::Login => {}
             },
             Message::LocaleSelected(locale) => {
                 rust_i18n::set_locale(&locale.txt());
@@ -3863,7 +3868,7 @@ impl<'a> Client {
                     .on_press(Message::OpenUrl("https://hnefatafl.org".to_string()));
 
                 let quit = button(text!("{} (Esc)", self.strings["Quit"].as_str()))
-                    .on_press(Message::Leave);
+                    .on_press(Message::Exit);
 
                 buttons_2 = buttons_2.push(discord);
                 buttons_2 = buttons_2.push(website);
