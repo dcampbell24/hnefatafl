@@ -77,7 +77,7 @@ use iced::{
     },
     window::{self, icon},
 };
-use log::{debug, error, info, trace, warn};
+use log::{debug, error, info, trace};
 use rust_i18n::t;
 use serde::{Deserialize, Serialize};
 use smol_str::ToSmolStr;
@@ -452,8 +452,12 @@ fn pass_messages() -> impl Stream<Item = Message> {
                         let message = match rx.recv() {
                             Ok(message) => message,
                             Err(error) => {
-                                warn!("rx: {error}");
-                                let _ok = executor::block_on(sender.send(Message::Exit));
+                                error!("rx: {error}");
+
+                                if let Err(error) = executor::block_on(sender.send(Message::Exit)) {
+                                    error!("{error}");
+                                }
+
                                 return;
                             }
                         };
