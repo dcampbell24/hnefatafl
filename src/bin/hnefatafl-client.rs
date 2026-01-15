@@ -496,10 +496,17 @@ fn pass_messages() -> impl Stream<Item = Message> {
                             handle_error(tcp_stream.write_all(message.as_bytes()));
                         }
 
-                        if let Err(error) = executor::block_on(sender_clone.send(Message::Leave)) {
-                            error!("{error}");
+                        for _ in 0..2 {
+                            if let Err(error) =
+                                executor::block_on(sender_clone.send(Message::Leave))
+                            {
+                                error!("{error}");
+                            }
                         }
-                        if let Err(error) = executor::block_on(sender_clone.send(Message::Leave)) {
+
+                        if let Err(error) =
+                            executor::block_on(sender_clone.send(Message::ServerError))
+                        {
                             error!("{error}");
                         }
                     });
@@ -2466,6 +2473,14 @@ impl<'a> Client {
                     self.press_letter_and_number();
                 }
             },
+            Message::ServerError => {
+                self.error = Some(
+                    t!(
+                        "The server was shut down or you have too many connections from the same IP."
+                    )
+                    .to_string(),
+                );
+            }
             Message::SoundMuted(_muted) => self.sound_muted(),
             Message::StreamConnected(tx) => self.tx = Some(tx),
             Message::Tournament => self.screen = Screen::Tournament,
@@ -3478,7 +3493,7 @@ impl<'a> Client {
                 ]);
 
                 if let Some(error) = &self.error_email {
-                    columns = columns.push(row![text!("error: {error}")]);
+                    columns = columns.push(row![text!("error: {error}").style(text::danger)]);
                 }
 
                 let mut change_password_button =
@@ -3775,12 +3790,12 @@ impl<'a> Client {
 
                 let mut error = text("");
                 if let Some(error_) = &self.error {
-                    error = text(error_);
+                    error = text(error_).style(text::danger);
                 }
 
                 let mut error_persistent = Column::new();
                 for error in &self.error_persistent {
-                    error_persistent = error_persistent.push(text(error));
+                    error_persistent = error_persistent.push(text(error).style(text::danger));
                 }
 
                 let mut review_game = button(text!("{} (6)", self.strings["Review Game"].as_str()));
@@ -4325,6 +4340,7 @@ enum Message {
     ReviewGameForward,
     ReviewGameForwardAll,
     RoleSelected(Role),
+    ServerError,
     StreamConnected(mpsc::Sender<String>),
     TextChanged(String),
     TextEdit(text_editor::Action),
