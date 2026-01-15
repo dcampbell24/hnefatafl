@@ -529,20 +529,20 @@ New Game:
 
 Players:
   en-US: Players
-  zh-CN: 
-  es: 
-  ar: 
-  id: 
-  pt-BR: 
-  pt-PT: 
-  fr: 
-  ja: 
-  ru: 
-  de: 
-  is-IS: 
-  is-RU: 
-  sv-SE: 
-  ko: 
+  zh-CN: 玩家
+  es: Jugadores
+  ar: اللاعبين
+  id: Pemain
+  pt-BR: Jogadoras
+  pt-PT: Jogadoras
+  fr: Joueurs
+  ja: プレイヤー
+  ru: Игроки
+  de: Spieler
+  is-IS: Leikmenn
+  is-RU: ᛚᛂᛁᚴᛘᛂᚿᚿ
+  sv-SE: Spelare
+  ko: 선수들
 
 Round:
   en-US: Round
