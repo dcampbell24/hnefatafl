@@ -1373,7 +1373,7 @@ impl Server {
                         && let Some(tx) = option_tx
                     {
                         if let Some(connections) = self.connections.get(*address)
-                            && *connections > 3
+                            && *connections > 2_000
                         {
                             tx.send("true".to_string()).ok()?;
                         } else {

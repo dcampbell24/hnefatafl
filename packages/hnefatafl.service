@@ -5,7 +5,7 @@ Documentation="https://hnefatafl.org"
 [Service]
 Type=simple
 Restart=always
-ExecStart=/usr/games/hnefatafl-server-full --systemd --secure
+ExecStart=/usr/games/hnefatafl-server-full --systemd
 PrivateTmp=yes
 InaccessibleDirectories=/home
 DeviceAllow=/dev/null rw
