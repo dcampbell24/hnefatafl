@@ -580,37 +580,54 @@ Size:
 
 There is no tournament.:
   en-US: There is no tournament.
-  zh-CN: 
-  es: 
-  ar: 
-  id: 
-  pt-BR: 
-  pt-PT: 
-  fr: 
-  ja: 
-  ru: 
-  de: 
-  is-IS: 
-  is-RU: 
-  sv-SE: 
-  ko: 
+  zh-CN: 没有比赛。
+  es: No hay ningún torneo.
+  ar: لا توجد بطولة.
+  id: Tidak ada turnamen.
+  pt-BR: Não há torneio.
+  pt-PT: Não há torneio.
+  fr: Il n'y a pas de tournoi.
+  ja: トーナメントはありません。
+  ru: Турнира нет.
+  de: Es gibt kein Turnier.
+  is-IS: Það er ekkert mót.
+  is-RU: ᚦᛆᚧ ᛂᚱ ᛂᚴᚴᛂᚱᛐ ᛘᛟᛐ.
+  sv-SE: Det finns ingen turnering.
+  ko: 토너먼트는 없습니다.
+
+The server was shut down.:
+  en-US: The server was shut down.
+  zh-CN: 服务器已关闭。
+  es: El servidor fue apagado.
+  ar: تم إيقاف تشغيل الخادم.
+  id: Server telah dimatikan.
+  pt-BR: O servidor foi desligado.
+  pt-PT: O servidor foi desligado.
+  fr: Le serveur a été arrêté.
+  ja: サーバーはシャットダウンされました。
+  ru: Сервер был отключен.
+  de: Der Server wurde heruntergefahren.
+  is-IS: Þjónninn var lokaður.
+  is-RU: ᚦᛃᛟᚿᚿᛁᚿᚿ ᚡᛆᚱ ᛚᚮᚴᛆᚧᚢᚱ.
+  sv-SE: Servern stängdes av.
+  ko: 서버가 종료되었습니다.
 
 Tournament:
   en-US: Tournament
-  zh-CN: 
-  es: 
-  ar: 
-  id: 
-  pt-BR: 
-  pt-PT: 
-  fr: 
-  ja: 
-  ru: 
-  de: 
-  is-IS: 
-  is-RU: 
-  sv-SE: 
-  ko: 
+  zh-CN: 比赛
+  es: Torneo
+  ar: البطولة
+  id: Turnamen
+  pt-BR: Torneio
+  pt-PT: Torneio
+  fr: Tournoi
+  ja: トーナメント
+  ru: Турнир
+  de: Turnier
+  is-IS: Mót
+  is-RU: ᛘᛟᛐ
+  sv-SE: Turnering
+  ko: 토너먼트
 
 Unable to find Archived Games file:
   en-US: Unable to find Archived Games file
