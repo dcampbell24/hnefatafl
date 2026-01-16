@@ -629,6 +629,23 @@ Tournament:
   sv-SE: Turnering
   ko: 토너먼트
 
+Tournament Start Date:
+  en-US: Tournament Start Date
+  zh-CN: 比赛开始日期
+  es: Fecha de inicio del torneo
+  ar: تاريخ بدء البطولة
+  id: Tanggal Mulai Turnamen
+  pt-BR: Data de início do torneio
+  pt-PT: Data de início do torneio
+  fr: Date de début du tournoi
+  ja: トーナメント開始日
+  ru: Дата начала турнира
+  de: Turnierstartdatum
+  is-IS: Upphafsdagur móts
+  is-RU: ᚢᛔᛔᚼᛆᚠᛋᛑᛆᚵᚢᚱ ᛘᛟᛐᛋ
+  sv-SE: Startdatum för turneringen
+  ko: 토너먼트 시작일
+
 Unable to find Archived Games file:
   en-US: Unable to find Archived Games file
   zh-CN: 无法找到存档游​​戏文件

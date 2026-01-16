@@ -3444,10 +3444,8 @@ impl<'a> Client {
                 };
 
                 let mut date = Row::new().spacing(SPACING);
-                date = date.push(text!(
-                    "Tournament Start Date: {}",
-                    tournament.date.to_rfc2822()
-                ));
+                let start_date = t!("Tournament Start Date");
+                date = date.push(text!("{start_date}: {}", tournament.date.to_rfc2822()));
 
                 let mut button_1 =
                     button(text!("{} (1)", self.strings["Join Tournament"].as_str()));
