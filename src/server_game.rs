@@ -26,14 +26,13 @@ use serde::{Deserialize, Serialize};
 use crate::{
     Id,
     board::{Board, BoardSize},
-    game::{Game, PreviousBoards},
+    game::Game,
     glicko::Rating,
     play::{PlayRecordTimed, Plays},
     rating::Rated,
     role::Role,
     status::Status,
     time::{Time, TimeSettings},
-    tree::Tree,
 };
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -94,60 +93,6 @@ impl PartialEq for ArchivedGame {
 }
 
 impl Eq for ArchivedGame {}
-
-// Only used by the client!
-#[derive(Clone, Debug)]
-pub struct ArchivedGameHandle {
-    pub boards: Tree,
-    pub game: ArchivedGame,
-    pub play: usize,
-}
-
-impl ArchivedGameHandle {
-    #[must_use]
-    #[allow(clippy::missing_panics_doc)]
-    #[allow(clippy::unwrap_used)]
-    pub fn new(game: &ArchivedGame) -> ArchivedGameHandle {
-        let mut board = Board::new(game.board_size);
-        let mut boards = Tree::new(game.board_size);
-        let mut turn = Role::default();
-
-        let plays = match &game.plays {
-            Plays::PlayRecordsTimed(plays) => {
-                plays.iter().map(|record| record.play.clone()).collect()
-            }
-            Plays::PlayRecords(plays) => plays.clone(),
-        };
-
-        for play in &plays {
-            if let Some(play) = &play {
-                board
-                    .play(
-                        play,
-                        &Status::Ongoing,
-                        &turn,
-                        &mut PreviousBoards::default(),
-                    )
-                    .unwrap();
-
-                boards.insert(&board);
-                turn = match turn {
-                    Role::Attacker => Role::Defender,
-                    Role::Roleless => Role::Roleless,
-                    Role::Defender => Role::Attacker,
-                };
-            }
-        }
-
-        boards.backward_all();
-
-        ArchivedGameHandle {
-            boards,
-            game: game.clone(),
-            play: 0,
-        }
-    }
-}
 
 #[derive(Clone, Debug)]
 pub struct Messenger(Option<Sender<String>>);
