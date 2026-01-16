@@ -50,7 +50,6 @@ use hnefatafl_copenhagen::{
         ArchivedGame, Challenger, Messenger, ServerGame, ServerGameLight, ServerGameSerialized,
         ServerGames, ServerGamesLight,
     },
-    smtp::Smtp,
     status::Status,
     time::{Time, TimeEnum, TimeSettings},
     tournament::{self, Player, Players, Tournament, TournamentTree},
@@ -2698,6 +2697,13 @@ fn generate_round_one(players: Vec<Player>) -> Vec<tournament::Status> {
 
     round = round_new;
     round
+}
+
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+struct Smtp {
+    username: String,
+    password: String,
+    service: String,
 }
 
 fn handle_error<T, E: fmt::Display>(result: Result<T, E>) -> T {
