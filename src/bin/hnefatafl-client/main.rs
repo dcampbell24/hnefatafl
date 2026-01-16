@@ -18,15 +18,19 @@
 #![deny(clippy::panic)]
 #![deny(clippy::unwrap_used)]
 
+mod archived_game_handle;
 mod client;
 mod command_line;
+mod dimensions;
+mod enums;
+mod new_game_settings;
+mod user;
 
 use std::{
     collections::HashMap,
     fmt, fs,
     io::{BufRead, BufReader, ErrorKind, Read, Write},
     net::{Shutdown, TcpStream},
-    ops::Not,
     process::exit,
     str::SplitAsciiWhitespace,
     sync::mpsc,
@@ -37,19 +41,9 @@ use std::{
 use clap::{CommandFactory, Parser};
 use futures::{SinkExt, executor};
 use hnefatafl_copenhagen::{
-    COPYRIGHT, Id, SERVER_PORT,
-    ai::GenerateMove,
-    board::BoardSize,
-    draw::Draw,
+    COPYRIGHT, SERVER_PORT,
     game::Game,
-    glicko::Rating,
-    locale::Locale,
-    play::Vertex,
-    rating::Rated,
-    role::Role,
     server_game::ArchivedGame,
-    time::{TimeEnum, TimeSettings},
-    tree::{Node, Tree},
     utils::{self, choose_ai, data_file},
 };
 #[cfg(target_os = "linux")]
@@ -59,14 +53,17 @@ use iced::{
     futures::Stream,
     stream,
     theme::Palette,
-    widget::text_editor,
     window::{self, icon},
 };
 use log::{debug, error, info, trace};
 use rust_i18n::t;
-use serde::{Deserialize, Serialize};
 
-use crate::{client::Client, command_line::Args};
+use crate::{
+    client::Client,
+    command_line::Args,
+    dimensions::Dimensions,
+    enums::{Message, Size},
+};
 
 /// The Muted qualitative color scheme of [Tol]. A color scheme for the
 /// color blind.
@@ -514,280 +511,4 @@ fn pass_messages() -> impl Stream<Item = Message> {
 fn text_collect(text: SplitAsciiWhitespace<'_>) -> String {
     let text: Vec<&str> = text.collect();
     text.join(" ")
-}
-
-#[derive(Debug, Default, Deserialize, Serialize)]
-struct NewGameSettings {
-    #[serde(skip)]
-    board_size: BoardSize,
-    #[serde(skip)]
-    rated: Rated,
-    #[serde(skip)]
-    role_selected: Option<Role>,
-    #[serde(skip)]
-    timed: TimeSettings,
-    #[serde(skip)]
-    time: Option<TimeEnum>,
-}
-
-#[derive(Clone, Debug, Default, Eq, PartialEq)]
-enum Screen {
-    AccountSettings,
-    EmailEveryone,
-    #[default]
-    Login,
-    Game,
-    GameNew,
-    GameReview,
-    Games,
-    Tournament,
-    Users,
-}
-
-#[derive(Clone, Copy, Debug, Default, Deserialize, Serialize)]
-enum Coordinates {
-    Hide,
-    #[default]
-    Show,
-}
-
-impl Not for Coordinates {
-    type Output = Coordinates;
-
-    fn not(self) -> Self::Output {
-        match self {
-            Self::Hide => Self::Show,
-            Self::Show => Self::Hide,
-        }
-    }
-}
-
-impl From<bool> for Coordinates {
-    fn from(value: bool) -> Self {
-        if value { Self::Show } else { Self::Hide }
-    }
-}
-
-impl From<Coordinates> for bool {
-    fn from(coordinates: Coordinates) -> Self {
-        match coordinates {
-            Coordinates::Show => true,
-            Coordinates::Hide => false,
-        }
-    }
-}
-
-#[derive(Clone, Debug)]
-struct Dimensions {
-    board_dimension: u32,
-    letter_size: u32,
-    piece_size: u32,
-    spacing: u32,
-}
-
-impl Dimensions {
-    fn new(board_size: BoardSize, screen_size: &Size) -> Self {
-        let (board_dimension, letter_size, piece_size, spacing) = match board_size {
-            BoardSize::_11 => match screen_size {
-                Size::Large | Size::Giant => (75, 55, 60, 6),
-                Size::Medium => (65, 45, 50, 8),
-                Size::Small => (55, 35, 40, 11),
-                Size::Tiny | Size::TinyWide => (40, 20, 25, 16),
-            },
-            BoardSize::_13 => match screen_size {
-                Size::Large | Size::Giant => (65, 45, 50, 8),
-                Size::Medium => (58, 38, 43, 10),
-                Size::Small => (50, 30, 35, 12),
-                Size::Tiny | Size::TinyWide => (40, 20, 25, 15),
-            },
-        };
-
-        Dimensions {
-            board_dimension,
-            letter_size,
-            piece_size,
-            spacing,
-        }
-    }
-}
-
-#[derive(Clone, Debug)]
-enum JoinGame {
-    Cancel,
-    Join,
-    None,
-    Resume,
-    Watch,
-}
-
-#[derive(Clone, Debug, Eq, PartialEq)]
-enum LoggedIn {
-    No,
-    None,
-    Yes,
-}
-
-#[derive(Clone, Debug)]
-enum Message {
-    AccountSettings,
-    ArchivedGames(Vec<ArchivedGame>),
-    ArchivedGamesGet,
-    ArchivedGameSelected(ArchivedGame),
-    BoardSizeSelected(BoardSize),
-    CancelGame(Id),
-    ChangeTheme(Theme),
-    ConnectedTo(String),
-    Coordinates(bool),
-    DeleteAccount,
-    EmailEveryone,
-    EmailReset,
-    EstimateScore,
-    EstimateScoreConnected(mpsc::Sender<Tree>),
-    EstimateScoreDisplay((Node, GenerateMove)),
-    Exit,
-    FocusPrevious,
-    FocusNext,
-    GameAccept(Id),
-    GameCancel(Id),
-    GameDecline(Id),
-    GameJoin(Id),
-    GameNew,
-    GameResume(Id),
-    GameSubmit,
-    GameWatch(Id),
-    HeatMap(bool),
-    Leave,
-    LocaleSelected(Locale),
-    MyGamesOnly(bool),
-    OpenUrl(String),
-    PasswordChanged(String),
-    PasswordSave(bool),
-    PasswordShow(bool),
-    PlayDraw,
-    PlayDrawDecision(Draw),
-    PlayMoveFrom(Vertex),
-    PlayMoveTo(Vertex),
-    PlayMoveRevert,
-    PlayResign,
-    PressEnter,
-    PressA(bool),
-    PressB(bool),
-    PressC(bool),
-    PressD(bool),
-    PressE(bool),
-    PressF(bool),
-    PressG(bool),
-    PressH(bool),
-    PressI(bool),
-    PressJ(bool),
-    PressK(bool),
-    PressL(bool),
-    PressM(bool),
-    PressN(bool),
-    PressO(bool),
-    PressP(bool),
-    PressQ(bool),
-    PressR(bool),
-    PressS(bool),
-    PressT(bool),
-    PressU(bool),
-    PressV(bool),
-    PressW(bool),
-    PressX(bool),
-    PressY(bool),
-    PressZ(bool),
-    Press1,
-    Press2,
-    Press3,
-    Press4,
-    Press5,
-    Press6,
-    Press7,
-    Press8,
-    Press9,
-    Press0,
-    SoundMuted(bool),
-    RatedSelected(bool),
-    ResetPassword,
-    ReviewGame,
-    ReviewGameBackward,
-    ReviewGameBackwardAll,
-    ReviewGameChildNext,
-    ReviewGameForward,
-    ReviewGameForwardAll,
-    RoleSelected(Role),
-    ServerShutdown,
-    StreamConnected(mpsc::Sender<String>),
-    TcpDisconnect,
-    TextChanged(String),
-    TextEdit(text_editor::Action),
-    TextReceived(String),
-    TextSend,
-    TextSendEmail,
-    TextSendEmailCode,
-    TextSendCreateAccount,
-    TextSendLogin,
-    Tick,
-    Time(TimeEnum),
-    Tournament,
-    TournamentJoin,
-    TournamentLeave,
-    TournamentStart,
-    TournamentDelete,
-    TournamentTreeDelete,
-    Users,
-    UsersSortedBy(SortBy),
-    WindowResized((f32, f32)),
-}
-
-#[derive(Clone, Debug)]
-enum Move {
-    From,
-    To,
-    Revert,
-    None,
-}
-
-#[derive(Clone, Debug, Default, Eq, PartialEq)]
-enum Size {
-    Tiny,
-    TinyWide,
-    #[default]
-    Small,
-    Medium,
-    Large,
-    Giant,
-}
-
-#[derive(Clone, Debug, Default, Eq, PartialEq)]
-enum SortBy {
-    Name,
-    #[default]
-    Rating,
-}
-
-#[derive(Clone, Debug, Eq, PartialEq)]
-enum State {
-    Challenger,
-    Creator,
-    CreatorOnly,
-    Spectator,
-}
-
-#[derive(Clone, Copy, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
-enum Theme {
-    #[default]
-    Dark,
-    Light,
-    Tol,
-}
-
-#[derive(Clone, Debug)]
-struct User {
-    name: String,
-    wins: String,
-    losses: String,
-    draws: String,
-    rating: Rating,
-    logged_in: LoggedIn,
 }
