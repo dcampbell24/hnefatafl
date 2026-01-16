@@ -38,11 +38,11 @@ use clap::{CommandFactory, Parser};
 use futures::{SinkExt, executor};
 use hnefatafl_copenhagen::{
     COPYRIGHT, Id, LONG_VERSION, SERVER_PORT, VERSION_ID,
-    accounts::Email,
     ai::GenerateMove,
     board::{Board, BoardSize},
     characters::Characters,
     draw::Draw,
+    email::Email,
     game::{Game, LegalMoves, TimeUnix},
     glicko::{CONFIDENCE_INTERVAL_95, Rating},
     heat_map::{Heat, HeatMap},

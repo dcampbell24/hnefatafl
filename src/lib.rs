@@ -43,11 +43,11 @@ use std::{
 
 rust_i18n::i18n!();
 
-pub mod accounts;
 pub mod ai;
 pub mod board;
 pub mod characters;
 pub mod draw;
+pub mod email;
 pub mod game;
 pub mod game_tree;
 pub mod glicko;
