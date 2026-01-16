@@ -39,7 +39,7 @@ use hnefatafl_copenhagen::{
     play::{BOARD_LETTERS, Plae, Plays, Vertex},
     rating::Rated,
     role::Role,
-    server_game::{ArchivedGame, ArchivedGameHandle, ServerGameLight, ServerGamesLight},
+    server_game::{ArchivedGame, ServerGameLight, ServerGamesLight},
     space::Space,
     status::Status,
     time::{TimeEnum, TimeSettings},
@@ -66,11 +66,15 @@ use serde::{Deserialize, Serialize};
 use smol_str::ToSmolStr;
 
 use crate::{
-    ALPHABET, BOARD_LETTERS_LOWERCASE, Coordinates, Dimensions, JoinGame, LoggedIn, Message, Move,
-    NewGameSettings, PADDING, PADDING_SMALL, SOUND_CAPTURE, SOUND_GAME_OVER, SOUND_MOVE, SPACING,
-    SPACING_B, Screen, Size, SortBy, State, TOL, TROPHY_SIZE, Theme, USER_CONFIG_FILE_POSTCARD,
-    USER_CONFIG_FILE_RON, User, estimate_score, handle_error, open_url, pass_messages,
-    text_collect,
+    ALPHABET, BOARD_LETTERS_LOWERCASE, Dimensions, Message, PADDING, PADDING_SMALL, SOUND_CAPTURE,
+    SOUND_GAME_OVER, SOUND_MOVE, SPACING, SPACING_B, Size, TOL, TROPHY_SIZE,
+    USER_CONFIG_FILE_POSTCARD, USER_CONFIG_FILE_RON,
+    archived_game_handle::ArchivedGameHandle,
+    enums::{Coordinates, JoinGame, LoggedIn, Move, Screen, SortBy, State, Theme},
+    estimate_score, handle_error,
+    new_game_settings::NewGameSettings,
+    open_url, pass_messages, text_collect,
+    user::User,
 };
 
 rust_i18n::i18n!();
