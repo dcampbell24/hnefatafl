@@ -95,6 +95,7 @@ impl PartialEq for ArchivedGame {
 
 impl Eq for ArchivedGame {}
 
+// Only used by the client!
 #[derive(Clone, Debug)]
 pub struct ArchivedGameHandle {
     pub boards: Tree,
