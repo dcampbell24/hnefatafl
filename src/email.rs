@@ -1,4 +1,3 @@
-#[cfg(feature = "server")]
 use lettre::message::Mailbox;
 use serde::{Deserialize, Serialize};
 
@@ -14,7 +13,6 @@ pub struct Email {
     pub verified: bool,
 }
 
-#[cfg(feature = "server")]
 impl Email {
     #[must_use]
     pub fn to_mailbox(&self) -> Option<Mailbox> {
