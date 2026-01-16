@@ -18,11 +18,10 @@ use std::{
     fmt,
 };
 
-#[cfg(feature = "server")]
-use lettre::message::Mailbox;
+use hnefatafl_copenhagen::{email::Email, glicko::Rating};
 use serde::{Deserialize, Serialize};
 
-use crate::{Id, glicko::Rating};
+use crate::Id;
 
 impl fmt::Display for Accounts {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -38,7 +37,7 @@ impl fmt::Display for Accounts {
 }
 
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
-pub struct Account {
+pub(crate) struct Account {
     #[serde(default)]
     pub email: Option<Email>,
     #[serde(default)]
@@ -80,34 +79,4 @@ impl fmt::Display for Account {
 }
 
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
-pub struct Accounts(pub HashMap<String, Account>);
-
-#[derive(Clone, Debug, Default, Deserialize, Hash, PartialEq, Eq, Serialize)]
-pub struct Email {
-    #[serde(default)]
-    pub address: String,
-    #[serde(default)]
-    pub code: Option<u32>,
-    #[serde(default)]
-    pub username: String,
-    #[serde(default)]
-    pub verified: bool,
-}
-
-#[cfg(feature = "server")]
-impl Email {
-    #[must_use]
-    pub fn to_mailbox(&self) -> Option<Mailbox> {
-        Some(Mailbox::new(
-            Some(self.username.clone()),
-            self.address.parse().ok()?,
-        ))
-    }
-
-    #[must_use]
-    pub fn tx(&self) -> String {
-        // Note: We use a FIGURE SPACE to separate the username from the address so
-        // .split_ascii_whitespace() does not treat it as a space.
-        format!("{} <{}>", self.username, self.address)
-    }
-}
+pub(crate) struct Accounts(pub HashMap<String, Account>);

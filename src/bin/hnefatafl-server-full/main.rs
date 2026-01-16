@@ -18,6 +18,7 @@
 #![deny(clippy::panic)]
 #![deny(clippy::unwrap_used)]
 
+mod accounts;
 mod command_line;
 mod remove_connection;
 mod server;
@@ -518,7 +519,8 @@ fn timestamp() -> String {
 #[cfg(test)]
 mod tests {
     use argon2::{PasswordHash, PasswordVerifier};
-    use hnefatafl_copenhagen::accounts::{Account, Accounts};
+
+    use crate::accounts::{Account, Accounts};
 
     use super::*;
 
