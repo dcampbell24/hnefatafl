@@ -1173,6 +1173,23 @@ hours:
   sv-SE: timmar
   ko: 시간
 
+invalid email code:
+  en-US: invalid email code
+  zh-CN: 无效的电子邮件验证码
+  es: código de correo electrónico no válido
+  ar: رمز البريد الإلكتروني غير صالح
+  id: kode email tidak valid
+  pt-BR: código de e-mail inválido
+  pt-PT: código de e-mail inválido
+  fr: code d'e-mail invalide
+  ja: 無効なメールコード
+  ru: неверный код электронной почты
+  de: ungültiger E-Mail-Code
+  is-IS: ógildur tölvupóstkóði
+  is-RU: ᛟᚵᛁᛚᛑᚢᚱ ᛐᚯᛚᚡᚢᛔᛟᛋᛐᚴᛟᚧᛁ
+  sv-SE: ogiltig e-postkod
+  ko: 잘못된 이메일 코드
+
 lag:
   en-US: lag
   zh-CN: 落后
