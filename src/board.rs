@@ -15,7 +15,7 @@
 
 use std::{collections::HashMap, fmt, str::FromStr};
 
-use rustc_hash::{FxBuildHasher, FxHashMap, FxHashSet};
+use rustc_hash::{FxBuildHasher, FxHashSet};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
@@ -1543,12 +1543,6 @@ pub enum InvalidMove {
     StraightLine,
     #[error("play: it isn't your turn")]
     Turn,
-}
-
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct LegalMoves {
-    pub role: Role,
-    pub moves: FxHashMap<Vertex, Vec<Vertex>>,
 }
 
 #[must_use]
