@@ -21,37 +21,65 @@
 mod accounts;
 mod command_line;
 mod remove_connection;
-mod server;
 mod smtp;
 mod unix_timestamp;
 
 use std::{
-    collections::VecDeque,
+    collections::{HashMap, HashSet, VecDeque},
     fmt,
-    fs::{self, File},
+    fs::{self, File, OpenOptions},
     io::{BufRead, BufReader, ErrorKind, Read, Write},
     net::{TcpListener, TcpStream},
     process::exit,
-    sync::mpsc::{self, Receiver},
+    str::FromStr,
+    sync::{
+        Arc, Mutex,
+        mpsc::{self, Receiver, Sender},
+    },
     thread,
     time::Duration,
 };
 
-use argon2::{Argon2, PasswordHasher};
-use chrono::Utc;
+use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
+use chrono::{DateTime, Local, Utc};
 use clap::{CommandFactory, Parser};
 use hnefatafl_copenhagen::{
     COPYRIGHT, Id, SERVER_PORT, VERSION_ID,
-    server_game::{ArchivedGame, ServerGame, ServerGameLight, ServerGameSerialized},
-    tournament::{self, Player},
+    board::BoardSize,
+    draw::Draw,
+    email::Email,
+    game::TimeUnix,
+    glicko::Outcome,
+    rating::Rated,
+    role::Role,
+    server_game::{
+        ArchivedGame, Challenger, Messenger, ServerGame, ServerGameLight, ServerGameSerialized,
+        ServerGames, ServerGamesLight,
+    },
+    status::Status,
+    time::{Time, TimeEnum, TimeSettings},
+    tournament::{self, Player, Players, Tournament, TournamentTree},
     utils::{self, data_file},
+};
+use lettre::{
+    SmtpTransport, Transport,
+    message::{Mailbox, header::ContentType},
+    transport::smtp::authentication::Credentials,
 };
 use log::{debug, error, info};
 use old_rand::rngs::OsRng;
 use password_hash::SaltString;
+use rand::random;
+use serde::{Deserialize, Serialize};
 use std::fmt::Write as _;
 
-use crate::{command_line::Args, remove_connection::RemoveConnection, server::Server};
+use crate::{
+    accounts::{Account, Accounts},
+    command_line::Args,
+    remove_connection::RemoveConnection,
+    smtp::Smtp,
+    unix_timestamp::UnixTimestamp,
+};
 
 const ACTIVE_GAMES_FILE: &str = "hnefatafl-games-active.postcard";
 const ARCHIVED_GAMES_FILE: &str = "hnefatafl-games.ron";
@@ -731,5 +759,2144 @@ mod tests {
         println!("many clients: {:?}", t1 - t0);
 
         Ok(())
+    }
+}
+
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+struct Server {
+    #[serde(default)]
+    game_id: Id,
+    #[serde(default)]
+    ran_update_rd: UnixTimestamp,
+    #[serde(default)]
+    admins: HashSet<String>,
+    #[serde(default)]
+    smtp: Smtp,
+    #[serde(default)]
+    tournament: Option<Tournament>,
+    #[serde(default)]
+    accounts: Accounts,
+    #[serde(skip)]
+    accounts_old: Accounts,
+    #[serde(skip)]
+    archived_games: Vec<ArchivedGame>,
+    #[serde(skip)]
+    clients: HashMap<usize, mpsc::Sender<String>>,
+    #[serde(skip)]
+    connections: HashMap<String, u128>,
+    #[serde(skip)]
+    games: ServerGames,
+    #[serde(skip)]
+    games_light: ServerGamesLight,
+    #[serde(skip)]
+    games_light_old: ServerGamesLight,
+    #[serde(skip)]
+    skip_the_data_file: bool,
+    #[serde(skip)]
+    texts: VecDeque<String>,
+    #[serde(skip)]
+    tx: Option<mpsc::Sender<(String, Option<mpsc::Sender<String>>)>>,
+}
+
+impl Server {
+    fn append_archived_game(&mut self, game: ServerGame) -> anyhow::Result<()> {
+        let Some(attacker) = self.accounts.0.get(&game.attacker) else {
+            return Err(anyhow::Error::msg("failed to get rating!"));
+        };
+        let Some(defender) = self.accounts.0.get(&game.defender) else {
+            return Err(anyhow::Error::msg("failed to get rating!"));
+        };
+        let game = ArchivedGame::new(game, attacker.rating.clone(), defender.rating.clone());
+
+        let archived_games_file = data_file(ARCHIVED_GAMES_FILE);
+        let mut game_string = ron::ser::to_string(&game)?;
+        game_string.push('\n');
+
+        let mut file = OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(archived_games_file)?;
+
+        file.write_all(game_string.as_bytes())?;
+
+        self.archived_games.push(game);
+
+        Ok(())
+    }
+
+    fn bcc_mailboxes(&self, username: &str) -> Vec<Mailbox> {
+        let mut emails = Vec::new();
+
+        if let Some(account) = self.accounts.0.get(username)
+            && account.send_emails
+        {
+            for account in self.accounts.0.values() {
+                if let Some(email) = &account.email
+                    && email.verified
+                    && let Some(email) = email.to_mailbox()
+                {
+                    emails.push(email);
+                }
+            }
+        }
+
+        emails
+    }
+
+    fn bcc_send(&self, username: &str) -> String {
+        let mut emails = Vec::new();
+
+        if let Some(account) = self.accounts.0.get(username)
+            && account.send_emails
+        {
+            for account in self.accounts.0.values() {
+                if let Some(email) = &account.email
+                    && email.verified
+                {
+                    emails.push(email.tx());
+                }
+            }
+        }
+
+        emails.sort();
+        emails.join(" ")
+    }
+
+    /// ```sh
+    /// # PASSWORD can be the empty string.
+    /// <- change_password PASSWORD
+    /// -> = change_password
+    /// ```
+    fn change_password(
+        &mut self,
+        username: &str,
+        index_supplied: usize,
+        command: &str,
+        the_rest: &[&str],
+    ) -> Option<(mpsc::Sender<String>, bool, String)> {
+        info!("{index_supplied} {username} change_password");
+
+        let account = self.accounts.0.get_mut(username)?;
+        let password = the_rest.join(" ");
+
+        if password.len() > 32 {
+            return Some((
+                self.clients.get(&index_supplied)?.clone(),
+                false,
+                format!("{command} password is greater than 32 characters"),
+            ));
+        }
+
+        let hash = hash_password(&password)?;
+        account.password = hash;
+        self.save_server();
+
+        Some((
+            self.clients.get(&index_supplied)?.clone(),
+            true,
+            (*command).to_string(),
+        ))
+    }
+
+    /// ```sh
+    /// # server internal
+    /// ```
+    ///
+    /// c = 63.2
+    ///
+    /// This assumes 30 2 month periods must pass before one's rating
+    /// deviation is the same as a new player and that a typical RD is 50.
+    #[must_use]
+    fn check_update_rd(&mut self) -> bool {
+        let now = Local::now().to_utc().timestamp();
+        if now - self.ran_update_rd.0 >= TWO_MONTHS {
+            for account in self.accounts.0.values_mut() {
+                account.rating.update_rd();
+            }
+            self.ran_update_rd = UnixTimestamp(now);
+            true
+        } else {
+            false
+        }
+    }
+
+    /// ```sh
+    /// # PASSWORD can be the empty string.
+    /// <- VERSION_ID create_account player-1 PASSWORD
+    /// -> = login
+    /// ```
+    fn create_account(
+        &mut self,
+        username: &str,
+        index_supplied: usize,
+        command: &str,
+        the_rest: &[&str],
+        option_tx: Option<Sender<String>>,
+    ) -> Option<(mpsc::Sender<String>, bool, String)> {
+        let password = the_rest.join(" ");
+        let tx = option_tx?;
+        if self.accounts.0.contains_key(username) {
+            info!("{index_supplied} {username} is already in the database");
+            Some((tx, false, (*command).to_string()))
+        } else {
+            info!("{index_supplied} {username} created user account");
+
+            let hash = hash_password(&password)?;
+            self.clients.insert(index_supplied, tx);
+            self.accounts.0.insert(
+                (*username).to_string(),
+                Account {
+                    password: hash,
+                    logged_in: Some(index_supplied),
+                    ..Default::default()
+                },
+            );
+
+            self.save_server();
+
+            Some((
+                self.clients.get(&index_supplied)?.clone(),
+                true,
+                (*command).to_string(),
+            ))
+        }
+    }
+
+    fn decline_game(
+        &mut self,
+        username: &str,
+        index_supplied: usize,
+        mut command: String,
+        the_rest: &[&str],
+    ) -> Option<(mpsc::Sender<String>, bool, String)> {
+        let channel = self.clients.get(&index_supplied)?;
+
+        let Some(id) = the_rest.first() else {
+            return Some((channel.clone(), false, command));
+        };
+        let Ok(id) = id.parse::<Id>() else {
+            return Some((channel.clone(), false, command));
+        };
+
+        let mut switch = false;
+        if let Some(&"switch") = the_rest.get(1) {
+            switch = true;
+        }
+
+        info!("{index_supplied} {username} decline_game {id} switch={switch}");
+
+        if let Some(game_old) = self.games_light.0.remove(&id) {
+            let mut attacker = None;
+            let mut attacker_channel = None;
+            let mut defender = None;
+            let mut defender_channel = None;
+
+            if switch {
+                if Some(username.to_string()) == game_old.attacker {
+                    defender = game_old.defender;
+                    defender_channel = game_old.defender_channel;
+                } else if Some(username.to_string()) == game_old.defender {
+                    attacker = game_old.attacker;
+                    attacker_channel = game_old.attacker_channel;
+                }
+            } else if Some(username.to_string()) == game_old.attacker {
+                attacker = game_old.attacker;
+                attacker_channel = game_old.attacker_channel;
+            } else if Some(username.to_string()) == game_old.defender {
+                defender = game_old.defender;
+                defender_channel = game_old.defender_channel;
+            }
+
+            let game = ServerGameLight {
+                id,
+                attacker,
+                defender,
+                challenger: Challenger::default(),
+                rated: game_old.rated,
+                timed: game_old.timed,
+                board_size: game_old.board_size,
+                attacker_channel,
+                defender_channel,
+                spectators: game_old.spectators,
+                challenge_accepted: false,
+                game_over: false,
+            };
+
+            command = format!("{command} {game:?}");
+            self.games_light.0.insert(id, game);
+        }
+
+        Some((channel.clone(), true, command))
+    }
+
+    fn delete_account(&mut self, username: &str, index_supplied: usize) {
+        info!("{index_supplied} {username} delete_account");
+
+        self.accounts.0.remove(username);
+        self.save_server();
+    }
+
+    fn display_server(&mut self, username: &str) -> Option<(mpsc::Sender<String>, bool, String)> {
+        if self.games_light != self.games_light_old {
+            debug!("0 {username} display_games");
+            self.games_light_old = self.games_light.clone();
+
+            for tx in &mut self.clients.values() {
+                let _ok = tx.send(format!("= display_games {:?}", &self.games_light));
+            }
+        }
+
+        if self.accounts != self.accounts_old {
+            debug!("0 {username} display_users");
+            self.accounts_old = self.accounts.clone();
+
+            for tx in &mut self.clients.values() {
+                let _ok = tx.send(format!("= display_users {}", &self.accounts));
+            }
+        }
+
+        for game in self.games.0.values_mut() {
+            match game.game.turn {
+                Role::Attacker => {
+                    if game.game.status == Status::Ongoing
+                        && let TimeUnix::Time(game_time) = &mut game.game.time
+                    {
+                        let now = Local::now().to_utc().timestamp_millis();
+                        let elapsed_time = now - *game_time;
+                        game.elapsed_time += elapsed_time;
+                        *game_time = now;
+
+                        if game.elapsed_time > SEVEN_DAYS
+                            && let Some(tx) = &mut self.tx
+                        {
+                            let _ok = tx.send((
+                                format!(
+                                    "0 {} game {} play attacker resigns _",
+                                    game.attacker, game.id
+                                ),
+                                None,
+                            ));
+                            return None;
+                        }
+
+                        if let TimeSettings::Timed(attacker_time) = &mut game.game.attacker_time {
+                            if attacker_time.milliseconds_left > 0 {
+                                attacker_time.milliseconds_left -= elapsed_time;
+                            } else if let Some(tx) = &mut self.tx {
+                                let _ok = tx.send((
+                                    format!(
+                                        "0 {} game {} play attacker resigns _",
+                                        game.attacker, game.id
+                                    ),
+                                    None,
+                                ));
+                            }
+                        }
+                    }
+                }
+                Role::Roleless => {}
+                Role::Defender => {
+                    if game.game.status == Status::Ongoing
+                        && let TimeUnix::Time(game_time) = &mut game.game.time
+                    {
+                        let now = Local::now().to_utc().timestamp_millis();
+                        let elapsed_time = now - *game_time;
+                        game.elapsed_time += elapsed_time;
+                        *game_time = now;
+
+                        if game.elapsed_time > SEVEN_DAYS
+                            && let Some(tx) = &mut self.tx
+                        {
+                            let _ok = tx.send((
+                                format!(
+                                    "0 {} game {} play defender resigns _",
+                                    game.defender, game.id
+                                ),
+                                None,
+                            ));
+                            return None;
+                        }
+
+                        if let TimeSettings::Timed(defender_time) = &mut game.game.defender_time {
+                            if defender_time.milliseconds_left > 0 {
+                                defender_time.milliseconds_left -= elapsed_time;
+                            } else if let Some(tx) = &mut self.tx {
+                                let _ok = tx.send((
+                                    format!(
+                                        "0 {} game {} play defender resigns _",
+                                        game.defender, game.id
+                                    ),
+                                    None,
+                                ));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        None
+    }
+
+    fn draw(
+        &mut self,
+        index_supplied: usize,
+        command: &str,
+        the_rest: &[&str],
+    ) -> Option<(mpsc::Sender<String>, bool, String)> {
+        let Some(id) = the_rest.first() else {
+            return Some((
+                self.clients.get(&index_supplied)?.clone(),
+                false,
+                (*command).to_string(),
+            ));
+        };
+        let Ok(id) = id.parse::<Id>() else {
+            return Some((
+                self.clients.get(&index_supplied)?.clone(),
+                false,
+                (*command).to_string(),
+            ));
+        };
+
+        let Some(draw) = the_rest.get(1) else {
+            return Some((
+                self.clients.get(&index_supplied)?.clone(),
+                false,
+                (*command).to_string(),
+            ));
+        };
+        let Ok(draw) = Draw::from_str(draw) else {
+            return Some((
+                self.clients.get(&index_supplied)?.clone(),
+                false,
+                (*command).to_string(),
+            ));
+        };
+
+        let Some(mut game) = self.games.0.remove(&id) else {
+            return Some((
+                self.clients.get(&index_supplied)?.clone(),
+                false,
+                (*command).to_string(),
+            ));
+        };
+
+        let message = format!("= draw {draw}");
+        game.attacker_tx.send(message.clone());
+        game.defender_tx.send(message.clone());
+
+        if draw == Draw::Accept {
+            let Some(game_light) = self.games_light.0.get(&id) else {
+                return Some((
+                    self.clients.get(&index_supplied)?.clone(),
+                    false,
+                    (*command).to_string(),
+                ));
+            };
+            for spectator in game_light.spectators.values() {
+                if let Some(sender) = self.clients.get(spectator) {
+                    let _ok = sender.send(message.clone());
+                }
+            }
+
+            game.game.status = Status::Draw;
+
+            let accounts = &mut self.accounts.0;
+            let (attacker_rating, defender_rating) = if let (Some(attacker), Some(defender)) =
+                (accounts.get(&game.attacker), accounts.get(&game.defender))
+            {
+                (attacker.rating.rating, defender.rating.rating)
+            } else {
+                unreachable!();
+            };
+
+            if let Some(attacker) = accounts.get_mut(&game.attacker) {
+                attacker.draws += 1;
+
+                if game.rated.into() {
+                    attacker
+                        .rating
+                        .update_rating(defender_rating, &Outcome::Draw);
+                }
+            }
+            if let Some(defender) = accounts.get_mut(&game.defender) {
+                defender.draws += 1;
+
+                if game.rated.into() {
+                    defender
+                        .rating
+                        .update_rating(attacker_rating, &Outcome::Draw);
+                }
+            }
+
+            if let Some(game) = self.games_light.0.get_mut(&id) {
+                game.game_over = true;
+            }
+
+            if !self.skip_the_data_file {
+                self.append_archived_game(game)
+                    .map_err(|err| {
+                        error!("{err}");
+                    })
+                    .ok()?;
+            }
+
+            self.save_server();
+        }
+
+        None
+    }
+
+    #[allow(clippy::too_many_lines)]
+    fn game(
+        &mut self,
+        index_supplied: usize,
+        username: &str,
+        command: &str,
+        the_rest: &[&str],
+    ) -> Option<(mpsc::Sender<String>, bool, String)> {
+        if the_rest.len() < 5 {
+            return Some((
+                self.clients.get(&index_supplied)?.clone(),
+                false,
+                (*command).to_string(),
+            ));
+        }
+
+        let index = the_rest.first()?;
+        let Ok(index) = index.parse() else {
+            return Some((
+                self.clients.get(&index_supplied)?.clone(),
+                false,
+                (*command).to_string(),
+            ));
+        };
+        let role = the_rest.get(2)?;
+        let Ok(role) = Role::from_str(role) else {
+            return Some((
+                self.clients.get(&index_supplied)?.clone(),
+                false,
+                (*command).to_string(),
+            ));
+        };
+        let from = the_rest.get(3)?;
+        let to = the_rest.get(4)?;
+        let mut to = (*to).to_string();
+        if to == "_" {
+            to = String::new();
+        }
+
+        let Some(game) = self.games.0.get_mut(&index) else {
+            return Some((
+                self.clients.get(&index_supplied)?.clone(),
+                false,
+                (*command).to_string(),
+            ));
+        };
+
+        let Some(game_light) = self.games_light.0.get_mut(&index) else {
+            return Some((
+                self.clients.get(&index_supplied)?.clone(),
+                false,
+                (*command).to_string(),
+            ));
+        };
+
+        game.elapsed_time = 0;
+        let mut attackers_turn_next = true;
+        if role == Role::Attacker {
+            if *username == game.attacker {
+                game.game
+                    .read_line(&format!("play attacker {from} {to}"))
+                    .map_err(|error| {
+                        error!("{error}");
+                        error
+                    })
+                    .ok()?;
+
+                attackers_turn_next = false;
+
+                let message = format!("game {index} play attacker {from} {to}");
+                for spectator in game_light.spectators.values() {
+                    if let Some(client) = self.clients.get(spectator) {
+                        let _ok = client.send(message.clone());
+                    }
+                }
+                game.defender_tx.send(message);
+            } else {
+                return Some((
+                    self.clients.get(&index_supplied)?.clone(),
+                    false,
+                    (*command).to_string(),
+                ));
+            }
+        } else if *username == game.defender {
+            game.game
+                .read_line(&format!("play defender {from} {to}"))
+                .map_err(|error| {
+                    error!("{error}");
+                    error
+                })
+                .ok()?;
+
+            let message = format!("game {index} play defender {from} {to}");
+            for spectator in game_light.spectators.values() {
+                if let Some(client) = self.clients.get(spectator) {
+                    let _ok = client.send(message.clone());
+                }
+            }
+            game.attacker_tx.send(message);
+        } else {
+            return Some((
+                self.clients.get(&index_supplied)?.clone(),
+                false,
+                (*command).to_string(),
+            ));
+        }
+
+        let mut game_over = false;
+        let mut winner = Role::Roleless;
+
+        match game.game.status {
+            Status::AttackerWins => {
+                let accounts = &mut self.accounts.0;
+                let (attacker_rating, defender_rating) = if let (Some(attacker), Some(defender)) =
+                    (accounts.get(&game.attacker), accounts.get(&game.defender))
+                {
+                    (attacker.rating.rating, defender.rating.rating)
+                } else {
+                    unreachable!();
+                };
+
+                if let Some(attacker) = accounts.get_mut(&game.attacker) {
+                    attacker.wins += 1;
+
+                    if game.rated.into() {
+                        attacker
+                            .rating
+                            .update_rating(defender_rating, &Outcome::Win);
+                    }
+                }
+                if let Some(defender) = accounts.get_mut(&game.defender) {
+                    defender.losses += 1;
+
+                    if game.rated.into() {
+                        defender
+                            .rating
+                            .update_rating(attacker_rating, &Outcome::Loss);
+                    }
+                }
+
+                let message = format!("= game_over {index} attacker_wins");
+                game.attacker_tx.send(message.clone());
+                game.defender_tx.send(message.clone());
+
+                for spectator in game_light.spectators.values() {
+                    if let Some(sender) = self.clients.get(spectator) {
+                        let _ok = sender.send(message.clone());
+                    }
+                }
+
+                game_over = true;
+                winner = Role::Attacker;
+            }
+            Status::Draw => {
+                // Handled in the draw fn.
+            }
+            Status::Ongoing => {
+                if attackers_turn_next {
+                    game.attacker_tx
+                        .send(format!("game {index} generate_move attacker"));
+                } else {
+                    game.defender_tx
+                        .send(format!("game {index} generate_move defender"));
+                }
+            }
+            Status::DefenderWins => {
+                let accounts = &mut self.accounts.0;
+                let (attacker_rating, defender_rating) = if let (Some(attacker), Some(defender)) =
+                    (accounts.get(&game.attacker), accounts.get(&game.defender))
+                {
+                    (attacker.rating.rating, defender.rating.rating)
+                } else {
+                    unreachable!();
+                };
+
+                if let Some(attacker) = accounts.get_mut(&game.attacker) {
+                    attacker.losses += 1;
+
+                    if game.rated.into() {
+                        attacker
+                            .rating
+                            .update_rating(defender_rating, &Outcome::Loss);
+                    }
+                }
+                if let Some(defender) = accounts.get_mut(&game.defender) {
+                    defender.wins += 1;
+
+                    if game.rated.into() {
+                        defender
+                            .rating
+                            .update_rating(attacker_rating, &Outcome::Win);
+                    }
+                }
+
+                let message = format!("= game_over {index} defender_wins");
+                game.attacker_tx.send(message.clone());
+                game.defender_tx.send(message.clone());
+
+                for spectator in game_light.spectators.values() {
+                    if let Some(sender) = self.clients.get(spectator) {
+                        let _ok = sender.send(message.clone());
+                    }
+                }
+
+                game_over = true;
+                winner = Role::Defender;
+            }
+        }
+
+        if game_over {
+            let Some(game) = self.games.0.remove(&index) else {
+                unreachable!()
+            };
+
+            if let Some(game_light) = self.games_light.0.get_mut(&index) {
+                game_light.game_over = true;
+            }
+
+            if let Some(tournament) = &mut self.tournament
+                && let Some(tree) = &mut tournament.tree
+                && let Some(active_game) = tree.active_games.get_mut(&game.id)
+            {
+                match active_game.lock() {
+                    Err(_) => error!("failed to get the active_game lock"),
+                    Ok(mut active_game) => match winner {
+                        Role::Attacker => {
+                            if game.attacker == active_game.player_1 {
+                                active_game.attacker_wins_1 += 1;
+                            } else {
+                                active_game.attacker_wins_2 += 1;
+                            }
+                        }
+                        Role::Defender => {
+                            if game.defender == active_game.player_1 {
+                                active_game.defender_wins_1 += 1;
+                            } else {
+                                active_game.defender_wins_2 += 1;
+                            }
+                        }
+                        Role::Roleless => {}
+                    },
+                }
+            }
+
+            if !self.skip_the_data_file {
+                self.append_archived_game(game)
+                    .map_err(|err| {
+                        error!("{err}");
+                    })
+                    .ok()?;
+            }
+
+            self.save_server();
+
+            return None;
+        }
+
+        Some((
+            self.clients.get(&index_supplied)?.clone(),
+            true,
+            (*command).to_string(),
+        ))
+    }
+
+    fn set_email(
+        &mut self,
+        index_supplied: usize,
+        username: &str,
+        command: &str,
+        email: Option<&str>,
+    ) -> Option<(mpsc::Sender<String>, bool, String)> {
+        let Some(address) = email else {
+            return Some((
+                self.clients.get(&index_supplied)?.clone(),
+                false,
+                (*command).to_string(),
+            ));
+        };
+
+        let Some(account) = self.accounts.0.get_mut(username) else {
+            return Some((
+                self.clients.get(&index_supplied)?.clone(),
+                false,
+                (*command).to_string(),
+            ));
+        };
+
+        let random_u32 = random::<u32>();
+        let email = Email {
+            address: address.to_string(),
+            code: Some(random_u32),
+            username: username.to_string(),
+            verified: false,
+        };
+
+        info!("{index_supplied} {username} email {}", email.tx());
+
+        let email_send = lettre::Message::builder()
+            .from("Hnefatafl Org <no-reply@hnefatafl.org>".parse().ok()?)
+            .to(email.to_mailbox()?)
+            .subject("Account Verification")
+            .header(ContentType::TEXT_PLAIN)
+            .body(format!(
+                "Dear {username},\nyour email verification code is as follows: {random_u32:x}",
+            ))
+            .ok()?;
+
+        let credentials = Credentials::new(self.smtp.username.clone(), self.smtp.password.clone());
+
+        let mailer = SmtpTransport::relay(&self.smtp.service)
+            .ok()?
+            .credentials(credentials)
+            .build();
+
+        match mailer.send(&email_send) {
+            Ok(_) => {
+                info!("email sent to {address} successfully!");
+
+                account.email = Some(email);
+                self.save_server();
+
+                let reply = format!("email {address} false");
+                Some((self.clients.get(&index_supplied)?.clone(), true, reply))
+            }
+            Err(err) => {
+                let reply = format!("could not send email to {address}");
+                error!("{reply}: {err}");
+
+                Some((self.clients.get(&index_supplied)?.clone(), false, reply))
+            }
+        }
+    }
+
+    pub(crate) fn handle_messages(
+        &mut self,
+        rx: &mpsc::Receiver<(String, Option<mpsc::Sender<String>>)>,
+    ) -> anyhow::Result<()> {
+        loop {
+            if let Some((tx, ok, command)) = self.handle_messages_internal(rx) {
+                if ok {
+                    tx.send(format!("= {command}"))?;
+                } else {
+                    tx.send(format!("? {command}"))?;
+                }
+            }
+        }
+    }
+
+    #[allow(clippy::too_many_lines)]
+    fn handle_messages_internal(
+        &mut self,
+        rx: &mpsc::Receiver<(String, Option<mpsc::Sender<String>>)>,
+    ) -> Option<(mpsc::Sender<String>, bool, String)> {
+        let args = Args::parse();
+
+        let (message, option_tx) = rx.recv().ok()?;
+        let index_username_command: Vec<_> = message.split_ascii_whitespace().collect();
+
+        if let (Some(index_supplied), Some(username), Some(command)) = (
+            index_username_command.first(),
+            index_username_command.get(1),
+            index_username_command.get(2),
+        ) {
+            if *command != "display_server" && *command != "login" && *command != "ping" {
+                debug!("{index_supplied} {username} {command}");
+            }
+
+            let index_supplied = index_supplied.parse::<usize>().ok()?;
+            let the_rest: Vec<_> = index_username_command.clone().into_iter().skip(3).collect();
+
+            match *command {
+                "admin" => {
+                    if self.admins.contains(*username) {
+                        self.clients
+                            .get(&index_supplied)?
+                            .send("= admin".to_string())
+                            .ok()?;
+                    }
+
+                    None
+                }
+                "archived_games" => {
+                    self.clients
+                        .get(&index_supplied)?
+                        .send("= archived_games".to_string())
+                        .ok()?;
+
+                    self.clients
+                        .get(&index_supplied)?
+                        .send(ron::ser::to_string(&self.archived_games).ok()?)
+                        .ok()?;
+
+                    None
+                }
+                "change_password" => {
+                    self.change_password(username, index_supplied, command, the_rest.as_slice())
+                }
+                "check_update_rd" => {
+                    let bool = self.check_update_rd();
+                    info!("0 {username} check_update_rd {bool}");
+                    None
+                }
+                "connection_add" => {
+                    if let Some(address) = the_rest.first()
+                        && let Some(tx) = option_tx
+                    {
+                        if let Some(connections) = self.connections.get(*address)
+                            && *connections > 2_000
+                        {
+                            tx.send("true".to_string()).ok()?;
+                        } else {
+                            tx.send("false".to_string()).ok()?;
+
+                            let entry = self.connections.entry(address.to_string());
+                            entry.and_modify(|value| *value += 1).or_insert(1);
+                        }
+                    }
+
+                    debug!("connections: {:?}", self.connections);
+
+                    None
+                }
+                "connection_remove" => {
+                    if let Some(connection) = the_rest.first() {
+                        let entry = self.connections.entry(connection.to_string());
+                        entry.and_modify(|value| *value = value.saturating_sub(1));
+
+                        if let Some(value) = self.connections.get(*connection)
+                            && *value == 0
+                        {
+                            self.connections.remove(*connection);
+                        }
+                    }
+
+                    debug!("connections: {:?}", self.connections);
+
+                    None
+                }
+                "create_account" => self.create_account(
+                    username,
+                    index_supplied,
+                    command,
+                    the_rest.as_slice(),
+                    option_tx,
+                ),
+                "decline_game" => self.decline_game(
+                    username,
+                    index_supplied,
+                    (*command).to_string(),
+                    the_rest.as_slice(),
+                ),
+                "delete_account" => {
+                    self.delete_account(username, index_supplied);
+                    None
+                }
+                "display_games" => {
+                    if args.skip_advertising_updates {
+                        None
+                    } else {
+                        self.clients.get(&index_supplied).map(|tx| {
+                            (
+                                tx.clone(),
+                                true,
+                                format!("display_games {:?}", &self.games_light),
+                            )
+                        })
+                    }
+                }
+                "display_server" => self.display_server(username),
+                "draw" => self.draw(index_supplied, command, the_rest.as_slice()),
+                "game" => self.game(index_supplied, username, command, the_rest.as_slice()),
+                "email" => {
+                    self.set_email(index_supplied, username, command, the_rest.first().copied())
+                }
+                "email_everyone" => {
+                    if self.admins.contains(*username) {
+                        info!("{index_supplied} {username} email_everyone");
+                    } else {
+                        error!("{index_supplied} {username} email_everyone");
+                        return None;
+                    }
+
+                    let emails_bcc = self.bcc_mailboxes(username);
+                    let subject = the_rest.first()?;
+                    let email_string = the_rest.get(1..)?.join(" ").replace("\\n", "\n");
+                    let mut email = lettre::Message::builder();
+
+                    for email_bcc in emails_bcc {
+                        email = email.bcc(email_bcc);
+                    }
+
+                    let email = email
+                        .from("Hnefatafl Org <no-reply@hnefatafl.org>".parse().ok()?)
+                        .subject(*subject)
+                        .header(ContentType::TEXT_PLAIN)
+                        .body(email_string)
+                        .ok()?;
+
+                    let credentials =
+                        Credentials::new(self.smtp.username.clone(), self.smtp.password.clone());
+
+                    let mailer = SmtpTransport::relay(&self.smtp.service)
+                        .ok()?
+                        .credentials(credentials)
+                        .build();
+
+                    match mailer.send(&email) {
+                        Ok(_) => {
+                            info!("emails sent successfully!");
+
+                            Some((
+                                self.clients.get(&index_supplied)?.clone(),
+                                true,
+                                (*command).to_string(),
+                            ))
+                        }
+                        Err(err) => {
+                            let reply = "could not send emails";
+                            error!("{reply}: {err}");
+
+                            Some((
+                                self.clients.get(&index_supplied)?.clone(),
+                                false,
+                                reply.to_string(),
+                            ))
+                        }
+                    }
+                }
+                "emails_bcc" => {
+                    let emails_bcc = self.bcc_send(username);
+
+                    if !emails_bcc.is_empty() {
+                        self.clients
+                            .get(&index_supplied)?
+                            .send(format!("= emails_bcc {emails_bcc}"))
+                            .ok()?;
+                    }
+
+                    None
+                }
+                "email_code" => {
+                    if let Some(account) = self.accounts.0.get_mut(*username)
+                        && let Some(email) = &mut account.email
+                        && let (Some(code_1), Some(code_2)) = (email.code, the_rest.first())
+                    {
+                        if format!("{code_1:x}") == *code_2 {
+                            email.verified = true;
+
+                            self.clients
+                                .get(&index_supplied)?
+                                .send("= email_code".to_string())
+                                .ok()?;
+                        } else {
+                            email.verified = false;
+
+                            self.clients
+                                .get(&index_supplied)?
+                                .send("? email_code".to_string())
+                                .ok()?;
+                        }
+
+                        self.save_server();
+                    }
+
+                    None
+                }
+                "email_get" => {
+                    if let Some(account) = self.accounts.0.get(*username)
+                        && let Some(email) = &account.email
+                    {
+                        self.clients
+                            .get(&index_supplied)?
+                            .send(format!("= email {} {}", email.address, email.verified))
+                            .ok()?;
+                    }
+
+                    None
+                }
+                "email_reset" => {
+                    if let Some(account) = self.accounts.0.get_mut(*username) {
+                        account.email = None;
+                        self.save_server();
+
+                        Some((
+                            self.clients.get(&index_supplied)?.clone(),
+                            true,
+                            (*command).to_string(),
+                        ))
+                    } else {
+                        None
+                    }
+                }
+                "exit" => {
+                    info!("saving active games...");
+                    let mut active_games = Vec::new();
+                    for game in self.games.0.values() {
+                        let mut serialized_game = ServerGameSerialized::from(game);
+
+                        if let Some(game_light) = self.games_light.0.get(&game.id) {
+                            serialized_game.timed = game_light.timed.clone();
+                        }
+
+                        active_games.push(serialized_game);
+                    }
+
+                    let mut file = handle_error(File::create(data_file(ACTIVE_GAMES_FILE)));
+                    handle_error(
+                        file.write_all(
+                            handle_error(postcard::to_allocvec(&active_games)).as_slice(),
+                        ),
+                    );
+
+                    exit(0);
+                }
+                "join_game" => self.join_game(
+                    username,
+                    index_supplied,
+                    (*command).to_string(),
+                    the_rest.as_slice(),
+                ),
+                "join_game_pending" => self.join_game_pending(
+                    (*username).to_string(),
+                    index_supplied,
+                    (*command).to_string(),
+                    the_rest.as_slice(),
+                ),
+                "join_tournament" => {
+                    if let Some(tournament) = &mut self.tournament {
+                        tournament.players.insert(username.to_string());
+                        self.save_server();
+                        self.tournament_status_all();
+                    }
+
+                    None
+                }
+                "leave_game" => self.leave_game(
+                    username,
+                    index_supplied,
+                    (*command).to_string(),
+                    the_rest.as_slice(),
+                ),
+                "leave_tournament" => {
+                    if let Some(tournament) = &mut self.tournament {
+                        tournament.players.remove(*username);
+                        self.save_server();
+                        self.tournament_status_all();
+                    }
+
+                    None
+                }
+                "login" => self.login(
+                    username,
+                    index_supplied,
+                    command,
+                    the_rest.as_slice(),
+                    option_tx,
+                ),
+                "logout" => self.logout(username, index_supplied, command),
+                "message" => {
+                    if Args::parse().skip_message {
+                        return None;
+                    }
+
+                    let message_file = data_file(MESSAGE_FILE);
+                    let mut message = String::new();
+
+                    match fs::read_to_string(&message_file) {
+                        Ok(new_message) => message = new_message.trim().replace('\n', "\\n"),
+                        Err(err) => match err.kind() {
+                            ErrorKind::NotFound => {}
+                            _ => error!("Error loading message: {err}"),
+                        },
+                    }
+
+                    if message.trim().is_empty() {
+                        return None;
+                    }
+
+                    self.clients
+                        .get(&index_supplied)?
+                        .send(format!("= message {message}"))
+                        .ok()?;
+
+                    None
+                }
+                "new_game" => self.new_game(username, index_supplied, command, the_rest.as_slice()),
+                "ping" => Some((
+                    self.clients.get(&index_supplied)?.clone(),
+                    true,
+                    (*command).to_string(),
+                )),
+                "reset_password" => {
+                    let account = self.accounts.0.get_mut(*username)?;
+                    if let Some(email) = &account.email {
+                        if email.verified {
+                            let day = 60 * 60 * 24;
+                            let now = Utc::now().timestamp();
+                            if now - account.email_sent > day {
+                                let password = format!("{:x}", random::<u32>());
+                                account.password = hash_password(&password)?;
+
+                                let message = lettre::Message::builder()
+                                .from("Hnefatafl Org <no-reply@hnefatafl.org>".parse().ok()?)
+                                .to(email.to_mailbox()?)
+                                .subject("Password Reset")
+                                .header(ContentType::TEXT_PLAIN)
+                                .body(format!(
+                                    "Dear {username},\nyour new password is as follows: {password}",
+                                ))
+                                .ok()?;
+
+                                let credentials = Credentials::new(
+                                    self.smtp.username.clone(),
+                                    self.smtp.password.clone(),
+                                );
+
+                                let mailer = SmtpTransport::relay(&self.smtp.service)
+                                    .ok()?
+                                    .credentials(credentials)
+                                    .build();
+
+                                match mailer.send(&message) {
+                                    Ok(_) => {
+                                        info!("email sent to {} successfully!", email.address);
+                                        account.email_sent = now;
+                                        self.save_server();
+                                    }
+                                    Err(err) => {
+                                        error!("could not send email to {}: {err}", email.address);
+                                    }
+                                }
+                            }
+                            {
+                                error!(
+                                    "a password reset email was sent less than a day ago for {username}"
+                                );
+                            }
+                        } else {
+                            error!("the email address for account {username} is unverified");
+                        }
+                    } else {
+                        error!("no email exists for account {username}");
+                    }
+
+                    None
+                }
+                "resume_game" => self.resume_game(username, index_supplied, command, &the_rest),
+                "request_draw" => self.request_draw(username, index_supplied, command, &the_rest),
+                "text" => {
+                    let timestamp = timestamp();
+                    let the_rest = the_rest.join(" ");
+                    info!("{index_supplied} {timestamp} {username} text {the_rest}");
+
+                    let text = format!("= text {timestamp} {username}: {the_rest}");
+                    if self.texts.len() >= 32 {
+                        self.texts.pop_front();
+                    }
+
+                    for tx in &mut self.clients.values() {
+                        let _ok = tx.send(text.clone());
+                    }
+                    self.texts.push_back(text);
+
+                    None
+                }
+                "texts" => {
+                    if !self.texts.is_empty() {
+                        let string = Vec::from(self.texts.clone()).join("\n");
+
+                        self.clients.get(&index_supplied)?.send(string).ok()?;
+                    }
+
+                    None
+                }
+                "text_game" => self.text_game(username, index_supplied, command, the_rest),
+                "tournament_delete" => {
+                    if self.admins.contains(*username) {
+                        self.tournament = None;
+                        self.save_server();
+                        self.tournament_status_all();
+                    }
+
+                    None
+                }
+                "tournament_tree_delete" => {
+                    if self.admins.contains(*username)
+                        && let Some(tournament) = &mut self.tournament
+                    {
+                        tournament.tree = None;
+                        self.save_server();
+                        self.tournament_status_all();
+                    }
+
+                    None
+                }
+                "tournament_date" => {
+                    if self.admins.contains(*username) {
+                        if let Err(error) = self.tournament_date(&the_rest) {
+                            error!("{error}");
+                        } else {
+                            self.tournament_status_all();
+                        }
+                    }
+
+                    None
+                }
+                "tournament_status" => {
+                    if args.skip_advertising_updates {
+                        None
+                    } else {
+                        let tx = self.clients.get(&index_supplied)?;
+                        let tournament = ron::ser::to_string(&self.tournament).ok()?;
+
+                        Some((tx.clone(), true, format!("tournament_status {tournament}")))
+                    }
+                }
+                "tournament_start" => {
+                    if self.admins.contains(*username) {
+                        self.tournament_tree();
+                        self.save_server();
+                        self.tournament_status_all();
+                    }
+
+                    None
+                }
+                "watch_game" => self.watch_game(
+                    username,
+                    index_supplied,
+                    (*command).to_string(),
+                    the_rest.as_slice(),
+                ),
+                "=" => None,
+                _ => self.clients.get(&index_supplied).map(|channel| {
+                    error!("{index_supplied} {username} {command}");
+                    (channel.clone(), false, (*command).to_string())
+                }),
+            }
+        } else {
+            error!("{index_username_command:?}");
+            None
+        }
+    }
+
+    fn join_game(
+        &mut self,
+        username: &str,
+        index_supplied: usize,
+        command: String,
+        the_rest: &[&str],
+    ) -> Option<(mpsc::Sender<String>, bool, String)> {
+        let Some(id) = the_rest.first() else {
+            return Some((self.clients.get(&index_supplied)?.clone(), false, command));
+        };
+        let Ok(id) = id.parse::<Id>() else {
+            return Some((self.clients.get(&index_supplied)?.clone(), false, command));
+        };
+
+        info!("{index_supplied} {username} join_game {id}");
+        let Some(game) = self.games_light.0.get_mut(&id) else {
+            unreachable!();
+        };
+        game.challenge_accepted = true;
+
+        let (Some(attacker_tx), Some(defender_tx)) = (game.attacker_channel, game.defender_channel)
+        else {
+            unreachable!()
+        };
+
+        for tx in [&attacker_tx, &defender_tx] {
+            self.clients
+                .get(tx)?
+                .send(format!(
+                    "= join_game {} {} {} {:?} {}",
+                    game.attacker.clone()?,
+                    game.defender.clone()?,
+                    game.rated,
+                    game.timed,
+                    game.board_size,
+                ))
+                .ok()?;
+        }
+
+        let new_game = ServerGame::new(
+            Some(self.clients.get(&attacker_tx)?.clone()),
+            Some(self.clients.get(&defender_tx)?.clone()),
+            game.clone(),
+        );
+        self.games.0.insert(id, new_game);
+
+        if let Some(account) = self.accounts.0.get_mut(username) {
+            account.pending_games.remove(&id);
+        }
+
+        self.clients
+            .get(&attacker_tx)?
+            .send(format!("game {id} generate_move attacker"))
+            .ok()?;
+
+        None
+    }
+
+    fn join_game_pending(
+        &mut self,
+        username: String,
+        index_supplied: usize,
+        mut command: String,
+        the_rest: &[&str],
+    ) -> Option<(mpsc::Sender<String>, bool, String)> {
+        let channel = self.clients.get(&index_supplied)?;
+
+        let Some(id) = the_rest.first() else {
+            return Some((channel.clone(), false, command));
+        };
+        let Ok(id) = id.parse::<Id>() else {
+            return Some((channel.clone(), false, command));
+        };
+
+        info!("{index_supplied} {username} join_game_pending {id}");
+        let Some(game) = self.games_light.0.get_mut(&id) else {
+            command.push_str(" the id doesn't refer to a pending game");
+            return Some((channel.clone(), false, command));
+        };
+
+        if game.attacker.is_none() {
+            game.attacker = Some(username.clone());
+            game.attacker_channel = Some(index_supplied);
+
+            if let Some(channel) = game.defender_channel
+                && let Some(channel) = self.clients.get(&channel)
+            {
+                let _ok = channel.send(format!("= challenge_requested {id}"));
+            }
+        } else if game.defender.is_none() {
+            game.defender = Some(username.clone());
+            game.defender_channel = Some(index_supplied);
+
+            if let Some(channel) = game.attacker_channel
+                && let Some(channel) = self.clients.get(&channel)
+            {
+                let _ok = channel.send(format!("= challenge_requested {id}"));
+            }
+        }
+        game.challenger.0 = Some(username);
+
+        command.push(' ');
+        command.push_str(the_rest.first()?);
+
+        Some((channel.clone(), true, command))
+    }
+
+    fn leave_game(
+        &mut self,
+        username: &str,
+        index_supplied: usize,
+        mut command: String,
+        the_rest: &[&str],
+    ) -> Option<(mpsc::Sender<String>, bool, String)> {
+        let Some(id) = the_rest.first() else {
+            return Some((self.clients.get(&index_supplied)?.clone(), false, command));
+        };
+        let Ok(id) = id.parse::<Id>() else {
+            return Some((self.clients.get(&index_supplied)?.clone(), false, command));
+        };
+        if let Some(account) = self.accounts.0.get_mut(username) {
+            account.pending_games.remove(&id);
+        }
+
+        info!("{index_supplied} {username} leave_game {id}");
+
+        let mut remove = false;
+        match self.games_light.0.get_mut(&id) {
+            Some(game) => {
+                if let Some(attacker) = &game.attacker
+                    && username == attacker
+                {
+                    game.attacker = None;
+                }
+                if let Some(defender) = &game.defender
+                    && username == defender
+                {
+                    game.defender = None;
+                }
+                if let Some(challenger) = &game.challenger.0
+                    && username == challenger
+                {
+                    game.challenger.0 = None;
+                }
+
+                game.spectators.remove(username);
+
+                if game.attacker.is_none() && game.defender.is_none() {
+                    remove = true;
+                }
+            }
+            None => return Some((self.clients.get(&index_supplied)?.clone(), false, command)),
+        }
+
+        if remove {
+            self.games_light.0.remove(&id);
+        }
+
+        command.push(' ');
+        command.push_str(the_rest.first()?);
+        Some((self.clients.get(&index_supplied)?.clone(), true, command))
+    }
+
+    fn login(
+        &mut self,
+        username: &str,
+        index_supplied: usize,
+        command: &str,
+        the_rest: &[&str],
+        option_tx: Option<Sender<String>>,
+    ) -> Option<(mpsc::Sender<String>, bool, String)> {
+        let password_1 = the_rest.join(" ");
+        let tx = option_tx?;
+        if let Some(account) = self.accounts.0.get_mut(username) {
+            // The username is in the database and already logged in.
+            if let Some(index_database) = account.logged_in {
+                info!("{index_supplied} {username} login failed, {index_database} is logged in");
+
+                Some(((tx), false, (*command).to_string()))
+            // The username is in the database, but not logged in yet.
+            } else {
+                let hash_2 = PasswordHash::try_from(account.password.as_str()).ok()?;
+                if let Err(_error) =
+                    Argon2::default().verify_password(password_1.as_bytes(), &hash_2)
+                {
+                    info!("{index_supplied} {username} provided the wrong password");
+                    return Some((tx, false, (*command).to_string()));
+                }
+                info!("{index_supplied} {username} logged in");
+
+                self.clients.insert(index_supplied, tx);
+                account.logged_in = Some(index_supplied);
+
+                Some((
+                    self.clients.get(&index_supplied)?.clone(),
+                    true,
+                    (*command).to_string(),
+                ))
+            }
+        // The username is not in the database.
+        } else {
+            info!("{index_supplied} {username} is not in the database");
+            Some((tx, false, (*command).to_string()))
+        }
+    }
+
+    fn logout(
+        &mut self,
+        username: &str,
+        index_supplied: usize,
+        command: &str,
+    ) -> Option<(mpsc::Sender<String>, bool, String)> {
+        // The username is in the database and already logged in.
+        if let Some(account) = self.accounts.0.get_mut(username) {
+            for id in &account.pending_games {
+                if let Some(tx) = &self.tx
+                    && let Some(game) = self.games_light.0.get(id)
+                    && let TimeSettings::Timed(Time {
+                        milliseconds_left, ..
+                    }) = game.timed
+                    && milliseconds_left < 1_000 * 60 * 60 * 24
+                {
+                    let _ok =
+                        tx.send((format!("{index_supplied} {username} leave_game {id}"), None));
+                }
+            }
+
+            if let Some(index_database) = account.logged_in
+                && index_database == index_supplied
+            {
+                info!("{index_supplied} {username} logged out");
+                account.logged_in = None;
+                self.clients.remove(&index_database);
+                return None;
+            }
+        }
+
+        self.clients
+            .get(&index_supplied)
+            .map(|sender| (sender.clone(), false, (*command).to_string()))
+    }
+
+    /// ```sh
+    /// <- new_game attacker rated fischer 900000 10 13
+    /// -> = new_game game 6 player-1 _ rated fischer 900000 10 _ false {}
+    /// ```
+    fn new_game(
+        &mut self,
+        username: &str,
+        index_supplied: usize,
+        command: &str,
+        the_rest: &[&str],
+    ) -> Option<(mpsc::Sender<String>, bool, String)> {
+        if the_rest.len() < 6 {
+            return Some((
+                self.clients.get(&index_supplied)?.clone(),
+                false,
+                (*command).to_string(),
+            ));
+        }
+
+        let role = the_rest.first()?;
+        let Ok(role) = Role::from_str(role) else {
+            return Some((
+                self.clients.get(&index_supplied)?.clone(),
+                false,
+                (*command).to_string(),
+            ));
+        };
+
+        let rated = the_rest.get(1)?;
+        let Ok(rated) = Rated::from_str(rated) else {
+            return Some((
+                self.clients.get(&index_supplied)?.clone(),
+                false,
+                (*command).to_string(),
+            ));
+        };
+
+        let timed = the_rest.get(2)?;
+        let minutes = the_rest.get(3)?;
+        let add_seconds = the_rest.get(4)?;
+
+        let Ok(timed) = TimeSettings::try_from(vec!["time-settings", timed, minutes, add_seconds])
+        else {
+            return Some((
+                self.clients.get(&index_supplied)?.clone(),
+                false,
+                (*command).to_string(),
+            ));
+        };
+
+        let board_size = the_rest.get(5)?;
+        let board_size = BoardSize::from_str(board_size).ok()?;
+
+        info!(
+            "{index_supplied} {username} new_game {} {role} {rated} {timed:?} {board_size}",
+            self.game_id
+        );
+        let game = ServerGameLight::new(
+            self.game_id,
+            (*username).to_string(),
+            rated,
+            timed,
+            board_size,
+            index_supplied,
+            role,
+        );
+
+        let command = format!("{command} {game:?}");
+        self.games_light.0.insert(self.game_id, game);
+
+        if let Some(account) = self.accounts.0.get_mut(username) {
+            account.pending_games.insert(self.game_id);
+        }
+
+        self.game_id += 1;
+        Some((self.clients.get(&index_supplied)?.clone(), true, command))
+    }
+
+    #[must_use]
+    fn new_tournament_game(&mut self, attacker: &str, defender: &str) -> Id {
+        let id = self.game_id;
+        self.game_id += 1;
+
+        let game_light = ServerGameLight {
+            id,
+            attacker: Some(attacker.to_string()),
+            defender: Some(defender.to_string()),
+            challenger: Challenger(None),
+            rated: Rated::Yes,
+            timed: TimeEnum::Long.into(),
+            attacker_channel: None,
+            defender_channel: None,
+            spectators: HashMap::new(),
+            challenge_accepted: true,
+            game_over: false,
+            board_size: BoardSize::_11,
+        };
+
+        info!(
+            "0 server new_tournament_game {id} {} {:?} {}",
+            game_light.rated, game_light.timed, game_light.board_size
+        );
+
+        let game = ServerGame::new(None, None, game_light.clone());
+
+        self.games_light.0.insert(id, game_light);
+        self.games.0.insert(id, game);
+
+        id
+    }
+
+    fn resume_game(
+        &mut self,
+        username: &str,
+        index_supplied: usize,
+        command: &str,
+        the_rest: &[&str],
+    ) -> Option<(mpsc::Sender<String>, bool, String)> {
+        let Some(id) = the_rest.first() else {
+            return Some((
+                self.clients.get(&index_supplied)?.clone(),
+                false,
+                (*command).to_string(),
+            ));
+        };
+        let Ok(id) = id.parse::<Id>() else {
+            return Some((
+                self.clients.get(&index_supplied)?.clone(),
+                false,
+                (*command).to_string(),
+            ));
+        };
+
+        let Some(server_game) = self.games.0.get(&id) else {
+            unreachable!()
+        };
+
+        let game = &server_game.game;
+        let Ok(board) = ron::ser::to_string(game) else {
+            unreachable!()
+        };
+        let texts = &server_game.texts;
+        let Ok(texts) = ron::ser::to_string(&texts) else {
+            unreachable!()
+        };
+
+        info!("{index_supplied} {username} watch_game {id}");
+        let Some(game_light) = self.games_light.0.get_mut(&id) else {
+            unreachable!();
+        };
+
+        if Some((*username).to_string()) == game_light.attacker {
+            if let Some(server_game) = self.games.0.get_mut(&id) {
+                server_game.attacker_tx =
+                    Messenger::new(self.clients.get(&index_supplied)?.clone());
+            }
+            game_light.attacker_channel = Some(index_supplied);
+        } else if Some((*username).to_string()) == game_light.defender {
+            if let Some(server_game) = self.games.0.get_mut(&id) {
+                server_game.defender_tx =
+                    Messenger::new(self.clients.get(&index_supplied)?.clone());
+            }
+            game_light.defender_channel = Some(index_supplied);
+        }
+
+        self.clients
+            .get(&index_supplied)?
+            .send(format!(
+                "= resume_game {} {} {} {:?} {} {board} {texts}",
+                game_light.attacker.clone()?,
+                game_light.defender.clone()?,
+                game_light.rated,
+                game_light.timed,
+                game_light.board_size,
+            ))
+            .ok()?;
+
+        None
+    }
+
+    fn request_draw(
+        &mut self,
+        username: &str,
+        index_supplied: usize,
+        command: &str,
+        the_rest: &[&str],
+    ) -> Option<(mpsc::Sender<String>, bool, String)> {
+        let Some(id) = the_rest.first() else {
+            return Some((
+                self.clients.get(&index_supplied)?.clone(),
+                false,
+                (*command).to_string(),
+            ));
+        };
+        let Ok(id) = id.parse::<Id>() else {
+            return Some((
+                self.clients.get(&index_supplied)?.clone(),
+                false,
+                (*command).to_string(),
+            ));
+        };
+
+        let Some(role) = the_rest.get(1) else {
+            return Some((
+                self.clients.get(&index_supplied)?.clone(),
+                false,
+                (*command).to_string(),
+            ));
+        };
+        let Ok(role) = Role::from_str(role) else {
+            return Some((
+                self.clients.get(&index_supplied)?.clone(),
+                false,
+                (*command).to_string(),
+            ));
+        };
+
+        info!("{index_supplied} {username} request_draw {id} {role}");
+
+        let message = format!("request_draw {id} {role}");
+        if let Some(game) = self.games.0.get(&id) {
+            match role {
+                Role::Attacker => {
+                    game.defender_tx.send(message);
+                }
+                Role::Roleless => {}
+                Role::Defender => {
+                    game.attacker_tx.send(message);
+                }
+            }
+        }
+
+        Some((
+            self.clients.get(&index_supplied)?.clone(),
+            true,
+            (*command).to_string(),
+        ))
+    }
+
+    fn save_server(&self) {
+        if !self.skip_the_data_file {
+            let mut server = self.clone();
+
+            for account in server.accounts.0.values_mut() {
+                account.logged_in = None;
+            }
+
+            match ron::ser::to_string_pretty(&server, ron::ser::PrettyConfig::default()) {
+                Ok(string) => {
+                    if !string.trim().is_empty() {
+                        let users_file = data_file(USERS_FILE);
+
+                        match File::create(&users_file) {
+                            Ok(mut file) => {
+                                if let Err(error) = file.write_all(string.as_bytes()) {
+                                    error!("save file (3): {error}");
+                                }
+                            }
+                            Err(error) => error!("save file (2): {error}"),
+                        }
+                    }
+                }
+                Err(error) => error!("save file (1): {error}"),
+            }
+        }
+    }
+
+    fn text_game(
+        &mut self,
+        username: &str,
+        index_supplied: usize,
+        command: &str,
+        mut the_rest: Vec<&str>,
+    ) -> Option<(mpsc::Sender<String>, bool, String)> {
+        let Some(id) = the_rest.first() else {
+            return Some((
+                self.clients.get(&index_supplied)?.clone(),
+                false,
+                (*command).to_string(),
+            ));
+        };
+        let Ok(id) = id.parse::<Id>() else {
+            return Some((
+                self.clients.get(&index_supplied)?.clone(),
+                false,
+                (*command).to_string(),
+            ));
+        };
+
+        let timestamp = timestamp();
+        let text = the_rest.split_off(1);
+        let mut text = text.join(" ");
+        text = format!("{timestamp} {username}: {text}");
+        info!("{index_supplied} {username} text_game {id} {text}");
+
+        if let Some(game) = self.games.0.get_mut(&id) {
+            game.texts.push_front(text.clone());
+        }
+
+        text = format!("= text_game {text}");
+
+        if let Some(game) = self.games_light.0.get(&id) {
+            let mut watching = false;
+            for (spectator, index) in &game.spectators {
+                if spectator == username {
+                    watching = true;
+                }
+
+                if let Some(sender) = self.clients.get(index) {
+                    let _ok = sender.send(text.clone());
+                }
+            }
+
+            if watching {
+                return None;
+            }
+
+            if let Some(attacker_channel) = game.attacker_channel
+                && let Some(sender) = self.clients.get(&attacker_channel)
+            {
+                let _ok = sender.send(text.clone());
+            }
+
+            if let Some(defender_channel) = game.defender_channel
+                && let Some(sender) = self.clients.get(&defender_channel)
+            {
+                let _ok = sender.send(text.clone());
+            }
+        }
+
+        None
+    }
+
+    fn tournament_date(&mut self, the_rest: &[&str]) -> anyhow::Result<()> {
+        let mut tournament = Tournament::default();
+
+        let Some(date) = the_rest.first() else {
+            return Err(anyhow::Error::msg("tournament_date: date is empty"));
+        };
+
+        let datetime = match DateTime::parse_from_str(
+            &format!("{date} 00:00:00 +0000"),
+            "%Y-%m-%d %H:%M:%S %z",
+        ) {
+            Ok(datetime) => datetime,
+            Err(error) => return Err(anyhow::Error::msg(format!("tournament_date: {error}"))),
+        };
+
+        tournament.date = datetime.to_utc();
+        self.tournament = Some(tournament);
+        self.save_server();
+
+        Ok(())
+    }
+
+    fn tournament_ready_to_playing(&mut self) {
+        let mut new_games = Vec::new();
+
+        if let Some(tournament) = &mut self.tournament
+            && let Some(tree) = &mut tournament.tree
+        {
+            for (i, round) in tree.rounds.iter_mut().enumerate() {
+                for (j, statuses) in round.chunks_mut(2).enumerate() {
+                    let (status_1, status_2) = statuses.split_at_mut(1);
+                    let (Some(status_1), Some(status_2)) =
+                        (status_1.first_mut(), status_2.first_mut())
+                    else {
+                        continue;
+                    };
+
+                    if let tournament::Status::Ready(player_1) = status_1.clone()
+                        && let tournament::Status::Ready(player_2) = status_2.clone()
+                    {
+                        *status_1 = tournament::Status::Playing(player_1.clone());
+                        *status_2 = tournament::Status::Playing(player_2.clone());
+
+                        new_games.push((player_1.name, player_2.name, i, j));
+                    }
+                }
+            }
+        }
+
+        for (player_1, player_2, round, chunk) in new_games {
+            let id_1 = self.new_tournament_game(&player_1, &player_2);
+            let id_2 = self.new_tournament_game(&player_2, &player_1);
+
+            let game_players = Players {
+                round,
+                chunk,
+                player_1,
+                player_2,
+                attacker_wins_1: 0,
+                attacker_wins_2: 0,
+                defender_wins_1: 0,
+                defender_wins_2: 0,
+            };
+
+            let game_players = Arc::new(Mutex::new(game_players));
+
+            if let Some(tournament) = &mut self.tournament
+                && let Some(tree) = &mut tournament.tree
+            {
+                tree.active_games.insert(id_1, game_players.clone());
+                tree.active_games.insert(id_2, game_players.clone());
+            }
+        }
+    }
+
+    fn tournament_status_all(&self) {
+        if let Ok(mut tournament) = ron::ser::to_string(&self.tournament) {
+            tournament = format!("= tournament_status {tournament}");
+
+            for tx in self.clients.values() {
+                let _ok = tx.send(tournament.clone());
+            }
+        }
+    }
+
+    fn tournament_tree(&mut self) {
+        let Some(tournament) = &mut self.tournament else {
+            return;
+        };
+
+        let mut players = Vec::new();
+        for player in &tournament.players {
+            if let Some(account) = self.accounts.0.get(player) {
+                players.push(Player {
+                    name: player.clone(),
+                    rating: account.rating.rating.round_ties_even(),
+                });
+            }
+        }
+        players.sort_by(|a, b| a.rating.total_cmp(&b.rating));
+
+        tournament.tree = Some(TournamentTree {
+            active_games: HashMap::new(),
+            rounds: vec![generate_round_one(players)],
+        });
+
+        self.tournament_update_wins();
+        self.tournament_ready_to_playing();
+    }
+
+    fn tournament_update_wins(&mut self) {
+        if let Some(tournament) = &mut self.tournament
+            && let Some(tree) = &mut tournament.tree
+        {
+            let mut updates = Vec::new();
+
+            for (i, round) in tree.rounds.iter_mut().enumerate() {
+                let mut player = None;
+                let mut move_forward = false;
+                let new_round_length = round.len() / 2;
+
+                for (mut j, status) in round.iter_mut().enumerate() {
+                    if j % 2 == 0 {
+                        move_forward = false;
+                        player = None;
+                    }
+
+                    j /= 2;
+                    if j % 2 != 0 {
+                        j = new_round_length - j;
+                    }
+
+                    match &status {
+                        tournament::Status::Lost(_)
+                        | tournament::Status::Playing(_)
+                        | tournament::Status::Waiting => continue,
+                        tournament::Status::None => {
+                            move_forward = true;
+                        }
+                        tournament::Status::Ready(p) => player = Some(p.clone()),
+                        tournament::Status::Won(player) => {
+                            updates.push((i + 1, j, player.clone()));
+                        }
+                    }
+
+                    if move_forward && let Some(player) = &player {
+                        updates.push((i + 1, j, player.clone()));
+                    }
+                }
+            }
+
+            for (i, j, player) in updates {
+                let len;
+
+                if let Some(round) = tree.rounds.get(i - 1) {
+                    len = round.len() / 2;
+                } else {
+                    error!("tree.rounds.get({i} - 1) is None");
+                    return;
+                }
+
+                if tree.rounds.get(i).is_none() {
+                    let mut round = Vec::new();
+
+                    for _ in 0..len {
+                        round.push(tournament::Status::Waiting);
+                    }
+
+                    tree.rounds.push(round);
+                }
+
+                if let Some(round) = tree.rounds.get_mut(i)
+                    && let Some(status) = round.get_mut(j)
+                {
+                    *status = tournament::Status::Ready(player);
+                } else {
+                    error!("tree.rounds[{i}][{j}] is None");
+                    return;
+                }
+            }
+        }
+    }
+
+    fn watch_game(
+        &mut self,
+        username: &str,
+        index_supplied: usize,
+        command: String,
+        the_rest: &[&str],
+    ) -> Option<(mpsc::Sender<String>, bool, String)> {
+        let Some(id) = the_rest.first() else {
+            return Some((self.clients.get(&index_supplied)?.clone(), false, command));
+        };
+        let Ok(id) = id.parse::<Id>() else {
+            return Some((self.clients.get(&index_supplied)?.clone(), false, command));
+        };
+
+        if let Some(game) = self.games_light.0.get_mut(&id) {
+            game.spectators.insert(username.to_string(), index_supplied);
+        }
+
+        let Some(server_game) = self.games.0.get(&id) else {
+            unreachable!()
+        };
+
+        let game = &server_game.game;
+        let Ok(board) = ron::ser::to_string(game) else {
+            unreachable!()
+        };
+        let texts = &server_game.texts;
+        let Ok(texts) = ron::ser::to_string(&texts) else {
+            unreachable!()
+        };
+
+        info!("{index_supplied} {username} watch_game {id}");
+        let Some(game) = self.games_light.0.get_mut(&id) else {
+            unreachable!()
+        };
+
+        self.clients
+            .get(&index_supplied)?
+            .send(format!(
+                "= watch_game {} {} {} {:?} {} {board} {texts}",
+                game.attacker.clone()?,
+                game.defender.clone()?,
+                game.rated,
+                game.timed,
+                game.board_size,
+            ))
+            .ok()?;
+
+        None
     }
 }
