@@ -1548,23 +1548,37 @@ impl<'a> Client {
             user_area = user_area.push(row![heat_map, heat_map_button].spacing(SPACING));
             user_area = user_area.push(leave);
 
-            let mut left_all = button(text(&self.chars.double_arrow_left_full));
-            let mut left = button(text(&self.chars.double_arrow_left));
+            let mut left_all =
+                button(text(&self.chars.double_arrow_left_full).font(Font::MONOSPACE));
+
+            let mut left = button(text(&self.chars.double_arrow_left).font(Font::MONOSPACE));
             if handle.play > 0 {
                 left_all = left_all.on_press(Message::ReviewGameBackwardAll);
                 left = left.on_press(Message::ReviewGameBackward);
             }
 
-            let mut right = button(text(&self.chars.double_arrow_right).center());
-            let mut right_all = button(text(&self.chars.double_arrow_right_full).center());
+            let mut right = button(
+                text(&self.chars.double_arrow_right)
+                    .center()
+                    .font(Font::MONOSPACE),
+            );
+            let mut right_all = button(
+                text(&self.chars.double_arrow_right_full)
+                    .center()
+                    .font(Font::MONOSPACE),
+            );
             if handle.boards.has_children() {
                 right = right.on_press(Message::ReviewGameForward);
                 right_all = right_all.on_press(Message::ReviewGameForwardAll);
             }
 
             let child_number = text(handle.boards.next_child);
-            let child_right = button(text(&self.chars.double_arrow_right).center())
-                .on_press(Message::ReviewGameChildNext);
+            let child_right = button(
+                text(&self.chars.double_arrow_right)
+                    .center()
+                    .font(Font::MONOSPACE),
+            )
+            .on_press(Message::ReviewGameChildNext);
 
             user_area = user_area.push(
                 row![left_all, left, right, right_all, child_right, child_number].spacing(SPACING),
