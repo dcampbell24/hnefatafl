@@ -265,7 +265,7 @@ fn login(
 
         if buf.trim().is_empty() {
             return Err(anyhow::Error::msg(
-                "the user tried to login with whitespace alone",
+                "The user sent a command without logging in, then quit.",
             ));
         }
 
