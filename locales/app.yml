@@ -34,6 +34,23 @@ Accept Draw:
   sv-SE: Acceptera oavgjort
   ko: 무승부 수락
 
+Account already exists.:
+  en-US: Account already exists.
+  zh-CN: Account alre
+  es: La cuenta ya existe.
+  ar: الحساب موجود بالفعل.
+  id: Akun sudah ada.
+  pt-BR: A conta já existe.
+  pt-PT: A conta já existe.
+  fr: Ce compte existe déjà.
+  ja: アカウントは既に存在します。
+  ru: Учетная запись уже существует.
+  de: Das Konto existiert bereits.
+  is-IS: Reikningur er þegar til.
+  is-RU: ᚱᛂᛁᚴᚿᛁᚿᚵᚢᚱ ᛂᚱ ᚦᛂᚵᛆᚱ ᛐᛁᛚ.
+  sv-SE: Kontot finns redan.
+  ko: 이미 계정이 존재합니다.
+
 Account Settings:
   en-US: Account Settings
   zh-CN: 帐户设置
@@ -476,6 +493,23 @@ Login:
   sv-SE: Inloggning
   ko: 로그인
 
+Login password is wrong (try lowercase), account doesn't exist, or you're already logged in.:
+  en-US: Login password is wrong (try lowercase), account doesn't exist, or you're already logged in.
+  zh-CN: 登录密码错误（请尝试使用小写字母），账号不存在，或者您已登录。
+  es: La contraseña de inicio de sesión es incorrecta (intente con minúsculas), la cuenta no existe o ya ha iniciado sesión.
+  ar: كلمة مرور تسجيل الدخول خاطئة (جرب استخدام الأحرف الصغيرة)، أو أن الحساب غير موجود، أو أنك مسجل الدخول بالفعل.
+  id: Kata sandi login salah (coba gunakan huruf kecil), akun tidak ada, atau Anda sudah masuk.
+  pt-BR: A senha de login está incorreta (tente usar letras minúsculas), a conta não existe ou você já está logado.
+  pt-PT: A palavra-passe de login está incorreta (tente usar letras minúsculas), a conta não existe ou já está ligado.
+  fr: Le mot de passe de connexion est incorrect (essayez en minuscules), le compte n'existe pas ou vous êtes déjà connecté.
+  ja: ログインパスワードが間違っている（小文字で試してみてください）、アカウントが存在しない、または既にログイン済みです。
+  ru: Неверный пароль для входа (попробуйте использовать строчные буквы), учетная запись не существует или вы уже вошли в систему.
+  de: Das Anmeldekennwort ist falsch (versuchen Sie es mit Kleinbuchstaben), das Konto existiert nicht oder Sie sind bereits angemeldet.
+  is-IS: Innskráningarlykilorðið er rangt (prófaðu lágstafi), aðgangurinn er ekki til eða þú ert þegar skráð(ur) inn.
+  is-RU: ᛁᚿᚿᛋᚴᚱᚨᚿᛁᚿᚵᛆᚱᛚᛣᚴᛁᛚᚮᚱᚧᛁᚧ ᛂᚱ ᚱᛆᚿᚵᛐ (ᛔᚱᛟᚠᛆᚧᚢ ᛚᚨᚵᛋᛐᛆᚠᛁ), ᛆᚧᚵᛆᚿᚵᚢᚱᛁᚿᚿ ᛂᚱ ᛂᚴᚴᛁ ᛐᛁᛚ ᛂᚧᛆ ᚦᚤ ᛂᚱᛐ ᚦᛂᚵᛆᚱ ᛋᚴᚱᚨᚧ(ᚢᚱ) ᛁᚿᚿ.
+  sv-SE: Inloggningslösenordet är felaktigt (prova med gemener), kontot finns inte eller så är du redan inloggad.
+  ko: 로그인 비밀번호가 잘못되었거나 (소문자로 다시 시도해 보세요), 계정이 존재하지 않거나, 이미 로그인되어 있는 상태입니다.
+
 Muted:
   en-US: Muted
   zh-CN: 静音
@@ -867,6 +901,23 @@ Rules:
   sv-SE: Regler
   ko: 규칙
 
+Sent a password reset email if a verified email exists for this account and the last password reset happened more than a day ago.:
+  en-US: Sent a password reset email if a verified email exists for this account and the last password reset happened more than a day ago.
+  zh-CN: 如果该帐户存在已验证的电子邮件地址，并且上次重置密码的时间已超过一天，则会发送密码重置电子邮件。
+  es: Se enviará un correo electrónico para restablecer la contraseña si existe una dirección de correo electrónico verificada asociada a esta cuenta y si el último restablecimiento de contraseña se realizó hace más de un día.
+  ar: سيتم إرسال بريد إلكتروني لإعادة تعيين كلمة المرور إذا كان هناك بريد إلكتروني موثق لهذا الحساب، وإذا لم يتم إعادة تعيين كلمة المرور خلال اليوم الماضي.
+  id: Email pengaturan ulang kata sandi akan dikirim jika terdapat alamat email terverifikasi untuk akun ini dan pengaturan ulang kata sandi terakhir dilakukan lebih dari sehari yang lalu.
+  pt-BR: Um e-mail para redefinir a senha será enviado caso exista um endereço de e-mail verificado associado a esta conta e a última redefinição de senha tenha ocorrido há mais de um dia.
+  pt-PT: Um e-mail para redefinir a senha será enviado caso exista um endereço de e-mail verificado associado a esta conta e a última redefinição de senha tenha ocorrido há mais de um dia.
+  fr: Un courriel de réinitialisation du mot de passe sera envoyé si une adresse courriel vérifiée est associée à ce compte et si la dernière réinitialisation du mot de passe remonte à plus d'un jour.
+  ja: このアカウントに認証済みのメールアドレスが存在し、かつ前回のパスワードリセットから1日以上経過している場合、パスワードリセットメールを送信します。
+  ru: Если для этой учетной записи существует подтвержденный адрес электронной почты и с момента последнего сброса пароля прошло более суток, будет отправлено электронное письмо со ссылкой для сброса пароля.
+  de: Es wurde eine E-Mail zum Zurücksetzen des Passworts versendet, falls für dieses Konto eine verifizierte E-Mail-Adresse existiert und die letzte Passwortzurücksetzung vor mehr als einem Tag stattgefunden hat.
+  is-IS: Sendi tölvupóst um endurstillingu lykilorðs ef staðfest netfang er til staðar fyrir þennan reikning og síðasta endurstilling lykilorðsins átti sér stað fyrir meira en degi.
+  is-RU: ᛋᛂᚿᛑᛁ ᛐᚯᛚᚡᚢᛔᛟᛋᛐ ᚢᛘ ᛂᚿᛑᚢᚱᛋᛐᛁᛚᛚᛁᚿᚵᚢ ᛚᛣᚴᛁᛚᚮᚱᚧᛋ ᛂᚠ ᛋᛐᛆᚧᚠᛂᛋᛐ ᚿᛂᛐᚠᛆᚿᚵ ᛂᚱ ᛐᛁᛚ ᛋᛐᛆᚧᛆᚱ ᚠᛣᚱᛁᚱ ᚦᛂᚿᚿᛆᚿ ᚱᛂᛁᚴᚿᛁᚿᚵ ᚮᚵ ᛋᛇᚧᛆᛋᛐᛆ ᛂᚿᛑᚢᚱᛋᛐᛁᛚᛚᛁᚿᚵ ᛚᛣᚴᛁᛚᚮᚱᚧᛋᛁᚿᛋ ᚨᛐᛐᛁ ᛋᛖᚱ ᛋᛐᛆᚧ ᚠᛣᚱᛁᚱ ᛘᛂᛁᚱᛆ ᛂᚿ ᛑᛂᚵᛁ.
+  sv-SE: Skickade ett e-postmeddelande för återställning av lösenord om det finns en verifierad e-postadress för det här kontot och den senaste lösenordsåterställningen gjordes för mer än en dag sedan.
+  ko: 해당 계정에 확인된 이메일 주소가 있고 마지막 비밀번호 재설정이 하루 이상 전에 이루어졌다면 비밀번호 재설정 이메일을 발송합니다.
+
 Users:
   en-US: Users
   zh-CN: 用户
@@ -900,6 +951,23 @@ Watch:
   is-RU: ᚼᛆᚠᚿᛆ
   sv-SE: Titta
   ko: 보다
+
+Wrong version, update your hnefatafl-copenhagen package.:
+  en-US: Wrong version, update your hnefatafl-copenhagen package.
+  zh-CN: 版本错误，请更新您的 hnefatafl-copenhagen 软件包。
+  es: Versión incorrecta, actualice su paquete hnefatafl-copenhagen.
+  ar: إصدار خاطئ، يرجى تحديث حزمة hnefatafl-copenhagen.
+  id: Versi yang salah, perbarui paket hnefatafl-copenhagen Anda.
+  pt-BR: Versão incorreta, atualize o pacote hnefatafl-copenhagen.
+  pt-PT: Versão incorreta, atualize o pacote hnefatafl-copenhagen.
+  fr: Version incorrecte, veuillez mettre à jour votre package hnefatafl-copenhagen.
+  ja: バージョンが間違っています。hnefatafl-copenhagenパッケージをアップデートしてください。
+  ru: Неправильная версия, обновите пакет hnefatafl-copenhagen.
+  de: Falsche Version, aktualisieren Sie Ihr hnefatafl-copenhagen-Paket.
+  is-IS: Röng útgáfa, uppfærðu hnefatafl-copenhagen pakkann þinn.
+  is-RU: ᚱᚯᚿᚵ ᚤᛐᚵᚨᚠᛆ, ᚢᛔᛔᚠᛅᚱᚧᚢ ᚼᚿᛂᚠᛆᛐᛆᚠᛚ-cᚮᛔᛂᚿᚼᛆᚵᛂᚿ ᛔᛆᚴᚴᛆᚿᚿ ᚦᛁᚿᚿ.
+  sv-SE: Fel version, uppdatera ditt hnefatafl-copenhagen-paket.
+  ko: 버전이 잘못되었습니다. hnefatafl-copenhagen 패키지를 업데이트하세요.
 
 add hours:
   en-US: add hours

@@ -2321,18 +2321,43 @@ impl<'a> Client {
                     Some("?") => {
                         let text_next = text.next();
                         match text_next {
-                            Some("create_account" | "login") => {
-                                let text: Vec<_> = text.collect();
-                                let text = text.join(" ");
-                                self.error = Some(text);
+                            Some("create_account") => {
+                                self.error = Some(t!("Account already exists.").to_string());
                             }
+                            // Fixme: translate.
                             Some("email") => {
                                 let text: Vec<_> = text.collect();
                                 let text = text.join(" ");
                                 self.error_email = Some(text);
                             }
+                            // Fixme: translate.
                             Some("email_code") => {
                                 self.error_email = Some("invalid email code".to_string());
+                            }
+                            Some("login") => {
+                                let text_next = text.next();
+                                match text_next {
+                                    Some("multiple_possible_errors") => {
+                                        self.error = Some(t!(
+                                            "Login password is wrong (try lowercase), account doesn't exist, or you're already logged in."
+                                        ).to_string());
+                                    }
+                                    Some("reset_password") => {
+                                        self.error = Some(t!(
+                                            "Sent a password reset email if a verified email exists for this account and the last password reset happened more than a day ago.",
+                                        ).to_string());
+                                    }
+                                    Some("wrong_version") => {
+                                        self.error = Some(t!(
+                                            "Wrong version, update your hnefatafl-copenhagen package.",
+                                        ).to_string());
+                                    }
+                                    _ => {
+                                        let text: Vec<_> = text.collect();
+                                        let text = text.join(" ");
+                                        self.error = Some(text);
+                                    }
+                                }
                             }
                             _ => error!("(3) unexpected text: {}", string.trim()),
                         }

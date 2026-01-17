@@ -265,7 +265,7 @@ fn login(
 
         if buf.trim().is_empty() {
             return Err(anyhow::Error::msg(
-                "the user tried to login with defender space alone",
+                "the user tried to login with whitespace alone",
             ));
         }
 
@@ -281,9 +281,7 @@ fn login(
         {
             username_proper = username.to_string();
             if version_id != VERSION_ID {
-                stream.write_all(
-                    b"? login wrong version, update your hnefatafl-copenhagen package\n",
-                )?;
+                stream.write_all(b"? login wrong_version\n")?;
                 buf.clear();
                 continue;
             }
@@ -292,12 +290,12 @@ fn login(
             let password = password.join(" ");
 
             if username.len() > 16 {
-                stream.write_all(b"? login username is more than 16 characters\n")?;
+                stream.write_all(b"? login _ username is more than 16 characters\n")?;
                 buf.clear();
                 continue;
             }
             if password.len() > 32 {
-                stream.write_all(b"? login password is more than 32 characters\n")?;
+                stream.write_all(b"? login _ password is more than 32 characters\n")?;
                 buf.clear();
                 continue;
             }
@@ -306,13 +304,11 @@ fn login(
 
             if create_account_login == "reset_password" {
                 tx.send((
-                    format!("0 {username} {create_account_login}"),
+                    format!("0 {username} reset_password"),
                     Some(client_tx.clone()),
                 ))?;
 
-                stream.write_all(
-                    b"? login sent a password reset email if a verified email exists for this account and the last password reset happened more than a day ago\n",
-                )?;
+                stream.write_all(b"? login reset_password\n")?;
 
                 buf.clear();
                 continue;
@@ -331,7 +327,7 @@ fn login(
                     break;
                 }
 
-                stream.write_all(b"? login password is wrong (try lowercase), account doesn't exist, or your already logged in\n")?;
+                stream.write_all(b"? login multiple_possible_errors\n")?;
                 continue;
             } else if create_account_login == "create_account" {
                 if "= create_account" == message.as_str() {
@@ -339,11 +335,11 @@ fn login(
                     break;
                 }
 
-                stream.write_all(b"? create_account account already exists\n")?;
+                stream.write_all(b"? create_account\n")?;
                 continue;
             }
 
-            stream.write_all(b"? login\n")?;
+            stream.write_all(b"? login _\n")?;
         }
 
         buf.clear();
