@@ -1399,7 +1399,7 @@ impl<'a> Client {
                 row![
                     text(attacker),
                     text(attacker_rating).center(),
-                    text(captured.defender(&self.chars).clone()),
+                    text(captured.defender(&self.chars).clone()).font(Font::MONOSPACE),
                 ]
                 .spacing(SPACING),
                 row![
@@ -1418,7 +1418,7 @@ impl<'a> Client {
                 row![
                     text(defender),
                     text(defender_rating).center(),
-                    text(captured.attacker(&self.chars).clone()),
+                    text(captured.attacker(&self.chars).clone()).font(Font::MONOSPACE),
                 ]
                 .spacing(SPACING),
                 row![
