@@ -2330,9 +2330,8 @@ impl<'a> Client {
                                 let text = text.join(" ");
                                 self.error_email = Some(text);
                             }
-                            // Fixme: translate.
                             Some("email_code") => {
-                                self.error_email = Some("invalid email code".to_string());
+                                self.error_email = Some(t!("invalid email code").to_string());
                             }
                             Some("login") => {
                                 let text_next = text.next();
