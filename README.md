@@ -1,5 +1,6 @@
-# Copenhagen Hnefatafl
+# [Copenhagen Hnefatafl]
 
+[Copenhagen Hnefatafl]: https://hnefatafl.org
 [![github]][github-link]&ensp;[![docs-rs]][docs-rs-link]  
 [![AUR package]][aur-link] [![Chocolatey package]][choco-link]
 [![crates-io]][crates-io-link] [![flathub]][flathub-link]
@@ -68,16 +69,9 @@ cargo run --release --example hnefatafl-client -- --host localhost
 If you are running on Linux, you'll need some dependencies as [described] on the
 [website].
 
-## [Website]
-
-You can also get the [rules] and more information about [downloading]
-the software on the website.
-
 [Rust]: https://rust-lang.org/learn/get-started/
 [described]: https://hnefatafl.org/install.html#dependencies-linux
 [website]: https://hnefatafl.org
-[rules]: https://hnefatafl.org/rules.html
-[downloading]: https://hnefatafl.org/install.htm
 
 ## Discord
 
