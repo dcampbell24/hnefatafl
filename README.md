@@ -30,8 +30,8 @@ help on how to use the engine see the module [documentation].
 
 [engine]: https://github.com/dcampbell24/hnefatafl/blob/main/src/bin/hnefatafl-text-protocol.rs
 [Go Text Protocol]: https://www.lysator.liu.se/~gunnar/gtp/gtp2-spec-draft2/gtp2-spec.html
-[client]: https://github.com/dcampbell24/hnefatafl/blob/main/examples/hnefatafl-client.rs
-[server]: https://github.com/dcampbell24/hnefatafl/blob/main/src/bin/hnefatafl-server-full.rs
+[client]: https://github.com/dcampbell24/hnefatafl/tree/main/src/bin/hnefatafl-client
+[server]: https://github.com/dcampbell24/hnefatafl/blob/main/src/bin/hnefatafl-server-full
 [documentation]: https://docs.rs/hnefatafl-copenhagen/latest/hnefatafl_copenhagen/message/enum.Message.html
 
 ## Building and Running
