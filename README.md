@@ -1,10 +1,8 @@
 # [Copenhagen Hnefatafl]
 
 [Copenhagen Hnefatafl]: https://hnefatafl.org
-[![github]][github-link]&ensp;[![docs-rs]][docs-rs-link]&ensp;[packages]  
+[![docs-rs]][docs-rs-link]&ensp;[packages]
 
-[github]: https://img.shields.io/badge/github-8da0cb?logo=github
-[github-link]: https://github.com/dcampbell24/hnefatafl
 [docs-rs]: https://img.shields.io/badge/docs.rs-66c2a5?logo=docs.rs
 [docs-rs-link]: https://docs.rs/hnefatafl-copenhagen
 [packages]: https://hnefatafl.org/install.html
