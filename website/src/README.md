@@ -31,7 +31,9 @@ what you want to do. If it is a minor change, you can just update the
 
 ## Discord
 
-Join [discord](https://discord.gg/h56CAHEBXd).
+[![Discord]](https://discord.gg/h56CAHEBXd)
+
+[Discord]: Discord-Logo-Blurple.png
 
 ## Help Me
 
@@ -41,6 +43,8 @@ If you have any issues with the software, open an issue on [github][1].
 
 ## Donate
 
-[Donate](https://github.com/sponsors/dcampbell24).
+<a href="https://github.com/sponsors/dcampbell24">
+  <img alt="Money PNG by Vecteezy" src="money.png" title="Money PNG by Vecteezy">
+</a>
 
 <p xmlns:cc="http://creativecommons.org/ns#" xmlns:dct="http://purl.org/dc/terms/"><a property="dct:title" rel="cc:attributionURL" href="https://hnefatafl.org">Hnefatafl Org</a> by <a rel="cc:attributionURL dct:creator" property="cc:attributionName" href="https://dlc.name">David Lawrence Campbell</a> is licensed under <a href="https://creativecommons.org/licenses/by/4.0/?ref=chooser-v1" target="_blank" rel="license noopener noreferrer" style="display:inline-block;">CC BY 4.0<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1" alt="CC BY 4.0"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1" alt="CC BY 4.0"></a></p>

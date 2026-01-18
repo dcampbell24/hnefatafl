@@ -57,11 +57,9 @@ If you are running on Linux, you'll need some dependencies as [described] on the
 [described]: https://hnefatafl.org/install.html#dependencies-linux
 [website]: https://hnefatafl.org
 
-## Discord
+## [![Discord]](https://discord.gg/h56CAHEBXd)
 
-Click to join our [Discord server].
-
-[Discord Server]: https://discord.gg/h56CAHEBXd
+[Discord]: website/src/Discord-Logo-Blurple.png
 
 ## Icon
 
