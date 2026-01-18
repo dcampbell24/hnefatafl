@@ -157,7 +157,7 @@ cat << EOF > /var/www/html/index.html
 <body>
     <h1>Copenhagen Hnefatafl</h1>
     <script type="module">
-        import init, { Game } from '/usr/lib/node_modules/hnefatafl-copenhagen/hnefatafl_copenhagen.js';
+        import init, { Game } from '../pkg/hnefatafl_copenhagen.js';
 
         init().then(() => {
             const game = new Game();
