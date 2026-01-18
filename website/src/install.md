@@ -8,7 +8,7 @@
   }
 </script>
 
-## Arch and Derivatives (Linux) [@](https://aur.archlinux.org/packages/hnefatafl-copenhagen)
+## Arch and Derivatives (Linux) [![AUR]][aur-link]
 
 In your terminal run:
 
@@ -20,13 +20,19 @@ yay --sync hnefatafl-copenhagen
 Then under KDE go to `Application Launcher -> Games -> Hnefatafl Copenhagen`
 or in a terminal run `\usr\bin\hnefatafl-client`.
 
-## Chocolatey (Windows)
+[AUR]: https://img.shields.io/aur/version/hnefatafl-copenhagen
+[aur-link]: https://aur.archlinux.org/packages/hnefatafl-copenhagen
+
+## Chocolatey (Windows) [![chocolatey]][choco-link]
 
 Install [Chocolatey](https://chocolatey.org/install).
 
 Then install [hnefatafl-copenhagen](https://community.chocolatey.org/packages/hnefatafl-copenhagen/).
 
 Go to the Start menu and run Hnefatafl.
+
+[chocolatey]: https://img.shields.io/chocolatey/v/hnefatafl-copenhagen
+[choco-link]: https://community.chocolatey.org/packages/hnefatafl-copenhagen/
 
 ## Debian and Derivatives (Linux)
 
@@ -56,12 +62,40 @@ sudo apt update && sudo apt install hnefatafl-copenhagen
 Then under KDE go to `Application Launcher -> Games -> Hnefatafl Copenhagen`
 or in a terminal run `\usr\games\hnefatafl-client`.
 
-## Flatpak (Linux)
+## Cargo (Linux, macOS, Windows) [![crates-io]][crates-io-link]
+
+### Dependencies (Linux)
+
+ALSA development files are needed to build `cpal` on Linux (`rodio` dependency,
+`hnefatafl-client` dependency). These are provided as part of the
+`alsa-lib` package on Arch, `libasound2-dev` package on Debian and Ubuntu, and
+`alsa-lib-devel` on Fedora.
+
+The package uses the `mold` linker. This is provided via the `mold`
+package on Arch, Debian, Ubuntu, and Fedora.
+
+### Run
+
+In your terminal run the following to run the client with [Rust's] cargo:
+
+```sh
+cargo install hnefatafl-copenhagen
+hnefatafl-client
+```
+
+[crates-io]: https://img.shields.io/crates/v/hnefatafl-copenhagen.svg
+[crates-io-link]: https://crates.io/crates/hnefatafl-copenhagen
+[Rust's]: https://www.rust-lang.org/learn/get-started
+
+## Flatpak (Linux) [![flathub]][flathub-link]
 
 See [flathub.org](https://flathub.org/apps/org.hnefatafl.hnefatafl_client).
 
 Or after installing the application under KDE go to
 `Application Launcher -> Games -> Hnefatafl Copenhagen`
+
+[flathub]: https://img.shields.io/flathub/v/org.hnefatafl.hnefatafl_client
+[flathub-link]: https://flathub.org/apps/org.hnefatafl.hnefatafl_client
 
 ## F-Droid (Android)
 
@@ -99,6 +133,52 @@ hnefatafl-client --ascii
 Then go to `Termux:X11` from the main menu. You may need to hold `Termux:11` to
 go to the `Preferences` -> `Output`, then increase the `Display scale %`.
 
+## NPM [![npm]][npm-link]
+
+[npm]: https://img.shields.io/npm/v/hnefatafl-copenhagen
+[npm-link]: https://www.npmjs.com/package/hnefatafl-copenhagen
+
+```sh
+# With Apache and Firefox on Debian.
+sudo npm install -g hnefatafl-copenhagen
+sudo mkdir --parent /var/www/html/pkg
+sudo cp /usr/lib/node_modules/hnefatafl-copenhagen/ -r pkg /var/www/html
+```
+
+Then load the javascript on a webpage:
+
+```sh
+cat << EOF > /var/www/html/index.html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Copenhagen Hnefatafl</title>
+</head>
+<body>
+    <h1>Copenhagen Hnefatafl</h1>
+    <script type="module">
+        import init, { Game } from '/usr/lib/node_modules/hnefatafl-copenhagen/hnefatafl_copenhagen.js';
+
+        init().then(() => {
+            const game = new Game();
+            const output = game.read_line_js("show_board");
+            console.log(output);
+        });
+    </script>
+</body>
+</html>
+EOF
+```
+
+See the [message protocol] for all of the commands available.
+
+[message protocol]: https://docs.rs/hnefatafl-copenhagen/latest/hnefatafl_copenhagen/message/enum.Message.html
+
+```sh
+# With Apache running.
+firefox localhost
+```
+
 ## Redox [@](https://www.redox-os.org/)
 
 Edit your user config to include:
@@ -120,29 +200,6 @@ There are also at least these bugs:
 3. Backspace does not work.
 4. I think you have to restart Redox after entering the application, because
    TcpStream shutdown is not implemented.
-
-## Cargo (Linux, macOS, Windows) [@](https://crates.io/crates/hnefatafl-copenhagen)
-
-### Dependencies (Linux)
-
-ALSA development files are needed to build `cpal` on Linux (`rodio` dependency,
-`hnefatafl-client` dependency). These are provided as part of the
-`alsa-lib` package on Arch, `libasound2-dev` package on Debian and Ubuntu, and
-`alsa-lib-devel` on Fedora.
-
-The package uses the `mold` linker. This is provided via the `mold`
-package on Arch, Debian, Ubuntu, and Fedora.
-
-### Run
-
-In your terminal run the following to run the client with [Rust's][3] cargo:
-
-```sh
-cargo install hnefatafl-copenhagen
-hnefatafl-client
-```
-
-[3]: https://www.rust-lang.org/learn/get-started
 
 ## Note
 
