@@ -1,8 +1,10 @@
 # [Copenhagen Hnefatafl]
 
 [Copenhagen Hnefatafl]: https://hnefatafl.org
-[![docs-rs]][docs-rs-link]&ensp;[install]
+[![Discord]][discord-link]&ensp;[![docs-rs]][docs-rs-link]&ensp;[install]
 
+[Discord]: Discord-Logo-Blurple.png
+[discord-link]: https://discord.gg/h56CAHEBXd
 [docs-rs]: https://img.shields.io/badge/docs.rs-66c2a5?logo=docs.rs
 [docs-rs-link]: https://docs.rs/hnefatafl-copenhagen
 [install]: https://hnefatafl.org/install.html
@@ -56,10 +58,6 @@ If you are running on Linux, you'll need some dependencies as [described] on the
 [Rust]: https://rust-lang.org/learn/get-started/
 [described]: https://hnefatafl.org/install.html#dependencies-linux
 [website]: https://hnefatafl.org
-
-## [![Discord]](https://discord.gg/h56CAHEBXd)
-
-[Discord]: website/src/Discord-Logo-Blurple.png
 
 ## Icon
 
