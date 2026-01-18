@@ -1,24 +1,26 @@
 # Copenhagen Hnefatafl
 
 [![github]][github-link]&ensp;[![docs-rs]][docs-rs-link]  
-[![AUR package]][aur-link]&ensp;[![Chocolatey package]][choco-link]&ensp;[![crates-io]][crates-io-link]  
-[.deb][deb]&ensp;[![npm]][npm-link]&ensp;[![flathub]][flathub-link]  
+[![AUR package]][aur-link] [![Chocolatey package]][choco-link]
+[![crates-io]][crates-io-link] [![flathub]][flathub-link]
+[![npm]][npm-link]  
+[other packages]  
 
 [github]: https://img.shields.io/badge/github-8da0cb?logo=github
 [github-link]: https://github.com/dcampbell24/hnefatafl
-[crates-io]: https://img.shields.io/crates/v/hnefatafl-copenhagen.svg
-[crates-io-link]: https://crates.io/crates/hnefatafl-copenhagen
 [docs-rs]: https://img.shields.io/badge/docs.rs-66c2a5?logo=docs.rs
 [docs-rs-link]: https://docs.rs/hnefatafl-copenhagen
 [AUR package]: https://img.shields.io/aur/version/hnefatafl-copenhagen
 [aur-link]: https://aur.archlinux.org/packages/hnefatafl-copenhagen
 [Chocolatey package]:https://img.shields.io/chocolatey/v/hnefatafl-copenhagen
 [choco-link]: https://community.chocolatey.org/packages/hnefatafl-copenhagen/
-[deb]: https://hnefatafl.org/install.html#debian-and-derivatives-linux
+[crates-io]: https://img.shields.io/crates/v/hnefatafl-copenhagen.svg
+[crates-io-link]: https://crates.io/crates/hnefatafl-copenhagen
 [flathub]: https://img.shields.io/flathub/v/org.hnefatafl.hnefatafl_client
 [flathub-link]:  https://flathub.org/apps/org.hnefatafl.hnefatafl_client
 [npm]: https://img.shields.io/npm/v/hnefatafl-copenhagen
 [npm-link]: https://www.npmjs.com/package/hnefatafl-copenhagen
+[other packages]: https://hnefatafl.org/install.html
 
 ![Opening Game](website/src/screenshots/opening_game.png)
 
