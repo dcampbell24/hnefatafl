@@ -201,6 +201,14 @@ There are also at least these bugs:
 4. I think you have to restart Redox after entering the application, because
    TcpStream shutdown is not implemented.
 
+## Source [![github]][github-link]
+
+See the github [README.md] file.
+
+[github]: https://img.shields.io/badge/github-8da0cb?logo=github
+[github-link]: https://github.com/dcampbell24/hnefatafl
+[README.md]: https://github.com/dcampbell24/hnefatafl?tab=readme-ov-file#building-and-running
+
 ## Note
 
 At the moment their may be fairly regular updates. If you run into problems,
