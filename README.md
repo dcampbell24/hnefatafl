@@ -1,11 +1,11 @@
 # [Copenhagen Hnefatafl]
 
 [Copenhagen Hnefatafl]: https://hnefatafl.org
-[![docs-rs]][docs-rs-link]&ensp;[packages]
+[![docs-rs]][docs-rs-link]&ensp;[install]
 
 [docs-rs]: https://img.shields.io/badge/docs.rs-66c2a5?logo=docs.rs
 [docs-rs-link]: https://docs.rs/hnefatafl-copenhagen
-[packages]: https://hnefatafl.org/install.html
+[install]: https://hnefatafl.org/install.html
 
 ![Opening Game](website/src/screenshots/opening_game.png)
 
