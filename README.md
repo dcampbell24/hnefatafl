@@ -3,7 +3,7 @@
 [Copenhagen Hnefatafl]: https://hnefatafl.org
 [![Discord]][discord-link]&ensp;[![docs-rs]][docs-rs-link]&ensp;[install]
 
-[Discord]: Discord-Logo-Blurple.png
+[Discord]: https://raw.githubusercontent.com/dcampbell24/hnefatafl/main/Discord-Logo-Blurple.png
 [discord-link]: https://discord.gg/h56CAHEBXd
 [docs-rs]: https://img.shields.io/badge/docs.rs-66c2a5?logo=docs.rs
 [docs-rs-link]: https://docs.rs/hnefatafl-copenhagen
