@@ -4,7 +4,7 @@
 
 [github]: https://img.shields.io/badge/github-8da0cb?logo=github
 [github-link]: https://github.com/dcampbell24/hnefatafl
-[crates-io]: https://img.shields.io/badge/crates.io-fc8d62?logo=rust
+[crates-io]: https://img.shields.io/crates/v/hnefatafl-copenhagen.svg?logo=rust
 [crates-io-link]: https://crates.io/crates/hnefatafl-copenhagen
 [docs-rs]: https://img.shields.io/badge/docs.rs-66c2a5?logo=docs.rs
 [docs-rs-link]: https://docs.rs/hnefatafl-copenhagen
