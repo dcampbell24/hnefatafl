@@ -1575,10 +1575,10 @@ impl<'a> Client {
             user_area = user_area.push(row![left_all, left, right, right_all].spacing(SPACING));
             user_area = user_area.push(
                 row![
+                    child_right,
                     container(child_number)
                         .style(container::bordered_box)
                         .padding(PADDING),
-                    child_right
                 ]
                 .spacing(SPACING),
             );
