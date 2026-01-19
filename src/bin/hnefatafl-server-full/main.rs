@@ -1299,23 +1299,39 @@ impl Server {
                                 break;
                             };
 
+                            let rating_1 = if let Some(account_1) =
+                                self.accounts.0.get(active_game.player_1.as_str())
+                            {
+                                account_1.rating.rating.round()
+                            } else {
+                                1500.0
+                            };
+
+                            let rating_2 = if let Some(account_2) =
+                                self.accounts.0.get(active_game.player_2.as_str())
+                            {
+                                account_2.rating.rating.round()
+                            } else {
+                                1500.0
+                            };
+
                             if winner == active_game.player_1.as_str() {
                                 *status_1 = tournament::Status::Won(Player {
                                     name: active_game.player_1.clone(),
-                                    rating: 1500.0,
+                                    rating: rating_1,
                                 });
                                 *status_2 = tournament::Status::Lost(Player {
                                     name: active_game.player_2.clone(),
-                                    rating: 1500.0,
+                                    rating: rating_2,
                                 });
                             } else {
                                 *status_1 = tournament::Status::Lost(Player {
-                                    name: active_game.player_2.clone(),
-                                    rating: 1500.0,
+                                    name: active_game.player_1.clone(),
+                                    rating: rating_1,
                                 });
                                 *status_2 = tournament::Status::Won(Player {
-                                    name: active_game.player_1.clone(),
-                                    rating: 1500.0,
+                                    name: active_game.player_2.clone(),
+                                    rating: rating_2,
                                 });
                             }
                         }
