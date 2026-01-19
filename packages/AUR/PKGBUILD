@@ -17,7 +17,7 @@
 pkgname=hnefatafl-copenhagen
 pkgver=4.5.0
 pkgrel=9
-pkgdesc="Copenhagen Hnefatafl client."
+pkgdesc="Copenhagen Hnefatafl client. Join the Discord via the link https://discord.gg/h56CAHEBXd"
 url="https://hnefatafl.org"
 license=("AGPL-3.0-or-later")
 arch=("x86_64")
