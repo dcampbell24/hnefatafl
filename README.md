@@ -59,7 +59,6 @@ If you are running on Linux, you'll need some dependencies as [described] on the
 [described]: https://hnefatafl.org/install.html#dependencies-linux
 [website]: https://hnefatafl.org
 
-
 ## Icon
 
 <img src="icons/king.svg" alt="drawing" width="100"/> used for the
