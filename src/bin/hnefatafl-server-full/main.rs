@@ -1281,44 +1281,42 @@ impl Server {
                     } else if player_2_wins > player_1_wins {
                         winner = Some(active_game.player_2.clone());
                     }
-                } else {
-                    if active_game.attacker_wins_1 > active_game.attacker_wins_2 {
-                        winner = Some(active_game.player_1.clone());
-                    } else if active_game.attacker_wins_2 > active_game.attacker_wins_1 {
-                        winner = Some(active_game.player_2.clone());
-                    }
+                } else if active_game.attacker_wins_1 > active_game.attacker_wins_2 {
+                    winner = Some(active_game.player_1.clone());
+                } else if active_game.attacker_wins_2 > active_game.attacker_wins_1 {
+                    winner = Some(active_game.player_2.clone());
                 }
 
-                if let Some(winner) = winner {
-                    if let Some(round) = tree.rounds.get_mut(active_game.round) {
-                        for (i, statuses) in round.chunks_mut(2).enumerate() {
-                            if i == active_game.chunk {
-                                let (status_1, status_2) = statuses.split_at_mut(1);
-                                let (Some(status_1), Some(status_2)) =
-                                    (status_1.first_mut(), status_2.first_mut())
-                                else {
-                                    break;
-                                };
+                if let Some(winner) = winner
+                    && let Some(round) = tree.rounds.get_mut(active_game.round)
+                {
+                    for (i, statuses) in round.chunks_mut(2).enumerate() {
+                        if i == active_game.chunk {
+                            let (status_1, status_2) = statuses.split_at_mut(1);
+                            let (Some(status_1), Some(status_2)) =
+                                (status_1.first_mut(), status_2.first_mut())
+                            else {
+                                break;
+                            };
 
-                                if winner == active_game.player_1.as_str() {
-                                    *status_1 = tournament::Status::Won(Player {
-                                        name: active_game.player_1.to_string(),
-                                        rating: 1500.0,
-                                    });
-                                    *status_2 = tournament::Status::Lost(Player {
-                                        name: active_game.player_2.to_string(),
-                                        rating: 1500.0,
-                                    });
-                                } else {
-                                    *status_1 = tournament::Status::Lost(Player {
-                                        name: active_game.player_2.to_string(),
-                                        rating: 1500.0,
-                                    });
-                                    *status_2 = tournament::Status::Won(Player {
-                                        name: active_game.player_1.to_string(),
-                                        rating: 1500.0,
-                                    });
-                                }
+                            if winner == active_game.player_1.as_str() {
+                                *status_1 = tournament::Status::Won(Player {
+                                    name: active_game.player_1.clone(),
+                                    rating: 1500.0,
+                                });
+                                *status_2 = tournament::Status::Lost(Player {
+                                    name: active_game.player_2.clone(),
+                                    rating: 1500.0,
+                                });
+                            } else {
+                                *status_1 = tournament::Status::Lost(Player {
+                                    name: active_game.player_2.clone(),
+                                    rating: 1500.0,
+                                });
+                                *status_2 = tournament::Status::Won(Player {
+                                    name: active_game.player_1.clone(),
+                                    rating: 1500.0,
+                                });
                             }
                         }
                     }
