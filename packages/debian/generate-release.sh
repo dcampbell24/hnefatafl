@@ -23,7 +23,7 @@ Codename: stable
 Version: 4.5.0-3
 Architectures: amd64
 Components: main
-Description: A software repository containing Hnefatafl Copenhagen
+Description: A software repository containing Hnefatafl Copenhagen. Join the Discord via the link https://discord.gg/h56CAHEBXd.
 Date: $(date -Ru)
 EOF
 
