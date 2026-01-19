@@ -17,9 +17,7 @@
   </branding>
 
   <description>
-    <p>
-      Client that connects to a Copenhagen Hnefatafl Server. Join our Discord via the link https://discord.gg/h56CAHEBXd.
-    </p>
+    <p>Client that connects to a Copenhagen Hnefatafl Server. Website: https://hnefatafl.org Discord: https://discord.gg/h56CAHEBXd</p>
   </description>
 
   <launchable type="desktop-id">org.hnefatafl.hnefatafl_client.desktop</launchable>
