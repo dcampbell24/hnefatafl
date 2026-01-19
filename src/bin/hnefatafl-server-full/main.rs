@@ -1248,25 +1248,80 @@ impl Server {
                 && let Some(tree) = &mut tournament.tree
                 && let Some(active_game) = tree.active_games.get_mut(&game.id)
             {
-                match active_game.lock() {
-                    Err(_) => error!("failed to get the active_game lock"),
-                    Ok(mut active_game) => match winner {
-                        Role::Attacker => {
-                            if game.attacker == active_game.player_1 {
-                                active_game.attacker_wins_1 += 1;
-                            } else {
-                                active_game.attacker_wins_2 += 1;
+                let mut active_game = active_game.lock().ok()?;
+
+                match winner {
+                    Role::Attacker => {
+                        if game.attacker == active_game.player_1 {
+                            active_game.attacker_wins_1 += 1;
+                        } else {
+                            active_game.attacker_wins_2 += 1;
+                        }
+                    }
+                    Role::Defender => {
+                        if game.defender == active_game.player_1 {
+                            active_game.defender_wins_1 += 1;
+                        } else {
+                            active_game.defender_wins_2 += 1;
+                        }
+                    }
+                    Role::Roleless => {}
+                }
+
+                let player_1_wins = active_game.attacker_wins_1 + active_game.defender_wins_1;
+                let player_2_wins = active_game.attacker_wins_2 + active_game.defender_wins_2;
+                let total_wins = player_1_wins + player_2_wins;
+
+                let mut winner = None;
+                if total_wins < 2 {
+                    // Do nothing.
+                } else if total_wins % 2 == 0 {
+                    if player_1_wins > player_2_wins {
+                        winner = Some(active_game.player_1.clone());
+                    } else if player_2_wins > player_1_wins {
+                        winner = Some(active_game.player_2.clone());
+                    }
+                } else {
+                    if active_game.attacker_wins_1 > active_game.attacker_wins_2 {
+                        winner = Some(active_game.player_1.clone());
+                    } else if active_game.attacker_wins_2 > active_game.attacker_wins_1 {
+                        winner = Some(active_game.player_2.clone());
+                    }
+                }
+
+                if let Some(winner) = winner {
+                    if let Some(round) = tree.rounds.get_mut(active_game.round) {
+                        for (i, statuses) in round.chunks_mut(2).enumerate() {
+                            if i == active_game.chunk {
+                                let (status_1, status_2) = statuses.split_at_mut(1);
+                                let (Some(status_1), Some(status_2)) =
+                                    (status_1.first_mut(), status_2.first_mut())
+                                else {
+                                    break;
+                                };
+
+                                if winner == active_game.player_1.as_str() {
+                                    *status_1 = tournament::Status::Won(Player {
+                                        name: active_game.player_1.to_string(),
+                                        rating: 1500.0,
+                                    });
+                                    *status_2 = tournament::Status::Lost(Player {
+                                        name: active_game.player_2.to_string(),
+                                        rating: 1500.0,
+                                    });
+                                } else {
+                                    *status_1 = tournament::Status::Lost(Player {
+                                        name: active_game.player_2.to_string(),
+                                        rating: 1500.0,
+                                    });
+                                    *status_2 = tournament::Status::Won(Player {
+                                        name: active_game.player_1.to_string(),
+                                        rating: 1500.0,
+                                    });
+                                }
                             }
                         }
-                        Role::Defender => {
-                            if game.defender == active_game.player_1 {
-                                active_game.defender_wins_1 += 1;
-                            } else {
-                                active_game.defender_wins_2 += 1;
-                            }
-                        }
-                        Role::Roleless => {}
-                    },
+                    }
                 }
             }
 

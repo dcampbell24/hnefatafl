@@ -982,7 +982,7 @@ impl<'a> Client {
                         row![
                             text(name).font(Font::MONOSPACE),
                             text("─".repeat(len)).style(text::danger),
-                            text(brace),
+                            text(brace).style(text::danger),
                         ]
                     }
                     tournament::Status::None | tournament::Status::Waiting => {
