@@ -38,27 +38,18 @@ pub struct TournamentTree {
 }
 
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
-pub struct Player {
-    pub name: String,
-    pub rating: f64,
-}
-
-#[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
 pub struct Players {
     pub round: usize,
     pub chunk: usize,
-    pub player_1: String,
-    pub player_2: String,
-    pub attacker_wins_1: u8,
-    pub attacker_wins_2: u8,
-    pub defender_wins_1: u8,
-    pub defender_wins_2: u8,
+    pub player_1: Wins,
+    pub player_2: Wins,
 }
 
-impl fmt::Display for Player {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} {:0}", self.name, self.rating)
-    }
+#[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
+pub struct Wins {
+    pub name: String,
+    pub attacker: u8,
+    pub defender: u8,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
@@ -70,4 +61,16 @@ pub enum Status {
     Ready(Player),
     Waiting,
     Won(Player),
+}
+
+#[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
+pub struct Player {
+    pub name: String,
+    pub rating: f64,
+}
+
+impl fmt::Display for Player {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{} {:0}", self.name, self.rating)
+    }
 }
