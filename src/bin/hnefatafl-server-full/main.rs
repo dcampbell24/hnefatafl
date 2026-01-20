@@ -59,7 +59,7 @@ use hnefatafl_copenhagen::{
     },
     status::Status,
     time::{Time, TimeEnum, TimeSettings},
-    tournament::{self, Player, Players, Tournament, TournamentTree},
+    tournament::{self, Player, Players, Tournament, TournamentTree, Wins},
     utils::{self, data_file},
 };
 use lettre::{
@@ -67,7 +67,7 @@ use lettre::{
     message::{Mailbox, header::ContentType},
     transport::smtp::authentication::Credentials,
 };
-use log::{debug, error, info};
+use log::{debug, error, info, trace};
 use old_rand::rngs::OsRng;
 use password_hash::SaltString;
 use rand::random;
@@ -1236,6 +1236,8 @@ impl Server {
         }
 
         if game_over {
+            let mut attacker_defender = None;
+
             let Some(game) = self.games.0.remove(&index) else {
                 unreachable!()
             };
@@ -1244,34 +1246,56 @@ impl Server {
                 game_light.game_over = true;
             }
 
+            let mut active_game_arc = None;
+
             if let Some(tournament) = &mut self.tournament
                 && let Some(tree) = &mut tournament.tree
                 && let Some(active_game) = tree.active_games.get_mut(&game.id)
             {
+                active_game_arc = Some(active_game.clone());
                 let mut active_game = active_game.lock().ok()?;
 
                 match winner {
                     Role::Attacker => {
-                        if game.attacker == active_game.player_1 {
-                            active_game.attacker_wins_1 += 1;
+                        if game.attacker == active_game.player_1.name {
+                            active_game.player_1.attacker += 1;
                         } else {
-                            active_game.attacker_wins_2 += 1;
+                            active_game.player_2.attacker += 1;
                         }
                     }
                     Role::Defender => {
-                        if game.defender == active_game.player_1 {
-                            active_game.defender_wins_1 += 1;
+                        if game.defender == active_game.player_1.name {
+                            active_game.player_1.defender += 1;
                         } else {
-                            active_game.defender_wins_2 += 1;
+                            active_game.player_2.defender += 1;
                         }
                     }
                     Role::Roleless => {}
                 }
 
-                let player_1_wins = active_game.attacker_wins_1 + active_game.defender_wins_1;
-                let player_2_wins = active_game.attacker_wins_2 + active_game.defender_wins_2;
+                let player_1_wins = active_game.player_1.attacker + active_game.player_1.defender;
+                let player_2_wins = active_game.player_2.attacker + active_game.player_2.defender;
                 let total_wins = player_1_wins + player_2_wins;
 
+                println!("total_wins: {total_wins}");
+
+                let rating_1 = if let Some(account_1) =
+                    self.accounts.0.get(active_game.player_1.name.as_str())
+                {
+                    account_1.rating.rating.round()
+                } else {
+                    1500.0
+                };
+
+                let rating_2 = if let Some(account_2) =
+                    self.accounts.0.get(active_game.player_2.name.as_str())
+                {
+                    account_2.rating.rating.round()
+                } else {
+                    1500.0
+                };
+
+                trace!("total_wins: {total_wins}");
                 let mut winner = None;
                 if total_wins < 2 {
                     // Do nothing.
@@ -1281,13 +1305,19 @@ impl Server {
                     } else if player_2_wins > player_1_wins {
                         winner = Some(active_game.player_2.clone());
                     }
-                } else if active_game.attacker_wins_1 > active_game.attacker_wins_2 {
+                } else if active_game.player_1.attacker > active_game.player_2.attacker {
                     winner = Some(active_game.player_1.clone());
-                } else if active_game.attacker_wins_2 > active_game.attacker_wins_1 {
+                } else if active_game.player_2.attacker > active_game.player_1.attacker {
                     winner = Some(active_game.player_2.clone());
                 }
 
+                trace!(
+                    "winner: {winner:#?}, active_game_round: {}",
+                    active_game.round
+                );
+
                 if let Some(winner) = winner
+                    && let winner = winner.name
                     && let Some(round) = tree.rounds.get_mut(active_game.round)
                 {
                     for (i, statuses) in round.chunks_mut(2).enumerate() {
@@ -1296,44 +1326,56 @@ impl Server {
                             let (Some(status_1), Some(status_2)) =
                                 (status_1.first_mut(), status_2.first_mut())
                             else {
-                                break;
+                                continue;
                             };
 
-                            let rating_1 = if let Some(account_1) =
-                                self.accounts.0.get(active_game.player_1.as_str())
-                            {
-                                account_1.rating.rating.round()
-                            } else {
-                                1500.0
-                            };
-
-                            let rating_2 = if let Some(account_2) =
-                                self.accounts.0.get(active_game.player_2.as_str())
-                            {
-                                account_2.rating.rating.round()
-                            } else {
-                                1500.0
-                            };
-
-                            if winner == active_game.player_1.as_str() {
+                            if winner == active_game.player_1.name.as_str() {
                                 *status_1 = tournament::Status::Won(Player {
-                                    name: active_game.player_1.clone(),
+                                    name: active_game.player_1.name.clone(),
                                     rating: rating_1,
                                 });
                                 *status_2 = tournament::Status::Lost(Player {
-                                    name: active_game.player_2.clone(),
+                                    name: active_game.player_2.name.clone(),
                                     rating: rating_2,
                                 });
                             } else {
                                 *status_1 = tournament::Status::Lost(Player {
-                                    name: active_game.player_1.clone(),
+                                    name: active_game.player_1.name.clone(),
                                     rating: rating_1,
                                 });
                                 *status_2 = tournament::Status::Won(Player {
-                                    name: active_game.player_2.clone(),
+                                    name: active_game.player_2.name.clone(),
                                     rating: rating_2,
                                 });
                             }
+                        }
+                    }
+                } else if total_wins > 1 {
+                    if total_wins % 2 == 0 {
+                        // Add a game with the higher rated player as the attacker.
+                        let player_1_attacking = if rating_1 > rating_2 {
+                            true
+                        } else if rating_1 < rating_2 {
+                            false
+                        } else {
+                            random()
+                        };
+
+                        if player_1_attacking {
+                            attacker_defender =
+                                Some((active_game.player_1.clone(), active_game.player_2.clone()));
+                        } else {
+                            attacker_defender =
+                                Some((active_game.player_2.clone(), active_game.player_1.clone()));
+                        }
+                    } else {
+                        // Add the player as the attacker with more total wins.
+                        if player_1_wins > player_2_wins {
+                            attacker_defender =
+                                Some((active_game.player_1.clone(), active_game.player_2.clone()));
+                        } else {
+                            attacker_defender =
+                                Some((active_game.player_2.clone(), active_game.player_1.clone()));
                         }
                     }
                 }
@@ -1345,6 +1387,22 @@ impl Server {
                         error!("{err}");
                     })
                     .ok()?;
+            }
+
+            trace!(
+                "attacker_defender: {attacker_defender:#?}, active_game_arc: {active_game_arc:#?}"
+            );
+
+            if let (Some((attacker, defender)), Some(active_game)) =
+                (attacker_defender, active_game_arc)
+            {
+                let id = self.new_tournament_game(&attacker.name, &defender.name);
+
+                if let Some(tournament) = &mut self.tournament
+                    && let Some(tree) = &mut tournament.tree
+                {
+                    tree.active_games.insert(id, active_game);
+                }
             }
 
             self.save_server();
@@ -1382,7 +1440,7 @@ impl Server {
             ));
         };
 
-        let random_u32 = random::<u32>();
+        let random_u32 = random();
         let email = Email {
             address: address.to_string(),
             code: Some(random_u32),
@@ -2569,12 +2627,16 @@ impl Server {
             let game_players = Players {
                 round,
                 chunk,
-                player_1,
-                player_2,
-                attacker_wins_1: 0,
-                attacker_wins_2: 0,
-                defender_wins_1: 0,
-                defender_wins_2: 0,
+                player_1: Wins {
+                    name: player_1,
+                    attacker: 0,
+                    defender: 0,
+                },
+                player_2: Wins {
+                    name: player_2,
+                    attacker: 0,
+                    defender: 0,
+                },
             };
 
             let game_players = Arc::new(Mutex::new(game_players));
