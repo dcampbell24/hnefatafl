@@ -265,7 +265,11 @@ fn main() -> anyhow::Result<()> {
 
         let tx = tx.clone();
 
-        thread::spawn(move || log_error(login(index, stream, &tx)));
+        thread::spawn(move || {
+            if let Err(error) = login(index, stream, &tx) {
+                error!("login: {error}");
+            }
+        });
     }
 
     Ok(())
@@ -391,7 +395,11 @@ fn login(
     }
 
     stream.write_all(b"= login\n")?;
-    thread::spawn(move || log_error(receiving_and_writing(stream, &client_rx)));
+    thread::spawn(move || {
+        if let Err(error) = receiving_and_writing(stream, &client_rx) {
+            error!("receiving_and_writing: {error}");
+        }
+    });
 
     tx.send((format!("{id} {username_proper} email_get"), None))?;
     tx.send((format!("{id} {username_proper} texts"), None))?;
@@ -529,12 +537,6 @@ fn handle_error<T, E: fmt::Display>(result: Result<T, E>) -> T {
             error!("{error}");
             exit(1)
         }
-    }
-}
-
-fn log_error<T, E: fmt::Display>(result: Result<T, E>) {
-    if let Err(error) = result {
-        error!("{error}");
     }
 }
 
