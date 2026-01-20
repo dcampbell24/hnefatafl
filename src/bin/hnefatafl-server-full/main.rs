@@ -221,10 +221,22 @@ fn main() -> anyhow::Result<()> {
     info!("listening on {address} ...");
 
     for (index, stream) in (1..).zip(listener.incoming()) {
-        let stream = stream?;
+        let stream = match stream {
+            Ok(stream) => stream,
+            Err(error) => {
+                error!("{error}");
+                continue;
+            }
+        };
 
         if args.secure {
-            let peer_address = stream.peer_addr()?.ip();
+            let peer_address = match stream.peer_addr() {
+                Ok(peer_address) => peer_address.ip(),
+                Err(error) => {
+                    error!("{error}");
+                    continue;
+                }
+            };
 
             let (tx_close, rx_close) = mpsc::channel();
             tx.send((
@@ -252,9 +264,8 @@ fn main() -> anyhow::Result<()> {
         }
 
         let tx = tx.clone();
-        let reader = BufReader::new(stream.try_clone()?);
 
-        thread::spawn(move || log_error(login(index, stream, reader, &tx)));
+        thread::spawn(move || log_error(login(index, stream, &tx)));
     }
 
     Ok(())
@@ -264,7 +275,6 @@ fn main() -> anyhow::Result<()> {
 fn login(
     id: Id,
     mut stream: TcpStream,
-    mut reader: BufReader<TcpStream>,
     tx: &mpsc::Sender<(String, Option<mpsc::Sender<String>>)>,
 ) -> anyhow::Result<()> {
     let args = Args::parse();
@@ -276,6 +286,7 @@ fn login(
         };
     }
 
+    let mut reader = BufReader::new(stream.try_clone()?);
     let mut buf = String::new();
     let (client_tx, client_rx) = mpsc::channel();
     let mut username_proper = "_".to_string();
