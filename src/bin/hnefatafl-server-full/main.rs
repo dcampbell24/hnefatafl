@@ -68,7 +68,7 @@ use lettre::{
     transport::smtp::authentication::Credentials,
 };
 use log::{debug, error, info, trace};
-use old_rand::rngs::OsRng;
+use old_rand::{rngs::OsRng, seq::SliceRandom, thread_rng};
 use password_hash::SaltString;
 use rand::random;
 use serde::{Deserialize, Serialize};
@@ -2680,7 +2680,10 @@ impl Server {
                 });
             }
         }
-        players.sort_by(|a, b| a.rating.total_cmp(&b.rating));
+
+        let mut rng = thread_rng();
+        players.shuffle(&mut rng);
+        players.sort_unstable_by(|a, b| a.rating.total_cmp(&b.rating));
 
         tournament.tree = Some(TournamentTree {
             active_games: HashMap::new(),
