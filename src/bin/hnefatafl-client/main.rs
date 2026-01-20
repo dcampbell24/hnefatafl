@@ -472,7 +472,7 @@ fn pass_messages() -> impl Stream<Item = Message> {
 
                         for _ in 0..2 {
                             if let Err(error) =
-                                executor::block_on(sender_clone.send(Message::Leave))
+                                executor::block_on(sender_clone.send(Message::LeaveSoft))
                             {
                                 error!("{error}");
                             }
@@ -1622,6 +1622,42 @@ impl<'a> Client {
         row![board, user_area].spacing(SPACING).into()
     }
 
+    fn leave(&mut self) {
+        match self.screen {
+            Screen::AccountSettings
+            | Screen::EmailEveryone
+            | Screen::GameNew
+            | Screen::Users
+            | Screen::Tournament => {
+                self.screen = Screen::Games;
+                self.text_input = String::new();
+            }
+            Screen::Game => {
+                self.screen = Screen::Games;
+                self.my_turn = false;
+                self.request_draw = false;
+
+                if self.spectators.contains(&self.username) {
+                    self.send(&format!("leave_game {}\n", self.game_id));
+                }
+                self.spectators = Vec::new();
+            }
+            Screen::Games => {
+                self.send("quit\n");
+                self.admin = false;
+                self.connected_tcp = false;
+                self.text_input = self.username.clone();
+                self.screen = Screen::Login;
+            }
+            Screen::GameReview => {
+                self.heat_map = None;
+                self.heat_map_display = false;
+                self.screen = Screen::Login;
+            }
+            Screen::Login => {}
+        }
+    }
+
     fn my_games_only(&mut self) {
         let selected = !self.my_games_only;
         if selected {
@@ -1873,39 +1909,14 @@ impl<'a> Client {
             Message::GameJoin(id) => self.join(id),
             Message::GameWatch(id) => self.watch(id),
             Message::HeatMap(_display) => self.heat_map_display = !self.heat_map_display,
-            Message::Leave => match self.screen {
-                Screen::AccountSettings
-                | Screen::EmailEveryone
-                | Screen::GameNew
-                | Screen::Users
-                | Screen::Tournament => {
-                    self.screen = Screen::Games;
-                    self.text_input = String::new();
+            Message::Leave => {
+                if self.screen == Screen::Login {
+                    return iced::exit();
                 }
-                Screen::Game => {
-                    self.screen = Screen::Games;
-                    self.my_turn = false;
-                    self.request_draw = false;
 
-                    if self.spectators.contains(&self.username) {
-                        self.send(&format!("leave_game {}\n", self.game_id));
-                    }
-                    self.spectators = Vec::new();
-                }
-                Screen::Games => {
-                    self.send("quit\n");
-                    self.admin = false;
-                    self.connected_tcp = false;
-                    self.text_input = self.username.clone();
-                    self.screen = Screen::Login;
-                }
-                Screen::GameReview => {
-                    self.heat_map = None;
-                    self.heat_map_display = false;
-                    self.screen = Screen::Login;
-                }
-                Screen::Login => {}
-            },
+                self.leave();
+            }
+            Message::LeaveSoft => self.leave(),
             Message::LocaleSelected(locale) => {
                 rust_i18n::set_locale(&locale.txt());
 
@@ -3863,7 +3874,7 @@ impl<'a> Client {
                     .on_press(Message::OpenUrl("https://hnefatafl.org".to_string()));
 
                 let quit = button(text!("{} (Esc)", self.strings["Quit"].as_str()))
-                    .on_press(Message::Exit);
+                    .on_press(Message::Leave);
 
                 buttons_2 = buttons_2.push(discord);
                 buttons_2 = buttons_2.push(website);

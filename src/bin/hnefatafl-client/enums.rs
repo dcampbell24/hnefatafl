@@ -109,6 +109,7 @@ pub(crate) enum Message {
     GameWatch(Id),
     HeatMap(bool),
     Leave,
+    LeaveSoft,
     LocaleSelected(Locale),
     MyGamesOnly(bool),
     OpenUrl(String),
