@@ -1247,11 +1247,14 @@ impl Server {
             }
 
             let mut active_game_arc = None;
+            let mut tournament_status_update = false;
 
             if let Some(tournament) = &mut self.tournament
                 && let Some(tree) = &mut tournament.tree
                 && let Some(active_game) = tree.active_games.get_mut(&game.id)
             {
+                tournament_status_update = true;
+
                 active_game_arc = Some(active_game.clone());
                 let mut active_game = active_game.lock().ok()?;
 
@@ -1277,8 +1280,6 @@ impl Server {
                 let player_2_wins = active_game.player_2.attacker + active_game.player_2.defender;
                 let total_wins = player_1_wins + player_2_wins;
 
-                println!("total_wins: {total_wins}");
-
                 let rating_1 = if let Some(account_1) =
                     self.accounts.0.get(active_game.player_1.name.as_str())
                 {
@@ -1296,10 +1297,11 @@ impl Server {
                 };
 
                 trace!("total_wins: {total_wins}");
+
                 let mut winner = None;
                 if total_wins < 2 {
                     // Do nothing.
-                } else if total_wins % 2 == 0 {
+                } else if total_wins % 2 == 0 || total_wins > 4 {
                     if player_1_wins > player_2_wins {
                         winner = Some(active_game.player_1.clone());
                     } else if player_2_wins > player_1_wins {
@@ -1379,6 +1381,10 @@ impl Server {
                         }
                     }
                 }
+            }
+
+            if tournament_status_update {
+                self.tournament_status_all();
             }
 
             if !self.skip_the_data_file {
