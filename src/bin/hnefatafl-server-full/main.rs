@@ -393,8 +393,8 @@ fn login(
     if !login_successful {
         return Err(anyhow::Error::msg("the user failed to login"));
     }
-
     stream.write_all(b"= login\n")?;
+
     thread::spawn(move || {
         if let Err(error) = receiving_and_writing(stream, &client_rx) {
             error!("receiving_and_writing: {error}");
@@ -1538,7 +1538,11 @@ impl Server {
             index_username_command.get(1),
             index_username_command.get(2),
         ) {
-            if *command != "display_server" && *command != "login" && *command != "ping" {
+            if *command != "check_update_rd"
+                && *command != "display_server"
+                && *command != "login"
+                && *command != "ping"
+            {
                 debug!("{index_supplied} {username} {command}");
             }
 
