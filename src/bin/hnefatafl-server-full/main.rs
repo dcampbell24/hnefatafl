@@ -224,7 +224,7 @@ fn main() -> anyhow::Result<()> {
         let stream = match stream {
             Ok(stream) => stream,
             Err(error) => {
-                error!("{error}");
+                error!("stream: {error}");
                 continue;
             }
         };
@@ -233,7 +233,7 @@ fn main() -> anyhow::Result<()> {
             let peer_address = match stream.peer_addr() {
                 Ok(peer_address) => peer_address.ip(),
                 Err(error) => {
-                    error!("{error}");
+                    error!("peer_address: {error}");
                     continue;
                 }
             };
@@ -252,12 +252,12 @@ fn main() -> anyhow::Result<()> {
                         }
                     }
                     Err(error) => {
-                        error!("{error}");
+                        error!("close 2: {error}");
                         continue;
                     }
                 },
                 Err(error) => {
-                    error!("{error}");
+                    error!("close 1: {error}");
                     continue;
                 }
             }
@@ -402,7 +402,7 @@ fn login(
 
     'outer: for _ in 0..1_000_000 {
         if let Err(err) = reader.read_line(&mut buf) {
-            error!("{err}");
+            error!("reader.read_line(): {err}");
             break 'outer;
         }
 
@@ -1027,7 +1027,7 @@ impl Server {
             if !self.skip_the_data_file {
                 self.append_archived_game(game)
                     .map_err(|err| {
-                        error!("{err}");
+                        error!("append_archived_games: {err}");
                     })
                     .ok()?;
             }
@@ -1100,7 +1100,7 @@ impl Server {
                 game.game
                     .read_line(&format!("play attacker {from} {to}"))
                     .map_err(|error| {
-                        error!("{error}");
+                        error!("play attacker {from} {to}: {error}");
                         error
                     })
                     .ok()?;
@@ -1125,7 +1125,7 @@ impl Server {
             game.game
                 .read_line(&format!("play defender {from} {to}"))
                 .map_err(|error| {
-                    error!("{error}");
+                    error!("play defender {from} {to}: {error}");
                     error
                 })
                 .ok()?;
@@ -1396,13 +1396,15 @@ impl Server {
             }
 
             if tournament_status_update {
+                self.tournament_update_wins();
+                self.tournament_ready_to_playing();
                 self.tournament_status_all();
             }
 
             if !self.skip_the_data_file {
                 self.append_archived_game(game)
                     .map_err(|err| {
-                        error!("{err}");
+                        error!("append_archived_game: {err}");
                     })
                     .ok()?;
             }
@@ -1969,7 +1971,7 @@ impl Server {
                 "tournament_date" => {
                     if self.admins.contains(*username) {
                         if let Err(error) = self.tournament_date(&the_rest) {
-                            error!("{error}");
+                            error!("tournament_date: {error}");
                         } else {
                             self.tournament_status_all();
                         }
