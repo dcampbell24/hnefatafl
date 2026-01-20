@@ -440,8 +440,8 @@ fn receiving_and_writing<T: Send + Write>(
 ) -> anyhow::Result<()> {
     loop {
         match client_rx.recv() {
-            Ok(mut message) => {
-                if message == "= archived_games" {
+            Ok(mut message) => match message.as_str() {
+                "= archived_games" => {
                     let ron_archived_games = client_rx.recv()?;
                     let archived_games: Vec<ArchivedGame> = ron::from_str(&ron_archived_games)?;
                     let postcard_archived_games = &postcard::to_allocvec(&archived_games)?;
@@ -449,11 +449,15 @@ fn receiving_and_writing<T: Send + Write>(
                     writeln!(message, " {}", postcard_archived_games.len())?;
                     stream.write_all(message.as_bytes())?;
                     stream.write_all(postcard_archived_games)?;
-                } else {
-                    message.push('\n');
-                    stream.write_all(message.as_bytes())?;
                 }
-            }
+                "= logout" => return Ok(()),
+                _ => {
+                    message.push('\n');
+                    if let Err(error) = stream.write_all(message.as_bytes()) {
+                        return Err(anyhow::Error::msg(format!("{message}: {error}")));
+                    }
+                }
+            },
             Err(_) => {
                 // The channel must be closed.
                 return Ok(());
@@ -2254,7 +2258,14 @@ impl Server {
             {
                 info!("{index_supplied} {username} logged out");
                 account.logged_in = None;
+
+                self.clients
+                    .get(&index_supplied)?
+                    .send("= logout".to_string())
+                    .ok()?;
+
                 self.clients.remove(&index_database);
+
                 return None;
             }
         }
