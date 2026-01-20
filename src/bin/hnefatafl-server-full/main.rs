@@ -278,6 +278,7 @@ fn login(
     tx: &mpsc::Sender<(String, Option<mpsc::Sender<String>>)>,
 ) -> anyhow::Result<()> {
     let args = Args::parse();
+
     let _remove_connection;
     if args.secure {
         _remove_connection = RemoveConnection {
