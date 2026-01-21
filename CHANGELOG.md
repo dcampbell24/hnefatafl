@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Breaking Change: use directories instead of dirs.
 - Send an error message when the server is shutdown.
 - hnefatafl-server-full: don't send an empty message.
 - hnefatafl-server-full: don't send display_users or display_games unless

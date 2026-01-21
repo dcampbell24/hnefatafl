@@ -60,7 +60,7 @@ use hnefatafl_copenhagen::{
     status::Status,
     time::{Time, TimeEnum, TimeSettings},
     tournament::{self, Player, Players, Tournament, TournamentTree, Wins},
-    utils::{self, data_file},
+    utils::{self, create_data_folder, data_file},
 };
 use lettre::{
     SmtpTransport, Transport,
@@ -82,13 +82,13 @@ use crate::{
     unix_timestamp::UnixTimestamp,
 };
 
-const ACTIVE_GAMES_FILE: &str = "hnefatafl-games-active.postcard";
-const ARCHIVED_GAMES_FILE: &str = "hnefatafl-games.ron";
+const ACTIVE_GAMES_FILE: &str = "active-games.postcard";
+const ARCHIVED_GAMES_FILE: &str = "archived-games.ron";
 /// Seconds in two months: `60.0 * 60.0 * 24.0 * 30.417 * 2.0 = 5_256_057.6`
 const TWO_MONTHS: i64 = 5_256_058;
 const SEVEN_DAYS: i64 = 1_000 * 60 * 60 * 24 * 7;
-const USERS_FILE: &str = "hnefatafl-copenhagen.ron";
-const MESSAGE_FILE: &str = "hnefatafl-message.txt";
+const USERS_FILE: &str = "users.ron";
+const MESSAGE_FILE: &str = "message.txt";
 
 #[allow(clippy::too_many_lines)]
 fn main() -> anyhow::Result<()> {
@@ -111,6 +111,8 @@ fn main() -> anyhow::Result<()> {
         std::fs::write("hnefatafl-server-full.1", buffer)?;
         return Ok(());
     }
+
+    create_data_folder()?;
 
     let (tx, rx) = mpsc::channel();
     let mut server = Server {

@@ -61,7 +61,7 @@ use hnefatafl_copenhagen::{
     time::{TimeEnum, TimeSettings},
     tournament::{self, Tournament},
     tree::Tree,
-    utils::{self, choose_ai, data_file},
+    utils::{self, choose_ai, create_data_folder, data_file},
 };
 #[cfg(target_os = "linux")]
 use iced::window::settings::PlatformSpecific;
@@ -129,8 +129,8 @@ const KING: &[u8] = include_bytes!("icons/king_1_256x256.rgba");
 #[cfg(feature = "icon_2")]
 const KING: &[u8] = include_bytes!("icons/king_2_256x256.rgba");
 
-const USER_CONFIG_FILE_POSTCARD: &str = "hnefatafl.postcard";
-const USER_CONFIG_FILE_RON: &str = "hnefatafl.ron";
+const ARCHIVED_GAMES_FILE: &str = "archived-games.postcard";
+const USER_CONFIG_FILE: &str = "user.ron";
 
 const PADDING: u16 = 10;
 const PADDING_SMALL: u16 = 2;
@@ -212,8 +212,8 @@ fn i18n_buttons() -> HashMap<String, String> {
 }
 
 fn init_client() -> Client {
-    let user_config_file_postcard = data_file(USER_CONFIG_FILE_POSTCARD);
-    let user_config_file_ron = data_file(USER_CONFIG_FILE_RON);
+    let user_config_file_postcard = data_file(ARCHIVED_GAMES_FILE);
+    let user_config_file_ron = data_file(USER_CONFIG_FILE);
     let mut error = Vec::new();
 
     let mut client: Client = match &fs::read_to_string(&user_config_file_ron) {
@@ -309,6 +309,8 @@ fn main() -> anyhow::Result<()> {
         std::fs::write("hnefatafl-client.1", buffer)?;
         return Ok(());
     }
+
+    create_data_folder()?;
 
     let mut application = iced::application(init_client, Client::update, Client::view)
         .title("Hnefatafl Copenhagen")
@@ -4053,7 +4055,7 @@ impl<'a> Client {
     fn save_client_postcard(&self) -> anyhow::Result<()> {
         let postcard_bytes = postcard::to_allocvec(&self.archived_games)?;
         if !postcard_bytes.is_empty() {
-            let mut file = File::create(data_file(USER_CONFIG_FILE_POSTCARD))?;
+            let mut file = File::create(data_file(ARCHIVED_GAMES_FILE))?;
             file.write_all(&postcard_bytes)?;
         }
 
@@ -4083,7 +4085,7 @@ impl<'a> Client {
 
         let ron_string = ron::ser::to_string_pretty(&client, ron::ser::PrettyConfig::new())?;
         if !ron_string.is_empty() {
-            let mut file = File::create(data_file(USER_CONFIG_FILE_RON))?;
+            let mut file = File::create(data_file(USER_CONFIG_FILE))?;
             file.write_all(ron_string.as_bytes())?;
         }
 

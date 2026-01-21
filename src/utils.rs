@@ -15,8 +15,9 @@
 
 #[cfg(any(target_family = "unix", target_family = "windows"))]
 use std::process::Command;
-use std::{env, path::PathBuf, process::ExitStatus, time::Duration};
+use std::{env, fs::DirBuilder, path::PathBuf, process::ExitStatus, time::Duration};
 
+use directories::ProjectDirs;
 use env_logger::Builder;
 use log::LevelFilter;
 
@@ -68,16 +69,33 @@ pub fn clear_screen() -> anyhow::Result<ExitStatus> {
     Ok(exit_status)
 }
 
+/// # Errors
+///
+/// If it fails to create the directory or the directory does not already exist.
+pub fn create_data_folder() -> anyhow::Result<()> {
+    let project_dir = ProjectDirs::from("org", "Hnefatafl Org", "hnefatafl-copenhagen");
+
+    if let Some(project_dir) = project_dir {
+        DirBuilder::new()
+            .recursive(true)
+            .create(project_dir.data_dir())?;
+    }
+
+    Ok(())
+}
+
 #[must_use]
 pub fn data_file(file: &str) -> PathBuf {
-    let mut data_file = if let Some(data_file) = dirs::data_dir() {
-        data_file
+    let project_dir = ProjectDirs::from("org", "Hnefatafl Org", "hnefatafl-copenhagen");
+
+    let mut project_dir = if let Some(project_dir) = project_dir {
+        project_dir.data_local_dir().to_path_buf()
     } else {
         PathBuf::new()
     };
 
-    data_file.push(file);
-    data_file
+    project_dir.push(file);
+    project_dir
 }
 
 pub fn init_logger(module: &str, debug: bool, systemd: bool) {
