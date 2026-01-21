@@ -1152,7 +1152,8 @@ impl Server {
         }
 
         let mut game_over = false;
-        let mut winner = Role::Roleless;
+        let mut winner_role = Role::Roleless;
+        let mut winner_wins = None;
 
         match game.game.status {
             Status::AttackerWins => {
@@ -1195,7 +1196,7 @@ impl Server {
                 }
 
                 game_over = true;
-                winner = Role::Attacker;
+                winner_role = Role::Attacker;
             }
             Status::Draw => {
                 // Handled in the draw fn.
@@ -1249,7 +1250,7 @@ impl Server {
                 }
 
                 game_over = true;
-                winner = Role::Defender;
+                winner_role = Role::Defender;
             }
         }
 
@@ -1276,7 +1277,7 @@ impl Server {
                 active_game_arc = Some(active_game.clone());
                 let mut active_game = active_game.lock().ok()?;
 
-                match winner {
+                match winner_role {
                     Role::Attacker => {
                         if game.attacker == active_game.player_1.name {
                             active_game.player_1.attacker += 1;
@@ -1316,28 +1317,27 @@ impl Server {
 
                 trace!("total_wins: {total_wins}");
 
-                let mut winner = None;
                 if total_wins < 2 {
                     // Do nothing.
                 } else if total_wins % 2 == 0 || total_wins > 4 {
                     if player_1_wins > player_2_wins {
-                        winner = Some(active_game.player_1.clone());
+                        winner_wins = Some(active_game.player_1.clone());
                     } else if player_2_wins > player_1_wins {
-                        winner = Some(active_game.player_2.clone());
+                        winner_wins = Some(active_game.player_2.clone());
                     }
                 } else if active_game.player_1.attacker > active_game.player_2.attacker {
-                    winner = Some(active_game.player_1.clone());
+                    winner_wins = Some(active_game.player_1.clone());
                 } else if active_game.player_2.attacker > active_game.player_1.attacker {
-                    winner = Some(active_game.player_2.clone());
+                    winner_wins = Some(active_game.player_2.clone());
                 }
 
                 trace!(
-                    "winner: {winner:#?}, active_game_round: {}",
+                    "winner: {winner_wins:#?}, active_game_round: {}",
                     active_game.round
                 );
 
-                if let Some(winner) = winner
-                    && let winner = winner.name
+                if let Some(ref mut winner) = winner_wins
+                    && let winner_name = winner.name.as_str()
                     && let Some(round) = tree.rounds.get_mut(active_game.round)
                 {
                     for (i, statuses) in round.chunks_mut(2).enumerate() {
@@ -1349,7 +1349,7 @@ impl Server {
                                 continue;
                             };
 
-                            if winner == active_game.player_1.name.as_str() {
+                            if winner_name == active_game.player_1.name.as_str() {
                                 *status_1 = tournament::Status::Won(Player {
                                     name: active_game.player_1.name.clone(),
                                     rating: rating_1,
@@ -1399,6 +1399,12 @@ impl Server {
                         }
                     }
                 }
+            }
+
+            if let Some(tournament) = &mut self.tournament
+                && let Some(tree) = &mut tournament.tree
+            {
+                tree.active_games.remove(&game.id);
             }
 
             if tournament_status_update {
