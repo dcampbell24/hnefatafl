@@ -24,7 +24,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Breaking Change: use directories instead of dirs.
+- Breaking Change: use directories instead of dirs:
+  - dirs::data_dir() -> ProjectDirs::from("org", "Hnefatafl Org", "hnefatafl-copenhagen").data_local_dir()
+  - hnefatafl-copenhagen.ron        -> users.ron
+  - hnefatafl-games-active.postcard -> active-games.postcard
+  - hnefatafl-games.ron             -> archived-games.ron
+  - hnefatafl.postcard              -> archived-games.postcard
+  - hnefatafl.ron                   -> user.ron
 - Send an error message when the server is shutdown.
 - hnefatafl-server-full: don't send an empty message.
 - hnefatafl-server-full: don't send display_users or display_games unless
