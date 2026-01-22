@@ -6,6 +6,8 @@
   }
 </script>
 
+![AI](screenshots/ai.png)
+
 ## Artifcial Intelligence
 
 I am working on making a reasonably strong artificial intelligence, but it is
