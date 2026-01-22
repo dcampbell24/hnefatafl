@@ -134,6 +134,7 @@ const USER_CONFIG_FILE: &str = "user.ron";
 
 const PADDING: u16 = 10;
 const PADDING_SMALL: u16 = 2;
+const PADDING_MEDIUM: u16 = 4;
 const SPACING: Pixels = Pixels(10.0);
 const SPACING_B: Pixels = Pixels(20.0);
 
@@ -1548,7 +1549,25 @@ impl<'a> Client {
             }
 
             user_area = user_area.push(row![heat_map, heat_map_button].spacing(SPACING));
-            user_area = user_area.push(leave);
+
+            let child_number = text(handle.boards.next_child);
+            let child_right = button(
+                text(&self.chars.double_arrow_right)
+                    .center()
+                    .font(Font::MONOSPACE),
+            )
+            .on_press(Message::ReviewGameChildNext);
+
+            user_area = user_area.push(
+                row![
+                    leave,
+                    child_right,
+                    container(child_number)
+                        .style(container::bordered_box)
+                        .padding(PADDING_MEDIUM),
+                ]
+                .spacing(SPACING),
+            );
 
             let mut left_all = button(text(&self.chars.double_arrow_left_full));
             let mut left = button(text(&self.chars.double_arrow_left));
@@ -1566,24 +1585,7 @@ impl<'a> Client {
                 right_all = right_all.on_press(Message::ReviewGameForwardAll);
             }
 
-            let child_number = text(handle.boards.next_child);
-            let child_right = button(
-                text(&self.chars.double_arrow_right)
-                    .center()
-                    .font(Font::MONOSPACE),
-            )
-            .on_press(Message::ReviewGameChildNext);
-
             user_area = user_area.push(row![left_all, left, right, right_all].spacing(SPACING));
-            user_area = user_area.push(
-                row![
-                    child_right,
-                    container(child_number)
-                        .style(container::bordered_box)
-                        .padding(PADDING),
-                ]
-                .spacing(SPACING),
-            );
         } else {
             user_area = user_area.push(leave);
 
