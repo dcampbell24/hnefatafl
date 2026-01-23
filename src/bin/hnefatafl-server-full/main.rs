@@ -1998,6 +1998,8 @@ impl Server {
                     None
                 }
                 "tournament_status" => {
+                    trace!("tournament_status: {:#?}", self.tournament);
+
                     if args.skip_advertising_updates {
                         None
                     } else {
@@ -2665,6 +2667,8 @@ impl Server {
             }
         }
 
+        trace!("new_games: {new_games:#?}");
+
         for (player_1, player_2, round, chunk) in new_games {
             let id_1 = self.new_tournament_game(&player_1, &player_2);
             let id_2 = self.new_tournament_game(&player_2, &player_1);
@@ -2696,6 +2700,8 @@ impl Server {
     }
 
     fn tournament_status_all(&self) {
+        trace!("tournament_status: {:#?}", self.tournament);
+
         if let Ok(mut tournament) = ron::ser::to_string(&self.tournament) {
             tournament = format!("= tournament_status {tournament}");
 
@@ -2797,7 +2803,14 @@ impl Server {
                 if let Some(round) = tree.rounds.get_mut(i)
                     && let Some(status) = round.get_mut(j)
                 {
-                    *status = tournament::Status::Ready(player);
+                    match status {
+                        tournament::Status::Lost(_)
+                        | tournament::Status::None
+                        | tournament::Status::Ready(_)
+                        | tournament::Status::Playing(_)
+                        | tournament::Status::Won(_) => {}
+                        tournament::Status::Waiting => *status = tournament::Status::Ready(player),
+                    }
                 } else {
                     error!("tree.rounds[{i}][{j}] is None");
                     return;
