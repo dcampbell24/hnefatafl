@@ -82,6 +82,7 @@ use iced::{
     },
     window::{self, icon},
 };
+use image::ImageFormat;
 use log::{debug, error, info, trace};
 use rust_i18n::t;
 use smol_str::ToSmolStr;
@@ -123,12 +124,7 @@ const BOARD_LETTERS_LOWERCASE: [char; 13] = [
     'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
 ];
 
-#[cfg(not(feature = "icon_2"))]
-const KING: &[u8] = include_bytes!("icons/king_1_256x256.rgba");
-
-#[cfg(feature = "icon_2")]
-const KING: &[u8] = include_bytes!("icons/king_2_256x256.rgba");
-
+const HELMET: &[u8] = include_bytes!("helmet.png");
 const ARCHIVED_GAMES_FILE: &str = "archived-games.postcard";
 const USER_CONFIG_FILE: &str = "user.ron";
 
@@ -322,7 +318,7 @@ fn main() -> anyhow::Result<()> {
                 application_id: APPLICATION_ID.to_string(),
                 ..PlatformSpecific::default()
             },
-            icon: Some(icon::from_rgba(KING.to_vec(), 256, 256)?),
+            icon: Some(icon::from_file_data(HELMET, Some(ImageFormat::Png))?),
             ..window::Settings::default()
         })
         .theme(Client::theme);
