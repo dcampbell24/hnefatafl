@@ -457,6 +457,8 @@ fn pass_messages() -> impl Stream<Item = Message> {
                             }
 
                             if message_trim == "quit" {
+                                handle_error(tcp_stream.write_all("logout".as_bytes()));
+
                                 if cfg!(not(target_os = "redox")) {
                                     tcp_stream
                                         .shutdown(Shutdown::Both)
