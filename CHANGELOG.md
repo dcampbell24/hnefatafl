@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.0.0] - 2026-01-23
+
 ### Added
 
 - Tournaments!
@@ -593,7 +595,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - hnefatafl-client: Make users and games scrollable.
 - Make all the features dependencies.
 
-[unreleased]: https://github.com/dcampbell24/hnefatafl/compare/v4.5.0...main
+[unreleased]: https://github.com/dcampbell24/hnefatafl/compare/v5.0.0...main
+[5.0.0]: https://github.com/dcampbell24/hnefatafl/compare/v4.4.1...v4.5.0
 [4.5.0]: https://github.com/dcampbell24/hnefatafl/compare/v4.4.1...v4.5.0
 [4.4.1]: https://github.com/dcampbell24/hnefatafl/compare/v4.4.0...v4.4.1
 [4.4.0]: https://github.com/dcampbell24/hnefatafl/compare/v4.3.0...v4.4.0
