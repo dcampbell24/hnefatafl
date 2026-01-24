@@ -37,12 +37,12 @@ use std::{
         Arc, Mutex,
         mpsc::{self, Receiver, Sender},
     },
-    thread,
+    thread::{self, sleep},
     time::Duration,
 };
 
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
-use chrono::{DateTime, Local, Utc};
+use chrono::{DateTime, Days, Local, Utc};
 use clap::{CommandFactory, Parser};
 use hnefatafl_copenhagen::{
     COPYRIGHT, Id, SERVER_PORT, VERSION_ID,
@@ -213,6 +213,45 @@ fn main() -> anyhow::Result<()> {
         loop {
             handle_error(tx_messages_2.send(("0 server check_update_rd".to_string(), None)));
             thread::sleep(Duration::from_secs(60 * 60 * 24));
+        }
+    });
+
+    let tx_messages_3 = tx.clone();
+    thread::spawn(move || {
+        handle_error(tx_messages_3.send(("0 server tournament_start".to_string(), None)));
+
+        loop {
+            let now_utc = Utc::now();
+
+            let tomorrow_midnight_utc = (now_utc + Days::new(1))
+                .date_naive()
+                .and_hms_opt(0, 0, 0)
+                .unwrap_or_else(|| {
+                    error!("and_hms_opt failed");
+                    exit(1)
+                })
+                .and_local_timezone(Utc)
+                .single()
+                .unwrap_or_else(|| {
+                    error!("single failed");
+                    exit(1)
+                });
+
+            let duration_until_midnight = tomorrow_midnight_utc.signed_duration_since(now_utc);
+            debug!(
+                "seconds until midnight UTC: {}",
+                duration_until_midnight.num_seconds()
+            );
+
+            let std_duration = duration_until_midnight.to_std().unwrap_or_else(|error| {
+                error!("to_std failed: {error}");
+                exit(1)
+            });
+
+            sleep(std_duration);
+            sleep(Duration::from_secs(1));
+
+            handle_error(tx_messages_3.send(("0 server tournament_start".to_string(), None)));
         }
     });
 
@@ -733,7 +772,8 @@ impl Server {
     ) -> Option<(mpsc::Sender<String>, bool, String)> {
         let password = the_rest.join(" ");
         let tx = option_tx?;
-        if self.accounts.0.contains_key(username) {
+
+        if self.accounts.0.contains_key(username) || username == "server" {
             info!("{index_supplied} {username} is already in the database");
             Some((tx, false, (*command).to_string()))
         } else {
@@ -2010,7 +2050,18 @@ impl Server {
                     }
                 }
                 "tournament_start" => {
-                    if self.admins.contains(*username) {
+                    let mut start_tournament = false;
+
+                    if let Some(tournament) = &self.tournament
+                        && tournament.tree.is_none()
+                        && Utc::now() >= tournament.date
+                    {
+                        start_tournament = true;
+                    }
+
+                    if start_tournament {
+                        info!("Starting tournament...");
+
                         self.tournament_tree();
                         self.save_server();
                         self.tournament_status_all();
