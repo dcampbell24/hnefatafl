@@ -204,14 +204,7 @@ section = "games"
 name = "hnefatafl-copenhagen"
 identifier = "org.hnefatafl.hnefatafl_client"
 icon = [
-    "icons/king_16x16.png",
-    "icons/king_22x22.png",
-    "icons/king_24x124.png",
-    "icons/king_32x32.png",
-    "icons/king_42x42.png",
-    "icons/king_64x64.png",
-    "icons/king_128x128.png",
-    "icons/king_256x256.png",
+    "icons/helmet.svg",
 ]
 copyright = "2025-2026 Developers of the hnefatafl-copenhagen project"
 category = "public.app-category.board-games"
