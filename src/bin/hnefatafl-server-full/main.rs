@@ -1587,6 +1587,7 @@ impl Server {
             index_username_command.get(2),
         ) {
             if *command != "check_update_rd"
+                && *command != "create_account"
                 && *command != "display_server"
                 && *command != "login"
                 && *command != "ping"
