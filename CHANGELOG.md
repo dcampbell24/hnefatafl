@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Tournaments!
 - hnefatafl-server-full: `--secure` flag.
 - admins to the server ron settings file.
 - Document the feature flags.
@@ -18,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The icon to a helmet.
 - The license from Apache 2 or MIT to AGPLv3.
 - Use more generic logging
 - Log only the module being used by default.
