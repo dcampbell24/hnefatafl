@@ -479,32 +479,28 @@ fn receiving_and_writing<T: Send + Write>(
     mut stream: T,
     client_rx: &Receiver<String>,
 ) -> anyhow::Result<()> {
-    loop {
-        match client_rx.recv() {
-            Ok(mut message) => match message.as_str() {
-                "= archived_games" => {
-                    let ron_archived_games = client_rx.recv()?;
-                    let archived_games: Vec<ArchivedGame> = ron::from_str(&ron_archived_games)?;
-                    let postcard_archived_games = &postcard::to_allocvec(&archived_games)?;
+    for mut message in client_rx {
+        match message.as_str() {
+            "= archived_games" => {
+                let ron_archived_games = client_rx.recv()?;
+                let archived_games: Vec<ArchivedGame> = ron::from_str(&ron_archived_games)?;
+                let postcard_archived_games = &postcard::to_allocvec(&archived_games)?;
 
-                    writeln!(message, " {}", postcard_archived_games.len())?;
-                    stream.write_all(message.as_bytes())?;
-                    stream.write_all(postcard_archived_games)?;
+                writeln!(message, " {}", postcard_archived_games.len())?;
+                stream.write_all(message.as_bytes())?;
+                stream.write_all(postcard_archived_games)?;
+            }
+            "= logout" => return Ok(()),
+            _ => {
+                message.push('\n');
+                if let Err(error) = stream.write_all(message.as_bytes()) {
+                    return Err(anyhow::Error::msg(format!("{message}: {error}")));
                 }
-                "= logout" => return Ok(()),
-                _ => {
-                    message.push('\n');
-                    if let Err(error) = stream.write_all(message.as_bytes()) {
-                        return Err(anyhow::Error::msg(format!("{message}: {error}")));
-                    }
-                }
-            },
-            Err(_) => {
-                // The channel must be closed.
-                return Ok(());
             }
         }
     }
+
+    Ok(())
 }
 
 fn generate_round_one(players: Vec<Player>) -> Vec<tournament::Status> {
