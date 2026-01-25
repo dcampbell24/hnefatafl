@@ -436,14 +436,6 @@ fn pass_messages() -> impl Stream<Item = Message> {
                         }
                     }
 
-                    let keepalive = TcpKeepalive::new()
-                        .with_time(Duration::from_secs(30))
-                        .with_interval(Duration::from_secs(30))
-                        .with_retries(3);
-
-                    let socket = handle_error(Socket::new(Domain::IPV4, Type::STREAM, None));
-                    handle_error(socket.set_tcp_keepalive(&keepalive));
-
                     let mut socket_address = None;
                     for address in address_string.to_socket_addrs().unwrap_or_else(|error| {
                         panic!("The socket address resolves to no IPs: {error})")
@@ -458,6 +450,14 @@ fn pass_messages() -> impl Stream<Item = Message> {
                             panic!("There is no IPv4 address for the host: {address_string}")
                         })
                         .into();
+
+                    let keepalive = TcpKeepalive::new()
+                        .with_time(Duration::from_secs(30))
+                        .with_interval(Duration::from_secs(30))
+                        .with_retries(3);
+
+                    let socket = handle_error(Socket::new(Domain::IPV4, Type::STREAM, None));
+                    handle_error(socket.set_tcp_keepalive(&keepalive));
 
                     if let Err(error) = socket.connect(&address) {
                         error!("socket.connect {address_string}: {error}");
