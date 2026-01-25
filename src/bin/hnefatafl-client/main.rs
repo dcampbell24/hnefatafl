@@ -439,8 +439,8 @@ fn pass_messages() -> impl Stream<Item = Message> {
 
                     let socket = handle_error(Socket::new(Domain::IPV4, Type::STREAM, None));
                     let keepalive = TcpKeepalive::new()
-                        .with_time(Duration::from_mins(1))
-                        .with_interval(Duration::from_mins(1))
+                        .with_time(Duration::from_secs(30))
+                        .with_interval(Duration::from_secs(30))
                         .with_retries(3);
 
                     handle_error(socket.set_tcp_keepalive(&keepalive));
