@@ -459,8 +459,6 @@ fn pass_messages() -> impl Stream<Item = Message> {
                         })
                         .into();
 
-                    let socket = handle_error(Socket::new(Domain::IPV4, Type::STREAM, None));
-
                     if let Err(error) = socket.connect(&address) {
                         error!("socket.connect {address_string}: {error}");
                         handle_error(executor::block_on(sender.send(Message::TcpDisconnect)));
