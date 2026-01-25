@@ -20,7 +20,8 @@
 
 use std::{
     io::{BufRead, BufReader, Write},
-    net::TcpStream,
+    net::{TcpStream, ToSocketAddrs as _},
+    time::Duration,
 };
 
 use anyhow::Error;
@@ -35,6 +36,7 @@ use hnefatafl_copenhagen::{
     utils::{self, choose_ai},
 };
 use log::{debug, info, trace};
+use socket2::{Domain, SockAddr, Socket, TcpKeepalive, Type};
 
 // Move 26, defender wins, corner escape, time per move 15s 2025-03-06 (hnefatafl-equi).
 
@@ -118,11 +120,39 @@ fn main() -> anyhow::Result<()> {
     let mut username = "ai-".to_string();
     username.push_str(&args.username);
 
-    let mut address = args.host.clone();
-    address.push_str(PORT);
+    let mut address_string = args.host.clone();
+    address_string.push_str(PORT);
 
     let mut buf = String::new();
-    let mut tcp = TcpStream::connect(address.clone())?;
+
+    let mut socket_address = None;
+    for address in address_string.to_socket_addrs()? {
+        if address.is_ipv4() {
+            socket_address = Some(address);
+        }
+    }
+
+    let address: SockAddr = socket_address
+        .ok_or_else(|| {
+            anyhow::Error::msg(format!(
+                "There is no IPv4 address for the host: {address_string}"
+            ))
+        })?
+        .into();
+
+    let keepalive = TcpKeepalive::new()
+        .with_time(Duration::from_secs(30))
+        .with_interval(Duration::from_secs(30))
+        .with_retries(3);
+
+    let socket = Socket::new(Domain::IPV4, Type::STREAM, None)?;
+    socket.set_tcp_keepalive(&keepalive)?;
+
+    socket.connect(&address).unwrap_or_else(|error| {
+        eprintln!("socket.connect {address_string}: {error}");
+    });
+
+    let mut tcp: TcpStream = socket.into();
     let mut reader = BufReader::new(tcp.try_clone()?);
 
     tcp.write_all(format!("{VERSION_ID} login {username} {}\n", args.password).as_bytes())?;
