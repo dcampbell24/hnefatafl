@@ -15,7 +15,6 @@
 
 // Don't open the terminal on Windows.
 #![cfg_attr(all(windows, not(feature = "console")), windows_subsystem = "windows")]
-#![deny(clippy::panic)]
 #![deny(clippy::unwrap_used)]
 
 mod archived_game_handle;
@@ -30,7 +29,7 @@ use std::{
     fmt::{self, Write as _},
     fs::{self, File},
     io::{BufRead, BufReader, Cursor, ErrorKind, Read, Write},
-    net::{Shutdown, SocketAddr, TcpStream},
+    net::{Shutdown, TcpStream, ToSocketAddrs},
     process::exit,
     str::{FromStr, SplitAsciiWhitespace},
     sync::mpsc,
@@ -404,7 +403,7 @@ fn pass_messages() -> impl Stream<Item = Message> {
         move |mut sender: iced::futures::channel::mpsc::Sender<Message>| async move {
             let mut args = Args::parse();
             args.host.push_str(SERVER_PORT);
-            let address = args.host;
+            let address_string = args.host;
 
             thread::spawn(move || {
                 'start_over: loop {
@@ -445,19 +444,32 @@ fn pass_messages() -> impl Stream<Item = Message> {
 
                     handle_error(socket.set_tcp_keepalive(&keepalive));
 
-                    let std_address: SocketAddr = handle_error(address.as_str().parse());
-                    let address: SockAddr = std_address.into();
+                    let mut socket_address = None;
+                    for address in address_string.to_socket_addrs().unwrap_or_else(|error| {
+                        panic!("The socket address resolves to no IPs: {error})")
+                    }) {
+                        if address.is_ipv4() {
+                            socket_address = Some(address);
+                        }
+                    }
+
+                    let address: SockAddr = socket_address
+                        .unwrap_or_else(|| {
+                            panic!("There is no IPv4 address for the host: {address_string}")
+                        })
+                        .into();
+
                     let socket = handle_error(Socket::new(Domain::IPV4, Type::STREAM, None));
 
-                    if let Err(error) = socket.bind(&address) {
-                        error!("socket.bind: {error}");
+                    if let Err(error) = socket.connect(&address) {
+                        error!("socket.connect {address_string}: {error}");
                         handle_error(executor::block_on(sender.send(Message::TcpDisconnect)));
                         handle_error(executor::block_on(sender.send(Message::ServerShutdown)));
 
                         continue 'start_over;
                     }
 
-                    info!("connected to {std_address} ...");
+                    info!("connected to {address_string} ...");
 
                     let mut tcp_stream: TcpStream = socket.into();
                     let mut reader = BufReader::new(handle_error(tcp_stream.try_clone()));
@@ -503,7 +515,7 @@ fn pass_messages() -> impl Stream<Item = Message> {
 
                     let mut buffer = String::new();
                     handle_error(executor::block_on(
-                        sender.send(Message::ConnectedTo(std_address.to_string())),
+                        sender.send(Message::ConnectedTo(address_string.clone())),
                     ));
 
                     if cfg!(target_os = "redox") {
