@@ -30,7 +30,7 @@ use std::{
     fmt::{self, Write as _},
     fs::{self, File},
     io::{BufRead, BufReader, Cursor, ErrorKind, Read, Write},
-    net::{Shutdown, TcpStream},
+    net::{Shutdown, SocketAddr, TcpStream},
     process::exit,
     str::{FromStr, SplitAsciiWhitespace},
     sync::mpsc,
@@ -86,7 +86,7 @@ use image::ImageFormat;
 use log::{debug, error, info, trace};
 use rust_i18n::t;
 use smol_str::ToSmolStr;
-use socket2::{Domain, Socket, TcpKeepalive, Type};
+use socket2::{Domain, SockAddr, Socket, TcpKeepalive, Type};
 
 use crate::{
     archived_game_handle::ArchivedGameHandle,
@@ -445,14 +445,22 @@ fn pass_messages() -> impl Stream<Item = Message> {
 
                     handle_error(socket.set_tcp_keepalive(&keepalive));
 
-                    let Ok(mut tcp_stream) = TcpStream::connect(&address) else {
+                    let std_address: SocketAddr = handle_error(address.as_str().parse());
+                    let address: SockAddr = std_address.into();
+                    let socket = handle_error(Socket::new(Domain::IPV4, Type::STREAM, None));
+
+                    if let Err(error) = socket.bind(&address) {
+                        error!("socket.bind: {error}");
                         handle_error(executor::block_on(sender.send(Message::TcpDisconnect)));
                         handle_error(executor::block_on(sender.send(Message::ServerShutdown)));
-                        continue 'start_over;
-                    };
 
+                        continue 'start_over;
+                    }
+
+                    info!("connected to {std_address} ...");
+
+                    let mut tcp_stream: TcpStream = socket.into();
                     let mut reader = BufReader::new(handle_error(tcp_stream.try_clone()));
-                    info!("connected to {address} ...");
 
                     let mut sender_clone = sender.clone();
                     thread::spawn(move || {
@@ -495,7 +503,7 @@ fn pass_messages() -> impl Stream<Item = Message> {
 
                     let mut buffer = String::new();
                     handle_error(executor::block_on(
-                        sender.send(Message::ConnectedTo(address.clone())),
+                        sender.send(Message::ConnectedTo(std_address.to_string())),
                     ));
 
                     if cfg!(target_os = "redox") {
