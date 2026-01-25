@@ -86,6 +86,7 @@ use image::ImageFormat;
 use log::{debug, error, info, trace};
 use rust_i18n::t;
 use smol_str::ToSmolStr;
+use socket2::{Domain, Socket, TcpKeepalive, Type};
 
 use crate::{
     archived_game_handle::ArchivedGameHandle,
@@ -436,6 +437,14 @@ fn pass_messages() -> impl Stream<Item = Message> {
                         }
                     }
 
+                    let socket = handle_error(Socket::new(Domain::IPV4, Type::STREAM, None));
+                    let keepalive = TcpKeepalive::new()
+                        .with_time(Duration::from_mins(1))
+                        .with_interval(Duration::from_mins(1))
+                        .with_retries(3);
+
+                    handle_error(socket.set_tcp_keepalive(&keepalive));
+
                     let Ok(mut tcp_stream) = TcpStream::connect(&address) else {
                         handle_error(executor::block_on(sender.send(Message::TcpDisconnect)));
                         handle_error(executor::block_on(sender.send(Message::ServerShutdown)));
@@ -457,8 +466,6 @@ fn pass_messages() -> impl Stream<Item = Message> {
                             }
 
                             if message_trim == "quit" {
-                                handle_error(tcp_stream.write_all("logout".as_bytes()));
-
                                 if cfg!(not(target_os = "redox")) {
                                     tcp_stream
                                         .shutdown(Shutdown::Both)

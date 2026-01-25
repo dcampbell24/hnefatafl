@@ -2210,6 +2210,7 @@ dependencies = [
  "rustc-hash 2.1.1",
  "serde",
  "smol_str 0.3.5",
+ "socket2",
  "thiserror 2.0.18",
  "wasm-bindgen",
  "webbrowser",
