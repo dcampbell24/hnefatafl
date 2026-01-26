@@ -26,6 +26,9 @@ install the software, play by the rules, chat on Discord, find Help, and Donate.
 const CANONICAL: &str = r#"<!-- Custom HTML head -->
         <link rel="canonical" href="https://hnefatafl.org" />"#;
 
+const HISTORY: &str = "Get the history of Hnefatafl. It is a part of the games known Tafl games. \
+Other related games are Alea evangelii, Ard Rí, Brandubh, Tablut, and Tawlbwrdd";
+
 const INSTALL: &str = "Determine how to install Copenhagen Hnefatafl. Install using the Arch User \
 Repository, Chocolatey, a Debian package, a flathub package, or Rust's cargo.";
 
@@ -40,6 +43,12 @@ fn main() -> Result<(), anyhow::Error> {
     let index_path = "/var/www/html/index.html";
     let file = fs::read_to_string(index_path)?;
     let content = file.replace("{{description}}", INDEX);
+    fs::write(index_path, content)?;
+
+    // let index_path = "book/history.html";
+    let index_path = "/var/www/html/history.html";
+    let file = fs::read_to_string(index_path)?;
+    let content = file.replace("{{description}}", HISTORY);
     fs::write(index_path, content)?;
 
     let file = fs::read_to_string(index_path)?;
