@@ -189,7 +189,7 @@ assets = [
     ["hnefatafl-server.1.gz", "usr/share/man/man1/", "644"],
     ["hnefatafl-server-full.1.gz", "usr/share/man/man1/", "644"],
     ["hnefatafl-text-protocol.1.gz", "usr/share/man/man1/", "644"],
-    ["icons/helmet.svg", "/usr/share/icons/hicolor/scalable/apps/org.hnefatafl.hnefatafl_client.svg", "644"],
+    ["assets/helmet.svg", "/usr/share/icons/hicolor/scalable/apps/org.hnefatafl.hnefatafl_client.svg", "644"],
     ["packages/hnefatafl-client.desktop", "usr/share/applications/", "644"],
     ["packages/hnefatafl-ai-attacker.service", "usr/lib/systemd/system/", "644"],
     ["packages/hnefatafl-ai-defender.service", "usr/lib/systemd/system/", "644"],
@@ -208,7 +208,7 @@ section = "games"
 name = "hnefatafl-copenhagen"
 identifier = "org.hnefatafl.hnefatafl_client"
 icon = [
-    "icons/helmet.svg",
+    "assets/helmet.svg",
 ]
 copyright = "2025-2026 Developers of the hnefatafl-copenhagen project"
 category = "public.app-category.board-games"
