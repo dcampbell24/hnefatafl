@@ -5,7 +5,7 @@ sdk: org.freedesktop.Sdk
 command: org.hnefatafl.hnefatafl_client
 sdk-extensions:
   - org.freedesktop.Sdk.Extension.rust-stable
-  - org.freedesktop.Sdk.Extension.llvm18
+  - org.freedesktop.Sdk.Extension.llvm20
 finish-args:
   - --share=ipc
   - --socket=pulseaudio
