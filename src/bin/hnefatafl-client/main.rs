@@ -436,27 +436,42 @@ fn pass_messages() -> impl Stream<Item = Message> {
                         }
                     }
 
+                    let mut is_ipv6 = false;
                     let mut socket_address = None;
-                    for address in address_string.to_socket_addrs().unwrap_or_else(|error| {
-                        panic!("The socket address resolves to no IPs: {error})")
-                    }) {
-                        if address.is_ipv4() {
+                    let socket_addresses =
+                        address_string.to_socket_addrs().unwrap_or_else(|error| {
+                            panic!("The socket address resolves to no IPs: {error})")
+                        });
+
+                    for address in socket_addresses.clone() {
+                        if address.is_ipv6() {
                             socket_address = Some(address);
+                            is_ipv6 = true;
+                            break;
                         }
                     }
 
-                    let address: SockAddr = socket_address
-                        .unwrap_or_else(|| {
-                            panic!("There is no IPv4 address for the host: {address_string}")
-                        })
-                        .into();
+                    if !is_ipv6 {
+                        for address in socket_addresses {
+                            if address.is_ipv4() {
+                                socket_address = Some(address);
+                                break;
+                            }
+                        }
+                    }
 
+                    let socket_address = socket_address.unwrap_or_else(|| {
+                        panic!("There is no IPv4 address for the host: {address_string}")
+                    });
+
+                    let address: SockAddr = socket_address.into();
                     let keepalive = TcpKeepalive::new()
                         .with_time(Duration::from_secs(30))
                         .with_interval(Duration::from_secs(30))
                         .with_retries(3);
 
-                    let socket = handle_error(Socket::new(Domain::IPV4, Type::STREAM, None));
+                    let domain_type = if is_ipv6 { Domain::IPV6 } else { Domain::IPV4 };
+                    let socket = handle_error(Socket::new(domain_type, Type::STREAM, None));
                     handle_error(socket.set_tcp_keepalive(&keepalive));
 
                     if let Err(error) = socket.connect(&address) {
@@ -467,7 +482,7 @@ fn pass_messages() -> impl Stream<Item = Message> {
                         continue 'start_over;
                     }
 
-                    info!("connected to {address_string} ...");
+                    info!("connected to {socket_address} ...");
 
                     let mut tcp_stream: TcpStream = socket.into();
                     let mut reader = BufReader::new(handle_error(tcp_stream.try_clone()));
