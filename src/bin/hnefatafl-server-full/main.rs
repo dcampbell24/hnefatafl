@@ -255,10 +255,20 @@ fn main() -> anyhow::Result<()> {
         }
     });
 
-    let mut address = "0.0.0.0".to_string();
+    let mut address = "[::]".to_string();
     address.push_str(SERVER_PORT);
 
-    let listener = TcpListener::bind(&address)?;
+    let listener = match TcpListener::bind(&address) {
+        Ok(listener) => listener,
+        Err(error) => {
+            error!("TcpLister::bind: {error}");
+
+            address = "0.0.0.0".to_string();
+            address.push_str(SERVER_PORT);
+            TcpListener::bind(&address)?
+        }
+    };
+
     info!("listening on {address} ...");
 
     for (index, stream) in (1..).zip(listener.incoming()) {

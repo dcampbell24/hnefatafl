@@ -1,5 +1,6 @@
 {
     "cSpell.words": [
+        "addrs",
         "allocvec",
         "alsa",
         "bindgen",
@@ -13,6 +14,7 @@
         "getrandom",
         "glicko",
         "hnefatafl",
+        "keepalive",
         "kcache",
         "lettre",
         "lintian",
