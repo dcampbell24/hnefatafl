@@ -1,7 +1,7 @@
 # [Copenhagen Hnefatafl]
 
 [Copenhagen Hnefatafl]: https://hnefatafl.org
-[![Discord]][discord-link]&ensp;[![docs-rs]][docs-rs-link]&ensp;[![Install]][install-link]&ensp;[![coverage]][coverage-link]
+[![Discord]][discord-link]&ensp;[![Install]][install-link]&ensp;[![docs-rs]][docs-rs-link]&ensp;[![coverage]][coverage-link]
 
 [Discord]: assets/Discord-Logo-Blurple.png
 [discord-link]: https://discord.gg/h56CAHEBXd
