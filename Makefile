@@ -9,7 +9,7 @@ coverage:
 					  --ignore-not-existing \
 					  --ignore '../*' \
 					  --ignore "/*" \
-					  -o ./coverage/html
+					  -o ./docs
 
 enable-git-hooks:
 	git config --local core.hooksPath .githooks/
