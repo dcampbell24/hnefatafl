@@ -1,13 +1,16 @@
 # [Copenhagen Hnefatafl]
 
 [Copenhagen Hnefatafl]: https://hnefatafl.org
-[![Discord]][discord-link]&ensp;[![docs-rs]][docs-rs-link]&ensp;[Install]
+[![Discord]][discord-link]&ensp;[![docs-rs]][docs-rs-link]&ensp;[![Install]][install-link]&ensp;[![coverage]][coverage-link]
 
 [Discord]: assets/Discord-Logo-Blurple.png
 [discord-link]: https://discord.gg/h56CAHEBXd
 [docs-rs]: https://img.shields.io/badge/docs.rs-66c2a5?logo=docs.rs
 [docs-rs-link]: https://docs.rs/hnefatafl-copenhagen
-[install]: https://hnefatafl.org/install.html
+[install]: https://img.shields.io/badge/install-green
+[install-link]: https://hnefatafl.org/install.html
+[coverage]: https://img.shields.io/badge/coverage-33.43%25-red
+[coverage-link]: https://dlc.name/hnefatafl
 
 ![Opening Game](website/src/screenshots/opening_game.png)
 
