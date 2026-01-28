@@ -7,7 +7,7 @@
 [discord-link]: https://discord.gg/h56CAHEBXd
 [docs-rs]: https://img.shields.io/badge/docs.rs-66c2a5?logo=docs.rs
 [docs-rs-link]: https://docs.rs/hnefatafl-copenhagen
-[install]: https://img.shields.io/badge/install-green
+[install]: https://img.shields.io/badge/Install-green
 [install-link]: https://hnefatafl.org/install.html
 [coverage]: https://img.shields.io/badge/coverage-33.43%25-red
 [coverage-link]: https://dlc.name/hnefatafl
