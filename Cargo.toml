@@ -1,7 +1,7 @@
 [package]
 name = "hnefatafl-copenhagen"
 version = "5.0.0"
-authors = ["David Campbell <dcampbell24@gmail.com>"]
+authors = ["David Campbell <david@hnefatafl.org>"]
 edition = "2024"
 rust-version =  "1.89"
 description = "Copenhagen Hnefatafl client, engine, server and artificial intelligence"
