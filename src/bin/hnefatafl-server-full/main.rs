@@ -68,9 +68,9 @@ use lettre::{
     transport::smtp::authentication::Credentials,
 };
 use log::{debug, error, info, trace};
-use old_rand::{rngs::OsRng, seq::SliceRandom, thread_rng};
+use old_rand::rngs::OsRng;
 use password_hash::SaltString;
-use rand::random;
+use rand::{random, seq::SliceRandom};
 use serde::{Deserialize, Serialize};
 use std::fmt::Write as _;
 
@@ -2784,7 +2784,7 @@ impl Server {
             }
         }
 
-        let mut rng = thread_rng();
+        let mut rng = rand::rng();
         players.shuffle(&mut rng);
         players.sort_unstable_by(|a, b| a.rating.total_cmp(&b.rating));
 
