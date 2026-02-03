@@ -50,10 +50,5 @@ html-client:
     sudo cp -r pkg /var/www/html
 
 [group('Operating Systems')]
-android:
-    set ANDROID_NDK ~/Android/Sdk/ndk && \
-    cargo build --bin hnefatafl-client --target aarch64-linux-android --no-default-features --features client
-
-[group('Operating Systems')]
 macos:
     cargo bundle --bin hnefatafl-client --features client --no-default-features --release
