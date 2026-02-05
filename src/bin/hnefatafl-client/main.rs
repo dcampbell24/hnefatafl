@@ -2898,7 +2898,9 @@ impl<'a> Client {
                             .parse::<Id>()
                             .expect("the game_id should be a valid usize");
 
-                        self.game_id = id;
+                        if id != self.game_id {
+                            return Task::none();
+                        }
 
                         // game 0 generate_move attacker
                         let text_word = text.next();
