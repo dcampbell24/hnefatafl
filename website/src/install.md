@@ -101,7 +101,7 @@ Or after installing the application under KDE go to
 
 1. Go to [Google](https://myaccount.google.com/security). Scroll down to `Enhanced
    Safe Browsing for your account`. If it is on, turn it off.
-2. Go to [F-Droid](f-droid.org) and download F-Droid.
+2. Go to [F-Droid](https://f-droid.org) and download F-Droid.
 3. Open F-Droid, go to search, and install `Termux: Terminal emulator with packages`.
 4. Open Termux, then run the following:
 
