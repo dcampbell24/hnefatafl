@@ -45,14 +45,15 @@ fn main() -> Result<(), anyhow::Error> {
     let content = file.replace("{{description}}", INDEX);
     fs::write(index_path, content)?;
 
+    // Don't move!
+    let file = fs::read_to_string(index_path)?;
+    let content = file.replace("<!-- Custom HTML head -->", CANONICAL);
+    fs::write(index_path, content)?;
+
     // let index_path = "book/history.html";
     let index_path = "/var/www/html/history.html";
     let file = fs::read_to_string(index_path)?;
     let content = file.replace("{{description}}", HISTORY);
-    fs::write(index_path, content)?;
-
-    let file = fs::read_to_string(index_path)?;
-    let content = file.replace("<!-- Custom HTML head -->", CANONICAL);
     fs::write(index_path, content)?;
 
     // let install_path = "book/install.html";
