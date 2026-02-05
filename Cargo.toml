@@ -164,7 +164,7 @@ multiple_crate_versions = { level = "allow", priority = 1 }
 # Then log out and in.
 [package.metadata.deb]
 copyright = "2025-2026 Developers of the hnefatafl-copenhagen project"
-maintainer = "David Campbell <dcampbell24@gmail.com>"
+maintainer = "David Campbell <david@hnefatafl.org>"
 extended-description = """This package contains an engine, server, client, artificial intelligence and systemd services to run them.
 
 Their are two server binaries. One which is the full version and another just
