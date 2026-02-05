@@ -70,6 +70,14 @@
   </screenshots>
 
   <releases>
+    <release version="5.0.1" date="2026-02-04">
+      <url type="details">https://github.com/dcampbell24/hnefatafl/blob/main/CHANGELOG.md#501---2026-02-04</url>
+      <description>
+        <p>Don't crash when playing two games at the same time.</p>
+        <p>For more details see the CHANGELOG.md file.</p>
+      </description>
+    </release>
+
     <release version="5.0.0" date="2026-01-24">
       <url type="details">https://github.com/dcampbell24/hnefatafl/blob/main/CHANGELOG.md#500---2026-01-24</url>
       <description>
