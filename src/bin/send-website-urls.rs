@@ -38,6 +38,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     "key": "{key}",
     "urlList": [
         "https://hnefatafl.org",
+        "https://hnefatafl.org/ai.html",
+        "https://hnefatafl.org/history.html",
         "https://hnefatafl.org/install.html",
         "https://hnefatafl.org/rules.html",
         "https://hnefatafl.org/sitemap.xml"
