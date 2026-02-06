@@ -41,6 +41,9 @@ use std::{
     net::TcpStream,
 };
 
+#[cfg(feature = "socket")]
+use socket2::TcpKeepalive;
+
 rust_i18n::i18n!();
 
 pub mod ai;
@@ -113,4 +116,20 @@ pub fn write_command(command: &str, stream: &mut TcpStream) -> anyhow::Result<()
     print!("-> {command}");
     stream.write_all(command.as_bytes())?;
     Ok(())
+}
+
+#[must_use]
+#[cfg(all(feature = "socket", not(target_os = "redox")))]
+pub fn with_interval_and_retries(keep_alive: TcpKeepalive) -> TcpKeepalive {
+    use std::time::Duration;
+
+    keep_alive
+        .with_interval(Duration::from_secs(30))
+        .with_retries(3)
+}
+
+#[must_use]
+#[cfg(all(feature = "socket", target_os = "redox"))]
+pub fn with_interval_and_retries(keep_alive: TcpKeepalive) -> TcpKeepalive {
+    keep_alive
 }

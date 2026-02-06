@@ -34,6 +34,7 @@ use hnefatafl_copenhagen::{
     role::Role,
     status::Status,
     utils::{self, choose_ai},
+    with_interval_and_retries,
 };
 use log::{debug, info, trace};
 use socket2::{Domain, SockAddr, Socket, TcpKeepalive, Type};
@@ -151,14 +152,13 @@ fn main() -> anyhow::Result<()> {
     })?;
 
     let address: SockAddr = socket_address.into();
-    let keepalive = TcpKeepalive::new()
-        .with_time(Duration::from_secs(30))
-        .with_interval(Duration::from_secs(30))
-        .with_retries(3);
+
+    let mut keep_alive = TcpKeepalive::new().with_time(Duration::from_secs(30));
+    keep_alive = with_interval_and_retries(keep_alive);
 
     let domain_type = if is_ipv6 { Domain::IPV6 } else { Domain::IPV4 };
     let socket = Socket::new(domain_type, Type::STREAM, None)?;
-    socket.set_tcp_keepalive(&keepalive)?;
+    socket.set_tcp_keepalive(&keep_alive)?;
 
     socket.connect(&address).unwrap_or_else(|error| {
         eprintln!("socket.connect {address_string}: {error}");

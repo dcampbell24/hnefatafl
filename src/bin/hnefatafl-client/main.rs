@@ -61,6 +61,7 @@ use hnefatafl_copenhagen::{
     tournament::{self, Tournament},
     tree::Tree,
     utils::{self, choose_ai, create_data_folder, data_file},
+    with_interval_and_retries,
 };
 #[cfg(target_os = "linux")]
 use iced::window::settings::PlatformSpecific;
@@ -4197,16 +4198,4 @@ impl<'a> Client {
 
         column
     }
-}
-
-#[cfg(not(target_os = "redox"))]
-fn with_interval_and_retries(keep_alive: TcpKeepalive) -> TcpKeepalive {
-    keep_alive
-        .with_interval(Duration::from_secs(30))
-        .with_retries(3)
-}
-
-#[cfg(target_os = "redox")]
-fn with_interval_and_retries(keep_alive: TcpKeepalive) -> TcpKeepalive {
-    keep_alive
 }
