@@ -57,11 +57,11 @@ use hnefatafl_copenhagen::{
     server_game::{ArchivedGame, ServerGameLight, ServerGamesLight},
     space::Space,
     status::Status,
+    tcp_keep_alive,
     time::{TimeEnum, TimeSettings},
     tournament::{self, Tournament},
     tree::Tree,
     utils::{self, choose_ai, create_data_folder, data_file},
-    with_interval_and_retries,
 };
 #[cfg(target_os = "linux")]
 use iced::window::settings::PlatformSpecific;
@@ -86,7 +86,7 @@ use image::ImageFormat;
 use log::{debug, error, info, trace};
 use rust_i18n::t;
 use smol_str::ToSmolStr;
-use socket2::{Domain, SockAddr, Socket, TcpKeepalive, Type};
+use socket2::{Domain, SockAddr, Socket, Type};
 
 use crate::{
     archived_game_handle::ArchivedGameHandle,
@@ -466,10 +466,7 @@ fn pass_messages() -> impl Stream<Item = Message> {
                     });
 
                     let address: SockAddr = socket_address.into();
-
-                    let mut keep_alive = TcpKeepalive::new().with_time(Duration::from_secs(30));
-                    keep_alive = with_interval_and_retries(keep_alive);
-
+                    let keep_alive = tcp_keep_alive();
                     let domain_type = if is_ipv6 { Domain::IPV6 } else { Domain::IPV4 };
                     let socket = handle_error(Socket::new(domain_type, Type::STREAM, None));
                     handle_error(socket.set_tcp_keepalive(&keep_alive));

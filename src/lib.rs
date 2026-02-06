@@ -120,16 +120,17 @@ pub fn write_command(command: &str, stream: &mut TcpStream) -> anyhow::Result<()
 
 #[must_use]
 #[cfg(all(feature = "socket", not(target_os = "redox")))]
-pub fn with_interval_and_retries(keep_alive: TcpKeepalive) -> TcpKeepalive {
+pub fn tcp_keep_alive() -> TcpKeepalive {
     use std::time::Duration;
 
-    keep_alive
+    TcpKeepalive::new()
+        .with_time(Duration::from_secs(30))
         .with_interval(Duration::from_secs(30))
         .with_retries(3)
 }
 
 #[must_use]
 #[cfg(all(feature = "socket", target_os = "redox"))]
-pub fn with_interval_and_retries(keep_alive: TcpKeepalive) -> TcpKeepalive {
-    keep_alive
+pub fn tcp_keep_alive() -> TcpKeepalive {
+    TcpKeepalive::new().with_time(Duration::from_secs(30))
 }

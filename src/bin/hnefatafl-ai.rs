@@ -21,7 +21,6 @@
 use std::{
     io::{BufRead, BufReader, Write},
     net::{TcpStream, ToSocketAddrs as _},
-    time::Duration,
 };
 
 use anyhow::Error;
@@ -33,11 +32,11 @@ use hnefatafl_copenhagen::{
     play::Plae,
     role::Role,
     status::Status,
+    tcp_keep_alive,
     utils::{self, choose_ai},
-    with_interval_and_retries,
 };
 use log::{debug, info, trace};
-use socket2::{Domain, SockAddr, Socket, TcpKeepalive, Type};
+use socket2::{Domain, SockAddr, Socket, Type};
 
 // Move 26, defender wins, corner escape, time per move 15s 2025-03-06 (hnefatafl-equi).
 
@@ -152,10 +151,7 @@ fn main() -> anyhow::Result<()> {
     })?;
 
     let address: SockAddr = socket_address.into();
-
-    let mut keep_alive = TcpKeepalive::new().with_time(Duration::from_secs(30));
-    keep_alive = with_interval_and_retries(keep_alive);
-
+    let keep_alive = tcp_keep_alive();
     let domain_type = if is_ipv6 { Domain::IPV6 } else { Domain::IPV4 };
     let socket = Socket::new(domain_type, Type::STREAM, None)?;
     socket.set_tcp_keepalive(&keep_alive)?;
