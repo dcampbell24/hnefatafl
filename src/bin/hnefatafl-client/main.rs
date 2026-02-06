@@ -465,11 +465,9 @@ fn pass_messages() -> impl Stream<Item = Message> {
                     });
 
                     let address: SockAddr = socket_address.into();
-                    let mut keep_alive = TcpKeepalive::new()
-                        .with_time(Duration::from_secs(30))
-                        .with_retries(3);
 
-                    keep_alive = with_interval(keep_alive);
+                    let mut keep_alive = TcpKeepalive::new().with_time(Duration::from_secs(30));
+                    keep_alive = with_interval_and_retries(keep_alive);
 
                     let domain_type = if is_ipv6 { Domain::IPV6 } else { Domain::IPV4 };
                     let socket = handle_error(Socket::new(domain_type, Type::STREAM, None));
@@ -4202,11 +4200,13 @@ impl<'a> Client {
 }
 
 #[cfg(not(target_os = "redox"))]
-fn with_interval(keep_alive: TcpKeepalive) -> TcpKeepalive {
-    keep_alive.with_interval(Duration::from_secs(30))
+fn with_interval_and_retries(keep_alive: TcpKeepalive) -> TcpKeepalive {
+    keep_alive
+        .with_interval(Duration::from_secs(30))
+        .with_retries(3)
 }
 
 #[cfg(target_os = "redox")]
-fn with_interval(keep_alive: TcpKeepalive) -> TcpKeepalive {
+fn with_interval_and_retries(keep_alive: TcpKeepalive) -> TcpKeepalive {
     keep_alive
 }
