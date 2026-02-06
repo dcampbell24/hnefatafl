@@ -132,5 +132,7 @@ pub fn tcp_keep_alive() -> TcpKeepalive {
 #[must_use]
 #[cfg(all(feature = "socket", target_os = "redox"))]
 pub fn tcp_keep_alive() -> TcpKeepalive {
+    use std::time::Duration;
+
     TcpKeepalive::new().with_time(Duration::from_secs(30))
 }
