@@ -40,7 +40,6 @@ use std::{
 use ::serde::{Deserialize, Serialize};
 use chrono::{Local, Utc};
 use clap::{CommandFactory, Parser};
-use futures::{SinkExt, executor};
 use hnefatafl_copenhagen::{
     COPYRIGHT, Id, SERVER_PORT, VERSION_ID,
     board::{Board, BoardSize},
@@ -69,7 +68,7 @@ use iced::{
     Color, Element, Event, Font, Pixels, Subscription, Task,
     alignment::{Horizontal, Vertical},
     color, event,
-    futures::Stream,
+    futures::{SinkExt, Stream, executor},
     keyboard::{self, Key, key::Named},
     stream,
     theme::Palette,
