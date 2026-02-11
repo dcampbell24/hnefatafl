@@ -171,6 +171,7 @@ pub(crate) enum Message {
     RoleSelected(Role),
     ServerShutdown,
     StreamConnected(mpsc::Sender<String>),
+    TcpConnectFailed,
     TcpDisconnect,
     TextChanged(String),
     TextEdit(text_editor::Action),

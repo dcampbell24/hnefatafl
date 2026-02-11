@@ -437,10 +437,19 @@ fn pass_messages() -> impl Stream<Item = Message> {
 
                     let mut is_ipv6 = false;
                     let mut socket_address = None;
-                    let socket_addresses =
-                        address_string.to_socket_addrs().unwrap_or_else(|error| {
-                            panic!("The socket address resolves to no IPs: {error})")
-                        });
+                    let socket_addresses = match address_string.to_socket_addrs() {
+                        Ok(socket_addresses) => socket_addresses,
+                        Err(error) => {
+                            error!("The socket address resolves to no IPs: {error})");
+
+                            handle_error(executor::block_on(sender.send(Message::TcpDisconnect)));
+                            handle_error(executor::block_on(
+                                sender.send(Message::TcpConnectFailed),
+                            ));
+
+                            continue 'start_over;
+                        }
+                    };
 
                     for address in socket_addresses.clone() {
                         if address.is_ipv6() {
@@ -459,9 +468,14 @@ fn pass_messages() -> impl Stream<Item = Message> {
                         }
                     }
 
-                    let socket_address = socket_address.unwrap_or_else(|| {
-                        panic!("There is no IPv4 address for the host: {address_string}")
-                    });
+                    let Some(socket_address) = socket_address else {
+                        error!("There is no IPv4 address for the host: {address_string}");
+
+                        handle_error(executor::block_on(sender.send(Message::TcpDisconnect)));
+                        handle_error(executor::block_on(sender.send(Message::TcpConnectFailed)));
+
+                        continue 'start_over;
+                    };
 
                     let address: SockAddr = socket_address.into();
                     let keep_alive = tcp_keep_alive();
@@ -471,8 +485,9 @@ fn pass_messages() -> impl Stream<Item = Message> {
 
                     if let Err(error) = socket.connect(&address) {
                         error!("socket.connect {address_string}: {error}");
+
                         handle_error(executor::block_on(sender.send(Message::TcpDisconnect)));
-                        handle_error(executor::block_on(sender.send(Message::ServerShutdown)));
+                        handle_error(executor::block_on(sender.send(Message::TcpConnectFailed)));
 
                         continue 'start_over;
                     }
@@ -2486,6 +2501,10 @@ impl<'a> Client {
             }
             Message::SoundMuted(_muted) => self.sound_muted(),
             Message::StreamConnected(tx) => self.tx = Some(tx),
+            Message::TcpConnectFailed => {
+                self.error_persistent
+                    .push(t!("The TCP connection failed.").to_string());
+            }
             Message::TcpDisconnect => self.connected_tcp = false,
             Message::Tournament => self.screen = Screen::Tournament,
             Message::TournamentJoin => self.send("join_tournament\n"),
