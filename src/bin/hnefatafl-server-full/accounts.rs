@@ -23,6 +23,9 @@ use serde::{Deserialize, Serialize};
 
 use crate::Id;
 
+#[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
+pub(crate) struct Accounts(pub HashMap<String, Account>);
+
 impl fmt::Display for Accounts {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut accounts = Vec::new();
@@ -33,6 +36,18 @@ impl fmt::Display for Accounts {
         let accounts = accounts.join(" ");
 
         write!(f, "{accounts}")
+    }
+}
+
+impl Accounts {
+    pub fn display_admin(&self) -> String {
+        let mut accounts = Vec::new();
+        for (name, account) in &self.0 {
+            accounts.push(format!("{name} {}", account.display_admin()));
+        }
+
+        accounts.sort_unstable();
+        accounts.join(" ")
     }
 }
 
@@ -58,6 +73,8 @@ pub(crate) struct Account {
     pub send_emails: bool,
     #[serde(skip)]
     pub pending_games: HashSet<Id>,
+    #[serde(default)]
+    pub ip: String,
 }
 
 impl fmt::Display for Account {
@@ -78,5 +95,18 @@ impl fmt::Display for Account {
     }
 }
 
-#[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
-pub(crate) struct Accounts(pub HashMap<String, Account>);
+impl Account {
+    pub fn display_admin(&self) -> String {
+        if self.logged_in.is_some() {
+            format!(
+                "{} {} {} {} logged_in {}",
+                self.wins, self.losses, self.draws, self.rating, self.ip,
+            )
+        } else {
+            format!(
+                "{} {} {} {} logged_out {}",
+                self.wins, self.losses, self.draws, self.rating, self.ip,
+            )
+        }
+    }
+}

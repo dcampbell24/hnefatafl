@@ -333,11 +333,12 @@ fn login(
     tx: &mpsc::Sender<(String, Option<mpsc::Sender<String>>)>,
 ) -> anyhow::Result<()> {
     let args = Args::parse();
+    let address = stream.peer_addr()?.ip();
 
     let _remove_connection;
     if args.secure {
         _remove_connection = RemoveConnection {
-            address: stream.peer_addr()?.ip(),
+            address,
             tx: tx.clone(),
         };
     }
@@ -458,6 +459,7 @@ fn login(
     tx.send((format!("{id} {username_proper} display_games"), None))?;
     tx.send((format!("{id} {username_proper} tournament_status"), None))?;
     tx.send((format!("{id} {username_proper} admin"), None))?;
+    tx.send((format!("{id} {username_proper} ip {address}"), None))?;
 
     'outer: for _ in 0..1_000_000 {
         if let Err(err) = reader.read_line(&mut buf) {
@@ -880,6 +882,7 @@ impl Server {
         self.save_server();
     }
 
+    #[allow(clippy::too_many_lines)]
     fn display_server(&mut self, username: &str) -> Option<(mpsc::Sender<String>, bool, String)> {
         if self.games_light != self.games_light_old {
             debug!("0 {username} display_games");
@@ -894,8 +897,19 @@ impl Server {
             debug!("0 {username} display_users");
             self.accounts_old = self.accounts.clone();
 
-            for tx in &mut self.clients.values() {
-                let _ok = tx.send(format!("= display_users {}", &self.accounts));
+            for (name, account) in &self.accounts.0 {
+                if let Some(client_id) = account.logged_in
+                    && let Some(tx) = self.clients.get(&client_id)
+                {
+                    if self.admins.contains(name) {
+                        let _ok = tx.send(format!(
+                            "= display_users {}",
+                            &self.accounts.display_admin()
+                        ));
+                    } else {
+                        let _ok = tx.send(format!("= display_users {}", &self.accounts));
+                    }
+                }
             }
         }
 
@@ -1851,6 +1865,15 @@ impl Server {
                     );
 
                     exit(0);
+                }
+                "ip" => {
+                    let account = self.accounts.0.get_mut(*username)?;
+                    let ip = the_rest.first()?;
+
+                    account.ip = ip.to_string();
+                    self.save_server();
+
+                    None
                 }
                 "join_game" => self.join_game(
                     username,
