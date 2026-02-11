@@ -646,6 +646,23 @@ The server was shut down.:
   sv-SE: Servern stängdes av.
   ko: 서버가 종료되었습니다.
 
+The TCP connection failed.:
+  en-US: The TCP connection failed.
+  zh-CN: TCP连接失败。
+  es: La conexión TCP falló.
+  ar:  فشل اتصال TCP.
+  id: Koneksi TCP gagal.
+  pt-BR: A conexão TCP falhou.
+  pt-PT: A ligação TCP falhou.
+  fr: La connexion TCP a échoué.
+  ja: TCP接続に失敗しました。
+  ru: TCP-соединение не удалось установить.
+  de: Die TCP-Verbindung ist fehlgeschlagen.
+  is-IS: TCP-tengingin bilaði.
+  is-RU: TCP-ᛐᛂᚿᚵᛁᚿᚵᛁᚿ ᛒᛁᛚᛆᚧᛁ.
+  sv-SE: TCP-anslutningen misslyckades.
+  ko: TCP 연결에 실패했습니다.
+
 Tournament:
   en-US: Tournament
   zh-CN: 比赛
