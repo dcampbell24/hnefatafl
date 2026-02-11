@@ -13,7 +13,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use hnefatafl_copenhagen::glicko::Rating;
+use hnefatafl_copenhagen::glicko::{CONFIDENCE_INTERVAL_95, Rating};
+use log::error;
 
 use crate::enums::LoggedIn;
 
@@ -25,4 +26,40 @@ pub(crate) struct User {
     pub draws: String,
     pub rating: Rating,
     pub logged_in: LoggedIn,
+}
+
+impl From<&[&str]> for User {
+    fn from(user: &[&str]) -> Self {
+        let rating = user[4];
+        let (mut rating, mut deviation) = rating.split_once("±").unwrap_or_else(|| {
+            error!("The ratings has this form: {rating}");
+            unreachable!();
+        });
+
+        rating = rating.trim();
+        deviation = deviation.trim();
+
+        let (Ok(rating), Ok(deviation)) = (rating.parse::<f64>(), deviation.parse::<f64>()) else {
+            error!("The ratings has this form: ({rating}, {deviation})");
+            unreachable!();
+        };
+
+        let logged_in = if "logged_in" == user[5] {
+            LoggedIn::Yes
+        } else {
+            LoggedIn::No
+        };
+
+        User {
+            name: user[0].to_string(),
+            wins: user[1].to_string(),
+            losses: user[2].to_string(),
+            draws: user[3].to_string(),
+            rating: Rating {
+                rating,
+                rd: deviation / CONFIDENCE_INTERVAL_95,
+            },
+            logged_in,
+        }
+    }
 }

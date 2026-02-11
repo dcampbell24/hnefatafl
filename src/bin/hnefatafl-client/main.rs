@@ -47,7 +47,6 @@ use hnefatafl_copenhagen::{
     draw::Draw,
     email::Email,
     game::{Game, LegalMoves, TimeUnix},
-    glicko::{CONFIDENCE_INTERVAL_95, Rating},
     heat_map::{Heat, HeatMap},
     locale::Locale,
     play::{BOARD_LETTERS, Plae, Plays, Vertex},
@@ -2582,48 +2581,12 @@ impl<'a> Client {
                                 }
                             }
                             Some("display_users") => {
-                                let users: Vec<&str> = text.collect();
                                 self.users.clear();
-                                for user_wins_losses_rating in users.chunks_exact(6) {
-                                    let rating = user_wins_losses_rating[4];
-                                    let (mut rating, mut deviation) =
-                                        rating.split_once("±").unwrap_or_else(|| {
-                                            error!("The ratings has this form: {rating}");
-                                            unreachable!();
-                                        });
 
-                                    rating = rating.trim();
-                                    deviation = deviation.trim();
-
-                                    let (Ok(rating), Ok(deviation)) =
-                                        (rating.parse::<f64>(), deviation.parse::<f64>())
-                                    else {
-                                        error!(
-                                            "The ratings has this form: ({rating}, {deviation})"
-                                        );
-                                        unreachable!();
-                                    };
-
-                                    let logged_in = if "logged_in" == user_wins_losses_rating[5] {
-                                        LoggedIn::Yes
-                                    } else {
-                                        LoggedIn::No
-                                    };
-
-                                    self.users.insert(
-                                        user_wins_losses_rating[0].to_string(),
-                                        User {
-                                            name: user_wins_losses_rating[0].to_string(),
-                                            wins: user_wins_losses_rating[1].to_string(),
-                                            losses: user_wins_losses_rating[2].to_string(),
-                                            draws: user_wins_losses_rating[3].to_string(),
-                                            rating: Rating {
-                                                rating,
-                                                rd: deviation / CONFIDENCE_INTERVAL_95,
-                                            },
-                                            logged_in,
-                                        },
-                                    );
+                                let users: Vec<&str> = text.collect();
+                                for user in users.chunks_exact(6) {
+                                    let user: User = user.into();
+                                    self.users.insert(user.name.clone(), user);
                                 }
                             }
                             Some("draw") => {
