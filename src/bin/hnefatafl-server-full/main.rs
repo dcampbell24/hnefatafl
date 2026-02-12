@@ -459,6 +459,7 @@ fn login(
     tx.send((format!("{id} {username_proper} tournament_status"), None))?;
     tx.send((format!("{id} {username_proper} admin"), None))?;
 
+    let mut game_id = None;
     'outer: for _ in 0..1_000_000 {
         if let Err(err) = reader.read_line(&mut buf) {
             error!("reader.read_line(): {err}");
@@ -477,8 +478,29 @@ fn login(
             }
         }
 
+        let words: Vec<_> = buf_str.split_whitespace().collect();
+        if let Some(first) = words.first() {
+            if (*first == "join_game" || *first == "join_game_pending" || *first == "resume_game")
+                && let Some(second) = words.get(1)
+                && let Ok(id) = u128::from_str(second)
+            {
+                game_id = Some(id);
+            }
+
+            if *first == "leave_game" {
+                game_id = None;
+            }
+        }
+
         tx.send((format!("{id} {username_proper} {buf_str}"), None))?;
         buf.clear();
+    }
+
+    if let Some(id) = game_id {
+        tx.send((
+            format!("{id} {username_proper} leave_game_started {id}"),
+            None,
+        ))?;
     }
 
     tx.send((format!("{id} {username_proper} logout"), None))?;
@@ -1879,6 +1901,9 @@ impl Server {
                     (*command).to_string(),
                     the_rest.as_slice(),
                 ),
+                "leave_game_started" => {
+                    self.leave_game_started(username, index_supplied, the_rest.first())
+                }
                 "leave_tournament" => {
                     if let Some(tournament) = &mut self.tournament {
                         tournament.players.remove(*username);
@@ -2264,6 +2289,24 @@ impl Server {
         Some((self.clients.get(&index_supplied)?.clone(), true, command))
     }
 
+    fn leave_game_started(
+        &mut self,
+        username: &str,
+        index_supplied: usize,
+        id: Option<&&str>,
+    ) -> Option<(mpsc::Sender<String>, bool, String)> {
+        if let Some(id) = id
+            && let Ok(id) = id.parse::<Id>()
+            && let Some(game) = self.games_light.0.get_mut(&id)
+            && game.challenge_accepted
+        {
+            info!("{index_supplied} {username} leave_game_started {id}");
+            game.spectators.remove(username);
+        }
+
+        None
+    }
+
     fn login(
         &mut self,
         username: &str,
@@ -2407,6 +2450,7 @@ impl Server {
             "{index_supplied} {username} new_game {} {role} {rated} {timed:?} {board_size}",
             self.game_id
         );
+
         let game = ServerGameLight::new(
             self.game_id,
             (*username).to_string(),
@@ -2425,13 +2469,17 @@ impl Server {
         }
 
         self.game_id += 1;
+        self.save_server();
+
         Some((self.clients.get(&index_supplied)?.clone(), true, command))
     }
 
     #[must_use]
     fn new_tournament_game(&mut self, attacker: &str, defender: &str) -> Id {
         let id = self.game_id;
+
         self.game_id += 1;
+        self.save_server();
 
         let game_light = ServerGameLight {
             id,

@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - hnefatafl-client: don't crash on TCP errors.
+- hnefatafl-client: save when we update the game_id.
 
 ## 5.0.1 - 2026-02-04
 
