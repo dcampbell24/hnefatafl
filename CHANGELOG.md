@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- hnefatafl-client: signal when a player has left a game.
+
 ### Fixed
 
 - hnefatafl-client: don't crash on TCP errors.
