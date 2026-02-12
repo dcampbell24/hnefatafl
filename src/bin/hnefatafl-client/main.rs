@@ -137,6 +137,10 @@ const SOUND_CAPTURE: &[u8] = include_bytes!("sound/capture.ogg");
 const SOUND_GAME_OVER: &[u8] = include_bytes!("sound/game_over.ogg");
 const SOUND_MOVE: &[u8] = include_bytes!("sound/move.ogg");
 
+/// In milliseconds.
+const TICK: i64 = 100;
+const TICK_U: u64 = 100;
+
 const TROPHY_SIZE: u32 = 32;
 
 rust_i18n::i18n!();
@@ -1733,7 +1737,7 @@ impl<'a> Client {
     pub(crate) fn subscriptions(&self) -> Subscription<Message> {
         let subscription_1 = if let Some(game) = &self.game {
             if let TimeUnix::Time(_) = game.time {
-                iced::time::every(iced::time::Duration::from_millis(100))
+                iced::time::every(iced::time::Duration::from_millis(TICK_U))
                     .map(|_instant| Message::Tick)
             } else {
                 Subscription::none()
@@ -2985,6 +2989,7 @@ impl<'a> Client {
             Message::TextSendLogin => self.login(),
             Message::Tick => {
                 self.counter = self.counter.wrapping_add(1);
+
                 if self.counter.is_multiple_of(25) {
                     self.now = Utc::now().timestamp_millis();
                     self.send("ping\n");
@@ -2994,7 +2999,7 @@ impl<'a> Client {
                     match game.turn {
                         Role::Attacker => {
                             if let TimeSettings::Timed(time) = &mut self.time_attacker {
-                                time.milliseconds_left -= 100;
+                                time.milliseconds_left -= TICK;
                                 if time.milliseconds_left < 0 {
                                     time.milliseconds_left = 0;
                                 }
@@ -3003,7 +3008,7 @@ impl<'a> Client {
                         Role::Roleless => {}
                         Role::Defender => {
                             if let TimeSettings::Timed(time) = &mut self.time_defender {
-                                time.milliseconds_left -= 100;
+                                time.milliseconds_left -= TICK;
                                 if time.milliseconds_left < 0 {
                                     time.milliseconds_left = 0;
                                 }
