@@ -2112,7 +2112,10 @@ impl Server {
         let Some(game) = self.games_light.0.get_mut(&id) else {
             unreachable!();
         };
+
         game.challenge_accepted = true;
+        game.spectators.insert(game.attacker.clone()?, 0);
+        game.spectators.insert(game.defender.clone()?, 0);
 
         let (Some(attacker_tx), Some(defender_tx)) = (game.attacker_channel, game.defender_channel)
         else {
@@ -2223,20 +2226,24 @@ impl Server {
         let mut remove = false;
         match self.games_light.0.get_mut(&id) {
             Some(game) => {
-                if let Some(attacker) = &game.attacker
-                    && username == attacker
-                {
-                    game.attacker = None;
-                }
-                if let Some(defender) = &game.defender
-                    && username == defender
-                {
-                    game.defender = None;
-                }
-                if let Some(challenger) = &game.challenger.0
-                    && username == challenger
-                {
-                    game.challenger.0 = None;
+                if !game.challenge_accepted {
+                    if let Some(attacker) = &game.attacker
+                        && username == attacker
+                    {
+                        game.attacker = None;
+                    }
+
+                    if let Some(defender) = &game.defender
+                        && username == defender
+                    {
+                        game.defender = None;
+                    }
+
+                    if let Some(challenger) = &game.challenger.0
+                        && username == challenger
+                    {
+                        game.challenger.0 = None;
+                    }
                 }
 
                 game.spectators.remove(username);
@@ -2493,6 +2500,7 @@ impl Server {
         let Some(game_light) = self.games_light.0.get_mut(&id) else {
             unreachable!();
         };
+        game_light.spectators.insert(username.to_string(), 0);
 
         if Some((*username).to_string()) == game_light.attacker {
             if let Some(server_game) = self.games.0.get_mut(&id) {

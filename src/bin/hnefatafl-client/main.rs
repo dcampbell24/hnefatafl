@@ -1386,58 +1386,67 @@ impl<'a> Client {
         let mut attacker_rating = String::new();
         let mut defender_rating = String::new();
 
-        let (game_id, attacker, attacker_time, defender, defender_time, board, play, status, texts) =
-            if let Some(game_handle) = &self.archived_game_handle {
-                attacker_rating = game_handle.game.attacker_rating.to_string_rounded();
-                defender_rating = game_handle.game.defender_rating.to_string_rounded();
+        let (
+            game_id,
+            attacker_string,
+            attacker_time,
+            defender_string,
+            defender_time,
+            board,
+            play,
+            status,
+            texts,
+        ) = if let Some(game_handle) = &self.archived_game_handle {
+            attacker_rating = game_handle.game.attacker_rating.to_string_rounded();
+            defender_rating = game_handle.game.defender_rating.to_string_rounded();
 
-                let status = if game_handle.play == game_handle.game.plays.len() - 1 {
-                    &game_handle.game.status
-                } else {
-                    &Status::Ongoing
-                };
-
-                (
-                    &game_handle.game.id,
-                    &game_handle.game.attacker,
-                    game_handle
-                        .game
-                        .plays
-                        .time_left(Role::Attacker, game_handle.play),
-                    &game_handle.game.defender,
-                    game_handle
-                        .game
-                        .plays
-                        .time_left(Role::Defender, game_handle.play),
-                    &game_handle.boards.here().board,
-                    game_handle.play,
-                    status,
-                    &game_handle.game.texts,
-                )
+            let status = if game_handle.play == game_handle.game.plays.len() - 1 {
+                &game_handle.game.status
             } else {
-                for user in self.users.values() {
-                    if self.attacker == user.name {
-                        attacker_rating = user.rating.to_string_rounded();
-                    }
-                    if self.defender == user.name {
-                        defender_rating = user.rating.to_string_rounded();
-                    }
-                }
-
-                let game = self.game.as_ref().expect("we should be in a game");
-
-                (
-                    &self.game_id,
-                    &self.attacker,
-                    self.time_attacker.time_left(),
-                    &self.defender,
-                    self.time_defender.time_left(),
-                    &game.board,
-                    game.previous_boards.0.len() - 1,
-                    &self.status,
-                    &self.texts_game,
-                )
+                &Status::Ongoing
             };
+
+            (
+                &game_handle.game.id,
+                &game_handle.game.attacker,
+                game_handle
+                    .game
+                    .plays
+                    .time_left(Role::Attacker, game_handle.play),
+                &game_handle.game.defender,
+                game_handle
+                    .game
+                    .plays
+                    .time_left(Role::Defender, game_handle.play),
+                &game_handle.boards.here().board,
+                game_handle.play,
+                status,
+                &game_handle.game.texts,
+            )
+        } else {
+            for user in self.users.values() {
+                if self.attacker == user.name {
+                    attacker_rating = user.rating.to_string_rounded();
+                }
+                if self.defender == user.name {
+                    defender_rating = user.rating.to_string_rounded();
+                }
+            }
+
+            let game = self.game.as_ref().expect("we should be in a game");
+
+            (
+                &self.game_id,
+                &self.attacker,
+                self.time_attacker.time_left(),
+                &self.defender,
+                self.time_defender.time_left(),
+                &game.board,
+                game.previous_boards.0.len() - 1,
+                &self.status,
+                &self.texts_game,
+            )
+        };
 
         for user in self.users.values() {
             if self.attacker == user.name {
@@ -1449,14 +1458,20 @@ impl<'a> Client {
         }
 
         let captured = board.captured();
+
+        let mut row_1 = row![
+            text(attacker_string),
+            text(attacker_rating).center(),
+            text(captured.defender(&self.chars).clone()).font(Font::MONOSPACE),
+        ];
+
+        if !self.spectators.contains(attacker_string) {
+            row_1 = row_1.push(text(&self.chars.warning).style(text::danger));
+        }
+
         let attacker = container(
             column![
-                row![
-                    text(attacker),
-                    text(attacker_rating).center(),
-                    text(captured.defender(&self.chars).clone()).font(Font::MONOSPACE),
-                ]
-                .spacing(SPACING),
+                row_1.spacing(SPACING),
                 row![
                     text(attacker_time).size(35).center(),
                     text(&self.chars.dagger).size(35).center(),
@@ -1468,14 +1483,19 @@ impl<'a> Client {
         .padding(PADDING)
         .style(container::bordered_box);
 
+        let mut row_2 = row![
+            text(defender_string),
+            text(defender_rating).center(),
+            text(captured.attacker(&self.chars).clone()).font(Font::MONOSPACE),
+        ];
+
+        if !self.spectators.contains(defender_string) {
+            row_2 = row_2.push(text(&self.chars.warning).style(text::danger));
+        }
+
         let defender = container(
             column![
-                row![
-                    text(defender),
-                    text(defender_rating).center(),
-                    text(captured.attacker(&self.chars).clone()).font(Font::MONOSPACE),
-                ]
-                .spacing(SPACING),
+                row_2.spacing(SPACING),
                 row![
                     text(defender_time).size(35).center(),
                     text(&self.chars.shield).size(35.0).center(),
@@ -1510,10 +1530,16 @@ impl<'a> Client {
             }
         }
 
+        if self.username.as_str() != attacker_string && self.username.as_str() != defender_string {
+            watching = true;
+        }
+
         let mut spectators = Column::new();
+        let mut players_length = 0;
         for spectator in &self.spectators {
-            if self.username.as_str() == spectator.as_str() {
-                watching = true;
+            if spectator == attacker_string || spectator == defender_string {
+                players_length += 1;
+                continue;
             }
 
             let mut spectator = spectator.clone();
@@ -1644,7 +1670,7 @@ impl<'a> Client {
             let spectator = text!(
                 "{} ({}) {}: {seconds:01}.{sub_second:03} s",
                 &self.chars.people,
-                self.spectators.len(),
+                self.spectators.len() - players_length,
                 t!("lag"),
             );
 

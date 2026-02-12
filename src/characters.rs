@@ -31,6 +31,7 @@ pub struct Characters {
     pub people: String,
     pub restricted_square: String,
     pub shield: String,
+    pub warning: String,
 }
 
 impl Default for Characters {
@@ -52,6 +53,7 @@ impl Default for Characters {
             people: "👥".to_string(),
             restricted_square: "⌘".to_string(),
             shield: "⛨".to_string(),
+            warning: "⚠".to_string(),
         }
     }
 }
@@ -74,5 +76,6 @@ impl Characters {
         self.people = "OO".to_string();
         self.restricted_square = "#".to_string();
         self.shield = "D".to_string();
+        self.warning = "X".to_string();
     }
 }
