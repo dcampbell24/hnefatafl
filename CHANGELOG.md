@@ -32,7 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - hnefatafl-client: don't crash when playing two games at the same time.
 
-## [5.0.0] - 2026-01-23
+## 5.0.0 - 2026-01-23
 
 ### Added
 
