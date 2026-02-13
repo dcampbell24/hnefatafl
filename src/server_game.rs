@@ -264,8 +264,6 @@ pub struct ServerGameLight {
     pub challenger: Challenger,
     pub rated: Rated,
     pub timed: TimeSettings,
-    pub attacker_channel: Option<usize>,
-    pub defender_channel: Option<usize>,
     pub spectators: HashMap<String, usize>,
     pub challenge_accepted: bool,
     pub game_over: bool,
@@ -280,7 +278,6 @@ impl ServerGameLight {
         rated: Rated,
         timed: TimeSettings,
         board_size: BoardSize,
-        index_supplied: usize,
         role: Role,
     ) -> Self {
         if role == Role::Attacker {
@@ -292,8 +289,6 @@ impl ServerGameLight {
                 rated,
                 timed,
                 board_size,
-                attacker_channel: Some(index_supplied),
-                defender_channel: None,
                 spectators: HashMap::new(),
                 challenge_accepted: false,
                 game_over: false,
@@ -307,13 +302,24 @@ impl ServerGameLight {
                 rated,
                 timed,
                 board_size,
-                attacker_channel: None,
-                defender_channel: Some(index_supplied),
                 spectators: HashMap::new(),
                 challenge_accepted: false,
                 game_over: false,
             }
         }
+    }
+
+    #[must_use]
+    pub fn spectators(&self) -> Vec<usize> {
+        let mut ids = Vec::new();
+
+        for (name, id) in &self.spectators {
+            if Some(name) != self.attacker.as_ref() && Some(name) != self.defender.as_ref() {
+                ids.push(*id);
+            }
+        }
+
+        ids
     }
 }
 
@@ -327,8 +333,6 @@ impl From<&ServerGameSerialized> for ServerGameLight {
             rated: game.rated,
             timed: game.timed.clone(),
             board_size: game.game.board.size(),
-            attacker_channel: None,
-            defender_channel: None,
             spectators: HashMap::new(),
             challenge_accepted: true,
             game_over: false,
@@ -457,8 +461,6 @@ impl TryFrom<&[&str]> for ServerGameLight {
             rated: Rated::from_str(rated)?,
             timed,
             board_size,
-            attacker_channel: None,
-            defender_channel: None,
             spectators,
             challenge_accepted,
             game_over: false,

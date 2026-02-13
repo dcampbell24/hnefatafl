@@ -853,24 +853,18 @@ impl Server {
 
         if let Some(game_old) = self.games_light.0.remove(&id) {
             let mut attacker = None;
-            let mut attacker_channel = None;
             let mut defender = None;
-            let mut defender_channel = None;
 
             if switch {
                 if Some(username.to_string()) == game_old.attacker {
                     defender = game_old.defender;
-                    defender_channel = game_old.defender_channel;
                 } else if Some(username.to_string()) == game_old.defender {
                     attacker = game_old.attacker;
-                    attacker_channel = game_old.attacker_channel;
                 }
             } else if Some(username.to_string()) == game_old.attacker {
                 attacker = game_old.attacker;
-                attacker_channel = game_old.attacker_channel;
             } else if Some(username.to_string()) == game_old.defender {
                 defender = game_old.defender;
-                defender_channel = game_old.defender_channel;
             }
 
             let game = ServerGameLight {
@@ -881,8 +875,6 @@ impl Server {
                 rated: game_old.rated,
                 timed: game_old.timed,
                 board_size: game_old.board_size,
-                attacker_channel,
-                defender_channel,
                 spectators: game_old.spectators,
                 challenge_accepted: false,
                 game_over: false,
@@ -1060,8 +1052,8 @@ impl Server {
                     (*command).to_string(),
                 ));
             };
-            for spectator in game_light.spectators.values() {
-                if let Some(sender) = self.clients.get(spectator) {
+            for spectator in game_light.spectators() {
+                if let Some(sender) = self.clients.get(&spectator) {
                     let _ok = sender.send(message.clone());
                 }
             }
@@ -1184,8 +1176,8 @@ impl Server {
                 attackers_turn_next = false;
 
                 let message = format!("game {index} play attacker {from} {to}");
-                for spectator in game_light.spectators.values() {
-                    if let Some(client) = self.clients.get(spectator) {
+                for spectator in game_light.spectators() {
+                    if let Some(client) = self.clients.get(&spectator) {
                         let _ok = client.send(message.clone());
                     }
                 }
@@ -1207,8 +1199,8 @@ impl Server {
                 .ok()?;
 
             let message = format!("game {index} play defender {from} {to}");
-            for spectator in game_light.spectators.values() {
-                if let Some(client) = self.clients.get(spectator) {
+            for spectator in game_light.spectators() {
+                if let Some(client) = self.clients.get(&spectator) {
                     let _ok = client.send(message.clone());
                 }
             }
@@ -1259,8 +1251,8 @@ impl Server {
                 game.attacker_tx.send(message.clone());
                 game.defender_tx.send(message.clone());
 
-                for spectator in game_light.spectators.values() {
-                    if let Some(sender) = self.clients.get(spectator) {
+                for spectator in game_light.spectators() {
+                    if let Some(sender) = self.clients.get(&spectator) {
                         let _ok = sender.send(message.clone());
                     }
                 }
@@ -1313,8 +1305,8 @@ impl Server {
                 game.attacker_tx.send(message.clone());
                 game.defender_tx.send(message.clone());
 
-                for spectator in game_light.spectators.values() {
-                    if let Some(sender) = self.clients.get(spectator) {
+                for id in game_light.spectators() {
+                    if let Some(sender) = self.clients.get(&id) {
                         let _ok = sender.send(message.clone());
                     }
                 }
@@ -2139,17 +2131,52 @@ impl Server {
         };
 
         game.challenge_accepted = true;
-        game.spectators.insert(game.attacker.clone()?, 0);
-        game.spectators.insert(game.defender.clone()?, 0);
 
-        let (Some(attacker_tx), Some(defender_tx)) = (game.attacker_channel, game.defender_channel)
+        let mut attacker_channel_id = 0;
+        if let Some(account) = self.accounts.0.get(game.attacker.as_ref()?)
+            && let Some(id) = account.logged_in
+        {
+            attacker_channel_id = id;
+        }
+
+        let mut defender_channel_id = 0;
+        if let Some(account) = self.accounts.0.get(game.defender.as_ref()?)
+            && let Some(id) = account.logged_in
+        {
+            defender_channel_id = id;
+        }
+
+        game.spectators
+            .insert(game.attacker.clone()?, attacker_channel_id);
+        game.spectators
+            .insert(game.defender.clone()?, defender_channel_id);
+
+        let (Some(attacker), Some(defender)) = (&game.attacker, &game.defender) else {
+            unreachable!();
+        };
+
+        let (Some(attacker_account), Some(defender_account)) =
+            (self.accounts.0.get(attacker), self.accounts.0.get(defender))
         else {
             unreachable!()
         };
 
-        for tx in [&attacker_tx, &defender_tx] {
-            self.clients
-                .get(tx)?
+        let mut attacker_channel = None;
+        if let Some(channel_id) = attacker_account.logged_in
+            && let Some(channel) = self.clients.get(&channel_id)
+        {
+            attacker_channel = Some(channel);
+        }
+
+        let mut defender_channel = None;
+        if let Some(channel_id) = defender_account.logged_in
+            && let Some(channel) = self.clients.get(&channel_id)
+        {
+            defender_channel = Some(channel);
+        }
+
+        for channel in [&attacker_channel, &defender_channel].into_iter().flatten() {
+            channel
                 .send(format!(
                     "= join_game {} {} {} {:?} {}",
                     game.attacker.clone()?,
@@ -2162,8 +2189,8 @@ impl Server {
         }
 
         let new_game = ServerGame::new(
-            Some(self.clients.get(&attacker_tx)?.clone()),
-            Some(self.clients.get(&defender_tx)?.clone()),
+            attacker_channel.cloned(),
+            defender_channel.cloned(),
             game.clone(),
         );
         self.games.0.insert(id, new_game);
@@ -2172,10 +2199,11 @@ impl Server {
             account.pending_games.remove(&id);
         }
 
-        self.clients
-            .get(&attacker_tx)?
-            .send(format!("game {id} generate_move attacker"))
-            .ok()?;
+        if let Some(channel) = attacker_channel {
+            channel
+                .send(format!("game {id} generate_move attacker"))
+                .ok()?;
+        }
 
         None
     }
@@ -2204,19 +2232,21 @@ impl Server {
 
         if game.attacker.is_none() {
             game.attacker = Some(username.clone());
-            game.attacker_channel = Some(index_supplied);
 
-            if let Some(channel) = game.defender_channel
-                && let Some(channel) = self.clients.get(&channel)
+            if let Some(defender) = &game.defender
+                && let Some(account) = self.accounts.0.get(defender)
+                && let Some(channel_id) = account.logged_in
+                && let Some(channel) = self.clients.get(&channel_id)
             {
                 let _ok = channel.send(format!("= challenge_requested {id}"));
             }
         } else if game.defender.is_none() {
             game.defender = Some(username.clone());
-            game.defender_channel = Some(index_supplied);
 
-            if let Some(channel) = game.attacker_channel
-                && let Some(channel) = self.clients.get(&channel)
+            if let Some(attacker) = &game.attacker
+                && let Some(account) = self.accounts.0.get(attacker)
+                && let Some(channel_id) = account.logged_in
+                && let Some(channel) = self.clients.get(&channel_id)
             {
                 let _ok = channel.send(format!("= challenge_requested {id}"));
             }
@@ -2457,7 +2487,6 @@ impl Server {
             rated,
             timed,
             board_size,
-            index_supplied,
             role,
         );
 
@@ -2488,8 +2517,6 @@ impl Server {
             challenger: Challenger(None),
             rated: Rated::Yes,
             timed: TimeEnum::Long.into(),
-            attacker_channel: None,
-            defender_channel: None,
             spectators: HashMap::new(),
             challenge_accepted: true,
             game_over: false,
@@ -2544,24 +2571,31 @@ impl Server {
             unreachable!()
         };
 
-        info!("{index_supplied} {username} watch_game {id}");
+        info!("{index_supplied} {username} {command} {id}");
+
         let Some(game_light) = self.games_light.0.get_mut(&id) else {
             unreachable!();
         };
-        game_light.spectators.insert(username.to_string(), 0);
+
+        let mut channel_id = 0;
+        if let Some(account) = self.accounts.0.get(username)
+            && let Some(id) = account.logged_in
+        {
+            channel_id = id;
+        }
+        game_light
+            .spectators
+            .insert(username.to_string(), channel_id);
 
         if Some((*username).to_string()) == game_light.attacker {
             if let Some(server_game) = self.games.0.get_mut(&id) {
                 server_game.attacker_tx =
                     Messenger::new(self.clients.get(&index_supplied)?.clone());
             }
-            game_light.attacker_channel = Some(index_supplied);
-        } else if Some((*username).to_string()) == game_light.defender {
-            if let Some(server_game) = self.games.0.get_mut(&id) {
-                server_game.defender_tx =
-                    Messenger::new(self.clients.get(&index_supplied)?.clone());
-            }
-            game_light.defender_channel = Some(index_supplied);
+        } else if Some((*username).to_string()) == game_light.defender
+            && let Some(server_game) = self.games.0.get_mut(&id)
+        {
+            server_game.defender_tx = Messenger::new(self.clients.get(&index_supplied)?.clone());
         }
 
         self.clients
@@ -2701,31 +2735,10 @@ impl Server {
         text = format!("= text_game {text}");
 
         if let Some(game) = self.games_light.0.get(&id) {
-            let mut watching = false;
-            for (spectator, index) in &game.spectators {
-                if spectator == username {
-                    watching = true;
-                }
-
+            for index in game.spectators.values() {
                 if let Some(sender) = self.clients.get(index) {
                     let _ok = sender.send(text.clone());
                 }
-            }
-
-            if watching {
-                return None;
-            }
-
-            if let Some(attacker_channel) = game.attacker_channel
-                && let Some(sender) = self.clients.get(&attacker_channel)
-            {
-                let _ok = sender.send(text.clone());
-            }
-
-            if let Some(defender_channel) = game.defender_channel
-                && let Some(sender) = self.clients.get(&defender_channel)
-            {
-                let _ok = sender.send(text.clone());
             }
         }
 
