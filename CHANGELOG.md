@@ -620,6 +620,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - hnefatafl-client: Make users and games scrollable.
 - Make all the features dependencies.
 
-[unreleased]: https://github.com/dcampbell24/hnefatafl/compare/v5.0.1-1...main
-[5.0.1]: https://github.com/dcampbell24/hnefatafl/compare/v5.0.1-1...5.1.0-1
-[5.0.0]: https://github.com/dcampbell24/hnefatafl/compare/v5.0.0-4...5.0.1-1
+[unreleased]: https://github.com/dcampbell24/hnefatafl/compare/v5.1.0-1...main
+[5.1.0]: https://github.com/dcampbell24/hnefatafl/compare/v5.0.1-1...v5.1.0-1
+[5.0.1]: https://github.com/dcampbell24/hnefatafl/compare/v5.0.0-4...v5.0.1-1
