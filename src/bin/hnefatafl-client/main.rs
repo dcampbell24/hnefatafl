@@ -2266,8 +2266,10 @@ impl<'a> Client {
                 Screen::GameReview => self.heat_map_display = !self.heat_map_display,
             },
             Message::PressR(shift) => match self.screen {
-                Screen::AccountSettings | Screen::EmailEveryone | Screen::Game => self.draw(),
-                Screen::GameNew
+                Screen::AccountSettings
+                | Screen::EmailEveryone
+                | Screen::Game
+                | Screen::GameNew
                 | Screen::GameReview
                 | Screen::Login
                 | Screen::Tournament
@@ -2275,8 +2277,10 @@ impl<'a> Client {
                 Screen::Games => self.join_game_press(17, shift),
             },
             Message::PressS(shift) => match self.screen {
-                Screen::AccountSettings | Screen::EmailEveryone | Screen::Game => self.draw(),
-                Screen::GameNew
+                Screen::AccountSettings
+                | Screen::EmailEveryone
+                | Screen::Game
+                | Screen::GameNew
                 | Screen::GameReview
                 | Screen::Login
                 | Screen::Tournament
@@ -2284,8 +2288,10 @@ impl<'a> Client {
                 Screen::Games => self.join_game_press(18, shift),
             },
             Message::PressT(shift) => match self.screen {
-                Screen::AccountSettings | Screen::EmailEveryone | Screen::Game => self.draw(),
-                Screen::GameNew
+                Screen::AccountSettings
+                | Screen::EmailEveryone
+                | Screen::Game
+                | Screen::GameNew
                 | Screen::GameReview
                 | Screen::Login
                 | Screen::Tournament
@@ -2293,8 +2299,10 @@ impl<'a> Client {
                 Screen::Games => self.join_game_press(19, shift),
             },
             Message::PressU(shift) => match self.screen {
-                Screen::AccountSettings | Screen::EmailEveryone | Screen::Game => self.draw(),
-                Screen::GameNew
+                Screen::AccountSettings
+                | Screen::EmailEveryone
+                | Screen::Game
+                | Screen::GameNew
                 | Screen::GameReview
                 | Screen::Login
                 | Screen::Tournament
@@ -2302,8 +2310,10 @@ impl<'a> Client {
                 Screen::Games => self.join_game_press(20, shift),
             },
             Message::PressV(shift) => match self.screen {
-                Screen::AccountSettings | Screen::EmailEveryone | Screen::Game => self.draw(),
-                Screen::GameNew
+                Screen::AccountSettings
+                | Screen::EmailEveryone
+                | Screen::Game
+                | Screen::GameNew
                 | Screen::GameReview
                 | Screen::Login
                 | Screen::Tournament
@@ -2311,8 +2321,10 @@ impl<'a> Client {
                 Screen::Games => self.join_game_press(21, shift),
             },
             Message::PressW(shift) => match self.screen {
-                Screen::AccountSettings | Screen::EmailEveryone | Screen::Game => self.draw(),
-                Screen::GameNew
+                Screen::AccountSettings
+                | Screen::EmailEveryone
+                | Screen::Game
+                | Screen::GameNew
                 | Screen::GameReview
                 | Screen::Login
                 | Screen::Tournament
@@ -2320,8 +2332,10 @@ impl<'a> Client {
                 Screen::Games => self.join_game_press(22, shift),
             },
             Message::PressX(shift) => match self.screen {
-                Screen::AccountSettings | Screen::EmailEveryone | Screen::Game => self.draw(),
-                Screen::GameNew
+                Screen::AccountSettings
+                | Screen::EmailEveryone
+                | Screen::Game
+                | Screen::GameNew
                 | Screen::GameReview
                 | Screen::Login
                 | Screen::Tournament
@@ -2329,8 +2343,10 @@ impl<'a> Client {
                 Screen::Games => self.join_game_press(23, shift),
             },
             Message::PressY(shift) => match self.screen {
-                Screen::AccountSettings | Screen::EmailEveryone | Screen::Game => self.draw(),
-                Screen::GameNew
+                Screen::AccountSettings
+                | Screen::EmailEveryone
+                | Screen::Game
+                | Screen::GameNew
                 | Screen::GameReview
                 | Screen::Login
                 | Screen::Tournament
@@ -2338,8 +2354,10 @@ impl<'a> Client {
                 Screen::Games => self.join_game_press(24, shift),
             },
             Message::PressZ(shift) => match self.screen {
-                Screen::AccountSettings | Screen::EmailEveryone | Screen::Game => self.draw(),
-                Screen::GameNew
+                Screen::AccountSettings
+                | Screen::EmailEveryone
+                | Screen::Game
+                | Screen::GameNew
                 | Screen::GameReview
                 | Screen::Login
                 | Screen::Tournament
