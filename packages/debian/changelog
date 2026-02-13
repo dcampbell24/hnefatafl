@@ -1,13 +1,19 @@
+hnefatafl-copenhagen (5.1.0-1) stable; urgency=medium
+
+   * https://github.com/dcampbell24/hnefatafl/blob/main/CHANGELOG.md
+
+ -- David Campbell <david@hnefatafl.org>  Fri, 13 Feb 2026 20:00:00 -0500
+
 hnefatafl-copenhagen (5.0.0-1) stable; urgency=medium
 
    * Added Tournaments.
    * https://github.com/dcampbell24/hnefatafl/blob/main/CHANGELOG.md
 
- -- David Campbell <dcampbell24@gmail.com>  Fri, 23 Jan 2026 20:00:00 -0500
+ -- David Campbell <david@hnefatafl.org>  Fri, 23 Jan 2026 20:00:00 -0500
 
 hnefatafl-copenhagen (0.4.1-1) stable; urgency=medium
 
    * Initial Release.
    * https://github.com/dcampbell24/hnefatafl/blob/main/CHANGELOG.md#041---2025-02-04
 
- -- David Campbell <dcampbell24@gmail.com>  Tue, 4 Feb 2025 20:00:00 -0500
+ -- David Campbell <david@hnefatafl.org>  Tue, 4 Feb 2025 20:00:00 -0500
