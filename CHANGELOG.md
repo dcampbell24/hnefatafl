@@ -16,8 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - hnefatafl-client: set the game id when you accept a game.
-- hnefatafl-server-full: enable a player to play a game after leaving before the game has started.
 - hnefatafl-client: don't crash on TCP errors.
+- hnefatafl-server-full: enable a player to play a game after leaving before the game has started.
 - hnefatafl-server-full: save when we update the game_id.
 
 ## 5.0.1 - 2026-02-04
