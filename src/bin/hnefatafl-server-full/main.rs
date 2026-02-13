@@ -1052,6 +1052,7 @@ impl Server {
                     (*command).to_string(),
                 ));
             };
+
             for spectator in game_light.spectators() {
                 if let Some(sender) = self.clients.get(&spectator) {
                     let _ok = sender.send(message.clone());

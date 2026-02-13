@@ -2678,6 +2678,21 @@ impl<'a> Client {
                                     if let Some(game) = &mut self.game {
                                         game.turn = Role::Roleless;
                                     }
+
+                                    if !self.sound_muted {
+                                        thread::spawn(move || {
+                                            let mut stream =
+                                                rodio::OutputStreamBuilder::open_default_stream()?;
+
+                                            let cursor = Cursor::new(SOUND_GAME_OVER);
+                                            let sound = rodio::play(stream.mixer(), cursor)?;
+                                            sound.set_volume(1.0);
+                                            sound.sleep_until_end();
+
+                                            stream.log_on_drop(false);
+                                            Ok::<(), anyhow::Error>(())
+                                        });
+                                    }
                                 }
                             }
                             Some("email") => {
