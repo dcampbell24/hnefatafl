@@ -1992,7 +1992,10 @@ impl<'a> Client {
             Message::FocusNext => return focus_next(),
             Message::FocusPrevious => return focus_previous(),
             Message::GameCancel(id) => self.send(&format!("decline_game {id} switch\n")),
-            Message::GameAccept(id) => self.send(&format!("join_game {id}\n")),
+            Message::GameAccept(id) => {
+                self.game_id = id;
+                self.send(&format!("join_game {id}\n"));
+            }
             Message::GameDecline(id) => self.send(&format!("decline_game {id}\n")),
             Message::GameJoin(id) => self.join(id),
             Message::GameWatch(id) => self.watch(id),
