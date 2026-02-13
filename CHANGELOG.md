@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- hnefatafl-client: play a sound when you draw a game.
 - hnefatafl-client: set a hotkey for accept draw.
 - hnefatafl-client: signal when a player has left a game.
 
