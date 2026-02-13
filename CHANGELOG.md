@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.1.0] - 2026-02-13
+
 ### Added
 
 - hnefatafl-client: play a sound when you draw a game.
@@ -20,7 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - hnefatafl-server-full: enable a player to play a game after leaving before the game has started.
 - hnefatafl-server-full: save when we update the game_id.
 
-## 5.0.1 - 2026-02-04
+## [5.0.1] - 2026-02-04
 
 ### Added
 
@@ -30,7 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - hnefatafl-client: don't crash when playing two games at the same time.
 
-## 5.0.0 - 2026-01-23
+## [5.0.0] - 2026-01-23
 
 ### Added
 
@@ -618,4 +620,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - hnefatafl-client: Make users and games scrollable.
 - Make all the features dependencies.
 
-[unreleased]: https://github.com/dcampbell24/hnefatafl/compare/v5.0.0-4...main
+[unreleased]: https://github.com/dcampbell24/hnefatafl/compare/v5.0.1-1...main
+[5.0.1]: https://github.com/dcampbell24/hnefatafl/compare/v5.0.1-1...5.1.0-1
+[5.0.0]: https://github.com/dcampbell24/hnefatafl/compare/v5.0.0-4...5.0.1-1

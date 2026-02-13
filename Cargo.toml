@@ -1,6 +1,6 @@
 [package]
 name = "hnefatafl-copenhagen"
-version = "5.0.1"
+version = "5.1.0"
 authors = ["David Campbell <david@hnefatafl.org>"]
 edition = "2024"
 rust-version =  "1.89"
