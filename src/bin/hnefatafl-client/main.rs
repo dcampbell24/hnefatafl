@@ -1581,7 +1581,7 @@ impl<'a> Client {
                 let row = if self.request_draw {
                     column![
                         row![
-                            button(text(self.strings["Accept Draw"].as_str()))
+                            button(text!("{} (r)", self.strings["Accept Draw"].as_str()))
                                 .on_press(Message::PlayDrawDecision(Draw::Accept)),
                         ]
                         .spacing(SPACING)
@@ -2268,12 +2268,16 @@ impl<'a> Client {
             Message::PressR(shift) => match self.screen {
                 Screen::AccountSettings
                 | Screen::EmailEveryone
-                | Screen::Game
                 | Screen::GameNew
                 | Screen::GameReview
                 | Screen::Login
                 | Screen::Tournament
                 | Screen::Users => {}
+                Screen::Game => {
+                    if self.request_draw {
+                        self.send(&format!("draw {} {}\n", self.game_id, Draw::Accept));
+                    }
+                }
                 Screen::Games => self.join_game_press(17, shift),
             },
             Message::PressS(shift) => match self.screen {
