@@ -1163,6 +1163,8 @@ impl Server {
         };
 
         game.elapsed_time = 0;
+        game.draw_requested = Role::Roleless;
+
         let mut attackers_turn_next = true;
         if role == Role::Attacker {
             if *username == game.attacker {
@@ -2588,19 +2590,28 @@ impl Server {
             .spectators
             .insert(username.to_string(), channel_id);
 
-        if Some((*username).to_string()) == game_light.attacker {
-            if let Some(server_game) = self.games.0.get_mut(&id) {
+        let mut request_draw = Role::Roleless;
+        if let Some(server_game) = self.games.0.get_mut(&id) {
+            if Some(username) == game_light.attacker.as_deref() {
                 server_game.attacker_tx =
                     Messenger::new(self.clients.get(&index_supplied)?.clone());
+
+                if server_game.draw_requested == Role::Defender {
+                    request_draw = Role::Attacker;
+                }
+            } else if Some(username) == game_light.defender.as_deref() {
+                server_game.defender_tx =
+                    Messenger::new(self.clients.get(&index_supplied)?.clone());
+
+                if server_game.draw_requested == Role::Attacker {
+                    request_draw = Role::Defender;
+                }
             }
-        } else if Some((*username).to_string()) == game_light.defender
-            && let Some(server_game) = self.games.0.get_mut(&id)
-        {
-            server_game.defender_tx = Messenger::new(self.clients.get(&index_supplied)?.clone());
         }
 
-        self.clients
-            .get(&index_supplied)?
+        let client = self.clients.get(&index_supplied)?;
+
+        client
             .send(format!(
                 "= resume_game {} {} {} {:?} {} {board} {texts}",
                 game_light.attacker.clone()?,
@@ -2610,6 +2621,12 @@ impl Server {
                 game_light.board_size,
             ))
             .ok()?;
+
+        if request_draw != Role::Roleless {
+            client
+                .send(format!("request_draw {} {request_draw}", game_light.id))
+                .ok()?;
+        }
 
         None
     }
@@ -2652,6 +2669,11 @@ impl Server {
         };
 
         info!("{index_supplied} {username} request_draw {id} {role}");
+
+        if let Some(server_game) = self.games.0.get_mut(&id) {
+            server_game.draw_requested = role;
+            self.save_server();
+        }
 
         let message = format!("request_draw {id} {role}");
         if let Some(game) = self.games.0.get(&id) {

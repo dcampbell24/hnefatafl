@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- hnefatafl-server-full: persist request_draw.
+
 ## [5.1.0] - 2026-02-13
 
 ### Added
