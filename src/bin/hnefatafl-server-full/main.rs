@@ -657,7 +657,7 @@ struct Server {
     games_light_old: ServerGamesLight,
     #[serde(skip)]
     skip_the_data_file: bool,
-    #[serde(skip)]
+    #[serde(default)]
     texts: VecDeque<String>,
     #[serde(skip)]
     tx: Option<mpsc::Sender<(String, Option<mpsc::Sender<String>>)>>,
@@ -2019,7 +2019,9 @@ impl Server {
                     for tx in &mut self.clients.values() {
                         let _ok = tx.send(text.clone());
                     }
+
                     self.texts.push_back(text);
+                    self.save_server();
 
                     None
                 }
