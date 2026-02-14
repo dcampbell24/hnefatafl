@@ -117,6 +117,7 @@ pub struct ServerGame {
     pub attacker_tx: Messenger,
     pub defender: String,
     pub defender_tx: Messenger,
+    pub draw_requested: Role,
     pub elapsed_time: i64,
     pub rated: Rated,
     pub game: Game,
@@ -131,6 +132,7 @@ impl From<ServerGameSerialized> for ServerGame {
             attacker_tx: Messenger(None),
             defender: game.defender,
             defender_tx: Messenger(None),
+            draw_requested: Role::Roleless,
             elapsed_time: 0,
             rated: game.rated,
             game: game.game,
@@ -176,6 +178,7 @@ impl ServerGame {
             attacker_tx: Messenger(attacker_tx),
             defender,
             defender_tx: Messenger(defender_tx),
+            draw_requested: Role::Roleless,
             elapsed_time: 0,
             rated: game.rated,
             game: Game {
