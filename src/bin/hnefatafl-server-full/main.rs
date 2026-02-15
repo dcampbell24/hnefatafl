@@ -512,11 +512,8 @@ fn login(
         buf.clear();
     }
 
-    if let Some(id) = game_id {
-        tx.send((
-            format!("{id} {username_proper} leave_game_started {id}"),
-            None,
-        ))?;
+    if let Some(game_id) = game_id {
+        tx.send((format!("{id} {username_proper} leave_game {game_id}"), None))?;
     }
 
     tx.send((format!("{id} {username_proper} logout"), None))?;
@@ -1632,8 +1629,12 @@ impl Server {
             if *command != "check_update_rd"
                 && *command != "create_account"
                 && *command != "display_server"
+                && *command != "join_game_pending"
+                && *command != "leave_game"
                 && *command != "login"
+                && *command != "logout"
                 && *command != "ping"
+                && *command != "resume_game"
             {
                 debug!("{index_supplied} {username} {command}");
             }
@@ -1912,9 +1913,6 @@ impl Server {
                     (*command).to_string(),
                     the_rest.as_slice(),
                 ),
-                "leave_game_started" => {
-                    self.leave_game_started(username, index_supplied, the_rest.first())
-                }
                 "leave_tournament" => {
                     if let Some(tournament) = &mut self.tournament {
                         tournament.players.remove(*username);
@@ -2338,24 +2336,6 @@ impl Server {
         command.push(' ');
         command.push_str(the_rest.first()?);
         Some((self.clients.get(&index_supplied)?.clone(), true, command))
-    }
-
-    fn leave_game_started(
-        &mut self,
-        username: &str,
-        index_supplied: usize,
-        id: Option<&&str>,
-    ) -> Option<(mpsc::Sender<String>, bool, String)> {
-        if let Some(id) = id
-            && let Ok(id) = id.parse::<Id>()
-            && let Some(game) = self.games_light.0.get_mut(&id)
-            && game.challenge_accepted
-        {
-            info!("{index_supplied} {username} leave_game_started {id}");
-            game.spectators.remove(username);
-        }
-
-        None
     }
 
     fn login(
