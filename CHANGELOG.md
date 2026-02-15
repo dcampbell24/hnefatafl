@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- hnefatafl-server-full: save 256 general texts.
+
 ### Fixed
 
 - hnefatafl-server-full: save the general chat texts when restarting the server.

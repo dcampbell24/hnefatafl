@@ -84,6 +84,9 @@ use crate::{
 
 const ACTIVE_GAMES_FILE: &str = "active-games.postcard";
 const ARCHIVED_GAMES_FILE: &str = "archived-games.ron";
+const TEXTS_FILE: &str = "texts.ron";
+const KEEP_TEXTS: usize = 256;
+
 /// Seconds in two months: `60.0 * 60.0 * 24.0 * 30.417 * 2.0 = 5_256_057.6`
 const TWO_MONTHS: i64 = 5_256_058;
 const SEVEN_DAYS: i64 = 1_000 * 60 * 60 * 24 * 7;
@@ -194,6 +197,19 @@ fn main() -> anyhow::Result<()> {
 
     if args.skip_the_data_file {
         server.skip_the_data_file = true;
+    }
+
+    if !args.skip_the_data_file {
+        let texts_file = data_file(TEXTS_FILE);
+        match fs::read_to_string(&texts_file) {
+            Ok(texts) => match ron::from_str::<VecDeque<String>>(&texts) {
+                Ok(texts) => server.texts = texts,
+                Err(err) => return Err(anyhow::Error::msg(format!("RON: {err}"))),
+            },
+            Err(err) => {
+                error!("texts file not found: {err}");
+            }
+        }
     }
 
     thread::spawn(move || handle_error(server.handle_messages(&rx)));
@@ -657,7 +673,7 @@ struct Server {
     games_light_old: ServerGamesLight,
     #[serde(skip)]
     skip_the_data_file: bool,
-    #[serde(default)]
+    #[serde(skip)]
     texts: VecDeque<String>,
     #[serde(skip)]
     tx: Option<mpsc::Sender<(String, Option<mpsc::Sender<String>>)>>,
@@ -2012,7 +2028,7 @@ impl Server {
                     info!("{index_supplied} {timestamp} {username} text {the_rest}");
 
                     let text = format!("= text {timestamp} {username}: {the_rest}");
-                    if self.texts.len() >= 32 {
+                    if self.texts.len() >= KEEP_TEXTS {
                         self.texts.pop_front();
                     }
 
@@ -2021,7 +2037,7 @@ impl Server {
                     }
 
                     self.texts.push_back(text);
-                    self.save_server();
+                    self.save_texts();
 
                     None
                 }
@@ -2721,6 +2737,28 @@ impl Server {
                     }
                 }
                 Err(error) => error!("save file (1): {error}"),
+            }
+        }
+    }
+
+    fn save_texts(&self) {
+        if !self.skip_the_data_file {
+            match ron::ser::to_string_pretty(&self.texts, ron::ser::PrettyConfig::default()) {
+                Ok(string) => {
+                    if !string.trim().is_empty() {
+                        let texts_file = data_file(TEXTS_FILE);
+
+                        match File::create(&texts_file) {
+                            Ok(mut file) => {
+                                if let Err(error) = file.write_all(string.as_bytes()) {
+                                    error!("save texts file (3): {error}");
+                                }
+                            }
+                            Err(error) => error!("save texts file (2): {error}"),
+                        }
+                    }
+                }
+                Err(error) => error!("save texts file (1): {error}"),
             }
         }
     }
