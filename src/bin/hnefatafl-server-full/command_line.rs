@@ -13,8 +13,10 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use clap::Parser;
-use hnefatafl_copenhagen::LONG_VERSION;
+use std::io::Write as _;
+
+use clap::{CommandFactory, Parser};
+use hnefatafl_copenhagen::{COPYRIGHT, LONG_VERSION};
 
 /// Copenhagen Hnefatafl Server
 ///
@@ -52,4 +54,20 @@ pub(crate) struct Args {
     /// Build the manpage
     #[arg(long)]
     pub man: bool,
+}
+
+impl Args {
+    pub(crate) fn generate_man_page() -> anyhow::Result<()> {
+        let mut buffer: Vec<u8> = Vec::default();
+        let cmd = Self::command()
+            .name("hnefatafl-server-full")
+            .long_version(None);
+        let man = clap_mangen::Man::new(cmd).date("2025-06-23");
+
+        man.render(&mut buffer)?;
+        write!(buffer, "{COPYRIGHT}")?;
+
+        std::fs::write("hnefatafl-server-full.1", buffer)?;
+        Ok(())
+    }
 }

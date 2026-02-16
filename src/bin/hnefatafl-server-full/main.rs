@@ -43,9 +43,9 @@ use std::{
 
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use chrono::{DateTime, Days, Local, Utc};
-use clap::{CommandFactory, Parser};
+use clap::Parser;
 use hnefatafl_copenhagen::{
-    COPYRIGHT, Id, SERVER_PORT, VERSION_ID,
+    Id, SERVER_PORT, VERSION_ID,
     board::BoardSize,
     draw::Draw,
     email::Email,
@@ -102,17 +102,7 @@ fn main() -> anyhow::Result<()> {
     utils::init_logger("hnefatafl_server_full", args.debug, args.systemd);
 
     if args.man {
-        let mut buffer: Vec<u8> = Vec::default();
-        let cmd = Args::command()
-            .name("hnefatafl-server-full")
-            .long_version(None);
-        let man = clap_mangen::Man::new(cmd).date("2025-06-23");
-
-        man.render(&mut buffer)?;
-        write!(buffer, "{COPYRIGHT}")?;
-
-        std::fs::write("hnefatafl-server-full.1", buffer)?;
-        return Ok(());
+        return Args::generate_man_page();
     }
 
     create_data_folder()?;
