@@ -87,6 +87,7 @@ const ARCHIVED_GAMES_FILE: &str = "archived-games.ron";
 const TEXTS_FILE: &str = "texts.ron";
 const KEEP_TEXTS: usize = 256;
 
+const DAY_IN_SECONDS: u64 = 60 * 60 * 24;
 /// Seconds in two months: `60.0 * 60.0 * 24.0 * 30.417 * 2.0 = 5_256_057.6`
 const TWO_MONTHS: i64 = 5_256_058;
 const SEVEN_DAYS: i64 = 1_000 * 60 * 60 * 24 * 7;
@@ -124,14 +125,7 @@ fn main() -> anyhow::Result<()> {
         Server::advertise_updates(tx.clone());
     }
 
-    let tx_messages_2 = tx.clone();
-    thread::spawn(move || {
-        loop {
-            handle_error(tx_messages_2.send(("0 server check_update_rd".to_string(), None)));
-            thread::sleep(Duration::from_secs(60 * 60 * 24));
-        }
-    });
-
+    Server::check_update_rd_send(tx.clone());
     Server::new_tournament(tx.clone());
 
     let mut address = "[::]".to_string();
@@ -668,6 +662,15 @@ impl Server {
         } else {
             false
         }
+    }
+
+    fn check_update_rd_send(tx: Sender<(String, Option<Sender<String>>)>) {
+        thread::spawn(move || {
+            loop {
+                handle_error(tx.send(("0 server check_update_rd".to_string(), None)));
+                thread::sleep(Duration::from_secs(DAY_IN_SECONDS));
+            }
+        });
     }
 
     /// ```sh
