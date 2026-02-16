@@ -1483,7 +1483,7 @@ impl Server {
         }
     }
 
-    pub(crate) fn handle_messages(
+    fn handle_messages(
         &mut self,
         rx: &mpsc::Receiver<(String, Option<mpsc::Sender<String>>)>,
     ) -> anyhow::Result<()> {
