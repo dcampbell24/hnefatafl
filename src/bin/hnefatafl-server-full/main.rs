@@ -93,7 +93,6 @@ const SEVEN_DAYS: i64 = 1_000 * 60 * 60 * 24 * 7;
 const USERS_FILE: &str = "users.ron";
 const MESSAGE_FILE: &str = "message.txt";
 
-#[allow(clippy::too_many_lines)]
 fn main() -> anyhow::Result<()> {
     // println!("{:x}", rand::random::<u32>());
     // return Ok(());
@@ -122,13 +121,7 @@ fn main() -> anyhow::Result<()> {
     thread::spawn(move || handle_error(server.handle_messages(&rx)));
 
     if !args.skip_advertising_updates {
-        let tx_messages_1 = tx.clone();
-        thread::spawn(move || {
-            loop {
-                handle_error(tx_messages_1.send(("0 server display_server".to_string(), None)));
-                thread::sleep(Duration::from_secs(1));
-            }
-        });
+        Server::advertise_updates(tx.clone());
     }
 
     let tx_messages_2 = tx.clone();
@@ -547,6 +540,15 @@ struct Server {
 }
 
 impl Server {
+    fn advertise_updates(tx: Sender<(String, Option<Sender<String>>)>) {
+        thread::spawn(move || {
+            loop {
+                handle_error(tx.send(("0 server display_server".to_string(), None)));
+                thread::sleep(Duration::from_secs(1));
+            }
+        });
+    }
+
     fn append_archived_game(&mut self, game: ServerGame) -> anyhow::Result<()> {
         let Some(attacker) = self.accounts.0.get(&game.attacker) else {
             return Err(anyhow::Error::msg("failed to get rating!"));
