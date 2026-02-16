@@ -124,75 +124,7 @@ fn main() -> anyhow::Result<()> {
     };
 
     if !args.skip_the_data_file {
-        let users_file = data_file(USERS_FILE);
-        match &fs::read_to_string(&users_file) {
-            Ok(string) => match ron::from_str(string.as_str()) {
-                Ok(server_ron) => {
-                    server = server_ron;
-                    server.tx = Some(tx.clone());
-                }
-                Err(err) => {
-                    return Err(anyhow::Error::msg(format!(
-                        "RON: {}: {err}",
-                        users_file.display(),
-                    )));
-                }
-            },
-            Err(err) => match err.kind() {
-                ErrorKind::NotFound => {}
-                _ => return Err(anyhow::Error::msg(err.to_string())),
-            },
-        }
-
-        let archived_games_file = data_file(ARCHIVED_GAMES_FILE);
-        match fs::read_to_string(&archived_games_file) {
-            Ok(archived_games_string) => {
-                let mut archived_games = Vec::new();
-
-                for line in archived_games_string.lines() {
-                    let archived_game: ArchivedGame = match ron::from_str(line) {
-                        Ok(archived_game) => archived_game,
-                        Err(err) => {
-                            return Err(anyhow::Error::msg(format!(
-                                "RON: {}: {err}",
-                                archived_games_file.display(),
-                            )));
-                        }
-                    };
-                    archived_games.push(archived_game);
-                }
-
-                server.archived_games = archived_games;
-            }
-            Err(err) => {
-                error!("archived games file not found: {err}");
-            }
-        }
-
-        let active_games_file = data_file(ACTIVE_GAMES_FILE);
-        if fs::exists(&active_games_file)? {
-            let mut file = File::open(active_games_file)?;
-            let mut data = Vec::new();
-            file.read_to_end(&mut data)?;
-
-            let games: Vec<ServerGameSerialized> = postcard::from_bytes(data.as_slice())?;
-            for game in games {
-                let id = game.id;
-                let server_game_light = ServerGameLight::from(&game);
-                let server_game = ServerGame::from(game);
-
-                server.games_light.0.insert(id, server_game_light);
-                server.games.0.insert(id, server_game);
-            }
-        }
-
-        let tx_signals = tx.clone();
-        ctrlc::set_handler(move || {
-            if !args.systemd {
-                println!();
-            }
-            handle_error(tx_signals.send(("0 server exit".to_string(), None)));
-        })?;
+        server.load_data_files(tx.clone(), args.systemd)?;
     }
 
     if args.skip_the_data_file {
@@ -2394,6 +2326,83 @@ impl Server {
             info!("{index_supplied} {username} is not in the database");
             Some((tx, false, (*command).to_string()))
         }
+    }
+
+    fn load_data_files(
+        &mut self,
+        tx: Sender<(String, Option<Sender<String>>)>,
+        systemd: bool,
+    ) -> anyhow::Result<()> {
+        let users_file = data_file(USERS_FILE);
+        match &fs::read_to_string(&users_file) {
+            Ok(string) => match ron::from_str(string.as_str()) {
+                Ok(server_ron) => {
+                    *self = server_ron;
+                    self.tx = Some(tx.clone());
+                }
+                Err(err) => {
+                    return Err(anyhow::Error::msg(format!(
+                        "RON: {}: {err}",
+                        users_file.display(),
+                    )));
+                }
+            },
+            Err(err) => match err.kind() {
+                ErrorKind::NotFound => {}
+                _ => return Err(anyhow::Error::msg(err.to_string())),
+            },
+        }
+
+        let archived_games_file = data_file(ARCHIVED_GAMES_FILE);
+        match fs::read_to_string(&archived_games_file) {
+            Ok(archived_games_string) => {
+                let mut archived_games = Vec::new();
+
+                for line in archived_games_string.lines() {
+                    let archived_game: ArchivedGame = match ron::from_str(line) {
+                        Ok(archived_game) => archived_game,
+                        Err(err) => {
+                            return Err(anyhow::Error::msg(format!(
+                                "RON: {}: {err}",
+                                archived_games_file.display(),
+                            )));
+                        }
+                    };
+                    archived_games.push(archived_game);
+                }
+
+                self.archived_games = archived_games;
+            }
+            Err(err) => {
+                error!("archived games file not found: {err}");
+            }
+        }
+
+        let active_games_file = data_file(ACTIVE_GAMES_FILE);
+        if fs::exists(&active_games_file)? {
+            let mut file = File::open(active_games_file)?;
+            let mut data = Vec::new();
+            file.read_to_end(&mut data)?;
+
+            let games: Vec<ServerGameSerialized> = postcard::from_bytes(data.as_slice())?;
+            for game in games {
+                let id = game.id;
+                let server_game_light = ServerGameLight::from(&game);
+                let server_game = ServerGame::from(game);
+
+                self.games_light.0.insert(id, server_game_light);
+                self.games.0.insert(id, server_game);
+            }
+        }
+
+        ctrlc::set_handler(move || {
+            if !systemd {
+                println!();
+            }
+            handle_error(tx.send(("0 server exit".to_string(), None)));
+        })?;
+
+        Ok(())
     }
 
     fn logout(
