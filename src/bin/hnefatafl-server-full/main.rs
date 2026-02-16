@@ -164,44 +164,7 @@ fn main() -> anyhow::Result<()> {
         }
     });
 
-    let tx_messages_3 = tx.clone();
-    thread::spawn(move || {
-        handle_error(tx_messages_3.send(("0 server tournament_start".to_string(), None)));
-
-        loop {
-            let now_utc = Utc::now();
-
-            let tomorrow_midnight_utc = (now_utc + Days::new(1))
-                .date_naive()
-                .and_hms_opt(0, 0, 0)
-                .unwrap_or_else(|| {
-                    error!("and_hms_opt failed");
-                    exit(1)
-                })
-                .and_local_timezone(Utc)
-                .single()
-                .unwrap_or_else(|| {
-                    error!("single failed");
-                    exit(1)
-                });
-
-            let duration_until_midnight = tomorrow_midnight_utc.signed_duration_since(now_utc);
-            debug!(
-                "seconds until midnight UTC: {}",
-                duration_until_midnight.num_seconds()
-            );
-
-            let std_duration = duration_until_midnight.to_std().unwrap_or_else(|error| {
-                error!("to_std failed: {error}");
-                exit(1)
-            });
-
-            sleep(std_duration);
-            sleep(Duration::from_secs(1));
-
-            handle_error(tx_messages_3.send(("0 server tournament_start".to_string(), None)));
-        }
-    });
+    Server::new_tournament(tx.clone());
 
     let mut address = "[::]".to_string();
     address.push_str(SERVER_PORT);
@@ -2526,6 +2489,46 @@ impl Server {
         self.save_server();
 
         Some((self.clients.get(&index_supplied)?.clone(), true, command))
+    }
+
+    fn new_tournament(tx: Sender<(String, Option<Sender<String>>)>) {
+        thread::spawn(move || {
+            handle_error(tx.send(("0 server tournament_start".to_string(), None)));
+
+            loop {
+                let now_utc = Utc::now();
+
+                let tomorrow_midnight_utc = (now_utc + Days::new(1))
+                    .date_naive()
+                    .and_hms_opt(0, 0, 0)
+                    .unwrap_or_else(|| {
+                        error!("and_hms_opt failed");
+                        exit(1)
+                    })
+                    .and_local_timezone(Utc)
+                    .single()
+                    .unwrap_or_else(|| {
+                        error!("single failed");
+                        exit(1)
+                    });
+
+                let duration_until_midnight = tomorrow_midnight_utc.signed_duration_since(now_utc);
+                debug!(
+                    "seconds until midnight UTC: {}",
+                    duration_until_midnight.num_seconds()
+                );
+
+                let std_duration = duration_until_midnight.to_std().unwrap_or_else(|error| {
+                    error!("to_std failed: {error}");
+                    exit(1)
+                });
+
+                sleep(std_duration);
+                sleep(Duration::from_secs(1));
+
+                handle_error(tx.send(("0 server tournament_start".to_string(), None)));
+            }
+        });
     }
 
     #[must_use]
