@@ -123,25 +123,10 @@ fn main() -> anyhow::Result<()> {
         ..Server::default()
     };
 
-    if !args.skip_the_data_file {
-        server.load_data_files(tx.clone(), args.systemd)?;
-    }
-
     if args.skip_the_data_file {
-        server.skip_the_data_file = true;
-    }
-
-    if !args.skip_the_data_file {
-        let texts_file = data_file(TEXTS_FILE);
-        match fs::read_to_string(&texts_file) {
-            Ok(texts) => match ron::from_str::<VecDeque<String>>(&texts) {
-                Ok(texts) => server.texts = texts,
-                Err(err) => return Err(anyhow::Error::msg(format!("RON: {err}"))),
-            },
-            Err(err) => {
-                error!("texts file not found: {err}");
-            }
-        }
+        server.skip_the_data_files = true;
+    } else {
+        server.load_data_files(tx.clone(), args.systemd)?;
     }
 
     thread::spawn(move || handle_error(server.handle_messages(&rx)));
@@ -564,7 +549,7 @@ struct Server {
     #[serde(skip)]
     games_light_old: ServerGamesLight,
     #[serde(skip)]
-    skip_the_data_file: bool,
+    skip_the_data_files: bool,
     #[serde(skip)]
     texts: VecDeque<String>,
     #[serde(skip)]
@@ -1016,7 +1001,7 @@ impl Server {
                 game.game_over = true;
             }
 
-            if !self.skip_the_data_file {
+            if !self.skip_the_data_files {
                 self.append_archived_game(game)
                     .map_err(|err| {
                         error!("append_archived_games: {err}");
@@ -1401,7 +1386,7 @@ impl Server {
                 self.tournament_status_all();
             }
 
-            if !self.skip_the_data_file {
+            if !self.skip_the_data_files {
                 self.append_archived_game(game)
                     .map_err(|err| {
                         error!("append_archived_game: {err}");
@@ -2365,6 +2350,17 @@ impl Server {
             handle_error(tx.send(("0 server exit".to_string(), None)));
         })?;
 
+        let texts_file = data_file(TEXTS_FILE);
+        match fs::read_to_string(&texts_file) {
+            Ok(texts) => match ron::from_str::<VecDeque<String>>(&texts) {
+                Ok(texts) => self.texts = texts,
+                Err(err) => return Err(anyhow::Error::msg(format!("RON: {err}"))),
+            },
+            Err(err) => {
+                error!("texts file not found: {err}");
+            }
+        }
+
         Ok(())
     }
 
@@ -2721,7 +2717,7 @@ impl Server {
     }
 
     fn save_server(&self) {
-        if !self.skip_the_data_file {
+        if !self.skip_the_data_files {
             let mut server = self.clone();
 
             for account in server.accounts.0.values_mut() {
@@ -2749,7 +2745,7 @@ impl Server {
     }
 
     fn save_texts(&self) {
-        if !self.skip_the_data_file {
+        if !self.skip_the_data_files {
             match ron::ser::to_string_pretty(&self.texts, ron::ser::PrettyConfig::default()) {
                 Ok(string) => {
                     if !string.trim().is_empty() {
