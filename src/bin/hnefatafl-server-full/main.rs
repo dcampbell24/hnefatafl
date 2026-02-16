@@ -84,7 +84,6 @@ use crate::{
 
 const ACTIVE_GAMES_FILE: &str = "active-games.postcard";
 const ARCHIVED_GAMES_FILE: &str = "archived-games.ron";
-const TEXTS_FILE: &str = "texts.ron";
 const KEEP_TEXTS: usize = 256;
 
 const DAY_IN_SECONDS: u64 = 60 * 60 * 24;
@@ -127,6 +126,7 @@ fn main() -> anyhow::Result<()> {
 
     Server::check_update_rd_send(tx.clone());
     Server::new_tournament(tx.clone());
+    Server::save(tx.clone());
 
     let mut address = "[::]".to_string();
     address.push_str(SERVER_PORT);
@@ -527,7 +527,7 @@ struct Server {
     games_light_old: ServerGamesLight,
     #[serde(skip)]
     skip_the_data_files: bool,
-    #[serde(skip)]
+    #[serde(default)]
     texts: VecDeque<String>,
     #[serde(skip)]
     tx: Option<mpsc::Sender<(String, Option<mpsc::Sender<String>>)>>,
@@ -633,7 +633,6 @@ impl Server {
 
         let hash = hash_password(&password)?;
         account.password = hash;
-        self.save_server();
 
         Some((
             self.clients.get(&index_supplied)?.clone(),
@@ -706,8 +705,6 @@ impl Server {
                 },
             );
 
-            self.save_server();
-
             Some((
                 self.clients.get(&index_supplied)?.clone(),
                 true,
@@ -779,7 +776,6 @@ impl Server {
         info!("{index_supplied} {username} delete_account");
 
         self.accounts.0.remove(username);
-        self.save_server();
     }
 
     #[allow(clippy::too_many_lines)]
@@ -1003,8 +999,6 @@ impl Server {
                     })
                     .ok()?;
             }
-
-            self.save_server();
         }
 
         None
@@ -1405,8 +1399,6 @@ impl Server {
                 }
             }
 
-            self.save_server();
-
             return None;
         }
 
@@ -1472,7 +1464,6 @@ impl Server {
                 info!("email sent to {address} successfully!");
 
                 account.email = Some(email);
-                self.save_server();
 
                 let reply = format!("email {address} false");
                 Some((self.clients.get(&index_supplied)?.clone(), true, reply))
@@ -1722,8 +1713,6 @@ impl Server {
                                 .send("? email_code".to_string())
                                 .ok()?;
                         }
-
-                        self.save_server();
                     }
 
                     None
@@ -1743,7 +1732,6 @@ impl Server {
                 "email_reset" => {
                     if let Some(account) = self.accounts.0.get_mut(*username) {
                         account.email = None;
-                        self.save_server();
 
                         Some((
                             self.clients.get(&index_supplied)?.clone(),
@@ -1791,7 +1779,6 @@ impl Server {
                 "join_tournament" => {
                     if let Some(tournament) = &mut self.tournament {
                         tournament.players.insert(username.to_string());
-                        self.save_server();
                         self.tournament_status_all();
                     }
 
@@ -1806,7 +1793,6 @@ impl Server {
                 "leave_tournament" => {
                     if let Some(tournament) = &mut self.tournament {
                         tournament.players.remove(*username);
-                        self.save_server();
                         self.tournament_status_all();
                     }
 
@@ -1887,7 +1873,6 @@ impl Server {
                                     Ok(_) => {
                                         info!("email sent to {} successfully!", email.address);
                                         account.email_sent = now;
-                                        self.save_server();
                                     }
                                     Err(err) => {
                                         error!("could not send email to {}: {err}", email.address);
@@ -1910,6 +1895,12 @@ impl Server {
                 }
                 "resume_game" => self.resume_game(username, index_supplied, command, &the_rest),
                 "request_draw" => self.request_draw(username, index_supplied, command, &the_rest),
+                "save" => {
+                    info!("saving users file...");
+                    self.save_server();
+
+                    None
+                }
                 "text" => {
                     let timestamp = timestamp();
                     let the_rest = the_rest.join(" ");
@@ -1925,7 +1916,6 @@ impl Server {
                     }
 
                     self.texts.push_back(text);
-                    self.save_texts();
 
                     None
                 }
@@ -1942,7 +1932,6 @@ impl Server {
                 "tournament_delete" => {
                     if self.admins.contains(*username) {
                         self.tournament = None;
-                        self.save_server();
                         self.tournament_status_all();
                     }
 
@@ -1953,7 +1942,6 @@ impl Server {
                         && let Some(tournament) = &mut self.tournament
                     {
                         tournament.tree = None;
-                        self.save_server();
                         self.tournament_status_all();
                     }
 
@@ -1996,7 +1984,6 @@ impl Server {
                         info!("Starting tournament...");
 
                         self.tournament_tree();
-                        self.save_server();
                         self.tournament_status_all();
                     }
 
@@ -2342,19 +2329,9 @@ impl Server {
             if !systemd {
                 println!();
             }
+            handle_error(tx.send(("0 server save".to_string(), None)));
             handle_error(tx.send(("0 server exit".to_string(), None)));
         })?;
-
-        let texts_file = data_file(TEXTS_FILE);
-        match fs::read_to_string(&texts_file) {
-            Ok(texts) => match ron::from_str::<VecDeque<String>>(&texts) {
-                Ok(texts) => self.texts = texts,
-                Err(err) => return Err(anyhow::Error::msg(format!("RON: {err}"))),
-            },
-            Err(err) => {
-                error!("texts file not found: {err}");
-            }
-        }
 
         Ok(())
     }
@@ -2477,7 +2454,6 @@ impl Server {
         }
 
         self.game_id += 1;
-        self.save_server();
 
         Some((self.clients.get(&index_supplied)?.clone(), true, command))
     }
@@ -2527,7 +2503,6 @@ impl Server {
         let id = self.game_id;
 
         self.game_id += 1;
-        self.save_server();
 
         let game_light = ServerGameLight {
             id,
@@ -2688,7 +2663,6 @@ impl Server {
 
         if let Some(server_game) = self.games.0.get_mut(&id) {
             server_game.draw_requested = role;
-            self.save_server();
         }
 
         let message = format!("request_draw {id} {role}");
@@ -2709,6 +2683,15 @@ impl Server {
             true,
             (*command).to_string(),
         ))
+    }
+
+    fn save(tx: Sender<(String, Option<Sender<String>>)>) {
+        thread::spawn(move || {
+            loop {
+                thread::sleep(Duration::from_secs(DAY_IN_SECONDS));
+                handle_error(tx.send(("0 server save".to_string(), None)));
+            }
+        });
     }
 
     fn save_server(&self) {
@@ -2735,28 +2718,6 @@ impl Server {
                     }
                 }
                 Err(error) => error!("save file (1): {error}"),
-            }
-        }
-    }
-
-    fn save_texts(&self) {
-        if !self.skip_the_data_files {
-            match ron::ser::to_string_pretty(&self.texts, ron::ser::PrettyConfig::default()) {
-                Ok(string) => {
-                    if !string.trim().is_empty() {
-                        let texts_file = data_file(TEXTS_FILE);
-
-                        match File::create(&texts_file) {
-                            Ok(mut file) => {
-                                if let Err(error) = file.write_all(string.as_bytes()) {
-                                    error!("save texts file (3): {error}");
-                                }
-                            }
-                            Err(error) => error!("save texts file (2): {error}"),
-                        }
-                    }
-                }
-                Err(error) => error!("save texts file (1): {error}"),
             }
         }
     }
@@ -2823,7 +2784,6 @@ impl Server {
 
         tournament.date = datetime.to_utc();
         self.tournament = Some(tournament);
-        self.save_server();
 
         Ok(())
     }
