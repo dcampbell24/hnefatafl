@@ -15,7 +15,7 @@
 
 use std::{
     collections::{HashMap, VecDeque},
-    fmt,
+    fmt::{self, Write},
     str::FromStr,
     sync::mpsc::Sender,
 };
@@ -479,6 +479,25 @@ impl TryFrom<&[&str]> for ServerGameLight {
 
 #[derive(Clone, Default, Eq, PartialEq)]
 pub struct ServerGamesLight(pub HashMap<Id, ServerGameLight>);
+
+impl ServerGamesLight {
+    #[allow(clippy::missing_errors_doc)]
+    pub fn display_games(&self, username: Option<&str>) -> anyhow::Result<String> {
+        let mut output = String::new();
+
+        for game in self.0.values() {
+            if !game.game_over {
+                write!(output, "{game:?} ")?;
+            } else if let Some(username) = username
+                && game.spectators.contains_key(username)
+            {
+                write!(output, "{game:?} ")?;
+            }
+        }
+
+        Ok(output)
+    }
+}
 
 impl fmt::Debug for ServerGamesLight {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
