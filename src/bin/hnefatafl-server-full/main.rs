@@ -907,13 +907,28 @@ impl Server {
         self.save_server();
     }
 
+    #[allow(clippy::too_many_lines)]
     fn display_server(&mut self, username: &str) -> Option<(mpsc::Sender<String>, bool, String)> {
         if self.games_light != self.games_light_old {
             debug!("0 {username} display_games");
             self.games_light_old = self.games_light.clone();
 
-            for tx in &mut self.clients.values() {
-                let _ok = tx.send(format!("= display_games {:?}", &self.games_light));
+            let mut names = HashMap::new();
+            for (name, account) in &self.accounts.0 {
+                if let Some(id) = account.logged_in {
+                    names.insert(id, name);
+                }
+            }
+
+            for (id, tx) in &mut self.clients {
+                let Ok(games) = self
+                    .games_light
+                    .display_games(names.get(id).map(|s| s.as_str()))
+                else {
+                    continue;
+                };
+
+                let _ok = tx.send(format!("= display_games {games}"));
             }
         }
 
