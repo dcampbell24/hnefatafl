@@ -11,7 +11,7 @@ permissions:
 jobs:
   clippy_check:
     name: clippy check
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
