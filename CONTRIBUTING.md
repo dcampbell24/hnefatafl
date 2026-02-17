@@ -1,7 +1,12 @@
 # Contributing
 
 All contributions are welcome. If you want to make a minor change just open a
-pull request. For more major changes you should open an issue to discuss your idea.
+pull request. For more major changes you should open an issue to discuss your
+idea.
+
+Before your contributions will be accepted, you must fill out and sign the
+Contributor License Agreement. Then, send it via email to
+<secretary@hnefatafl.org>. The CLA is in the assets folder.
 
 ## Contributors
 
@@ -58,6 +63,6 @@ SOFTWARE.
 
 Copyrights in the hnefatafl-copenhagen project are retained by their
 contributors. No copyright assignment is required to contribute to the
-hnefatafl-copenhagen project.
+hnefatafl-copenhagen project, but you must fill out and send the CLA.
 
 For full authorship information, see the version control history.
