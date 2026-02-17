@@ -23,6 +23,6 @@ jobs:
 
       - name: Run cargo test
         run: |
-          sudo apt-get install libasound2t64-dev mold
+          sudo apt-get install libasound-dev mold
           cargo test --features js
           cargo test --benches
