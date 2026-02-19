@@ -35,6 +35,9 @@ Repository, Chocolatey, a Debian package, a flathub package, or Rust's cargo.";
 const RULES: &str = "Learn the rules to the game of Copenhagen Hnefatafl. Move your pieces until \
 you achieve victory or lose. Try not to get surrounded as the defenders and escape.";
 
+const TOURNAMENT: &str = "Learn how tournaments work. The tournament is a combination of round robin \
+and single elimination with each player playing both the attacker and the defender.";
+
 const AI: &str = "Discover about using artificial intelligence to play the game of Copenhagen \
 Hnefatafl. If you are using the Debian or Arch installs, you can run AI as a service.";
 
@@ -66,6 +69,12 @@ fn main() -> Result<(), anyhow::Error> {
     let rules_path = "/var/www/html/rules.html";
     let file = fs::read_to_string(rules_path)?;
     let content = file.replace("{{description}}", RULES);
+    fs::write(rules_path, content)?;
+
+    // let rules_path = "book/ai.html";
+    let rules_path = "/var/www/html/tournament.html";
+    let file = fs::read_to_string(rules_path)?;
+    let content = file.replace("{{description}}", TOURNAMENT);
     fs::write(rules_path, content)?;
 
     // let rules_path = "book/ai.html";
