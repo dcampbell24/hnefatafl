@@ -33,10 +33,7 @@ use std::{
     net::{TcpListener, TcpStream},
     process::exit,
     str::FromStr,
-    sync::{
-        Arc, Mutex,
-        mpsc::{self, Receiver, Sender},
-    },
+    sync::mpsc::{self, Receiver, Sender},
     thread::{self, sleep},
     time::Duration,
 };
@@ -59,9 +56,10 @@ use hnefatafl_copenhagen::{
     },
     status::Status,
     time::{Time, TimeEnum, TimeSettings},
-    tournament::{self, Player, Players, Tournament, TournamentTree, Wins},
+    tournament::{Group, Record, Tournament},
     utils::{self, create_data_folder, data_file},
 };
+use itertools::Itertools;
 use lettre::{
     SmtpTransport, Transport,
     message::{Mailbox, header::ContentType},
@@ -405,74 +403,6 @@ fn receiving_and_writing<T: Send + Write>(
     }
 
     Ok(())
-}
-
-fn generate_round_one(players: Vec<Player>) -> Vec<tournament::Status> {
-    let players_len = players.len();
-
-    if players_len == 1
-        && let Some(player) = players.first()
-    {
-        return vec![tournament::Status::Won(player.clone())];
-    }
-
-    let mut power = 1;
-    while power < players_len {
-        power *= 2;
-    }
-
-    let mut tournament_players = VecDeque::new();
-    for player in players {
-        tournament_players.push_front(tournament::Status::Ready(player));
-    }
-    for _ in 0..(power - players_len) {
-        tournament_players.push_back(tournament::Status::None);
-    }
-
-    let mut round = Vec::new();
-    for i in 0..tournament_players.len() {
-        if i % 2 == 0 {
-            let Some(player) = tournament_players.pop_back() else {
-                unreachable!()
-            };
-
-            round.push(player);
-        } else {
-            let Some(player) = tournament_players.pop_front() else {
-                unreachable!()
-            };
-
-            round.push(player);
-        }
-    }
-
-    let mut round_new = Vec::new();
-    for statuses in round.chunks(2) {
-        let (Some(status_1), Some(status_2)) = (statuses.first(), statuses.get(1)) else {
-            return round_new;
-        };
-
-        let status_1 = status_1.clone();
-        let status_2 = status_2.clone();
-
-        let (status_1, status_2) = match (status_1, status_2) {
-            (tournament::Status::Ready(player), tournament::Status::None) => (
-                tournament::Status::Won(player.clone()),
-                tournament::Status::None,
-            ),
-            (tournament::Status::None, tournament::Status::Ready(player)) => (
-                tournament::Status::None,
-                tournament::Status::Won(player.clone()),
-            ),
-            (status_1, status_2) => (status_1, status_2),
-        };
-
-        round_new.push(status_1);
-        round_new.push(status_2);
-    }
-
-    round = round_new;
-    round
 }
 
 fn handle_error<T, E: fmt::Display>(result: Result<T, E>) -> T {
@@ -1116,8 +1046,6 @@ impl Server {
         }
 
         let mut game_over = false;
-        let mut winner_role = Role::Roleless;
-        let mut winner_wins = None;
 
         match game.game.status {
             Status::AttackerWins => {
@@ -1160,7 +1088,6 @@ impl Server {
                 }
 
                 game_over = true;
-                winner_role = Role::Attacker;
             }
             Status::Draw => {
                 // Handled in the draw fn.
@@ -1214,13 +1141,10 @@ impl Server {
                 }
 
                 game_over = true;
-                winner_role = Role::Defender;
             }
         }
 
         if game_over {
-            let mut attacker_defender = None;
-
             let Some(game) = self.games.0.remove(&index) else {
                 unreachable!()
             };
@@ -1229,151 +1153,12 @@ impl Server {
                 game_light.game_over = true;
             }
 
-            let mut active_game_arc = None;
-            let mut tournament_status_update = false;
-
             if let Some(tournament) = &mut self.tournament
-                && let Some(tree) = &mut tournament.tree
-                && let Some(active_game) = tree.active_games.get_mut(&game.id)
+                && let Some(group) = &mut tournament.groups
+                && tournament.tournament_games.contains(&game.id)
             {
-                tournament_status_update = true;
-
-                active_game_arc = Some(active_game.clone());
-                let mut active_game = active_game.lock().ok()?;
-
-                match winner_role {
-                    Role::Attacker => {
-                        if game.attacker == active_game.player_1.name {
-                            active_game.player_1.attacker += 1;
-                        } else {
-                            active_game.player_2.attacker += 1;
-                        }
-                    }
-                    Role::Defender => {
-                        if game.defender == active_game.player_1.name {
-                            active_game.player_1.defender += 1;
-                        } else {
-                            active_game.player_2.defender += 1;
-                        }
-                    }
-                    Role::Roleless => {}
-                }
-
-                let player_1_wins = active_game.player_1.attacker + active_game.player_1.defender;
-                let player_2_wins = active_game.player_2.attacker + active_game.player_2.defender;
-                let total_wins = player_1_wins + player_2_wins;
-
-                let rating_1 = if let Some(account_1) =
-                    self.accounts.0.get(active_game.player_1.name.as_str())
-                {
-                    account_1.rating.rating.round()
-                } else {
-                    1500.0
-                };
-
-                let rating_2 = if let Some(account_2) =
-                    self.accounts.0.get(active_game.player_2.name.as_str())
-                {
-                    account_2.rating.rating.round()
-                } else {
-                    1500.0
-                };
-
-                trace!("total_wins: {total_wins}");
-
-                if total_wins < 2 {
-                    // Do nothing.
-                } else if total_wins % 2 == 0 || total_wins > 4 {
-                    if player_1_wins > player_2_wins {
-                        winner_wins = Some(active_game.player_1.clone());
-                    } else if player_2_wins > player_1_wins {
-                        winner_wins = Some(active_game.player_2.clone());
-                    }
-                } else if active_game.player_1.attacker > active_game.player_2.attacker {
-                    winner_wins = Some(active_game.player_1.clone());
-                } else if active_game.player_2.attacker > active_game.player_1.attacker {
-                    winner_wins = Some(active_game.player_2.clone());
-                }
-
-                trace!(
-                    "winner: {winner_wins:#?}, active_game_round: {}",
-                    active_game.round
-                );
-
-                if let Some(ref mut winner) = winner_wins
-                    && let winner_name = winner.name.as_str()
-                    && let Some(round) = tree.rounds.get_mut(active_game.round)
-                {
-                    for (i, statuses) in round.chunks_mut(2).enumerate() {
-                        if i == active_game.chunk {
-                            let (status_1, status_2) = statuses.split_at_mut(1);
-                            let (Some(status_1), Some(status_2)) =
-                                (status_1.first_mut(), status_2.first_mut())
-                            else {
-                                continue;
-                            };
-
-                            if winner_name == active_game.player_1.name.as_str() {
-                                *status_1 = tournament::Status::Won(Player {
-                                    name: active_game.player_1.name.clone(),
-                                    rating: rating_1,
-                                });
-                                *status_2 = tournament::Status::Lost(Player {
-                                    name: active_game.player_2.name.clone(),
-                                    rating: rating_2,
-                                });
-                            } else {
-                                *status_1 = tournament::Status::Lost(Player {
-                                    name: active_game.player_1.name.clone(),
-                                    rating: rating_1,
-                                });
-                                *status_2 = tournament::Status::Won(Player {
-                                    name: active_game.player_2.name.clone(),
-                                    rating: rating_2,
-                                });
-                            }
-                        }
-                    }
-                } else if total_wins > 1 {
-                    if total_wins % 2 == 0 {
-                        // Add a game with the higher rated player as the attacker.
-                        let player_1_attacking = if rating_1 > rating_2 {
-                            true
-                        } else if rating_1 < rating_2 {
-                            false
-                        } else {
-                            random()
-                        };
-
-                        if player_1_attacking {
-                            attacker_defender =
-                                Some((active_game.player_1.clone(), active_game.player_2.clone()));
-                        } else {
-                            attacker_defender =
-                                Some((active_game.player_2.clone(), active_game.player_1.clone()));
-                        }
-                    } else {
-                        // Add the player as the attacker with more total wins.
-                        if player_1_wins > player_2_wins {
-                            attacker_defender =
-                                Some((active_game.player_1.clone(), active_game.player_2.clone()));
-                        } else {
-                            attacker_defender =
-                                Some((active_game.player_2.clone(), active_game.player_1.clone()));
-                        }
-                    }
-                }
-            }
-
-            if let Some(tournament) = &mut self.tournament
-                && let Some(tree) = &mut tournament.tree
-            {
-                tree.active_games.remove(&game.id);
-            }
-
-            if tournament_status_update {
-                self.tournament_update_wins();
-                self.tournament_ready_to_playing();
+                tournament.tournament_games.remove(&game.id);
+                // Update the tournament groups.
                 self.tournament_status_all();
             }
 
@@ -1385,22 +1170,6 @@ impl Server {
                     .ok()?;
             }
 
-            trace!(
-                "attacker_defender: {attacker_defender:#?}, active_game_arc: {active_game_arc:#?}"
-            );
-
-            if let (Some((attacker, defender)), Some(active_game)) =
-                (attacker_defender, active_game_arc)
-            {
-                let id = self.new_tournament_game(&attacker.name, &defender.name);
-
-                if let Some(tournament) = &mut self.tournament
-                    && let Some(tree) = &mut tournament.tree
-                {
-                    tree.active_games.insert(id, active_game);
-                }
-            }
-
             return None;
         }
 
@@ -1409,6 +1178,96 @@ impl Server {
             true,
             (*command).to_string(),
         ))
+    }
+
+    fn generate_first_round(&mut self) {
+        let mut rounds = Vec::new();
+
+        if let Some(tournament) = &mut self.tournament {
+            let mut players_vec = Vec::new();
+
+            for player in &tournament.players {
+                let mut rating = 1500.0;
+
+                if let Some(account) = self.accounts.0.get(player.as_str()) {
+                    rating = account.rating.rating.round_ties_even();
+                }
+
+                players_vec.push((player.to_string(), rating));
+            }
+
+            let players_len = players_vec.len();
+            let mut rng = rand::rng();
+            players_vec.shuffle(&mut rng);
+            players_vec.sort_unstable_by(|a, b| a.1.total_cmp(&b.1));
+
+            // Or if all players had the same number of wins, losses, and draws in the last round.
+            // if players_len == 1: The tournament is over...
+
+            let groups_number = players_len / 8 + 1;
+            let mut group_size = 0;
+
+            while (group_size + 1) * groups_number <= players_len {
+                group_size += 1;
+            }
+
+            let mut remainder = if group_size > 0 {
+                players_len % group_size
+            } else {
+                0
+            };
+
+            let mut groups = Vec::new();
+            for _ in 0..groups_number {
+                let mut group = Group::default();
+
+                for _ in 0..group_size {
+                    group.records.insert(
+                        players_vec
+                            .pop()
+                            .expect("There should be a player to pop.")
+                            .0,
+                        Record::default(),
+                    );
+                }
+
+                if remainder > 0 {
+                    group.records.insert(
+                        players_vec
+                            .pop()
+                            .expect("There should be a player to pop.")
+                            .0,
+                        Record::default(),
+                    );
+                    remainder = remainder.saturating_sub(1);
+                }
+
+                groups.push(group);
+            }
+
+            rounds.push(groups);
+        }
+
+        let mut ids = Vec::new();
+        if let Some(groups) = rounds.last() {
+            for group in groups {
+                let group: &Group = group;
+                for combination in group.records.iter().map(|record| record.0).combinations(2) {
+                    if let (Some(first), Some(second)) = (combination.first(), combination.get(1)) {
+                        ids.push(self.new_tournament_game(first, second));
+                        ids.push(self.new_tournament_game(second, first));
+                    }
+                }
+            }
+        }
+
+        println!("{rounds:?}");
+
+        if !rounds.is_empty()
+            && let Some(tournament) = &mut self.tournament
+        {
+            tournament.groups = Some(rounds);
+        }
     }
 
     fn set_email(
@@ -1939,11 +1798,11 @@ impl Server {
 
                     None
                 }
-                "tournament_tree_delete" => {
+                "tournament_groups_delete" => {
                     if self.admins.contains(*username)
                         && let Some(tournament) = &mut self.tournament
                     {
-                        tournament.tree = None;
+                        tournament.groups = None;
                         self.tournament_status_all();
                     }
 
@@ -1976,7 +1835,7 @@ impl Server {
                     let mut start_tournament = false;
 
                     if let Some(tournament) = &self.tournament
-                        && tournament.tree.is_none()
+                        && tournament.groups.is_none()
                         && Utc::now() >= tournament.date
                     {
                         start_tournament = true;
@@ -1985,7 +1844,10 @@ impl Server {
                     if start_tournament {
                         info!("Starting tournament...");
 
-                        self.tournament_tree();
+                        self.generate_first_round();
+                        // Fixme!
+                        println!("{:#?}", self.tournament);
+
                         self.tournament_status_all();
                     }
 
@@ -2790,65 +2652,6 @@ impl Server {
         Ok(())
     }
 
-    fn tournament_ready_to_playing(&mut self) {
-        let mut new_games = Vec::new();
-
-        if let Some(tournament) = &mut self.tournament
-            && let Some(tree) = &mut tournament.tree
-        {
-            for (i, round) in tree.rounds.iter_mut().enumerate() {
-                for (j, statuses) in round.chunks_mut(2).enumerate() {
-                    let (status_1, status_2) = statuses.split_at_mut(1);
-                    let (Some(status_1), Some(status_2)) =
-                        (status_1.first_mut(), status_2.first_mut())
-                    else {
-                        continue;
-                    };
-
-                    if let tournament::Status::Ready(player_1) = status_1.clone()
-                        && let tournament::Status::Ready(player_2) = status_2.clone()
-                    {
-                        *status_1 = tournament::Status::Playing(player_1.clone());
-                        *status_2 = tournament::Status::Playing(player_2.clone());
-
-                        new_games.push((player_1.name, player_2.name, i, j));
-                    }
-                }
-            }
-        }
-
-        trace!("new_games: {new_games:#?}");
-
-        for (player_1, player_2, round, chunk) in new_games {
-            let id_1 = self.new_tournament_game(&player_1, &player_2);
-            let id_2 = self.new_tournament_game(&player_2, &player_1);
-
-            let game_players = Players {
-                round,
-                chunk,
-                player_1: Wins {
-                    name: player_1,
-                    attacker: 0,
-                    defender: 0,
-                },
-                player_2: Wins {
-                    name: player_2,
-                    attacker: 0,
-                    defender: 0,
-                },
-            };
-
-            let game_players = Arc::new(Mutex::new(game_players));
-
-            if let Some(tournament) = &mut self.tournament
-                && let Some(tree) = &mut tournament.tree
-            {
-                tree.active_games.insert(id_1, game_players.clone());
-                tree.active_games.insert(id_2, game_players.clone());
-            }
-        }
-    }
-
     fn tournament_status_all(&self) {
         trace!("tournament_status: {:#?}", self.tournament);
 
@@ -2857,114 +2660,6 @@ impl Server {
 
             for tx in self.clients.values() {
                 let _ok = tx.send(tournament.clone());
-            }
-        }
-    }
-
-    fn tournament_tree(&mut self) {
-        let Some(tournament) = &mut self.tournament else {
-            return;
-        };
-
-        let mut players = Vec::new();
-        for player in &tournament.players {
-            if let Some(account) = self.accounts.0.get(player) {
-                players.push(Player {
-                    name: player.clone(),
-                    rating: account.rating.rating.round_ties_even(),
-                });
-            }
-        }
-
-        let mut rng = rand::rng();
-        players.shuffle(&mut rng);
-        players.sort_unstable_by(|a, b| a.rating.total_cmp(&b.rating));
-
-        tournament.tree = Some(TournamentTree {
-            active_games: HashMap::new(),
-            rounds: vec![generate_round_one(players)],
-        });
-
-        self.tournament_update_wins();
-        self.tournament_ready_to_playing();
-    }
-
-    fn tournament_update_wins(&mut self) {
-        if let Some(tournament) = &mut self.tournament
-            && let Some(tree) = &mut tournament.tree
-        {
-            let mut updates = Vec::new();
-
-            for (i, round) in tree.rounds.iter_mut().enumerate() {
-                let mut player = None;
-                let mut move_forward = false;
-                let new_round_length = round.len() / 2;
-
-                for (mut j, status) in round.iter_mut().enumerate() {
-                    if j % 2 == 0 {
-                        move_forward = false;
-                        player = None;
-                    }
-
-                    j /= 2;
-                    if j % 2 != 0 {
-                        j = new_round_length - j;
-                    }
-
-                    match &status {
-                        tournament::Status::Lost(_)
-                        | tournament::Status::Playing(_)
-                        | tournament::Status::Waiting => continue,
-                        tournament::Status::None => {
-                            move_forward = true;
-                        }
-                        tournament::Status::Ready(p) => player = Some(p.clone()),
-                        tournament::Status::Won(player) => {
-                            updates.push((i + 1, j, player.clone()));
-                        }
-                    }
-
-                    if move_forward && let Some(player) = &player {
-                        updates.push((i + 1, j, player.clone()));
-                    }
-                }
-            }
-
-            for (i, j, player) in updates {
-                let len;
-
-                if let Some(round) = tree.rounds.get(i - 1) {
-                    len = round.len() / 2;
-                } else {
-                    error!("tree.rounds.get({i} - 1) is None");
-                    return;
-                }
-
-                if tree.rounds.get(i).is_none() {
-                    let mut round = Vec::new();
-
-                    for _ in 0..len {
-                        round.push(tournament::Status::Waiting);
-                    }
-
-                    tree.rounds.push(round);
-                }
-
-                if let Some(round) = tree.rounds.get_mut(i)
-                    && let Some(status) = round.get_mut(j)
-                {
-                    match status {
-                        tournament::Status::Lost(_)
-                        | tournament::Status::None
-                        | tournament::Status::Ready(_)
-                        | tournament::Status::Playing(_)
-                        | tournament::Status::Won(_) => {}
-                        tournament::Status::Waiting => *status = tournament::Status::Ready(player),
-                    }
-                } else {
-                    error!("tree.rounds[{i}][{j}] is None");
-                    return;
-                }
             }
         }
     }

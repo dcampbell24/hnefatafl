@@ -1011,81 +1011,13 @@ impl<'a> Client {
             return Column::new();
         }
 
-        let Some(tree) = &tournament.tree else {
-            return Column::new();
-        };
-
         let mut column_2 = Column::new().spacing(SPACING);
 
-        for (i, round) in tree.rounds.iter().enumerate() {
-            let title = format!("{} {}", t!("Round"), i + 1);
-            let title_len = title.len();
-            let column_title = column![
-                text(title),
-                text("-".repeat(title_len)).font(Font::MONOSPACE)
-            ];
-
-            let mut add_column = column![column_title];
-            let round_length = round.len();
-            for (i, status) in round.iter().enumerate() {
-                let brace = if round_length == 1 {
-                    ""
-                } else if i % 2 == 0 {
-                    "┐"
-                } else {
-                    "┘"
-                };
-
-                let mut row = match &status {
-                    tournament::Status::Lost(player) => {
-                        let name = player.to_string();
-                        let len = 22 - name.len();
-                        row![
-                            text(name).font(Font::MONOSPACE),
-                            text("─".repeat(len)).style(text::danger),
-                            text(brace).style(text::danger),
-                        ]
-                    }
-                    tournament::Status::None | tournament::Status::Waiting => {
-                        row![text("─".repeat(22)), text(brace)]
-                    }
-                    tournament::Status::Playing(player) => {
-                        let name = player.to_string();
-                        let len = 22 - name.len();
-                        row![
-                            text(name).font(Font::MONOSPACE),
-                            text("─".repeat(len)),
-                            text(brace),
-                        ]
-                    }
-                    tournament::Status::Ready(player) => {
-                        let name = player.to_string();
-                        let len = 22 - name.len();
-                        row![
-                            text(name).font(Font::MONOSPACE),
-                            text("─".repeat(len)).style(text::warning),
-                            text(brace).style(text::warning),
-                        ]
-                    }
-                    tournament::Status::Won(player) => {
-                        let name = player.to_string();
-                        let len = 22 - name.len();
-                        row![
-                            text(name).font(Font::MONOSPACE),
-                            text("─".repeat(len)).style(text::success),
-                            text(brace).style(text::success),
-                        ]
-                    }
-                };
-
-                if round_length == 1 {
-                    row = row.push(text("🏆").size(TROPHY_SIZE));
-                }
-
-                add_column = add_column.push(row);
-            }
-            column_2 = column_2.push(add_column);
+        /*
+        if round_length == 1 {
+             row = row.push(text("🏆").size(TROPHY_SIZE));
         }
+        */
 
         column![column_1, column_2]
     }
@@ -3091,7 +3023,7 @@ impl<'a> Client {
             }
             Message::Time(time) => self.game_settings.time = Some(time),
             Message::TournamentDelete => self.send("tournament_delete\n"),
-            Message::TournamentTreeDelete => self.send("tournament_tree_delete\n"),
+            Message::TournamentTreeDelete => self.send("tournament_groups_delete\n"),
             Message::Users => self.screen = Screen::Users,
             Message::UsersSortedBy(sort_by) => self.users_sort_by = sort_by,
             Message::WindowResized((width, height)) => {
@@ -4100,15 +4032,16 @@ impl<'a> Client {
                     let mut delete_button = button("Delete Tournament Tree");
 
                     if let Some(tournament) = &self.tournament
-                        && tournament.tree.is_some()
+                        && tournament.groups.is_some()
                     {
                         delete_button = delete_button.on_press(Message::TournamentTreeDelete);
                     }
 
                     let mut start_tournament = button("Start Tournament");
-                    if self.tournament.is_none() {
-                        start_tournament = start_tournament.on_press(Message::TournamentStart);
-                    }
+                    // Fixme!
+                    //if self.tournament.is_none() {
+                    start_tournament = start_tournament.on_press(Message::TournamentStart);
+                    //}
 
                     column = column.push(row![start_tournament, delete_button].spacing(SPACING));
                 }

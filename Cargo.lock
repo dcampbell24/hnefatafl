@@ -2231,6 +2231,7 @@ dependencies = [
  "getrandom 0.4.1",
  "iced",
  "image",
+ "itertools 0.14.0",
  "lettre",
  "log",
  "password-hash",
