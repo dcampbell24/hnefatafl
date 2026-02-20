@@ -14,6 +14,7 @@
         "getrandom",
         "glicko",
         "hnefatafl",
+        "itertools",
         "keepalive",
         "kcache",
         "lettre",
