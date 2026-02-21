@@ -121,8 +121,6 @@ fn main() -> anyhow::Result<()> {
         server.load_data_files(tx.clone(), args.systemd)?;
     }
 
-    println!("{:#?}", server.tournament);
-
     thread::spawn(move || handle_error(server.handle_messages(&rx)));
 
     if !args.skip_advertising_updates {
@@ -1190,12 +1188,14 @@ impl Server {
                         }
                     }
 
-                    let mut total_games = 0;
+                    let mut group_finished = true;
                     for record in group.records.values() {
-                        total_games += record.games_count();
+                        if group.total_games != record.games_count() {
+                            group_finished = false;
+                        }
                     }
 
-                    if total_games == group.total_games {
+                    if group_finished {
                         let mut standings = Vec::new();
                         let mut players = Vec::new();
                         let mut previous_score = -1.0;
@@ -1214,6 +1214,10 @@ impl Server {
 
                             previous_score = score;
                         }
+
+                        group.finishing_standings = standings;
+
+                        println!("{:#?}", group.finishing_standings);
                     }
                 }
 
@@ -1309,8 +1313,6 @@ impl Server {
 
         let mut ids = VecDeque::new();
         let mut groups_arc_mutex = Vec::new();
-
-        println!("{round:?}");
 
         if let Some(groups) = round {
             for mut group in groups.into_iter() {
@@ -1921,9 +1923,6 @@ impl Server {
                         info!("Starting tournament...");
 
                         self.generate_first_round();
-                        // Fixme!
-                        println!("{:#?}", self.tournament);
-
                         self.tournament_status_all();
                     }
 
