@@ -21,7 +21,7 @@ use std::{
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
-use crate::Id;
+use crate::{Id, server_game::ServerGame, status::Status};
 
 // Fixme: Arc<Mutex<T>> serializes and deserializes one object to many.
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
@@ -30,6 +30,79 @@ pub struct Tournament {
     pub date: DateTime<Utc>,
     pub groups: Option<Vec<Vec<Arc<Mutex<Group>>>>>,
     pub tournament_games: HashMap<Id, Arc<Mutex<Group>>>,
+}
+
+impl Tournament {
+    pub fn game_over(&mut self, game: &ServerGame) -> bool {
+        if let Some(group) = self.tournament_games.get_mut(&game.id) {
+            if let Ok(mut group) = group.lock() {
+                match game.game.status {
+                    Status::AttackerWins => {
+                        if let Some(record) = group.records.get_mut(game.attacker.as_str()) {
+                            record.wins += 1;
+                        }
+                        if let Some(record) = group.records.get_mut(game.defender.as_str()) {
+                            record.losses += 1;
+                        }
+                    }
+                    Status::Draw => {
+                        if let Some(record) = group.records.get_mut(game.attacker.as_str()) {
+                            record.draws += 1;
+                        }
+                        if let Some(record) = group.records.get_mut(game.defender.as_str()) {
+                            record.draws += 1;
+                        }
+                    }
+                    Status::Ongoing => {}
+                    Status::DefenderWins => {
+                        if let Some(record) = group.records.get_mut(game.attacker.as_str()) {
+                            record.losses += 1;
+                        }
+                        if let Some(record) = group.records.get_mut(game.defender.as_str()) {
+                            record.wins += 1;
+                        }
+                    }
+                }
+
+                let mut group_finished = true;
+                for record in group.records.values() {
+                    if group.total_games != record.games_count() {
+                        group_finished = false;
+                    }
+                }
+
+                if group_finished {
+                    let mut standings = Vec::new();
+                    let mut players = Vec::new();
+                    let mut previous_score = -1.0;
+
+                    for (name, record) in &group.records {
+                        players.push(name.to_string());
+                        let score = record.score();
+                        if score != previous_score {
+                            standings.push(Standing {
+                                score: record.score(),
+                                players: players.clone(),
+                            });
+                        } else if let Some(standing) = standings.last_mut() {
+                            standing.players.push(name.to_string());
+                        }
+
+                        previous_score = score;
+                    }
+
+                    group.finishing_standings = standings;
+
+                    println!("{:#?}", group.finishing_standings);
+                }
+            }
+
+            self.tournament_games.remove(&game.id);
+            true
+        } else {
+            false
+        }
+    }
 }
 
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
