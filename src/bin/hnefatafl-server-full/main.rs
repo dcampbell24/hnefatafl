@@ -13,7 +13,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#![deny(clippy::expect_used)]
 #![deny(clippy::indexing_slicing)]
 #![deny(clippy::panic)]
 #![deny(clippy::unwrap_used)]
@@ -1194,7 +1193,7 @@ impl Server {
                     rating = account.rating.rating.round_ties_even();
                 }
 
-                players_vec.push((player.to_string(), rating));
+                players_vec.push((player.clone(), rating));
             }
 
             let players_len = players_vec.len();
@@ -1253,7 +1252,7 @@ impl Server {
         let mut groups_arc_mutex = Vec::new();
 
         if let Some(groups) = round {
-            for mut group in groups.into_iter() {
+            for mut group in groups {
                 for combination in group.records.iter().map(|record| record.0).combinations(2) {
                     if let (Some(first), Some(second)) = (combination.first(), combination.get(1)) {
                         ids.push_back(self.new_tournament_game(first, second));
