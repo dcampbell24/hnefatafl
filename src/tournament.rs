@@ -19,9 +19,12 @@ use std::{
 };
 
 use chrono::{DateTime, Utc};
+use rand::seq::SliceRandom;
 use serde::{Deserialize, Serialize};
 
-use crate::{Id, server_game::ServerGame, status::Status};
+use crate::{Id, accounts::Accounts, server_game::ServerGame, status::Status};
+
+const GROUP_SIZE: usize = 2;
 
 // Fixme: Arc<Mutex<T>> serializes and deserializes one object to many.
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
@@ -101,10 +104,97 @@ impl Tournament {
             }
 
             self.tournament_games.remove(&game.id);
+
+            if let Some(round) = &self.groups
+                && let Some(groups) = round.last()
+            {
+                let mut finished = true;
+                'for_loop: for group in groups {
+                    if let Ok(group) = group.lock() {
+                        for record in group.records.values() {
+                            if group.total_games != record.games_count() {
+                                finished = false;
+                                break 'for_loop;
+                            }
+                        }
+                    }
+                }
+
+                // Generate a new round or declare victors.
+                if finished && groups.len() == 1 {
+                    // And there is only one person on top...
+                    // Game Over
+                }
+            }
+
             true
         } else {
             false
         }
+    }
+
+    #[allow(clippy::missing_panics_doc)]
+    pub fn generate_round(&mut self, accounts: &Accounts) -> Vec<Group> {
+        let mut players_vec = Vec::new();
+
+        for player in &self.players {
+            let mut rating = 1500.0;
+
+            if let Some(account) = accounts.0.get(player.as_str()) {
+                rating = account.rating.rating.round_ties_even();
+            }
+
+            players_vec.push((player.clone(), rating));
+        }
+
+        let players_len = players_vec.len();
+        let mut rng = rand::rng();
+        players_vec.shuffle(&mut rng);
+        players_vec.sort_unstable_by(|a, b| a.1.total_cmp(&b.1));
+
+        // Or if all players had the same number of wins, losses, and draws in the last round.
+        // if players_len == 1: The tournament is over...
+
+        let groups_number = players_len / GROUP_SIZE;
+        let mut group_size = 1;
+
+        if groups_number != 0 {
+            while (group_size + 1) * groups_number <= players_len {
+                group_size += 1;
+            }
+        }
+
+        let mut remainder = players_len % group_size;
+        let mut groups = Vec::new();
+
+        for _ in 0..groups_number {
+            let mut group = Group::default();
+
+            for _ in 0..group_size {
+                group.records.insert(
+                    players_vec
+                        .pop()
+                        .expect("There should be a player to pop.")
+                        .0,
+                    Record::default(),
+                );
+            }
+
+            if remainder > 0 {
+                group.records.insert(
+                    players_vec
+                        .pop()
+                        .expect("There should be a player to pop.")
+                        .0,
+                    Record::default(),
+                );
+                remainder = remainder.saturating_sub(1);
+            }
+
+            groups.push(group);
+        }
+
+        groups
     }
 }
 

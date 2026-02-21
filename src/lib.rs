@@ -33,7 +33,6 @@
 //! [message protocol]: https://docs.rs/hnefatafl-copenhagen/latest/hnefatafl_copenhagen/message/enum.Message.html
 
 #![deny(clippy::panic)]
-#![deny(clippy::expect_used)]
 #![deny(clippy::unwrap_used)]
 
 use std::{
@@ -46,6 +45,7 @@ use socket2::TcpKeepalive;
 
 rust_i18n::i18n!();
 
+pub mod accounts;
 pub mod ai;
 pub mod board;
 pub mod characters;

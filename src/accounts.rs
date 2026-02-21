@@ -18,7 +18,7 @@ use std::{
     fmt,
 };
 
-use hnefatafl_copenhagen::{email::Email, glicko::Rating};
+use crate::{email::Email, glicko::Rating};
 use serde::{Deserialize, Serialize};
 
 use crate::Id;
@@ -37,7 +37,7 @@ impl fmt::Display for Accounts {
 }
 
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
-pub(crate) struct Account {
+pub struct Account {
     #[serde(default)]
     pub email: Option<Email>,
     #[serde(default)]
@@ -79,4 +79,4 @@ impl fmt::Display for Account {
 }
 
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
-pub(crate) struct Accounts(pub HashMap<String, Account>);
+pub struct Accounts(pub HashMap<String, Account>);

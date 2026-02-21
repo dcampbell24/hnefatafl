@@ -18,7 +18,7 @@
 
 use argon2::{PasswordHash, PasswordVerifier};
 
-use crate::accounts::{Account, Accounts};
+use hnefatafl_copenhagen::accounts::{Account, Accounts};
 
 use super::*;
 
