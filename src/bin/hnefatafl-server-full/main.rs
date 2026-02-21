@@ -86,6 +86,7 @@ use crate::{
 const ACTIVE_GAMES_FILE: &str = "active-games.postcard";
 const ARCHIVED_GAMES_FILE: &str = "archived-games.ron";
 const KEEP_TEXTS: usize = 256;
+const GROUP_SIZE: usize = 2;
 
 const HOUR_IN_SECONDS: u64 = 60 * 60;
 const DAY_IN_SECONDS: u64 = HOUR_IN_SECONDS * 24;
@@ -1204,20 +1205,20 @@ impl Server {
             // Or if all players had the same number of wins, losses, and draws in the last round.
             // if players_len == 1: The tournament is over...
 
-            let groups_number = players_len / 8 + 1;
-            let mut group_size = 0;
+            let groups_number = players_len / GROUP_SIZE;
+            println!("groups_number: {groups_number}");
 
-            while (group_size + 1) * groups_number <= players_len {
-                group_size += 1;
+            let mut group_size = 1;
+
+            if groups_number != 0 {
+                while (group_size + 1) * groups_number <= players_len {
+                    group_size += 1;
+                }
             }
 
-            let mut remainder = if group_size > 0 {
-                players_len % group_size
-            } else {
-                0
-            };
-
+            let mut remainder = players_len % group_size;
             let mut groups = Vec::new();
+
             for _ in 0..groups_number {
                 let mut group = Group::default();
 

@@ -1011,7 +1011,34 @@ impl<'a> Client {
             return Column::new();
         }
 
-        let mut column_2 = Column::new().spacing(SPACING);
+        let mut column_groups= Column::new();
+
+        if let Some(round) = &tournament.groups {
+            for group in round {
+                for (i, players) in group.iter().enumerate() {
+                    if let Ok(players) = players.lock() {
+                        println!("{i}");
+
+                        let mut column_group = Column::new();
+
+                        for (player, record) in &players.records {
+                            column_group = column_group.push(row![text!(
+                                "{:16} {}: {}, {}: {}, {}: {}",
+                                player,
+                                t!("wins"),
+                                record.wins,
+                                t!("losses"),
+                                record.losses,
+                                t!("draws"),
+                                record.draws,
+                            ).font(Font::MONOSPACE)]);
+                        }
+
+                        column_groups = column_groups.push(column_group);
+                    }
+                }
+            }
+        }
 
         /*
         if round_length == 1 {
@@ -1019,7 +1046,7 @@ impl<'a> Client {
         }
         */
 
-        column![column_1, column_2]
+        column![column_1, column_groups.spacing(SPACING)].spacing(SPACING)
     }
 
     fn draw(&mut self) {
@@ -4038,10 +4065,9 @@ impl<'a> Client {
                     }
 
                     let mut start_tournament = button("Start Tournament");
-                    // Fixme!
-                    //if self.tournament.is_none() {
-                    start_tournament = start_tournament.on_press(Message::TournamentStart);
-                    //}
+                    // if self.tournament.is_none() {
+                        start_tournament = start_tournament.on_press(Message::TournamentStart);
+                    // }
 
                     column = column.push(row![start_tournament, delete_button].spacing(SPACING));
                 }
