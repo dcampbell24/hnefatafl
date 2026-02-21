@@ -1177,7 +1177,7 @@ impl Server {
         ))
     }
 
-    fn generate_first_round(&mut self) {
+    fn generate_round(&mut self) {
         let mut round = None;
 
         if let Some(tournament) = &mut self.tournament {
@@ -1214,7 +1214,9 @@ impl Server {
                 }
             }
 
-            tournament.groups = Some(vec![groups_arc_mutex]);
+            if let Some(rounds) = &mut tournament.groups {
+                rounds.push(groups_arc_mutex);
+            }
         }
     }
 
@@ -1784,19 +1786,14 @@ impl Server {
                     }
                 }
                 "tournament_start" => {
-                    let mut start_tournament = false;
-
-                    if let Some(tournament) = &self.tournament
+                    if let Some(tournament) = &mut self.tournament
                         && tournament.groups.is_none()
                         && Utc::now() >= tournament.date
                     {
-                        start_tournament = true;
-                    }
-
-                    if start_tournament {
                         info!("Starting tournament...");
 
-                        self.generate_first_round();
+                        tournament.groups = Some(Vec::new());
+                        self.generate_round();
                         self.tournament_status_all();
                     }
 

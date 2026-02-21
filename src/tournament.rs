@@ -120,6 +120,7 @@ impl Tournament {
                     }
                 }
 
+                // Fixme!
                 // Generate a new round or declare victors.
                 if finished && groups.len() == 1 {
                     // And there is only one person on top...
@@ -151,9 +152,6 @@ impl Tournament {
         let mut rng = rand::rng();
         players_vec.shuffle(&mut rng);
         players_vec.sort_unstable_by(|a, b| a.1.total_cmp(&b.1));
-
-        // Or if all players had the same number of wins, losses, and draws in the last round.
-        // if players_len == 1: The tournament is over...
 
         let groups_number = players_len / GROUP_SIZE;
         let mut group_size = 1;
