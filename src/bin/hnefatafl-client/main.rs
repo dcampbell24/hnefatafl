@@ -2823,7 +2823,7 @@ impl<'a> Client {
                             }
                             Some("text") => self.texts.push_front(text_collect(text)),
                             Some("text_game") => self.texts_game.push_front(text_collect(text)),
-                            Some("tournament_status") => {
+                            Some("tournament_status_0") => {
                                 if let Some(tournament) = text.next() {
                                     let tournament: Option<Tournament> = ron::from_str(tournament)
                                         .expect("This is a valid tournament.");

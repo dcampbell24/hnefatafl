@@ -33,7 +33,10 @@ use std::{
     net::{TcpListener, TcpStream},
     process::exit,
     str::FromStr,
-    sync::mpsc::{self, Receiver, Sender},
+    sync::{
+        Arc, Mutex,
+        mpsc::{self, Receiver, Sender},
+    },
     thread::{self, sleep},
     time::Duration,
 };
@@ -56,7 +59,7 @@ use hnefatafl_copenhagen::{
     },
     status::Status,
     time::{Time, TimeEnum, TimeSettings},
-    tournament::{Group, Record, Tournament},
+    tournament::{Group, Record, Standing, Tournament},
     utils::{self, create_data_folder, data_file},
 };
 use itertools::Itertools;
@@ -117,6 +120,8 @@ fn main() -> anyhow::Result<()> {
     } else {
         server.load_data_files(tx.clone(), args.systemd)?;
     }
+
+    println!("{:#?}", server.tournament);
 
     thread::spawn(move || handle_error(server.handle_messages(&rx)));
 
@@ -329,7 +334,7 @@ fn login(
     tx.send((format!("{id} {username_proper} texts"), None))?;
     tx.send((format!("{id} {username_proper} message"), None))?;
     tx.send((format!("{id} {username_proper} display_games"), None))?;
-    tx.send((format!("{id} {username_proper} tournament_status"), None))?;
+    tx.send((format!("{id} {username_proper} tournament_status_0"), None))?;
     tx.send((format!("{id} {username_proper} admin"), None))?;
 
     let mut game_id = None;
@@ -1154,11 +1159,65 @@ impl Server {
             }
 
             if let Some(tournament) = &mut self.tournament
-                && let Some(group) = &mut tournament.groups
-                && tournament.tournament_games.contains(&game.id)
+                && let Some(group) = tournament.tournament_games.get_mut(&game.id)
             {
+                if let Ok(mut group) = group.lock() {
+                    match game.game.status {
+                        Status::AttackerWins => {
+                            if let Some(record) = group.records.get_mut(game.attacker.as_str()) {
+                                record.wins += 1;
+                            }
+                            if let Some(record) = group.records.get_mut(game.defender.as_str()) {
+                                record.losses += 1;
+                            }
+                        }
+                        Status::Draw => {
+                            if let Some(record) = group.records.get_mut(game.attacker.as_str()) {
+                                record.draws += 1;
+                            }
+                            if let Some(record) = group.records.get_mut(game.defender.as_str()) {
+                                record.draws += 1;
+                            }
+                        }
+                        Status::Ongoing => {}
+                        Status::DefenderWins => {
+                            if let Some(record) = group.records.get_mut(game.attacker.as_str()) {
+                                record.losses += 1;
+                            }
+                            if let Some(record) = group.records.get_mut(game.defender.as_str()) {
+                                record.wins += 1;
+                            }
+                        }
+                    }
+
+                    let mut total_games = 0;
+                    for record in group.records.values() {
+                        total_games += record.games_count();
+                    }
+
+                    if total_games == group.total_games {
+                        let mut standings = Vec::new();
+                        let mut players = Vec::new();
+                        let mut previous_score = -1.0;
+
+                        for (name, record) in &group.records {
+                            players.push(name.to_string());
+                            let score = record.score();
+                            if score != previous_score {
+                                standings.push(Standing {
+                                    score: record.score(),
+                                    players: players.clone(),
+                                });
+                            } else if let Some(standing) = standings.last_mut() {
+                                standing.players.push(name.to_string());
+                            }
+
+                            previous_score = score;
+                        }
+                    }
+                }
+
                 tournament.tournament_games.remove(&game.id);
-                // Update the tournament groups.
                 self.tournament_status_all();
             }
 
@@ -1181,7 +1240,7 @@ impl Server {
     }
 
     fn generate_first_round(&mut self) {
-        let mut rounds = Vec::new();
+        let mut round = None;
 
         if let Some(tournament) = &mut self.tournament {
             let mut players_vec = Vec::new();
@@ -1245,28 +1304,41 @@ impl Server {
                 groups.push(group);
             }
 
-            rounds.push(groups);
+            round = Some(groups);
         }
 
-        let mut ids = Vec::new();
-        if let Some(groups) = rounds.last() {
-            for group in groups {
-                let group: &Group = group;
+        let mut ids = VecDeque::new();
+        let mut groups_arc_mutex = Vec::new();
+
+        println!("{round:?}");
+
+        if let Some(groups) = round {
+            for mut group in groups.into_iter() {
                 for combination in group.records.iter().map(|record| record.0).combinations(2) {
                     if let (Some(first), Some(second)) = (combination.first(), combination.get(1)) {
-                        ids.push(self.new_tournament_game(first, second));
-                        ids.push(self.new_tournament_game(second, first));
+                        ids.push_back(self.new_tournament_game(first, second));
+                        ids.push_back(self.new_tournament_game(second, first));
+                        group.total_games += 2;
                     }
                 }
+
+                groups_arc_mutex.push(Arc::new(Mutex::new(group)));
             }
         }
 
-        println!("{rounds:?}");
-
-        if !rounds.is_empty()
+        if !groups_arc_mutex.is_empty()
             && let Some(tournament) = &mut self.tournament
         {
-            tournament.groups = Some(rounds);
+            for group in &groups_arc_mutex {
+                if let Some(id) = ids.pop_front() {
+                    tournament.tournament_games.insert(id, group.clone());
+                }
+                if let Some(id) = ids.pop_front() {
+                    tournament.tournament_games.insert(id, group.clone());
+                }
+            }
+
+            tournament.groups = Some(vec![groups_arc_mutex]);
         }
     }
 
@@ -1819,7 +1891,7 @@ impl Server {
 
                     None
                 }
-                "tournament_status" => {
+                "tournament_status_0" => {
                     trace!("tournament_status: {:#?}", self.tournament);
 
                     if args.skip_advertising_updates {
@@ -1828,7 +1900,11 @@ impl Server {
                         let tx = self.clients.get(&index_supplied)?;
                         let tournament = ron::ser::to_string(&self.tournament).ok()?;
 
-                        Some((tx.clone(), true, format!("tournament_status {tournament}")))
+                        Some((
+                            tx.clone(),
+                            true,
+                            format!("tournament_status_0 {tournament}"),
+                        ))
                     }
                 }
                 "tournament_start" => {
@@ -2656,7 +2732,7 @@ impl Server {
         trace!("tournament_status: {:#?}", self.tournament);
 
         if let Ok(mut tournament) = ron::ser::to_string(&self.tournament) {
-            tournament = format!("= tournament_status {tournament}");
+            tournament = format!("= tournament_status_0 {tournament}");
 
             for tx in self.clients.values() {
                 let _ok = tx.send(tournament.clone());
