@@ -1156,10 +1156,10 @@ impl Server {
                 game_light.game_over = true;
             }
 
-            if let Some(tournament) = &mut self.tournament {
-                if tournament.game_over(&game) {
-                    self.tournament_status_all();
-                }
+            if let Some(tournament) = &mut self.tournament
+                && tournament.game_over(&game)
+            {
+                self.tournament_status_all();
             }
 
             if !self.skip_the_data_files {
