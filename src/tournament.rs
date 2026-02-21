@@ -33,6 +33,7 @@ pub struct Tournament {
 }
 
 impl Tournament {
+    #[allow(clippy::float_cmp)]
     pub fn game_over(&mut self, game: &ServerGame) -> bool {
         if let Some(group) = self.tournament_games.get_mut(&game.id) {
             if let Ok(mut group) = group.lock() {
@@ -77,15 +78,17 @@ impl Tournament {
                     let mut previous_score = -1.0;
 
                     for (name, record) in &group.records {
-                        players.push(name.to_string());
+                        players.push(name.clone());
                         let score = record.score();
+                        // The score only ever equals a whole number or a whole number plus 0.5.
+                        // This is perfectly represented as a binary floating point number.
                         if score != previous_score {
                             standings.push(Standing {
                                 score: record.score(),
                                 players: players.clone(),
                             });
                         } else if let Some(standing) = standings.last_mut() {
-                            standing.players.push(name.to_string());
+                            standing.players.push(name.clone());
                         }
 
                         previous_score = score;

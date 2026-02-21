@@ -57,7 +57,7 @@ use hnefatafl_copenhagen::{
     status::Status,
     tcp_keep_alive,
     time::{TimeEnum, TimeSettings},
-    tournament::{self, Tournament},
+    tournament::Tournament,
     tree::Tree,
     utils::{self, choose_ai, create_data_folder, data_file},
 };
@@ -141,7 +141,7 @@ const SOUND_MOVE: &[u8] = include_bytes!("sound/move.ogg");
 const TICK: i64 = 100;
 const TICK_U: u64 = 100;
 
-const TROPHY_SIZE: u32 = 32;
+// const TROPHY_SIZE: u32 = 32;
 
 rust_i18n::i18n!();
 
@@ -1011,27 +1011,28 @@ impl<'a> Client {
             return Column::new();
         }
 
-        let mut column_groups= Column::new();
+        let mut column_groups = Column::new();
 
         if let Some(round) = &tournament.groups {
             for group in round {
-                for (i, players) in group.iter().enumerate() {
+                for players in group {
                     if let Ok(players) = players.lock() {
-                        println!("{i}");
-
                         let mut column_group = Column::new();
 
                         for (player, record) in &players.records {
-                            column_group = column_group.push(row![text!(
-                                "{:16} {}: {}, {}: {}, {}: {}",
-                                player,
-                                t!("wins"),
-                                record.wins,
-                                t!("losses"),
-                                record.losses,
-                                t!("draws"),
-                                record.draws,
-                            ).font(Font::MONOSPACE)]);
+                            column_group = column_group.push(row![
+                                text!(
+                                    "{:16} {}: {}, {}: {}, {}: {}",
+                                    player,
+                                    t!("wins"),
+                                    record.wins,
+                                    t!("losses"),
+                                    record.losses,
+                                    t!("draws"),
+                                    record.draws,
+                                )
+                                .font(Font::MONOSPACE)
+                            ]);
                         }
 
                         column_groups = column_groups.push(column_group);
@@ -4065,8 +4066,9 @@ impl<'a> Client {
                     }
 
                     let mut start_tournament = button("Start Tournament");
+                    // Fixme!
                     // if self.tournament.is_none() {
-                        start_tournament = start_tournament.on_press(Message::TournamentStart);
+                    start_tournament = start_tournament.on_press(Message::TournamentStart);
                     // }
 
                     column = column.push(row![start_tournament, delete_button].spacing(SPACING));
