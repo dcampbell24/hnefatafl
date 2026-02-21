@@ -1000,8 +1000,8 @@ impl<'a> Client {
             return Column::new();
         };
 
-        let tournament_string = "Tournament";
-        let row_1 = text(tournament_string);
+        let tournament_string = t!("Tournament");
+        let row_1 = text(tournament_string.to_string());
         let row_2 = text("-".repeat(tournament_string.len())).font(Font::MONOSPACE);
         let column_1 = column![row_1, row_2];
 
@@ -1011,13 +1011,19 @@ impl<'a> Client {
             return Column::new();
         }
 
-        let mut column_groups = Column::new();
+        let mut column_round = Column::new();
 
         if let Some(round) = &tournament.groups {
-            for group in round {
+            for (i, group) in round.iter().enumerate() {
+                let round = t!("Round");
+                let row_1 = text!("{} {}", round.to_string(), i + 1);
+                let row_2 = text!("{}---", "-".repeat(round.len())).font(Font::MONOSPACE);
+                column_round = column![row_1, row_2];
+
+                let mut column_groups = Column::new();
                 for players in group {
                     if let Ok(players) = players.lock() {
-                        let mut column_group = Column::new();
+                        let mut column_group = column![text("---").font(Font::MONOSPACE)];
 
                         for (player, record) in &players.records {
                             column_group = column_group.push(row![
@@ -1034,10 +1040,10 @@ impl<'a> Client {
                                 .font(Font::MONOSPACE)
                             ]);
                         }
-
                         column_groups = column_groups.push(column_group);
                     }
                 }
+                column_round = column_round.push(column_groups);
             }
         }
 
@@ -1047,7 +1053,7 @@ impl<'a> Client {
         }
         */
 
-        column![column_1, column_groups.spacing(SPACING)].spacing(SPACING)
+        column![column_1, column_round.spacing(SPACING)].spacing(SPACING)
     }
 
     fn draw(&mut self) {

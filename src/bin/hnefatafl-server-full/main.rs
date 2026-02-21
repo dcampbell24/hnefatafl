@@ -1205,8 +1205,6 @@ impl Server {
             // if players_len == 1: The tournament is over...
 
             let groups_number = players_len / GROUP_SIZE;
-            println!("groups_number: {groups_number}");
-
             let mut group_size = 1;
 
             if groups_number != 0 {
