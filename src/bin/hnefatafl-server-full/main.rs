@@ -59,7 +59,7 @@ use hnefatafl_copenhagen::{
     },
     status::Status,
     time::{Time, TimeEnum, TimeSettings},
-    tournament::{Group, Record, Standing, Tournament},
+    tournament::{Group, Record, Tournament},
     utils::{self, create_data_folder, data_file},
 };
 use itertools::Itertools;
@@ -1156,74 +1156,11 @@ impl Server {
                 game_light.game_over = true;
             }
 
-            if let Some(tournament) = &mut self.tournament
-                && let Some(group) = tournament.tournament_games.get_mut(&game.id)
-            {
-                if let Ok(mut group) = group.lock() {
-                    match game.game.status {
-                        Status::AttackerWins => {
-                            if let Some(record) = group.records.get_mut(game.attacker.as_str()) {
-                                record.wins += 1;
-                            }
-                            if let Some(record) = group.records.get_mut(game.defender.as_str()) {
-                                record.losses += 1;
-                            }
-                        }
-                        Status::Draw => {
-                            if let Some(record) = group.records.get_mut(game.attacker.as_str()) {
-                                record.draws += 1;
-                            }
-                            if let Some(record) = group.records.get_mut(game.defender.as_str()) {
-                                record.draws += 1;
-                            }
-                        }
-                        Status::Ongoing => {}
-                        Status::DefenderWins => {
-                            if let Some(record) = group.records.get_mut(game.attacker.as_str()) {
-                                record.losses += 1;
-                            }
-                            if let Some(record) = group.records.get_mut(game.defender.as_str()) {
-                                record.wins += 1;
-                            }
-                        }
-                    }
-
-                    let mut group_finished = true;
-                    for record in group.records.values() {
-                        if group.total_games != record.games_count() {
-                            group_finished = false;
-                        }
-                    }
-
-                    if group_finished {
-                        let mut standings = Vec::new();
-                        let mut players = Vec::new();
-                        let mut previous_score = -1.0;
-
-                        for (name, record) in &group.records {
-                            players.push(name.to_string());
-                            let score = record.score();
-                            if score != previous_score {
-                                standings.push(Standing {
-                                    score: record.score(),
-                                    players: players.clone(),
-                                });
-                            } else if let Some(standing) = standings.last_mut() {
-                                standing.players.push(name.to_string());
-                            }
-
-                            previous_score = score;
-                        }
-
-                        group.finishing_standings = standings;
-
-                        println!("{:#?}", group.finishing_standings);
-                    }
-                }
-
-                tournament.tournament_games.remove(&game.id);
+        if let Some(tournament) = &mut self.tournament {
+            if tournament.game_over(&game) {
                 self.tournament_status_all();
             }
+        }
 
             if !self.skip_the_data_files {
                 self.append_archived_game(game)
