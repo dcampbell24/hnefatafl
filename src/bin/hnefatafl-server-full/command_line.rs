@@ -25,6 +25,10 @@ use hnefatafl_copenhagen::{COPYRIGHT, LONG_VERSION};
 #[derive(Parser, Debug)]
 #[command(long_version = LONG_VERSION, about = "Copenhagen Hnefatafl Server")]
 pub(crate) struct Args {
+    /// Whether to automatically start a tournament
+    #[arg(long)]
+    pub autostart_tournament: bool,
+
     /// Whether to log on the debug level
     #[arg(long)]
     pub debug: bool,
