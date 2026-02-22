@@ -141,8 +141,6 @@ const SOUND_MOVE: &[u8] = include_bytes!("sound/move.ogg");
 const TICK: i64 = 100;
 const TICK_U: u64 = 100;
 
-// const TROPHY_SIZE: u32 = 32;
-
 rust_i18n::i18n!();
 
 fn i18n_buttons() -> HashMap<String, String> {
@@ -1113,12 +1111,6 @@ impl<'a> Client {
                 column_round = column_round.push(column_groups);
             }
         }
-
-        /*
-        if round_length == 1 {
-             row = row.push(text("🏆").size(TROPHY_SIZE));
-        }
-        */
 
         column![column_1, column_round.spacing(SPACING)].spacing(SPACING)
     }
