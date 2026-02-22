@@ -995,6 +995,7 @@ impl<'a> Client {
         }
     }
 
+    #[allow(clippy::too_many_lines)]
     fn display_tournament(&self) -> Column<'_, Message> {
         let Some(tournament) = &self.tournament else {
             return Column::new();
@@ -1077,8 +1078,28 @@ impl<'a> Client {
                                     column_group_vec = vec;
                                 }
 
-                                records.sort_by_key(|record| record.3);
-                                records.sort_by_key(|record| record.1);
+                                if !all_equal {
+                                    records.sort_by_key(|record| record.3);
+                                    records.sort_by_key(|record| record.1);
+
+                                    if let Some(record_1) = records.first() {
+                                        let mut vec = Vec::new();
+                                        for record_2 in &records {
+                                            if record_1.1 != record_2.1
+                                                || record_1.2 != record_2.2
+                                                || record_1.3 != record_2.3
+                                            {
+                                                if let Some(player) = column_group_vec.pop() {
+                                                    vec.push(player.style(text::success));
+                                                }
+                                            } else if let Some(player) = column_group_vec.pop() {
+                                                vec.push(player.style(text::danger));
+                                            }
+                                        }
+
+                                        column_group_vec = vec;
+                                    }
+                                }
                             }
                         }
 
