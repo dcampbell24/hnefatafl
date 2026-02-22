@@ -1176,6 +1176,7 @@ impl Server {
         ))
     }
 
+    //
     fn generate_round(&mut self) {
         let mut round = None;
 
@@ -1188,11 +1189,11 @@ impl Server {
         let mut groups_arc_mutex = Vec::new();
 
         if let Some(groups) = round {
-            for mut group in groups {
+            for (i, mut group) in groups.into_iter().enumerate() {
                 for combination in group.records.iter().map(|record| record.0).combinations(2) {
                     if let (Some(first), Some(second)) = (combination.first(), combination.get(1)) {
-                        ids.push_back(self.new_tournament_game(first, second));
-                        ids.push_back(self.new_tournament_game(second, first));
+                        ids.push_back((self.new_tournament_game(first, second), i));
+                        ids.push_back((self.new_tournament_game(second, first), i));
                         group.total_games += 2;
                     }
                 }
@@ -1204,11 +1205,9 @@ impl Server {
         if !groups_arc_mutex.is_empty()
             && let Some(tournament) = &mut self.tournament
         {
-            for group in &groups_arc_mutex {
-                if let Some(id) = ids.pop_front() {
+            for (id, i) in ids {
+                if let Some(group) = groups_arc_mutex.get(i) {
                     tournament.tournament_games.insert(id, group.clone());
-                }
-                if let Some(id) = ids.pop_front() {
                     tournament.tournament_games.insert(id, group.clone());
                 }
             }
