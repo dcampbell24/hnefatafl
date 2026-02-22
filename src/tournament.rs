@@ -24,7 +24,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{Id, accounts::Accounts, server_game::ServerGame, status::Status};
 
-const GROUP_SIZE: usize = 2;
+const GROUP_SIZE: usize = 4;
 
 // Fixme: Arc<Mutex<T>> serializes and deserializes one object to many.
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
@@ -121,7 +121,7 @@ impl Tournament {
                 }
 
                 // Fixme!
-                // Generate a new round or declare victors.
+                //  Maybe generate a new round.
                 if finished && groups.len() == 1 {
                     // There is only one person on top...
 
@@ -154,7 +154,7 @@ impl Tournament {
         players_vec.shuffle(&mut rng);
         players_vec.sort_unstable_by(|a, b| a.1.total_cmp(&b.1));
 
-        let groups_number = players_len / GROUP_SIZE;
+        let groups_number = (players_len / GROUP_SIZE) + 1;
         let mut group_size = 1;
 
         if groups_number != 0 {
