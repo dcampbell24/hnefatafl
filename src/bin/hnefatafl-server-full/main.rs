@@ -91,7 +91,6 @@ const DAY_IN_SECONDS: u64 = HOUR_IN_SECONDS * 24;
 const TWO_MONTHS: i64 = 5_256_058;
 const SEVEN_DAYS: i64 = 1_000 * 60 * 60 * 24 * 7;
 const USERS_FILE: &str = "users.ron";
-const MESSAGE_FILE: &str = "message.txt";
 
 fn main() -> anyhow::Result<()> {
     // println!("{:x}", rand::random::<u32>());
@@ -118,6 +117,7 @@ fn main() -> anyhow::Result<()> {
         server.load_data_files(tx.clone(), args.systemd)?;
     }
 
+    println!("{:#?}", server.tournament);
     thread::spawn(move || handle_error(server.handle_messages(&rx)));
 
     if !args.skip_advertising_updates {
@@ -327,7 +327,6 @@ fn login(
 
     tx.send((format!("{id} {username_proper} email_get"), None))?;
     tx.send((format!("{id} {username_proper} texts"), None))?;
-    tx.send((format!("{id} {username_proper} message"), None))?;
     tx.send((format!("{id} {username_proper} display_games"), None))?;
     tx.send((format!("{id} {username_proper} tournament_status_0"), None))?;
     tx.send((format!("{id} {username_proper} admin"), None))?;
@@ -1617,33 +1616,6 @@ impl Server {
                     option_tx,
                 ),
                 "logout" => self.logout(username, index_supplied, command),
-                "message" => {
-                    if Args::parse().skip_message {
-                        return None;
-                    }
-
-                    let message_file = data_file(MESSAGE_FILE);
-                    let mut message = String::new();
-
-                    match fs::read_to_string(&message_file) {
-                        Ok(new_message) => message = new_message.trim().replace('\n', "\\n"),
-                        Err(err) => match err.kind() {
-                            ErrorKind::NotFound => {}
-                            _ => error!("Error loading message: {err}"),
-                        },
-                    }
-
-                    if message.trim().is_empty() {
-                        return None;
-                    }
-
-                    self.clients
-                        .get(&index_supplied)?
-                        .send(format!("= message {message}"))
-                        .ok()?;
-
-                    None
-                }
                 "new_game" => self.new_game(username, index_supplied, command, the_rest.as_slice()),
                 "ping" => Some((
                     self.clients.get(&index_supplied)?.clone(),
@@ -1753,6 +1725,10 @@ impl Server {
                         && let Some(tournament) = &mut self.tournament
                     {
                         tournament.groups = None;
+                        tournament.tournament_games = HashMap::new();
+
+                        println!("Here!");
+
                         self.tournament_status_all();
                     }
 
@@ -1795,6 +1771,8 @@ impl Server {
                         tournament.groups = Some(Vec::new());
                         self.generate_round();
                         self.tournament_status_all();
+
+                        println!("{:#?}", self.tournament);
                     }
 
                     None
