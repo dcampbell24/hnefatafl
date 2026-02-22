@@ -1022,14 +1022,12 @@ impl<'a> Client {
                 let mut column_groups = Column::new();
                 for players in group {
                     if let Ok(players) = players.lock() {
-                        let mut finished = true;
+                        let mut games_count = 0;
                         let mut column_group = column![text("---").font(Font::MONOSPACE)];
                         let mut column_group_vec = Vec::new();
 
                         for (player, record) in &players.records {
-                            if record.games_count() != players.total_games {
-                                finished = false;
-                            }
+                            games_count += record.games_count();
 
                             column_group_vec.push(
                                 text!(
@@ -1046,7 +1044,7 @@ impl<'a> Client {
                             );
                         }
 
-                        if finished {
+                        if games_count / 2 == players.total_games {
                             let mut records: Vec<_> = players
                                 .records
                                 .iter()
