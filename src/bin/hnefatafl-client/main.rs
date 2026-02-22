@@ -1023,10 +1023,16 @@ impl<'a> Client {
                 let mut column_groups = Column::new();
                 for players in group {
                     if let Ok(players) = players.lock() {
+                        let mut finished = true;
                         let mut column_group = column![text("---").font(Font::MONOSPACE)];
+                        let mut column_group_vec = Vec::new();
 
                         for (player, record) in &players.records {
-                            column_group = column_group.push(row![
+                            if record.games_count() != players.total_games {
+                                finished = false;
+                            }
+
+                            column_group_vec.push(
                                 text!(
                                     "{:16} {}: {}, {}: {}, {}: {}",
                                     player,
@@ -1037,9 +1043,49 @@ impl<'a> Client {
                                     t!("draws"),
                                     record.draws,
                                 )
-                                .font(Font::MONOSPACE)
-                            ]);
+                                .font(Font::MONOSPACE),
+                            );
                         }
+
+                        if finished {
+                            let mut records: Vec<_> = players
+                                .records
+                                .iter()
+                                .map(|(name, record)| {
+                                    (name, record.wins, record.losses, record.draws)
+                                })
+                                .collect();
+
+                            if let Some(record_1) = records.first() {
+                                let mut all_equal = true;
+
+                                for record_2 in &records {
+                                    if record_1.1 != record_2.1
+                                        || record_1.2 != record_2.2
+                                        || record_1.3 != record_2.3
+                                    {
+                                        all_equal = false;
+                                        break;
+                                    }
+                                }
+
+                                if all_equal {
+                                    let mut vec = Vec::new();
+                                    for player in column_group_vec {
+                                        vec.push(player.style(text::success));
+                                    }
+                                    column_group_vec = vec;
+                                }
+
+                                records.sort_by_key(|record| record.3);
+                                records.sort_by_key(|record| record.1);
+                            }
+                        }
+
+                        for player in column_group_vec {
+                            column_group = column_group.push(player);
+                        }
+
                         column_groups = column_groups.push(column_group);
                     }
                 }

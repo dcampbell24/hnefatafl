@@ -123,7 +123,8 @@ impl Tournament {
                 // Fixme!
                 // Generate a new round or declare victors.
                 if finished && groups.len() == 1 {
-                    // And there is only one person on top...
+                    // There is only one person on top...
+
                     // Game Over
                 }
             }
