@@ -124,7 +124,11 @@ fn main() -> anyhow::Result<()> {
     }
 
     Server::check_update_rd_send(tx.clone());
-    Server::new_tournament(tx.clone());
+
+    if args.autostart_tournament {
+        Server::new_tournament(tx.clone());
+    }
+
     Server::save(tx.clone());
 
     let mut address = "[::]".to_string();
