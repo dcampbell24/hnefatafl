@@ -124,8 +124,7 @@ fn main() -> anyhow::Result<()> {
     }
 
     Server::check_update_rd_send(tx.clone());
-    // Fixme!
-    // Server::new_tournament(tx.clone());
+    Server::new_tournament(tx.clone());
     Server::save(tx.clone());
 
     let mut address = "[::]".to_string();
@@ -2241,7 +2240,7 @@ impl Server {
         Some((self.clients.get(&index_supplied)?.clone(), true, command))
     }
 
-    fn _new_tournament(tx: Sender<(String, Option<Sender<String>>)>) {
+    fn new_tournament(tx: Sender<(String, Option<Sender<String>>)>) {
         thread::spawn(move || {
             handle_error(tx.send(("0 server tournament_start".to_string(), None)));
 
