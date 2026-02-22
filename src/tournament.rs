@@ -98,8 +98,6 @@ impl Tournament {
                     }
 
                     group.finishing_standings = standings;
-
-                    println!("{:#?}", group.finishing_standings);
                 }
             }
 

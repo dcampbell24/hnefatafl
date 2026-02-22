@@ -1726,8 +1726,6 @@ impl Server {
                         tournament.groups = None;
                         tournament.tournament_games = HashMap::new();
 
-                        println!("Here!");
-
                         self.tournament_status_all();
                     }
 
@@ -1770,8 +1768,6 @@ impl Server {
                         tournament.groups = Some(Vec::new());
                         self.generate_round();
                         self.tournament_status_all();
-
-                        println!("{:#?}", self.tournament);
                     }
 
                     None
