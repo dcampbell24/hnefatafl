@@ -39,6 +39,8 @@ impl Rating {
 
     #[must_use]
     pub fn to_string_rounded(&self) -> String {
+        // Note: We use a FIGURE SPACE before and after the ± so
+        // .split_ascii_whitespace() does not treat it as a space.
         format!(
             "{} ± {}",
             self.rating.round(),
