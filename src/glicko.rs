@@ -40,7 +40,7 @@ impl Rating {
     #[must_use]
     pub fn to_string_rounded(&self) -> String {
         format!(
-            "{} ± {}",
+            "{:4} ± {}",
             self.rating.round(),
             (CONFIDENCE_INTERVAL_95 * self.rd).round()
         )
