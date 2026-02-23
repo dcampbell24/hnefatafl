@@ -1,7 +1,14 @@
 # [Copenhagen Hnefatafl]
 
 [Copenhagen Hnefatafl]: https://hnefatafl.org
-[![github]][github-link]&ensp;[![codeberg]][codeberg-link]&ensp;[![Discord]][discord-link]&ensp;[![Install]][install-link]&ensp;[![docs-rs]][docs-rs-link]&ensp;[![coverage]][coverage-link]
+
+[![github]][github-link]&ensp;
+[![codeberg]][codeberg-link]&ensp;
+[![Discord]][discord-link]&ensp;
+[![matrix]][matrix-link]&ensp;
+[![Install]][install-link]&ensp;
+[![docs-rs]][docs-rs-link]&ensp;
+[![coverage]][coverage-link]
 
 [github]: assets/github.png
 [github-link]: https://github.com/dcampbell24/hnefatafl
@@ -9,6 +16,8 @@
 [codeberg-link]: https://codeberg.org/dcampbell/hnefatafl
 [Discord]: assets/Discord-Logo-Blurple.png
 [discord-link]: https://discord.gg/h56CAHEBXd
+[matrix]: assets/matrix.png
+[matrix-link]: https://matrix.to/#/#hnefatafl-org:matrix.org
 [docs-rs]: https://img.shields.io/badge/docs.rs-66c2a5?logo=docs.rs
 [docs-rs-link]: https://docs.rs/hnefatafl-copenhagen
 [install]: https://img.shields.io/badge/Install-blue
