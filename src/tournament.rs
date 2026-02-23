@@ -139,12 +139,14 @@ impl Tournament {
 
         for player in &self.players {
             let mut rating = 1500.0;
+            let mut rating_string = String::new();
 
             if let Some(account) = accounts.0.get(player.as_str()) {
                 rating = account.rating.rating.round_ties_even();
+                rating_string = account.rating.to_string_rounded();
             }
 
-            players_vec.push((player.clone(), rating));
+            players_vec.push((player.clone(), rating, rating_string));
         }
 
         let players_len = players_vec.len();
@@ -168,22 +170,26 @@ impl Tournament {
             let mut group = self.new_group();
 
             for _ in 0..group_size {
+                let player = players_vec.pop().expect("There should be a player to pop.");
+
                 group.records.insert(
-                    players_vec
-                        .pop()
-                        .expect("There should be a player to pop.")
-                        .0,
-                    Record::default(),
+                    player.0,
+                    Record {
+                        rating: player.2,
+                        ..Record::default()
+                    },
                 );
             }
 
             if remainder > 0 {
+                let player = players_vec.pop().expect("There should be a player to pop.");
+
                 group.records.insert(
-                    players_vec
-                        .pop()
-                        .expect("There should be a player to pop.")
-                        .0,
-                    Record::default(),
+                    player.0,
+                    Record {
+                        rating: player.2,
+                        ..Record::default()
+                    },
                 );
                 remainder = remainder.saturating_sub(1);
             }
@@ -239,6 +245,7 @@ pub struct Standing {
 
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
 pub struct Record {
+    pub rating: String,
     pub wins: u8,
     pub losses: u8,
     pub draws: u8,

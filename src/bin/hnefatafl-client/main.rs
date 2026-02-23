@@ -1031,8 +1031,9 @@ impl<'a> Client {
 
                             column_group_vec.push(
                                 text!(
-                                    "{:16} {}: {}, {}: {}, {}: {}",
+                                    "{:16} {:10} {}: {}, {}: {}, {}: {}",
                                     player,
+                                    record.rating,
                                     t!("wins"),
                                     record.wins,
                                     t!("losses"),
@@ -1476,13 +1477,11 @@ impl<'a> Client {
                 &game_handle.game.texts,
             )
         } else {
-            for user in self.users.values() {
-                if self.attacker == user.name {
-                    attacker_rating = user.rating.to_string_rounded();
-                }
-                if self.defender == user.name {
-                    defender_rating = user.rating.to_string_rounded();
-                }
+            if let Some(user) = self.users.get(&self.attacker) {
+                attacker_rating = user.rating.to_string_rounded();
+            }
+            if let Some(user) = self.users.get(&self.defender) {
+                defender_rating = user.rating.to_string_rounded();
             }
 
             let game = self.game.as_ref().expect("we should be in a game");
@@ -1500,13 +1499,11 @@ impl<'a> Client {
             )
         };
 
-        for user in self.users.values() {
-            if self.attacker == user.name {
-                attacker_rating = user.rating.to_string_rounded();
-            }
-            if self.defender == user.name {
-                defender_rating = user.rating.to_string_rounded();
-            }
+        if let Some(user) = self.users.get(&self.attacker) {
+            attacker_rating = user.rating.to_string_rounded();
+        }
+        if let Some(user) = self.users.get(&self.defender) {
+            defender_rating = user.rating.to_string_rounded();
         }
 
         let captured = board.captured();
