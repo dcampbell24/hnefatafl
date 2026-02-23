@@ -4129,10 +4129,14 @@ impl<'a> Client {
                     }
 
                     let mut start_tournament = button("Start Tournament");
-                    // Fixme!
-                    // if self.tournament.is_none() {
-                    start_tournament = start_tournament.on_press(Message::TournamentStart);
-                    // }
+
+                    if let Some(tournament) = &self.tournament {
+                        if tournament.groups.is_none() {
+                            start_tournament = start_tournament.on_press(Message::TournamentStart);
+                        }
+                    } else {
+                        start_tournament = start_tournament.on_press(Message::TournamentStart);
+                    }
 
                     column = column.push(row![start_tournament, delete_button].spacing(SPACING));
                 }
