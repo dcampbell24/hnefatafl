@@ -83,6 +83,7 @@ use crate::{
 const ACTIVE_GAMES_FILE: &str = "active-games.postcard";
 const ARCHIVED_GAMES_FILE: &str = "archived-games.ron";
 const KEEP_TEXTS: usize = 256;
+const MESSAGE_FILE: &str = "message.txt";
 
 const HOUR_IN_SECONDS: u64 = 60 * 60;
 const DAY_IN_SECONDS: u64 = HOUR_IN_SECONDS * 24;
@@ -330,6 +331,7 @@ fn login(
 
     tx.send((format!("{id} {username_proper} email_get"), None))?;
     tx.send((format!("{id} {username_proper} texts"), None))?;
+    tx.send((format!("{id} {username_proper} message"), None))?;
     tx.send((format!("{id} {username_proper} display_games"), None))?;
     tx.send((format!("{id} {username_proper} tournament_status_0"), None))?;
     tx.send((format!("{id} {username_proper} admin"), None))?;
@@ -1617,6 +1619,32 @@ impl Server {
                     option_tx,
                 ),
                 "logout" => self.logout(username, index_supplied, command),
+                "message" => {
+                    if Args::parse().skip_message {
+                        return None;
+                    }
+
+                    let message_file = data_file(MESSAGE_FILE);
+                    let mut message = String::new();
+
+                    match fs::read_to_string(&message_file) {
+                        Ok(new_message) => message = new_message.trim().replace('\n', "\\n"),
+                        Err(err) => match err.kind() {
+                            ErrorKind::NotFound => {}
+                            _ => error!("Error loading message: {err}"),
+                        },
+                    }
+
+                    if message.trim().is_empty() {
+                        return None;
+                    }
+
+                    self.clients
+                        .get(&index_supplied)?
+                        .send(format!("= message {message}"))
+                        .ok()?;
+                    None
+                }
                 "new_game" => self.new_game(username, index_supplied, command, the_rest.as_slice()),
                 "ping" => Some((
                     self.clients.get(&index_supplied)?.clone(),
