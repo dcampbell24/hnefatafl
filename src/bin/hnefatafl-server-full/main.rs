@@ -1179,7 +1179,6 @@ impl Server {
         ))
     }
 
-    //
     fn generate_round(&mut self) {
         let mut round = None;
 
@@ -2055,6 +2054,10 @@ impl Server {
                 Ok(server_ron) => {
                     *self = server_ron;
                     self.tx = Some(tx.clone());
+
+                    if let Some(tournament) = &mut self.tournament {
+                        tournament.remove_duplicate_ids();
+                    }
                 }
                 Err(err) => {
                     return Err(anyhow::Error::msg(format!(

@@ -26,9 +26,9 @@ use crate::{Id, accounts::Accounts, server_game::ServerGame, status::Status};
 
 const GROUP_SIZE: usize = 4;
 
-// Fixme: Arc<Mutex<T>> serializes and deserializes one object to many.
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct Tournament {
+    pub id: u128,
     pub players: HashSet<String>,
     pub date: DateTime<Utc>,
     pub groups: Option<Vec<Vec<Arc<Mutex<Group>>>>>,
@@ -165,7 +165,7 @@ impl Tournament {
         let mut groups = Vec::new();
 
         for _ in 0..groups_number {
-            let mut group = Group::default();
+            let mut group = self.new_group();
 
             for _ in 0..group_size {
                 group.records.insert(
@@ -193,10 +193,39 @@ impl Tournament {
 
         groups
     }
+
+    pub fn remove_duplicate_ids(&mut self) {
+        if let Some(groups) = &self.groups {
+            for round in groups {
+                for group_1 in round {
+                    if let Ok(group_1a) = group_1.lock() {
+                        for group_2 in self.tournament_games.values_mut() {
+                            if let Ok(group_2a) = group_2.clone().lock()
+                                && group_1a.id == group_2a.id
+                            {
+                                *group_2 = group_1.clone();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    pub fn new_group(&mut self) -> Group {
+        let group = Group {
+            id: self.id,
+            ..Group::default()
+        };
+
+        self.id += 1;
+        group
+    }
 }
 
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
 pub struct Group {
+    pub id: u128,
     pub total_games: u8,
     pub records: HashMap<String, Record>,
     pub finishing_standings: Vec<Standing>,
