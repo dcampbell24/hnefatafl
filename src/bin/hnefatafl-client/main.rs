@@ -1075,25 +1075,48 @@ impl<'a> Client {
                                 }
 
                                 if !all_equal {
-                                    records.sort_by_key(|record| record.3);
-                                    records.sort_by_key(|record| record.1);
+                                    column_group_vec.clear();
+                                    records.sort_by(|a, b| b.3.cmp(&a.3));
+                                    records.sort_by(|a, b| b.1.cmp(&a.1));
 
                                     if let Some(record_1) = records.first() {
-                                        let mut vec = Vec::new();
+                                        column_group_vec.clear();
                                         for record_2 in &records {
-                                            if record_1.1 != record_2.1
-                                                || record_1.2 != record_2.2
-                                                || record_1.3 != record_2.3
+                                            if record_1.1 == record_2.1
+                                                && record_1.2 == record_2.2
+                                                && record_1.3 == record_2.3
                                             {
-                                                if let Some(player) = column_group_vec.pop() {
-                                                    vec.push(player.style(text::success));
-                                                }
-                                            } else if let Some(player) = column_group_vec.pop() {
-                                                vec.push(player.style(text::danger));
+                                                column_group_vec.push(
+                                                    text!(
+                                                        "{:16} {}: {}, {}: {}, {}: {}",
+                                                        record_2.0,
+                                                        t!("wins"),
+                                                        record_2.1,
+                                                        t!("losses"),
+                                                        record_2.2,
+                                                        t!("draws"),
+                                                        record_2.3,
+                                                    )
+                                                    .font(Font::MONOSPACE)
+                                                    .style(text::success),
+                                                );
+                                            } else {
+                                                column_group_vec.push(
+                                                    text!(
+                                                        "{:16} {}: {}, {}: {}, {}: {}",
+                                                        record_2.0,
+                                                        t!("wins"),
+                                                        record_2.1,
+                                                        t!("losses"),
+                                                        record_2.2,
+                                                        t!("draws"),
+                                                        record_2.3,
+                                                    )
+                                                    .font(Font::MONOSPACE)
+                                                    .style(text::danger),
+                                                );
                                             }
                                         }
-
-                                        column_group_vec = vec;
                                     }
                                 }
                             }
