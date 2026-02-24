@@ -55,7 +55,7 @@ use hnefatafl_copenhagen::{
     role::Role,
     server_game::{
         ArchivedGame, Challenger, Messenger, ServerGame, ServerGameLight, ServerGameSerialized,
-        ServerGames, ServerGamesLight,
+        ServerGames, ServerGamesLight, ServerGamesLightVec,
     },
     status::Status,
     time::{Time, TimeEnum, TimeSettings},
@@ -460,6 +460,8 @@ struct Server {
     #[serde(skip)]
     games_light: ServerGamesLight,
     #[serde(skip)]
+    games_light_vec: ServerGamesLightVec,
+    #[serde(skip)]
     games_light_old: ServerGamesLight,
     #[serde(skip)]
     skip_the_data_files: bool,
@@ -719,6 +721,7 @@ impl Server {
         if self.games_light != self.games_light_old {
             debug!("0 {username} display_games");
             self.games_light_old = self.games_light.clone();
+            self.sort_games_light();
 
             let mut names = HashMap::new();
             for (name, account) in &self.accounts.0 {
@@ -729,7 +732,7 @@ impl Server {
 
             for (id, tx) in &mut self.clients {
                 let Ok(games) = self
-                    .games_light
+                    .games_light_vec
                     .display_games(names.get(id).map(|s| s.as_str()))
                 else {
                     continue;
@@ -1320,6 +1323,8 @@ impl Server {
             index_username_command.get(1),
             index_username_command.get(2),
         ) {
+            let username = *username;
+
             if *command != "check_update_rd"
                 && *command != "create_account"
                 && *command != "display_server"
@@ -1338,7 +1343,7 @@ impl Server {
 
             match *command {
                 "admin" => {
-                    if self.admins.contains(*username) {
+                    if self.admins.contains(username) {
                         self.clients
                             .get(&index_supplied)?
                             .send("= admin".to_string())
@@ -1429,7 +1434,7 @@ impl Server {
                             (
                                 tx.clone(),
                                 true,
-                                format!("display_games {:?}", &self.games_light),
+                                format!("display_games {:?}", &self.games_light_vec),
                             )
                         })
                     }
@@ -1441,7 +1446,7 @@ impl Server {
                     self.set_email(index_supplied, username, command, the_rest.first().copied())
                 }
                 "email_everyone" => {
-                    if self.admins.contains(*username) {
+                    if self.admins.contains(username) {
                         info!("{index_supplied} {username} email_everyone");
                     } else {
                         error!("{index_supplied} {username} email_everyone");
@@ -1507,7 +1512,7 @@ impl Server {
                     None
                 }
                 "email_code" => {
-                    if let Some(account) = self.accounts.0.get_mut(*username)
+                    if let Some(account) = self.accounts.0.get_mut(username)
                         && let Some(email) = &mut account.email
                         && let (Some(code_1), Some(code_2)) = (email.code, the_rest.first())
                     {
@@ -1531,7 +1536,7 @@ impl Server {
                     None
                 }
                 "email_get" => {
-                    if let Some(account) = self.accounts.0.get(*username)
+                    if let Some(account) = self.accounts.0.get(username)
                         && let Some(email) = &account.email
                     {
                         self.clients
@@ -1543,7 +1548,7 @@ impl Server {
                     None
                 }
                 "email_reset" => {
-                    if let Some(account) = self.accounts.0.get_mut(*username) {
+                    if let Some(account) = self.accounts.0.get_mut(username) {
                         account.email = None;
 
                         Some((
@@ -1605,7 +1610,7 @@ impl Server {
                 ),
                 "leave_tournament" => {
                     if let Some(tournament) = &mut self.tournament {
-                        tournament.players.remove(*username);
+                        tournament.players.remove(username);
                         self.tournament_status_all();
                     }
 
@@ -1652,7 +1657,7 @@ impl Server {
                     (*command).to_string(),
                 )),
                 "reset_password" => {
-                    let account = self.accounts.0.get_mut(*username)?;
+                    let account = self.accounts.0.get_mut(username)?;
                     if let Some(email) = &account.email {
                         if email.verified {
                             let day = 60 * 60 * 24;
@@ -1742,7 +1747,7 @@ impl Server {
                 }
                 "text_game" => self.text_game(username, index_supplied, command, the_rest),
                 "tournament_delete" => {
-                    if self.admins.contains(*username) {
+                    if self.admins.contains(username) {
                         self.tournament = None;
                         self.tournament_status_all();
                     }
@@ -1750,7 +1755,7 @@ impl Server {
                     None
                 }
                 "tournament_groups_delete" => {
-                    if self.admins.contains(*username)
+                    if self.admins.contains(username)
                         && let Some(tournament) = &mut self.tournament
                     {
                         tournament.groups = None;
@@ -1762,7 +1767,7 @@ impl Server {
                     None
                 }
                 "tournament_date" => {
-                    if self.admins.contains(*username) {
+                    if self.admins.contains(username) {
                         if let Err(error) = self.tournament_date(&the_rest) {
                             error!("tournament_date: {error}");
                         } else {
@@ -2537,6 +2542,41 @@ impl Server {
                 Err(error) => error!("save file (1): {error}"),
             }
         }
+    }
+
+    fn sort_games_light(&mut self) {
+        let mut games: Vec<_> = self
+            .games_light
+            .0
+            .values()
+            .map(|game| {
+                let mut rating_1 = 0.0;
+                let mut rating_2 = 0.0;
+
+                if let Some(attacker) = &game.attacker
+                    && let Some(account) = self.accounts.0.get(attacker)
+                {
+                    rating_1 = account.rating.rating;
+                }
+
+                if let Some(defender) = &game.defender
+                    && let Some(account) = self.accounts.0.get(defender)
+                {
+                    rating_2 = account.rating.rating;
+                    if rating_2 > rating_1 {
+                        std::mem::swap(&mut rating_1, &mut rating_2);
+                    }
+                }
+
+                (game, rating_1, rating_2)
+            })
+            .collect();
+
+        games.sort_by(|a, b| b.2.total_cmp(&a.2));
+        games.sort_by(|a, b| b.1.total_cmp(&a.1));
+
+        self.games_light_vec =
+            ServerGamesLightVec(games.iter().map(|(game, _, _)| (*game).clone()).collect());
     }
 
     fn text_game(

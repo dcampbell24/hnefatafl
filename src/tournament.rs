@@ -28,7 +28,7 @@ const GROUP_SIZE: usize = 4;
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct Tournament {
-    pub id: u128,
+    pub id: u64,
     pub players: HashSet<String>,
     pub date: DateTime<Utc>,
     pub groups: Option<Vec<Vec<Arc<Mutex<Group>>>>>,
@@ -231,7 +231,7 @@ impl Tournament {
 
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
 pub struct Group {
-    pub id: u128,
+    pub id: u64,
     pub total_games: u8,
     pub records: HashMap<String, Record>,
     pub finishing_standings: Vec<Standing>,
