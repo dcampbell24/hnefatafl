@@ -1265,11 +1265,7 @@ impl<'a> Client {
     }
 
     fn join_game_press(&mut self, i: usize, shift: bool) {
-        let mut server_games: Vec<&ServerGameLight> = self.games_light.0.values().collect();
-
-        server_games.sort_by(|a, b| b.id.cmp(&a.id));
-
-        if let Some(game) = server_games.get(i) {
+        if let Some(game) = self.games_light_vec.get(i) {
             match self.join_game(game) {
                 JoinGame::Cancel => self.send(&format!("decline_game {} switch\n", game.id)),
                 JoinGame::Join => self.join(game.id),
