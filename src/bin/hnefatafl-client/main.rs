@@ -1012,16 +1012,19 @@ impl<'a> Client {
             return Column::new();
         }
 
-        let mut column_round = Column::new();
+        let mut column_rounds = Column::new();
 
         if let Some(round) = &tournament.groups {
+            let mut column_round = Column::new();
+
             for (i, group) in round.iter().enumerate() {
                 let round = t!("Round");
                 let row_1 = text!("{} {}", round.to_string(), i + 1);
                 let row_2 = text!("{}---", "-".repeat(round.len())).font(Font::MONOSPACE);
-                column_round = column![row_1, row_2];
 
+                column_round = column_round.push(column![row_1, row_2]);
                 let mut column_groups = Column::new();
+
                 for players in group {
                     if let Ok(players) = players.lock() {
                         let mut games_count = 0;
@@ -1134,9 +1137,10 @@ impl<'a> Client {
                 }
                 column_round = column_round.push(column_groups);
             }
+            column_rounds = column_rounds.push(column_round.spacing(SPACING));
         }
 
-        column![column_1, column_round.spacing(SPACING)].spacing(SPACING)
+        column![column_1, column_rounds.spacing(SPACING)].spacing(SPACING)
     }
 
     fn draw(&mut self) {

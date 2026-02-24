@@ -1161,7 +1161,7 @@ impl Server {
             }
 
             if let Some(tournament) = &mut self.tournament
-                && tournament.game_over(&game)
+                && tournament.game_over(&self.accounts, &game)
             {
                 self.tournament_status_all();
             }
