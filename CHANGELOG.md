@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- hnefatafl-client: display the players rank next to their name for games_light.
+
 ### Changed
 
 - hnefatafl-client: order the games by the players ratings.
