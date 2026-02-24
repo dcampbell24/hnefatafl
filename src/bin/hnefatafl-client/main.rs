@@ -3225,12 +3225,21 @@ impl<'a> Client {
             game_ids = game_ids.push(text(id));
 
             attackers = if let Some(attacker) = &game.attacker {
-                attackers.push(text(attacker))
+                if let Some(user) = self.users.get(attacker) {
+                    attackers.push(text!("{attacker} ({})", user.rating.to_string_rounded()))
+                } else {
+                    attackers.push(text(attacker))
+                }
             } else {
                 attackers.push(text(t!("none")))
             };
+
             defenders = if let Some(defender) = &game.defender {
-                defenders.push(text(defender))
+                if let Some(user) = self.users.get(defender) {
+                    defenders.push(text!("{defender} ({})", user.rating.to_string_rounded()))
+                } else {
+                    defenders.push(text(defender))
+                }
             } else {
                 defenders.push(text(t!("none")))
             };
