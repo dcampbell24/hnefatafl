@@ -480,12 +480,25 @@ impl TryFrom<&[&str]> for ServerGameLight {
 #[derive(Clone, Default, Eq, PartialEq)]
 pub struct ServerGamesLight(pub HashMap<Id, ServerGameLight>);
 
-impl ServerGamesLight {
+impl fmt::Debug for ServerGamesLight {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        for game in self.0.values().filter(|game| !game.game_over) {
+            write!(f, "{game:?} ")?;
+        }
+
+        Ok(())
+    }
+}
+
+#[derive(Clone, Default, Eq, PartialEq)]
+pub struct ServerGamesLightVec(pub Vec<ServerGameLight>);
+
+impl ServerGamesLightVec {
     #[allow(clippy::missing_errors_doc)]
     pub fn display_games(&self, username: Option<&str>) -> anyhow::Result<String> {
         let mut output = String::new();
 
-        for game in self.0.values() {
+        for game in &self.0 {
             if !game.game_over {
                 write!(output, "{game:?} ")?;
             } else if let Some(username) = username
@@ -499,9 +512,9 @@ impl ServerGamesLight {
     }
 }
 
-impl fmt::Debug for ServerGamesLight {
+impl fmt::Debug for ServerGamesLightVec {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for game in self.0.values().filter(|game| !game.game_over) {
+        for game in self.0.iter().filter(|game| !game.game_over) {
             write!(f, "{game:?} ")?;
         }
 

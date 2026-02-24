@@ -658,6 +658,8 @@ struct Client {
     #[serde(skip)]
     games_light: ServerGamesLight,
     #[serde(skip)]
+    games_light_vec: Vec<ServerGameLight>,
+    #[serde(skip)]
     game_settings: NewGameSettings,
     #[serde(skip)]
     heat_map: Option<HeatMap>,
@@ -2690,12 +2692,15 @@ impl<'a> Client {
                             Some("admin") => self.admin = true,
                             Some("display_games") => {
                                 self.games_light.0.clear();
+                                self.games_light_vec.clear();
+
                                 let games: Vec<&str> = text.collect();
                                 for chunks in games.chunks_exact(12) {
                                     let game = ServerGameLight::try_from(chunks)
                                         .expect("the value should be a valid ServerGameLight");
 
-                                    self.games_light.0.insert(game.id, game);
+                                    self.games_light.0.insert(game.id, game.clone());
+                                    self.games_light_vec.push(game);
                                 }
 
                                 if let Some(game) = self.games_light.0.get(&self.game_id) {
@@ -3196,10 +3201,7 @@ impl<'a> Client {
         let mut sizes = Column::new().spacing(SPACING_B);
         let mut buttons = Column::new().spacing(SPACING);
 
-        let mut server_games: Vec<&ServerGameLight> = self.games_light.0.values().collect();
-        server_games.sort_by(|a, b| b.id.cmp(&a.id));
-
-        for (i, game) in server_games.iter().enumerate() {
+        for (i, game) in self.games_light_vec.iter().enumerate() {
             if self.my_games_only {
                 let mut includes_username = false;
                 if let Some(attacker) = &game.attacker
