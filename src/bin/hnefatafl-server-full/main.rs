@@ -950,6 +950,7 @@ impl Server {
         username: &str,
         command: &str,
         the_rest: &[&str],
+        group_size: usize,
     ) -> Option<(mpsc::Sender<String>, bool, String)> {
         if the_rest.len() < 5 {
             return Some((
@@ -1162,7 +1163,7 @@ impl Server {
 
             if let Some(tournament) = &mut self.tournament {
                 if tournament.game_over(&game) {
-                    self.generate_round();
+                    self.generate_round(group_size);
                 }
 
                 self.tournament_status_all();
@@ -1186,11 +1187,11 @@ impl Server {
         ))
     }
 
-    fn generate_round(&mut self) {
+    fn generate_round(&mut self, group_size: usize) {
         let mut round = None;
 
         if let Some(tournament) = &mut self.tournament {
-            let groups = tournament.generate_round(&self.accounts);
+            let groups = tournament.generate_round(&self.accounts, group_size);
             round = Some(groups);
         }
 
@@ -1444,7 +1445,13 @@ impl Server {
                 }
                 "display_server" => self.display_server(username),
                 "draw" => self.draw(index_supplied, command, the_rest.as_slice()),
-                "game" => self.game(index_supplied, username, command, the_rest.as_slice()),
+                "game" => self.game(
+                    index_supplied,
+                    username,
+                    command,
+                    the_rest.as_slice(),
+                    args.group_size,
+                ),
                 "email" => {
                     self.set_email(index_supplied, username, command, the_rest.first().copied())
                 }
@@ -1806,7 +1813,7 @@ impl Server {
                         tournament.groups = Some(Vec::new());
                         tournament.players_left = tournament.players.clone();
 
-                        self.generate_round();
+                        self.generate_round(args.group_size);
                         self.tournament_status_all();
                     }
 

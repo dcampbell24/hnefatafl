@@ -55,6 +55,10 @@ pub(crate) struct Args {
     #[arg(long)]
     pub secure: bool,
 
+    /// The size of the tournament groups
+    #[arg(default_value_t = 8, long)]
+    pub group_size: usize,
+
     /// Build the manpage
     #[arg(long)]
     pub man: bool,
