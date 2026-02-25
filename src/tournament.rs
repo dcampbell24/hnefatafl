@@ -24,7 +24,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{Id, accounts::Accounts, server_game::ServerGame, status::Status};
 
-const GROUP_SIZE: usize = 4;
+const GROUP_SIZE: usize = 2;
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct Tournament {
@@ -123,7 +123,7 @@ impl Tournament {
                     let mut done = true;
                     let mut players = HashSet::new();
 
-                    'goto: for group in groups {
+                    for group in groups {
                         if let Ok(group) = group.lock() {
                             let records: Vec<_> = group.records.iter().collect();
                             if let Some((_, record_1)) = records.first() {
@@ -135,7 +135,6 @@ impl Tournament {
                                         players.insert((*name).clone());
                                     } else {
                                         done = false;
-                                        break 'goto;
                                     }
                                 }
                             }
@@ -187,22 +186,23 @@ impl Tournament {
         players_vec.shuffle(&mut rng);
         players_vec.sort_unstable_by(|a, b| a.1.total_cmp(&b.1));
 
-        let groups_number = (players_len / GROUP_SIZE) + 1;
-        let mut group_size = 1;
+        let mut groups_number = players_len / GROUP_SIZE;
+        let remainder = players_len % GROUP_SIZE;
 
-        if groups_number != 0 {
-            while (group_size + 1) * groups_number <= players_len {
-                group_size += 1;
-            }
+        if remainder != 0 {
+            groups_number += 1;
         }
 
-        let mut remainder = players_len % group_size;
-        let mut groups = Vec::new();
+        let mut whole_groups = groups_number;
+        if remainder != 0 {
+            whole_groups = whole_groups.saturating_sub(2);
+        }
 
-        for _ in 0..groups_number {
+        let mut groups = Vec::new();
+        for _ in 0..whole_groups {
             let mut group = self.new_group();
 
-            for _ in 0..group_size {
+            for _ in 0..GROUP_SIZE {
                 let player = players_vec.pop().expect("There should be a player to pop.");
 
                 group.records.insert(
@@ -214,7 +214,20 @@ impl Tournament {
                 );
             }
 
-            if remainder > 0 {
+            groups.push(group);
+        }
+
+        if remainder > GROUP_SIZE / 2 {
+            let length = players_vec.len();
+            let mut length_1 = length / 2;
+            let length_2 = length / 2;
+
+            if length % 2 != 0 {
+                length_1 += 1;
+            }
+
+            let mut group = self.new_group();
+            for _ in 0..length_1 {
                 let player = players_vec.pop().expect("There should be a player to pop.");
 
                 group.records.insert(
@@ -224,7 +237,50 @@ impl Tournament {
                         ..Record::default()
                     },
                 );
-                remainder = remainder.saturating_sub(1);
+            }
+            groups.push(group);
+
+            let mut group = self.new_group();
+            for _ in 0..length_2 {
+                let player = players_vec.pop().expect("There should be a player to pop.");
+
+                group.records.insert(
+                    player.0,
+                    Record {
+                        rating: player.2,
+                        ..Record::default()
+                    },
+                );
+            }
+            groups.push(group);
+        } else {
+            if groups_number != 1 {
+                let mut group = self.new_group();
+                for _ in 0..GROUP_SIZE {
+                    let player = players_vec.pop().expect("There should be a player to pop.");
+
+                    group.records.insert(
+                        player.0,
+                        Record {
+                            rating: player.2,
+                            ..Record::default()
+                        },
+                    );
+                }
+                groups.push(group);
+            }
+
+            let mut group = self.new_group();
+            for _ in 0..(remainder) {
+                let player = players_vec.pop().expect("There should be a player to pop.");
+
+                group.records.insert(
+                    player.0,
+                    Record {
+                        rating: player.2,
+                        ..Record::default()
+                    },
+                );
             }
 
             groups.push(group);
