@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - hnefatafl-client: order the games by the players ratings.
 - hnefatafl-server-full: save periodically and when exiting instead of on every change.
-- hnefatafl-server-full: save 256 general texts.
+- hnefatafl-server-full: save 100 general texts.
 - make a new tournament that is a hybrid of round robin and elimination.
 
 ### Fixed

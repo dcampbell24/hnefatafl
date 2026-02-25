@@ -82,7 +82,7 @@ use crate::{
 
 const ACTIVE_GAMES_FILE: &str = "active-games.postcard";
 const ARCHIVED_GAMES_FILE: &str = "archived-games.ron";
-const KEEP_TEXTS: usize = 256;
+const KEEP_TEXTS: usize = 100;
 const MESSAGE_FILE: &str = "message.txt";
 
 const HOUR_IN_SECONDS: u64 = 60 * 60;
