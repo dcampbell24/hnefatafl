@@ -1160,9 +1160,11 @@ impl Server {
                 game_light.game_over = true;
             }
 
-            if let Some(tournament) = &mut self.tournament
-                && tournament.game_over(&self.accounts, &game)
-            {
+            if let Some(tournament) = &mut self.tournament {
+                if tournament.game_over(&game) {
+                    self.generate_round();
+                }
+
                 self.tournament_status_all();
             }
 
@@ -1213,6 +1215,7 @@ impl Server {
             && let Some(tournament) = &mut self.tournament
         {
             for (id, i) in ids {
+                //
                 if let Some(group) = groups_arc_mutex.get(i) {
                     tournament.tournament_games.insert(id, group.clone());
                     tournament.tournament_games.insert(id, group.clone());
@@ -1801,6 +1804,8 @@ impl Server {
                         info!("Starting tournament...");
 
                         tournament.groups = Some(Vec::new());
+                        tournament.players_left = tournament.players.clone();
+
                         self.generate_round();
                         self.tournament_status_all();
                     }
