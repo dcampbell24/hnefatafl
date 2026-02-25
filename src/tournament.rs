@@ -30,6 +30,7 @@ const GROUP_SIZE: usize = 2;
 pub struct Tournament {
     pub id: u64,
     pub players: HashSet<String>,
+    pub players_left: HashSet<String>,
     pub date: DateTime<Utc>,
     pub groups: Option<Vec<Vec<Arc<Mutex<Group>>>>>,
     pub tournament_games: HashMap<Id, Arc<Mutex<Group>>>,
@@ -38,7 +39,9 @@ pub struct Tournament {
 impl Tournament {
     #[allow(clippy::float_cmp, clippy::too_many_lines)]
     #[must_use]
-    pub fn game_over(&mut self, accounts: &Accounts, game: &ServerGame) -> bool {
+    pub fn game_over(&mut self, game: &ServerGame) -> bool {
+        let mut next_round = false;
+
         if let Some(group) = self.tournament_games.get_mut(&game.id) {
             if let Ok(mut group) = group.lock() {
                 match game.game.status {
@@ -118,10 +121,8 @@ impl Tournament {
                     }
                 }
 
-                // Fixme!!!!
                 if finished {
-                    let mut done = true;
-                    let mut players = HashSet::new();
+                    let mut players_left = HashSet::new();
 
                     for group in groups {
                         if let Ok(group) = group.lock()
@@ -130,35 +131,20 @@ impl Tournament {
                             let records: Vec<_> = group.records.iter().collect();
                             for (name, record) in &records {
                                 if record.score() == top_score {
-                                    players.insert((*name).clone());
+                                    players_left.insert((*name).clone());
                                 } else {
-                                    done = false;
+                                    next_round = true;
                                 }
                             }
                         }
                     }
 
-                    if !done {
-                        self.players = players;
-                        let groups = self.generate_round(accounts);
-
-                        if let Some(rounds) = &mut self.groups {
-                            rounds.push(Vec::new());
-
-                            if let Some(round) = rounds.last_mut() {
-                                for group in groups {
-                                    round.push(Arc::new(Mutex::new(group)));
-                                }
-                            }
-                        }
-                    }
+                    self.players_left = players_left;
                 }
             }
-
-            true
-        } else {
-            false
         }
+
+        next_round
     }
 
     #[allow(clippy::missing_panics_doc)]
@@ -166,7 +152,7 @@ impl Tournament {
     pub fn generate_round(&mut self, accounts: &Accounts) -> Vec<Group> {
         let mut players_vec = Vec::new();
 
-        for player in &self.players {
+        for player in &self.players_left {
             let mut rating = 1500.0;
             let mut rating_string = String::new();
 
