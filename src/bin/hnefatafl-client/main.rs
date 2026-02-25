@@ -1018,11 +1018,28 @@ impl<'a> Client {
             let mut column_round = Column::new();
 
             for (i, group) in round.iter().enumerate() {
-                let round = t!("Round");
-                let row_1 = text!("{} {}", round.to_string(), i + 1);
-                let row_2 = text!("{}---", "-".repeat(round.len())).font(Font::MONOSPACE);
+                let round_title = if tournament.tournament_games.is_empty() && i + 1 == round.len()
+                {
+                    let winner = t!("Winner");
+                    let row_1 = text(winner.to_string());
+                    let row_2 = text!("{}", "-".repeat(winner.len())).font(Font::MONOSPACE);
 
-                column_round = column_round.push(column![row_1, row_2]);
+                    column![row_1, row_2]
+                } else {
+                    let round = t!("Round");
+                    let row_1 = text!("{} {}", round.to_string(), i + 1);
+                    let row_2 = text!(
+                        "{}-{}",
+                        "-".repeat(round.len()),
+                        "-".repeat((i + 1).to_string().len())
+                    )
+                    .font(Font::MONOSPACE);
+
+                    column![row_1, row_2]
+                };
+
+                column_round = column_round.push(round_title);
+
                 let mut column_groups = Column::new();
 
                 for players in group {
@@ -1034,20 +1051,27 @@ impl<'a> Client {
                         for (player, record) in &players.records {
                             games_count += record.games_count();
 
-                            column_group_vec.push(
-                                text!(
-                                    "{:16} {:10} {}: {}, {}: {}, {}: {}",
-                                    player,
-                                    record.rating,
-                                    t!("wins"),
-                                    record.wins,
-                                    t!("losses"),
-                                    record.losses,
-                                    t!("draws"),
-                                    record.draws,
-                                )
-                                .font(Font::MONOSPACE),
-                            );
+                            if tournament.tournament_games.is_empty() && i + 1 == round.len() {
+                                column_group_vec.push(
+                                    text!("{:16} {:10}", player, record.rating,)
+                                        .font(Font::MONOSPACE),
+                                );
+                            } else {
+                                column_group_vec.push(
+                                    text!(
+                                        "{:16} {:10} {}: {}, {}: {}, {}: {}",
+                                        player,
+                                        record.rating,
+                                        t!("wins"),
+                                        record.wins,
+                                        t!("losses"),
+                                        record.losses,
+                                        t!("draws"),
+                                        record.draws,
+                                    )
+                                    .font(Font::MONOSPACE),
+                                );
+                            }
                         }
 
                         if games_count / 2 == players.total_games {

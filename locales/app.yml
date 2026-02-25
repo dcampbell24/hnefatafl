@@ -969,6 +969,23 @@ Watch:
   sv-SE: Titta
   ko: 보다
 
+Winner:
+  en-US: Winner
+  zh-CN: 优胜者
+  es: Ganador
+  ar: الفائز
+  id: Pemenang
+  pt-BR: Ganhador
+  pt-PT: Ganhador
+  fr: Gagnant
+  ja: 勝者
+  ru: Победитель
+  de: Gewinner
+  is-IS: Sigurvegari
+  is-RU: ᛋᛁᚵᚢᚱᚡᛂᚵᛆᚱᛁ
+  sv-SE: Vinnare
+  ko: 우승자
+
 Wrong version, update your hnefatafl-copenhagen package.:
   en-US: Wrong version, update your hnefatafl-copenhagen package.
   zh-CN: 版本错误，请更新您的 hnefatafl-copenhagen 软件包。
