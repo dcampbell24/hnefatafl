@@ -1042,7 +1042,7 @@ impl<'a> Client {
 
                 let mut column_groups = Column::new();
 
-                for (i, players) in group.iter().enumerate() {
+                for (j, players) in group.iter().enumerate() {
                     if let Ok(players) = players.lock() {
                         if players.records.iter().last().is_none() {
                             continue;
@@ -1051,7 +1051,7 @@ impl<'a> Client {
                         let mut games_count = 0;
                         let mut column_group = Column::new();
 
-                        if i > 0 {
+                        if j > 0 {
                             column_group = column_group.push(text("---").font(Font::MONOSPACE));
                         }
 
