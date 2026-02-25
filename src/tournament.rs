@@ -79,16 +79,15 @@ impl Tournament {
                 if group_finished {
                     let mut standings = Vec::new();
                     let mut players = Vec::new();
-                    let mut previous_score = -1.0;
+                    let mut previous_score = u64::MAX;
 
                     for (name, record) in &group.records {
                         players.push(name.clone());
                         let score = record.score();
-                        // The score only ever equals a whole number or a whole number plus 0.5.
-                        // This is perfectly represented as a binary floating point number.
+
                         if score != previous_score {
                             standings.push(Standing {
-                                score: record.score(),
+                                score,
                                 players: players.clone(),
                             });
                         } else if let Some(standing) = standings.last_mut() {
@@ -119,23 +118,21 @@ impl Tournament {
                     }
                 }
 
+                // Fixme!!!!
                 if finished {
                     let mut done = true;
                     let mut players = HashSet::new();
 
                     for group in groups {
-                        if let Ok(group) = group.lock() {
+                        if let Ok(group) = group.lock()
+                            && let Some(top_score) = group.records.values().map(Record::score).max()
+                        {
                             let records: Vec<_> = group.records.iter().collect();
-                            if let Some((_, record_1)) = records.first() {
-                                for (name, record_2) in &records {
-                                    if record_1.wins == record_2.wins
-                                        && record_1.losses == record_2.losses
-                                        && record_1.draws == record_2.draws
-                                    {
-                                        players.insert((*name).clone());
-                                    } else {
-                                        done = false;
-                                    }
+                            for (name, record) in &records {
+                                if record.score() == top_score {
+                                    players.insert((*name).clone());
+                                } else {
+                                    done = false;
                                 }
                             }
                         }
@@ -321,28 +318,28 @@ impl Tournament {
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
 pub struct Group {
     pub id: u64,
-    pub total_games: u8,
+    pub total_games: u64,
     pub records: HashMap<String, Record>,
     pub finishing_standings: Vec<Standing>,
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 pub struct Standing {
-    pub score: f64,
+    pub score: u64,
     pub players: Vec<String>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
 pub struct Record {
     pub rating: String,
-    pub wins: u8,
-    pub losses: u8,
-    pub draws: u8,
+    pub wins: u64,
+    pub losses: u64,
+    pub draws: u64,
 }
 
 impl Record {
     #[must_use]
-    pub fn games_count(&self) -> u8 {
+    pub fn games_count(&self) -> u64 {
         self.wins + self.losses + self.draws
     }
 
@@ -353,7 +350,7 @@ impl Record {
     }
 
     #[must_use]
-    pub fn score(&self) -> f64 {
-        f64::from(self.wins) + f64::from(self.draws) * 0.5
+    pub fn score(&self) -> u64 {
+        2 * self.wins + self.draws
     }
 }

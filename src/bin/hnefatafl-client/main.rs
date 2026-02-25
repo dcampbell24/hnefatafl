@@ -1050,6 +1050,7 @@ impl<'a> Client {
                             );
                         }
 
+                        // Fixme!!!
                         if games_count / 2 == players.total_games {
                             let mut records: Vec<_> = players
                                 .records
