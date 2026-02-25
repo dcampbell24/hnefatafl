@@ -24,8 +24,6 @@ use serde::{Deserialize, Serialize};
 
 use crate::{Id, accounts::Accounts, server_game::ServerGame, status::Status};
 
-const GROUP_SIZE: usize = 2;
-
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct Tournament {
     pub id: u64,
@@ -149,7 +147,7 @@ impl Tournament {
 
     #[allow(clippy::missing_panics_doc)]
     #[must_use]
-    pub fn generate_round(&mut self, accounts: &Accounts) -> Vec<Group> {
+    pub fn generate_round(&mut self, accounts: &Accounts, group_size: usize) -> Vec<Group> {
         let mut players_vec = Vec::new();
 
         for player in &self.players_left {
@@ -169,8 +167,8 @@ impl Tournament {
         players_vec.shuffle(&mut rng);
         players_vec.sort_unstable_by(|a, b| a.1.total_cmp(&b.1));
 
-        let mut groups_number = players_len / GROUP_SIZE;
-        let remainder = players_len % GROUP_SIZE;
+        let mut groups_number = players_len / group_size;
+        let remainder = players_len % group_size;
 
         if remainder != 0 {
             groups_number += 1;
@@ -185,7 +183,7 @@ impl Tournament {
         for _ in 0..whole_groups {
             let mut group = self.new_group();
 
-            for _ in 0..GROUP_SIZE {
+            for _ in 0..group_size {
                 let player = players_vec.pop().expect("There should be a player to pop.");
 
                 group.records.insert(
@@ -200,7 +198,7 @@ impl Tournament {
             groups.push(group);
         }
 
-        if remainder > GROUP_SIZE / 2 {
+        if remainder > group_size / 2 {
             let length = players_vec.len();
             let mut length_1 = length / 2;
             let length_2 = length / 2;
@@ -239,7 +237,7 @@ impl Tournament {
         } else {
             if groups_number != 1 {
                 let mut group = self.new_group();
-                for _ in 0..GROUP_SIZE {
+                for _ in 0..group_size {
                     let player = players_vec.pop().expect("There should be a player to pop.");
 
                     group.records.insert(
