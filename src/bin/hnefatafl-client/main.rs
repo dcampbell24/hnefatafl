@@ -1042,10 +1042,19 @@ impl<'a> Client {
 
                 let mut column_groups = Column::new();
 
-                for players in group {
+                for (i, players) in group.iter().enumerate() {
                     if let Ok(players) = players.lock() {
+                        if players.records.iter().last().is_none() {
+                            continue;
+                        }
+
                         let mut games_count = 0;
-                        let mut column_group = column![text("---").font(Font::MONOSPACE)];
+                        let mut column_group = Column::new();
+
+                        if i > 0 {
+                            column_group = column_group.push(text("---").font(Font::MONOSPACE));
+                        }
+
                         let mut column_group_vec = Vec::new();
 
                         for (player, record) in &players.records {
