@@ -114,6 +114,7 @@ impl Tournament {
                             games_count += record.games_count();
                         }
 
+                        // If group not finished:
                         if group.total_games != games_count / 2 {
                             finished = false;
                             break;
@@ -146,9 +147,9 @@ impl Tournament {
         next_round
     }
 
-    #[allow(clippy::missing_panics_doc)]
+    #[allow(clippy::missing_panics_doc, clippy::too_many_lines)]
     #[must_use]
-    pub fn generate_round(&mut self, accounts: &Accounts, group_size: usize) -> Vec<Group> {
+    pub fn generate_round(&mut self, accounts: &Accounts, mut group_size: usize) -> Vec<Group> {
         let mut players_vec = Vec::new();
 
         for player in &self.players_left {
@@ -169,14 +170,19 @@ impl Tournament {
         players_vec.sort_unstable_by(|a, b| a.1.total_cmp(&b.1));
 
         let mut groups_number = players_len / group_size;
-        let remainder = players_len % group_size;
+        let mut remainder = 0;
 
-        if remainder != 0 {
-            groups_number += 1;
+        if groups_number == 0 {
+            groups_number = 1;
+            group_size = players_len;
+        } else {
+            remainder = players_len % group_size;
         }
 
         let mut whole_groups = groups_number;
+
         if remainder != 0 {
+            groups_number += 1;
             whole_groups = whole_groups.saturating_sub(2);
         }
 
