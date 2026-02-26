@@ -71,8 +71,8 @@ fn main() -> Result<(), anyhow::Error> {
     let content = file.replace("{{description}}", RULES);
     fs::write(rules_path, content)?;
 
-    // let rules_path = "book/ai.html";
-    let rules_path = "/var/www/html/tournament.html";
+    // let rules_path = "book/tournaments.html";
+    let rules_path = "/var/www/html/tournaments.html";
     let file = fs::read_to_string(rules_path)?;
     let content = file.replace("{{description}}", TOURNAMENT);
     fs::write(rules_path, content)?;
