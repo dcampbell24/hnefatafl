@@ -199,13 +199,13 @@ impl Tournament {
             groups.push(group);
         }
 
-        if remainder != 0 {
-            let mut group = self.new_group();
-
+        if remainder != 0
+            && let Some(mut group_1) = groups.pop()
+        {
             for _ in 0..remainder {
                 let player = players_vec.pop().expect("There should be a player to pop.");
 
-                group.records.insert(
+                group_1.records.insert(
                     player.0,
                     Record {
                         rating: player.2,
@@ -214,7 +214,29 @@ impl Tournament {
                 );
             }
 
-            groups.push(group);
+            let len = group_1.records.len();
+            let mut records_1: Vec<_> = group_1.records.into_iter().take(len).collect();
+
+            records_1.sort_by(|(_, record_1), (_, record_2)| record_2.draws.cmp(&record_1.draws));
+            records_1.sort_by(|(_, record_1), (_, record_2)| record_2.wins.cmp(&record_1.wins));
+
+            let records_2 = records_1.split_off(len / 2);
+
+            let mut records_1a = HashMap::new();
+            for (name, record) in records_1 {
+                records_1a.insert(name, record);
+            }
+            group_1.records = records_1a;
+
+            let mut group_2 = self.new_group();
+            let mut records_2a = HashMap::new();
+            for (name, record) in records_2 {
+                records_2a.insert(name, record);
+            }
+            group_2.records = records_2a;
+
+            groups.push(group_1);
+            groups.push(group_2);
         }
 
         groups
