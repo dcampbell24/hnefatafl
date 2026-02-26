@@ -205,6 +205,10 @@ fn i18n_buttons() -> HashMap<String, String> {
         "Leave Tournament".to_string(),
         t!("Leave Tournament").to_string(),
     );
+    strings.insert(
+        "Tournaments Described".to_string(),
+        t!("Tournaments Described").to_string(),
+    );
 
     strings
 }
@@ -2745,7 +2749,7 @@ impl<'a> Client {
                                     if !self.sound_muted {
                                         thread::spawn(move || {
                                             let mut stream =
-                                                rodio::OutputStreamBuilder::open_default_stream()?;
+                                                rodio::DeviceSinkBuilder::open_default_sink()?;
 
                                             let cursor = Cursor::new(SOUND_GAME_OVER);
                                             let sound = rodio::play(stream.mixer(), cursor)?;
@@ -2794,7 +2798,7 @@ impl<'a> Client {
                                 if !self.sound_muted {
                                     thread::spawn(move || {
                                         let mut stream =
-                                            rodio::OutputStreamBuilder::open_default_stream()?;
+                                            rodio::DeviceSinkBuilder::open_default_sink()?;
 
                                         let cursor = Cursor::new(SOUND_GAME_OVER);
                                         let sound = rodio::play(stream.mixer(), cursor)?;
@@ -3153,6 +3157,7 @@ impl<'a> Client {
                 }
             }
             Message::Time(time) => self.game_settings.time = Some(time),
+            Message::Tournaments => open_url("https://hnefatafl.org/tournaments.html"),
             Message::TournamentDelete => self.send("tournament_delete\n"),
             Message::TournamentTreeDelete => self.send("tournament_groups_delete\n"),
             Message::Users => self.screen = Screen::Users,
@@ -3416,7 +3421,7 @@ impl<'a> Client {
         let capture = !self.captures.is_empty();
 
         thread::spawn(move || {
-            let mut stream = rodio::OutputStreamBuilder::open_default_stream()?;
+            let mut stream = rodio::DeviceSinkBuilder::open_default_sink()?;
             let cursor = if capture {
                 Cursor::new(SOUND_CAPTURE)
             } else {
@@ -4095,7 +4100,13 @@ impl<'a> Client {
             }
             Screen::Tournament => {
                 let mut column = Column::new().padding(PADDING).spacing(SPACING);
-
+                column = column.push(
+                    button(text!(
+                        "{} (0)",
+                        self.strings["Tournaments Described"].as_str()
+                    ))
+                    .on_press(Message::Tournaments),
+                );
                 if self.admin {
                     let input = iced::widget::text_input("????-??-??", &self.text_input)
                         .on_input(Message::TextChanged)

@@ -57,7 +57,7 @@ thiserror = "2"
 
 # client
 image = { version = "0.25", default-features = false, features = ["png"], optional = true }
-rodio = { version = "0.21", optional = true }
+rodio = { version = "0.22", optional = true }
 smol_str = { version = "0.3", optional = true }
 webbrowser = { version = "1", features = ["hardened"], optional = true }
 

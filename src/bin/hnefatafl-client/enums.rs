@@ -184,6 +184,7 @@ pub(crate) enum Message {
     Tick,
     Time(TimeEnum),
     Tournament,
+    Tournaments,
     TournamentJoin,
     TournamentLeave,
     TournamentStart,
