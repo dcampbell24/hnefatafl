@@ -147,7 +147,7 @@ impl Tournament {
         next_round
     }
 
-    #[allow(clippy::missing_panics_doc, clippy::too_many_lines)]
+    #[allow(clippy::missing_panics_doc)]
     #[must_use]
     pub fn generate_round(&mut self, accounts: &Accounts, mut group_size: usize) -> Vec<Group> {
         let mut players_vec = Vec::new();
@@ -179,15 +179,9 @@ impl Tournament {
             remainder = players_len % group_size;
         }
 
-        let mut whole_groups = groups_number;
-
-        if remainder != 0 {
-            groups_number += 1;
-            whole_groups = whole_groups.saturating_sub(2);
-        }
-
         let mut groups = Vec::new();
-        for _ in 0..whole_groups {
+
+        for _ in 0..groups_number {
             let mut group = self.new_group();
 
             for _ in 0..group_size {
@@ -205,61 +199,10 @@ impl Tournament {
             groups.push(group);
         }
 
-        if remainder > group_size / 2 {
-            let length = players_vec.len();
-            let mut length_1 = length / 2;
-            let length_2 = length / 2;
-
-            if length % 2 != 0 {
-                length_1 += 1;
-            }
-
+        if remainder != 0 {
             let mut group = self.new_group();
-            for _ in 0..length_1 {
-                let player = players_vec.pop().expect("There should be a player to pop.");
 
-                group.records.insert(
-                    player.0,
-                    Record {
-                        rating: player.2,
-                        ..Record::default()
-                    },
-                );
-            }
-            groups.push(group);
-
-            let mut group = self.new_group();
-            for _ in 0..length_2 {
-                let player = players_vec.pop().expect("There should be a player to pop.");
-
-                group.records.insert(
-                    player.0,
-                    Record {
-                        rating: player.2,
-                        ..Record::default()
-                    },
-                );
-            }
-            groups.push(group);
-        } else {
-            if groups_number != 1 {
-                let mut group = self.new_group();
-                for _ in 0..group_size {
-                    let player = players_vec.pop().expect("There should be a player to pop.");
-
-                    group.records.insert(
-                        player.0,
-                        Record {
-                            rating: player.2,
-                            ..Record::default()
-                        },
-                    );
-                }
-                groups.push(group);
-            }
-
-            let mut group = self.new_group();
-            for _ in 0..(remainder) {
+            for _ in 0..remainder {
                 let player = players_vec.pop().expect("There should be a player to pop.");
 
                 group.records.insert(
