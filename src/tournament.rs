@@ -22,7 +22,7 @@ use chrono::{DateTime, Utc};
 use rand::seq::SliceRandom;
 use serde::{Deserialize, Serialize};
 
-use crate::{Id, accounts::Accounts, server_game::ServerGame, status::Status};
+use crate::{Id, accounts::Accounts, glicko::Rating, server_game::ServerGame, status::Status};
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct Tournament {
@@ -153,21 +153,19 @@ impl Tournament {
         let mut players_vec = Vec::new();
 
         for player in &self.players_left {
-            let mut rating = 1500.0;
-            let mut rating_string = String::new();
+            let mut rating = Rating::default();
 
             if let Some(account) = accounts.0.get(player.as_str()) {
-                rating = account.rating.rating.round_ties_even();
-                rating_string = account.rating.to_string_rounded();
+                rating = account.rating.clone();
             }
 
-            players_vec.push((player.clone(), rating, rating_string));
+            players_vec.push((player.clone(), rating));
         }
 
         let players_len = players_vec.len();
         let mut rng = rand::rng();
         players_vec.shuffle(&mut rng);
-        players_vec.sort_unstable_by(|a, b| a.1.total_cmp(&b.1));
+        players_vec.sort_unstable_by(|a, b| b.1.rating.total_cmp(&a.1.rating));
 
         let mut groups_number = players_len / group_size;
         let mut remainder = 0;
@@ -190,7 +188,7 @@ impl Tournament {
                 group.records.insert(
                     player.0,
                     Record {
-                        rating: player.2,
+                        rating: player.1,
                         ..Record::default()
                     },
                 );
@@ -208,7 +206,7 @@ impl Tournament {
                 group_1.records.insert(
                     player.0,
                     Record {
-                        rating: player.2,
+                        rating: player.1,
                         ..Record::default()
                     },
                 );
@@ -217,8 +215,10 @@ impl Tournament {
             let len = group_1.records.len();
             let mut records_1: Vec<_> = group_1.records.into_iter().take(len).collect();
 
-            records_1.sort_by(|(_, record_1), (_, record_2)| record_2.draws.cmp(&record_1.draws));
-            records_1.sort_by(|(_, record_1), (_, record_2)| record_2.wins.cmp(&record_1.wins));
+            records_1.shuffle(&mut rng);
+            records_1.sort_unstable_by(|(_, record_1), (_, record_2)| {
+                record_2.rating.rating.total_cmp(&record_1.rating.rating)
+            });
 
             let records_2 = records_1.split_off(len / 2);
 
@@ -287,7 +287,7 @@ pub struct Standing {
 
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
 pub struct Record {
-    pub rating: String,
+    pub rating: Rating,
     pub wins: u64,
     pub losses: u64,
     pub draws: u64,

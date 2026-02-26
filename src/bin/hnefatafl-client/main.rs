@@ -1062,7 +1062,7 @@ impl<'a> Client {
 
                             if tournament.tournament_games.is_empty() && i + 1 == round.len() {
                                 column_group_vec.push(
-                                    text!("{:16} {:10}", player, record.rating,)
+                                    text!("{:16} {:10}", player, record.rating.to_string_rounded())
                                         .font(Font::MONOSPACE),
                                 );
                             } else {
@@ -1070,7 +1070,7 @@ impl<'a> Client {
                                     text!(
                                         "{:16} {:10} {}: {}, {}: {}, {}: {}",
                                         player,
-                                        record.rating,
+                                        record.rating.to_string_rounded(),
                                         t!("wins"),
                                         record.wins,
                                         t!("losses"),
@@ -1111,7 +1111,7 @@ impl<'a> Client {
                                             text!(
                                                 "{:16} {:10} {}: {}, {}: {}, {}: {}",
                                                 name_2,
-                                                record_2.rating,
+                                                record_2.rating.to_string_rounded(),
                                                 t!("wins"),
                                                 record_2.wins,
                                                 t!("losses"),
@@ -1127,7 +1127,7 @@ impl<'a> Client {
                                             text!(
                                                 "{:16} {:10} {}: {}, {}: {}, {}: {}",
                                                 name_2,
-                                                record_2.rating,
+                                                record_2.rating.to_string_rounded(),
                                                 t!("wins"),
                                                 record_2.wins,
                                                 t!("losses"),
