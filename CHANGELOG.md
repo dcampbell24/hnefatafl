@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.2.0] - 2026-02-26
+
 ### Added
 
 - hnefatafl-client: display the players rank next to their name for games_light.
@@ -637,6 +639,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - hnefatafl-client: Make users and games scrollable.
 - Make all the features dependencies.
 
-[unreleased]: https://github.com/dcampbell24/hnefatafl/compare/v5.1.0-1...main
+[unreleased]: https://github.com/dcampbell24/hnefatafl/compare/v5.2.0-1...main
+[5.2.0]: https://github.com/dcampbell24/hnefatafl/compare/v5.1.0-1...v5.2.0-1
 [5.1.0]: https://github.com/dcampbell24/hnefatafl/compare/v5.0.1-1...v5.1.0-1
 [5.0.1]: https://github.com/dcampbell24/hnefatafl/compare/v5.0.0-4...v5.0.1-1
