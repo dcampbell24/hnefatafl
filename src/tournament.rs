@@ -70,14 +70,13 @@ impl Tournament {
                     }
                 }
 
-                let mut group_finished = true;
+                let mut games_count = 0;
                 for record in group.records.values() {
-                    if group.total_games != record.games_count() {
-                        group_finished = false;
-                    }
+                    games_count += record.games_count();
                 }
 
-                if group_finished {
+                // If group finished:
+                if group.total_games == games_count / 2 {
                     let mut standings = Vec::new();
                     let mut players = Vec::new();
                     let mut previous_score = u64::MAX;
@@ -108,13 +107,16 @@ impl Tournament {
                 && let Some(groups) = round.last()
             {
                 let mut finished = true;
-                'for_loop: for group in groups {
+                for group in groups {
                     if let Ok(group) = group.lock() {
+                        let mut games_count = 0;
                         for record in group.records.values() {
-                            if group.total_games != record.games_count() {
-                                finished = false;
-                                break 'for_loop;
-                            }
+                            games_count += record.games_count();
+                        }
+
+                        if group.total_games != games_count / 2 {
+                            finished = false;
+                            break;
                         }
                     }
                 }
@@ -126,10 +128,9 @@ impl Tournament {
                         if let Ok(group) = group.lock()
                             && let Some(top_score) = group.records.values().map(Record::score).max()
                         {
-                            let records: Vec<_> = group.records.iter().collect();
-                            for (name, record) in &records {
+                            for (name, record) in &group.records {
                                 if record.score() == top_score {
-                                    players_left.insert((*name).clone());
+                                    players_left.insert(name.clone());
                                 } else {
                                     next_round = true;
                                 }
