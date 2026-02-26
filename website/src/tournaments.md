@@ -14,9 +14,10 @@ time and six hour increments.
 Play continues until a round in which there is only one player left or all
 players got the same number of wins, losses, and draws in the last round. A
 round is broken up into groups of N players. N being what was passed in the
-argument `--group-size`, defaulting to four. Play within a group consists of
-every player playing every other player once as the attacker (black) and once
-as the defender (white).
+argument `--group-size`. The default is four for a maximum of twelve games
+played by each player for each round. Play within a group consists of every
+player playing every other player once as the attacker (black) and once as the
+defender (white).
 
 The players are first sorted by rating with equally rated players being sorted
 randomly. Then the players are put into groups with highest rated players at
