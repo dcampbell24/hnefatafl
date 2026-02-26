@@ -1083,45 +1083,41 @@ impl<'a> Client {
                             }
                         }
 
-                        // The round is finished if:
+                        // If round finished:
                         if games_count / 2 == players.total_games {
                             column_group_vec.clear();
 
                             let mut records: Vec<_> = players
                                 .records
                                 .iter()
-                                .map(|(name, record)| {
-                                    (
-                                        name,
-                                        record.rating.clone(),
-                                        record.wins,
-                                        record.losses,
-                                        record.draws,
-                                    )
-                                })
+                                .map(|(name, record)| (name, record.clone()))
                                 .collect();
 
-                            records.sort_by(|a, b| b.3.cmp(&a.3));
-                            records.sort_by(|a, b| b.1.cmp(&a.1));
+                            records.sort_by(|(_, record_1), (_, record_2)| {
+                                record_2.draws.cmp(&record_1.draws)
+                            });
+                            records.sort_by(|(_, record_1), (_, record_2)| {
+                                record_2.wins.cmp(&record_1.wins)
+                            });
 
-                            if let Some(record_1) = records.last() {
+                            if let Some((_, record_1)) = records.first() {
                                 column_group_vec.clear();
-                                for record_2 in &records {
-                                    if record_1.1 == record_2.1
-                                        && record_1.2 == record_2.2
-                                        && record_1.3 == record_2.3
+                                for (name_2, record_2) in &records {
+                                    if record_1.wins == record_2.wins
+                                        && record_1.losses == record_2.losses
+                                        && record_1.draws == record_2.draws
                                     {
                                         column_group_vec.push(
                                             text!(
                                                 "{:16} {:10} {}: {}, {}: {}, {}: {}",
-                                                record_2.0,
-                                                record_2.1,
+                                                name_2,
+                                                record_2.rating,
                                                 t!("wins"),
-                                                record_2.2,
+                                                record_2.wins,
                                                 t!("losses"),
-                                                record_2.3,
+                                                record_2.losses,
                                                 t!("draws"),
-                                                record_2.4,
+                                                record_2.draws,
                                             )
                                             .font(Font::MONOSPACE)
                                             .style(text::success),
@@ -1130,14 +1126,14 @@ impl<'a> Client {
                                         column_group_vec.push(
                                             text!(
                                                 "{:16} {:10} {}: {}, {}: {}, {}: {}",
-                                                record_2.0,
-                                                record_2.1,
+                                                name_2,
+                                                record_2.rating,
                                                 t!("wins"),
-                                                record_2.2,
+                                                record_2.wins,
                                                 t!("losses"),
-                                                record_2.3,
+                                                record_2.losses,
                                                 t!("draws"),
-                                                record_2.4,
+                                                record_2.draws,
                                             )
                                             .font(Font::MONOSPACE)
                                             .style(text::danger),
