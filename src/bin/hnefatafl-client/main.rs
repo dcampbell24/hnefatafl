@@ -3361,7 +3361,7 @@ impl<'a> Client {
             ratings
         ]
         .padding(PADDING);
-        let timed = t!("timed");
+        let timed = t!("time");
         let timings = column![
             text(timed.to_string()),
             text("-".repeat(timed.chars().count())).font(Font::MONOSPACE),
