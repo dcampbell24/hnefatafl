@@ -88,7 +88,6 @@ js = ["dep:wasm-bindgen", "getrandom/wasm_js", "iced?/web-colors", "iced?/webgl"
 runic = []
 server = ["dep:argon2", "dep:ctrlc", "dep:itertools", "dep:lettre", "dep:old_rand", "dep:password-hash", "socket"]
 socket = ["dep:socket2"]
-website = []
 
 # client
 icon_2 = []
@@ -136,12 +135,6 @@ test = false
 [[bin]]
 name = "send-website-urls"
 required-features = ["urls"]
-bench = false
-test = false
-
-[[bin]]
-name = "replace_strings"
-required-features = ["website"]
 bench = false
 test = false
 
