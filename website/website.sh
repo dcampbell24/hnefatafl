@@ -1,9 +1,10 @@
 #! /bin/bash -ex
 
+# PATH+=":$HOME/.cargo/bin"
+
 mdbook build --dest-dir /var/www/html/
 
-cargo build --bin replace_strings --features website --no-default-features
-../target/debug/replace_strings
+./replace_strings.sh
 
 cat << EOF > /var/www/html/robots.txt
 User-agent: *
