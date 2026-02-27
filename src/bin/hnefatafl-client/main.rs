@@ -4100,13 +4100,7 @@ impl<'a> Client {
             }
             Screen::Tournament => {
                 let mut column = Column::new().padding(PADDING).spacing(SPACING);
-                column = column.push(
-                    button(text!(
-                        "{} (0)",
-                        self.strings["Tournaments Described"].as_str()
-                    ))
-                    .on_press(Message::Tournaments),
-                );
+
                 if self.admin {
                     let input = iced::widget::text_input("????-??-??", &self.text_input)
                         .on_input(Message::TextChanged)
@@ -4138,6 +4132,12 @@ impl<'a> Client {
                 let start_date = t!("Tournament Start Date");
                 date = date.push(text!("{start_date}: {}", tournament.date.to_rfc2822()));
 
+                let button_0 = button(text!(
+                    "{} (0)",
+                    self.strings["Tournaments Described"].as_str()
+                ))
+                .on_press(Message::Tournaments);
+
                 let mut button_1 =
                     button(text!("{} (1)", self.strings["Join Tournament"].as_str()));
 
@@ -4151,6 +4151,7 @@ impl<'a> Client {
                 }
 
                 let buttons = row![
+                    button_0,
                     button_1,
                     button_2,
                     button(text!("{} (Esc)", self.strings["Leave"].as_str()))
