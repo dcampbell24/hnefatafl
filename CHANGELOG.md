@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- hnefatafl-client: Fix spelling of Described for translation key.
 - hnefatafl-client: replace timed with time.
 
 ## [5.2.0] - 2026-02-26
