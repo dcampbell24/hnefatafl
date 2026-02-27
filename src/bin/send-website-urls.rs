@@ -42,6 +42,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "https://hnefatafl.org/history.html",
         "https://hnefatafl.org/install.html",
         "https://hnefatafl.org/rules.html",
+        "https://hnefatafl.org/tournaments.html",
         "https://hnefatafl.org/sitemap.xml"
     ]
 }}
