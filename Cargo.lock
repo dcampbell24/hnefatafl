@@ -2247,6 +2247,7 @@ dependencies = [
  "rust-i18n",
  "rustc-hash 2.1.1",
  "serde",
+ "serde_json",
  "smol_str 0.3.5",
  "socket2",
  "thiserror 2.0.18",

@@ -1,4 +1,5 @@
 {
+    "cSpell.ignorePaths": ["locales/**"],
     "cSpell.words": [
         "addrs",
         "allocvec",
