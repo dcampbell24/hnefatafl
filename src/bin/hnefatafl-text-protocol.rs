@@ -40,7 +40,7 @@ use hnefatafl_copenhagen::{
 ///
 /// This plays the game using the Hnefatafl Text Protocol.
 #[derive(Parser, Debug)]
-#[command(version, about)]
+#[command(version, about = "Copenhagen Hnefatafl Engine")]
 struct Args {
     /// Choose an AI to play as
     #[arg(long)]

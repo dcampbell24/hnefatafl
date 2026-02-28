@@ -36,7 +36,7 @@ use hnefatafl_copenhagen::{
 /// This is a TCP server that listens for HTP engines
 /// to connect and then plays them against each other.
 #[derive(Parser, Debug)]
-#[command(version, about)]
+#[command(version, about = "Copenhagen Hnefatafl Server Light")]
 struct Args {
     /// Listen for HTP drivers on host and port
     #[arg(default_value = "0.0.0.0", index = 1, value_name = "host")]
