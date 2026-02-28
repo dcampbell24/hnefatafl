@@ -3,7 +3,8 @@
 export RUSTFLAGS='-D warnings'
 
 cargo fmt --all --check
-cargo clippy --all-targets --examples --features js
-cargo test --features js
+cargo clippy --all-targets --examples
+cargo test
+cargo test --benches
 
 uvx zizmor --pedantic .github/workflows
