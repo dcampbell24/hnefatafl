@@ -53,6 +53,7 @@ ron = { version = "0.12", features = ["integer128"] }
 rustc-hash = "2"
 rust-i18n = "3"
 serde = { version = "1", features = ["derive", "rc"] }
+serde_json = { version = "1",  optional = true }
 thiserror = "2"
 
 # client
@@ -80,11 +81,12 @@ old_rand = { package = "rand", version = "0.8", optional = true }
 password-hash = { version = "0.5", optional = true }
 
 [features]
-default = ["client", "server"]
+default = ["client", "server", "json"]
 client = ["dep:iced", "dep:image", "dep:rodio", "dep:smol_str", "socket", "dep:webbrowser"]
 console = []
 debug =  ["iced?/debug"]
 js = ["dep:wasm-bindgen", "getrandom/wasm_js", "iced?/web-colors", "iced?/webgl"]
+json = ["dep:serde_json"]
 runic = []
 server = ["dep:argon2", "dep:ctrlc", "dep:itertools", "dep:lettre", "dep:old_rand", "dep:password-hash", "socket"]
 socket = ["dep:socket2"]
@@ -99,6 +101,12 @@ urls = ["dep:reqwest"]
 crate-type = ["cdylib", "rlib"]
 bench = false
 doctest = false
+
+[[bin]]
+name = "count-keys"
+required-features = ["json"]
+bench = false
+test = false
 
 [[bin]]
 name = "hnefatafl-ai"
