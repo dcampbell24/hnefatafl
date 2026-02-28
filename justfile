@@ -52,3 +52,6 @@ html-client:
 [group('Operating Systems')]
 macos:
     cargo bundle --bin hnefatafl-client --features client --no-default-features --release
+
+remove-exif-data *args:
+    exiftool -all= -overwrite_original {{args}}
