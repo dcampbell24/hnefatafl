@@ -17,17 +17,16 @@
 #![deny(clippy::indexing_slicing)]
 #![deny(clippy::panic)]
 #![deny(clippy::unwrap_used)]
-#![cfg(feature = "json")]
 
 use std::fs;
 
-use serde_json::Value;
+use toml::Value;
 
 fn main() -> anyhow::Result<()> {
-    let json_content = fs::read_to_string("locales/app.json")?;
-    let json_value: serde_json::Value = serde_json::from_str(&json_content)?;
+    let json_content = fs::read_to_string("locales/app.toml")?;
+    let json_value: Value = toml::from_str(&json_content)?;
 
-    if let Value::Object(map) = json_value {
+    if let Value::Table(map) = json_value {
         let mut count = 0;
 
         for (words, _) in map {
