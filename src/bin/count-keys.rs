@@ -23,18 +23,17 @@ use std::fs;
 use toml::Value;
 
 fn main() -> anyhow::Result<()> {
-    let json_content = fs::read_to_string("locales/app.toml")?;
-    let json_value: Value = toml::from_str(&json_content)?;
+    let toml_content = fs::read_to_string("locales/app.toml")?;
+    let toml_value: Value = toml::from_str(&toml_content)?;
 
-    if let Value::Table(map) = json_value {
+    if let Value::Table(map) = toml_value {
         let mut count = 0;
 
         for (words, _) in map {
-            // println!("{words:?}");
             count += words.split_whitespace().count();
         }
 
-        println!("{count}");
+        println!("words translated: {count}");
     }
 
     Ok(())
