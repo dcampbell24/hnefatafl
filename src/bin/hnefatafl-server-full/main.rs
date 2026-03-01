@@ -335,6 +335,7 @@ fn login(
     tx.send((format!("{id} {username_proper} display_games"), None))?;
     tx.send((format!("{id} {username_proper} tournament_status_0"), None))?;
     tx.send((format!("{id} {username_proper} admin"), None))?;
+    tx.send((format!("{id} {username_proper} admin_tournament"), None))?;
 
     let mut game_id = None;
     'outer: for _ in 0..1_000_000 {
@@ -441,6 +442,8 @@ struct Server {
     ran_update_rd: UnixTimestamp,
     #[serde(default)]
     admins: HashSet<String>,
+    #[serde(default)]
+    admins_tournament: HashSet<String>,
     #[serde(default)]
     smtp: Smtp,
     #[serde(default)]
@@ -1216,7 +1219,6 @@ impl Server {
             && let Some(tournament) = &mut self.tournament
         {
             for (id, i) in ids {
-                //
                 if let Some(group) = groups_arc_mutex.get(i) {
                     tournament.tournament_games.insert(id, group.clone());
                     tournament.tournament_games.insert(id, group.clone());
@@ -1351,6 +1353,16 @@ impl Server {
                         self.clients
                             .get(&index_supplied)?
                             .send("= admin".to_string())
+                            .ok()?;
+                    }
+
+                    None
+                }
+                "admin_tournament" => {
+                    if self.admins_tournament.contains(username) {
+                        self.clients
+                            .get(&index_supplied)?
+                            .send("= admin_tournament".to_string())
                             .ok()?;
                     }
 
@@ -1757,7 +1769,7 @@ impl Server {
                 }
                 "text_game" => self.text_game(username, index_supplied, command, the_rest),
                 "tournament_delete" => {
-                    if self.admins.contains(username) {
+                    if self.admins_tournament.contains(username) {
                         self.tournament = None;
                         self.tournament_status_all();
                     }
@@ -1765,7 +1777,7 @@ impl Server {
                     None
                 }
                 "tournament_groups_delete" => {
-                    if self.admins.contains(username)
+                    if self.admins_tournament.contains(username)
                         && let Some(tournament) = &mut self.tournament
                     {
                         tournament.groups = None;
@@ -1777,7 +1789,7 @@ impl Server {
                     None
                 }
                 "tournament_date" => {
-                    if self.admins.contains(username) {
+                    if self.admins_tournament.contains(username) {
                         if let Err(error) = self.tournament_date(&the_rest) {
                             error!("tournament_date: {error}");
                         } else {
@@ -1804,7 +1816,8 @@ impl Server {
                     }
                 }
                 "tournament_start" => {
-                    if let Some(tournament) = &mut self.tournament
+                    if self.admins_tournament.contains(username)
+                        && let Some(tournament) = &mut self.tournament
                         && tournament.groups.is_none()
                         && Utc::now() >= tournament.date
                     {
