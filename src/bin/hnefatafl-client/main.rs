@@ -612,6 +612,8 @@ struct Client {
     #[serde(skip)]
     admin: bool,
     #[serde(skip)]
+    admin_tournament: bool,
+    #[serde(skip)]
     attacker: String,
     #[serde(default)]
     archived_games: Vec<ArchivedGame>,
@@ -1797,6 +1799,7 @@ impl<'a> Client {
             Screen::Games => {
                 self.send("quit\n");
                 self.admin = false;
+                self.admin_tournament = false;
                 self.connected_tcp = false;
                 self.text_input = self.username.clone();
                 self.screen = Screen::Login;
@@ -2709,6 +2712,7 @@ impl<'a> Client {
                                 | "request_draw",
                             ) => {}
                             Some("admin") => self.admin = true,
+                            Some("admin_tournament") => self.admin_tournament = true,
                             Some("display_games") => {
                                 self.games_light.0.clear();
                                 self.games_light_vec.clear();
@@ -4101,7 +4105,7 @@ impl<'a> Client {
             Screen::Tournament => {
                 let mut column = Column::new().padding(PADDING).spacing(SPACING);
 
-                if self.admin {
+                if self.admin_tournament {
                     let input = iced::widget::text_input("????-??-??", &self.text_input)
                         .on_input(Message::TextChanged)
                         .on_paste(Message::TextChanged)
@@ -4177,7 +4181,7 @@ impl<'a> Client {
                 column = column.push(title);
                 column = column.push(players);
 
-                if self.admin {
+                if self.admin_tournament {
                     let mut delete_button = button("Delete Tournament Tree");
 
                     if let Some(tournament) = &self.tournament
