@@ -1321,8 +1321,10 @@ impl<'a> Client {
                 || Some(&self.username) == game.defender.as_ref()
             {
                 JoinGame::Resume
-            } else {
+            } else if game.challenge_accepted {
                 JoinGame::Watch
+            } else {
+                JoinGame::None
             }
         } else if game.attacker.is_some()
             && game.defender.is_some()
