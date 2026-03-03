@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- hnefatafl-client: make the volume adjustable.
+
 ### Changed
 
 - hnefatafl-client: separate admin and admin_tournament.

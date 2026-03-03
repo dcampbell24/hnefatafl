@@ -918,6 +918,23 @@ ru = "Пользователи"
 sv-SE = "Användare"
 zh-CN = "用户"
 
+[Volume]
+ar = "مقدار"
+de = "Volumen"
+en-US = "Volume"
+es = "Volumen"
+fr = "Volume"
+id = "Volume"
+is-IS = "Bindi"
+is-RU = "ᛒᛁᚿᛑᛁ"
+ja = "音量"
+ko = "용량"
+pt-BR = "Volume"
+pt-PT = "Volume"
+ru = "Объем"
+sv-SE = "Volym"
+zh-CN = "体积"
+
 [Watch]
 ar = "يشاهد"
 de = "Betrachten"

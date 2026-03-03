@@ -159,6 +159,8 @@ pub(crate) enum Message {
     Press8,
     Press9,
     Press0,
+    PressMinus,
+    PressPlus,
     SoundMuted(bool),
     RatedSelected(bool),
     ResetPassword,
@@ -192,6 +194,7 @@ pub(crate) enum Message {
     TournamentTreeDelete,
     Users,
     UsersSortedBy(SortBy),
+    VolumeChanged(u32),
     WindowResized((f32, f32)),
 }
 

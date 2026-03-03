@@ -23,6 +23,7 @@ mod dimensions;
 mod enums;
 mod new_game_settings;
 mod user;
+mod volume;
 
 use std::{
     collections::{HashMap, HashSet, VecDeque},
@@ -74,7 +75,7 @@ use iced::{
     widget::{
         self, Column, Container, Row, Scrollable, button, checkbox, column, container,
         operation::{focus_next, focus_previous},
-        pick_list, radio, row, scrollable, text, text_editor,
+        pick_list, radio, row, scrollable, slider, text, text_editor,
         text_input::Value,
         tooltip,
     },
@@ -93,6 +94,7 @@ use crate::{
     enums::{Coordinates, JoinGame, LoggedIn, Message, Move, Screen, Size, SortBy, State, Theme},
     new_game_settings::NewGameSettings,
     user::User,
+    volume::{MAX_VOLUME, Volume},
 };
 
 /// The Muted qualitative color scheme of [Tol]. A color scheme for the
@@ -714,6 +716,8 @@ struct Client {
     #[serde(skip)]
     status: Status,
     #[serde(skip)]
+    strings: HashMap<String, String>,
+    #[serde(skip)]
     texts: VecDeque<String>,
     #[serde(skip)]
     texts_game: VecDeque<String>,
@@ -735,8 +739,8 @@ struct Client {
     users: HashMap<String, User>,
     #[serde(skip)]
     users_sort_by: SortBy,
-    #[serde(skip)]
-    strings: HashMap<String, String>,
+    #[serde(default)]
+    volume: Volume,
 }
 
 impl<'a> Client {
@@ -1663,11 +1667,17 @@ impl<'a> Client {
             checkbox(self.coordinates.into()).on_toggle(Message::Coordinates),
             text!("{} (n)", t!("Coordinates")),
             checkbox(self.sound_muted).on_toggle(Message::SoundMuted),
-            text!("{} (o)", t!("Muted"))
+            text!("{} (o)", t!("Muted")),
         ]
         .spacing(SPACING);
-
         user_area = user_area.push(coordinates_muted);
+
+        let volume = row![
+            text!("{} (- +)", t!("Volume")),
+            slider(0..=MAX_VOLUME, self.volume.0, Message::VolumeChanged),
+        ]
+        .spacing(SPACING);
+        user_area = user_area.push(volume);
 
         let leave =
             button(text!("{} (Esc)", self.strings["Leave"].as_str())).on_press(Message::Leave);
@@ -1933,6 +1943,12 @@ impl<'a> Client {
                             Some(Message::Press9)
                         } else if *ch == *Value::new("0").to_smolstr() {
                             Some(Message::Press0)
+                        } else if *ch == *Value::new("-").to_smolstr() {
+                            Some(Message::PressMinus)
+                        } else if (*ch == *Value::new("=").to_smolstr() && shift)
+                            || *ch == *Value::new("+").to_smolstr()
+                        {
+                            Some(Message::PressPlus)
                         } else {
                             None
                         }
@@ -2623,6 +2639,30 @@ impl<'a> Client {
                     self.press_letter_and_number();
                 }
             },
+            Message::PressMinus => match self.screen {
+                Screen::AccountSettings
+                | Screen::EmailEveryone
+                | Screen::Games
+                | Screen::Tournament
+                | Screen::Users
+                | Screen::GameNew
+                | Screen::Login => {}
+                Screen::Game | Screen::GameReview => {
+                    self.volume.0 = self.volume.0.saturating_sub(1);
+                }
+            },
+            Message::PressPlus => match self.screen {
+                Screen::AccountSettings
+                | Screen::EmailEveryone
+                | Screen::Games
+                | Screen::Tournament
+                | Screen::Users
+                | Screen::GameNew
+                | Screen::Login => {}
+                Screen::Game | Screen::GameReview => {
+                    self.volume.0 = self.volume.0.saturating_add(1);
+                }
+            },
             Message::ServerShutdown => {
                 self.error_persistent
                     .push(t!("The server was shut down.").to_string());
@@ -2751,13 +2791,14 @@ impl<'a> Client {
                                     }
 
                                     if !self.sound_muted {
+                                        let volume = self.volume.volume();
                                         thread::spawn(move || {
                                             let mut stream =
                                                 rodio::DeviceSinkBuilder::open_default_sink()?;
 
                                             let cursor = Cursor::new(SOUND_GAME_OVER);
                                             let sound = rodio::play(stream.mixer(), cursor)?;
-                                            sound.set_volume(1.0);
+                                            sound.set_volume(volume);
                                             sound.sleep_until_end();
 
                                             stream.log_on_drop(false);
@@ -2800,13 +2841,14 @@ impl<'a> Client {
                                 }
 
                                 if !self.sound_muted {
+                                    let volume = self.volume.volume();
                                     thread::spawn(move || {
                                         let mut stream =
                                             rodio::DeviceSinkBuilder::open_default_sink()?;
 
                                         let cursor = Cursor::new(SOUND_GAME_OVER);
                                         let sound = rodio::play(stream.mixer(), cursor)?;
-                                        sound.set_volume(1.0);
+                                        sound.set_volume(volume);
                                         sound.sleep_until_end();
 
                                         stream.log_on_drop(false);
@@ -3166,6 +3208,7 @@ impl<'a> Client {
             Message::TournamentTreeDelete => self.send("tournament_groups_delete\n"),
             Message::Users => self.screen = Screen::Users,
             Message::UsersSortedBy(sort_by) => self.users_sort_by = sort_by,
+            Message::VolumeChanged(volume) => self.volume.0 = volume,
             Message::WindowResized((width, height)) => {
                 if width >= 1_500.0 && height >= 1_000.0 {
                     self.screen_size = Size::Giant;
@@ -3423,6 +3466,7 @@ impl<'a> Client {
         }
 
         let capture = !self.captures.is_empty();
+        let volume = self.volume.volume();
 
         thread::spawn(move || {
             let mut stream = rodio::DeviceSinkBuilder::open_default_sink()?;
@@ -3432,7 +3476,7 @@ impl<'a> Client {
                 Cursor::new(SOUND_MOVE)
             };
             let sound = rodio::play(stream.mixer(), cursor)?;
-            sound.set_volume(1.0);
+            sound.set_volume(volume);
             sound.sleep_until_end();
 
             stream.log_on_drop(false);
