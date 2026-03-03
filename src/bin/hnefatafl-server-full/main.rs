@@ -356,9 +356,12 @@ fn login(
             }
         }
 
+        // Fixme: If a player creates a game less than day main time, then
+        // leaves the game without declining, then the other players gets a
+        // game that does not automatically quit.
         let words: Vec<_> = buf_str.split_whitespace().collect();
         if let Some(first) = words.first() {
-            if (*first == "join_game" || *first == "join_game_pending" || *first == "resume_game")
+            if (*first == "join_game" || *first == "resume_game")
                 && let Some(second) = words.get(1)
                 && let Ok(id) = u128::from_str(second)
             {
