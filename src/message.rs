@@ -1,3 +1,18 @@
+// This file is part of hnefatafl-copenhagen.
+//
+// hnefatafl-copenhagen is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// hnefatafl-copenhagen is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 use std::str::FromStr;
 
 use anyhow::Context;
@@ -19,8 +34,8 @@ use crate::{
 ///
 /// Valid **ROLE** strings are `a`, `attacker`, `d`, and `defender`. Case does not matter.
 ///
-/// Valid **TO** and **FROM** coordinates are a letter, uppercase or lowercase, `A` though `K`
-/// followed by a number `1` through `11`. For example, `A1`.
+/// Valid **TO** and **FROM** coordinates are a letter, uppercase or lowercase, `A` through `M`
+/// followed by a number `1` through `13`. For example, `A1`.
 ///
 /// **MILLISECONDS** and **ADD_SECONDS** are numbers.
 ///
@@ -171,11 +186,11 @@ impl FromStr for Message {
     fn from_str(message: &str) -> anyhow::Result<Self> {
         let args: Vec<&str> = message.split_whitespace().collect();
 
-        if args.is_empty() {
+        let Some(first) = args.first() else {
             return Ok(Self::Empty);
-        }
+        };
 
-        match *args.first().unwrap() {
+        match *first {
             "board_size" => Ok(Self::BoardSize(
                 (*args
                     .get(1)

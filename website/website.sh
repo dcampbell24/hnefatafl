@@ -1,9 +1,10 @@
 #! /bin/bash -ex
 
+# PATH+=":$HOME/.cargo/bin"
+
 mdbook build --dest-dir /var/www/html/
 
-cargo build --bin replace_strings --features website --no-default-features
-../target/debug/replace_strings
+./replace_strings.sh
 
 cat << EOF > /var/www/html/robots.txt
 User-agent: *
@@ -13,7 +14,8 @@ Sitemap: https://hnefatafl.org/sitemap.xml
 EOF
 
 mkdir --parents /var/www/html/binaries/nsis/
-cp ../../hnefatafl-client-installer-4.4.1.exe /var/www/html/binaries/nsis/
+cp ../../www/hnefatafl-client-installer-*.exe /var/www/html/binaries/nsis/
+cp -r ../../www/apt/ /var/www/html/
 
 sscli -b https://hnefatafl.org -r /var/www/html/
 

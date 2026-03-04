@@ -15,46 +15,59 @@
 # OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 pkgname=hnefatafl-copenhagen
-pkgver=4.4.1
+pkgver=5.2.0
 pkgrel=1
-pkgdesc="Copenhagen Hnefatafl client."
+real_pkgrel=1
+pkgdesc="Copenhagen Hnefatafl client. Discord: https://discord.gg/h56CAHEBXd"
 url="https://hnefatafl.org"
-license=("MIT OR Apache-2.0")
+license=("AGPL-3.0-or-later")
 arch=("x86_64")
 provides=("hnefatafl-copenhagen")
 conflicts=("hnefatafl-copenhagen")
-depends=("glibc" "gcc-libs" "hicolor-icon-theme" "alsa-lib")
+depends=("glibc" "gcc-libs" "hicolor-icon-theme" "alsa-lib" "openssl")
 makedepends=("base-devel" "clang" "llvm" "mold" "rustup")
-source=("https://github.com/dcampbell24/hnefatafl/archive/refs/tags/v$pkgver.tar.gz")
-sha256sums=("154f18aade8b84acbd8ce090de82ce8e541b33d31976a2f6a5c5ea5370e69e3e")
+source=("https://github.com/dcampbell24/hnefatafl/archive/refs/tags/v$pkgver-$real_pkgrel.tar.gz")
+sha256sums=("5c213c84a0cdd9f38653b23bd347cd18087638f4c281d1c94c17f50cef500f2a")
 
 build() {
-    tar -xvzf v$pkgver.tar.gz
-    cd "hnefatafl-$pkgver"
+    tar -xvzf v$pkgver-$real_pkgrel.tar.gz
+    cd "hnefatafl-$pkgver-$real_pkgrel"
 
-    cargo build --release --bin hnefatafl-client --features client --no-default-features
+    cargo build --release
+
+    ./target/release/hnefatafl-ai --man --username ""
     ./target/release/hnefatafl-client --man
+    ./target/release/hnefatafl-server --man
+    ./target/release/hnefatafl-server-full --man
+    ./target/release/hnefatafl-text-protocol --man
+
+    gzip --no-name --best hnefatafl-ai.1
+    gzip --no-name --best hnefatafl-server.1
+    gzip --no-name --best hnefatafl-server-full.1
+    gzip --no-name --best hnefatafl-text-protocol.1
     gzip --no-name --best hnefatafl-client.1
+
+    sed -i 's/games/bin/' packages/hnefatafl-ai-attacker.service
+    sed -i 's/games/bin/' packages/hnefatafl-ai-defender.service
+    sed -i 's/games/bin/' packages/hnefatafl.service
 }
 
 package() {
-    cd "hnefatafl-$pkgver"
+    cd "hnefatafl-$pkgver-$real_pkgrel"
+    install -Dm755 "target/release/hnefatafl-ai" -t "$pkgdir/usr/bin"
     install -Dm755 "target/release/hnefatafl-client" -t "$pkgdir/usr/bin"
-    install -Dm644 LICENSE-APACHE "$pkgdir/usr/share/licenses/$pkgname/LICENSE-APACHE"
-    install -Dm644 LICENSE-MIT "$pkgdir/usr/share/licenses/$pkgname/LICENSE-MIT"
-    install -Dm644 "icons/king_16x16.png" "$pkgdir/usr/share/icons/hicolor/16x16/apps/org.hnefatafl.hnefatafl_client.png"
-    install -Dm644 "icons/king_22x22.png" "$pkgdir/usr/share/icons/hicolor/22x22/apps/org.hnefatafl.hnefatafl_client.png"
-    install -Dm644 "icons/king_24x24.png" "$pkgdir/usr/share/icons/hicolor/24x24/apps/org.hnefatafl.hnefatafl_client.png"
-    install -Dm644 "icons/king_32x32.png" "$pkgdir/usr/share/icons/hicolor/32x32/apps/org.hnefatafl.hnefatafl_client.png"
-    install -Dm644 "icons/king_42x42.png" "$pkgdir/usr/share/icons/hicolor/42x42/apps/org.hnefatafl.hnefatafl_client.png"
-    install -Dm644 "icons/king_64x64.png" "$pkgdir/usr/share/icons/hicolor/64x64/apps/org.hnefatafl.hnefatafl_client.png"
-    install -Dm644 "icons/king_128x128.png" "$pkgdir/usr/share/icons/hicolor/128x128/apps/org.hnefatafl.hnefatafl_client.png"
-    install -Dm644 "icons/king_256x256.png" "$pkgdir/usr/share/icons/hicolor/256x256/apps/org.hnefatafl.hnefatafl_client.png"
+    install -Dm755 "target/release/hnefatafl-server" -t "$pkgdir/usr/bin"
+    install -Dm755 "target/release/hnefatafl-server-full" -t "$pkgdir/usr/bin"
+    install -Dm755 "target/release/hnefatafl-text-protocol" -t "$pkgdir/usr/bin"
+    install -Dm644 "packages/hnefatafl.service" -t "$pkgdir/usr/lib/systemd/system"
+    install -Dm644 "packages/hnefatafl-ai-attacker.service" -t "$pkgdir/usr/lib/systemd/system"
+    install -Dm644 "packages/hnefatafl-ai-defender.service" -t "$pkgdir/usr/lib/systemd/system"
+    install -Dm644 "COPYING" "$pkgdir/usr/share/licenses/$pkgname/COPYING"
+    install -Dm644 "assets/helmet.svg" "$pkgdir/usr/share/icons/hicolor/scalable/apps/org.hnefatafl.hnefatafl_client.svg"
+    install -Dm644 "hnefatafl-ai.1.gz" "$pkgdir/usr/share/man/man1/hnefatafl-ai.1.gz"
     install -Dm644 "hnefatafl-client.1.gz" "$pkgdir/usr/share/man/man1/hnefatafl-client.1.gz"
+    install -Dm644 "hnefatafl-server.1.gz" "$pkgdir/usr/share/man/man1/hnefatafl-server.1.gz"
+    install -Dm644 "hnefatafl-server-full.1.gz" "$pkgdir/usr/share/man/man1/hnefatafl-server-full.1.gz"
+    install -Dm644 "hnefatafl-text-protocol.1.gz" "$pkgdir/usr/share/man/man1/hnefatafl-text-protocol.1.gz"
     install -Dm644 "packages/hnefatafl-client.desktop" "$pkgdir/usr/share/applications/hnefatafl-client.desktop"
-}
-
-check() {
-    cd "hnefatafl-$pkgver"
-    .githooks/pre-commit
 }

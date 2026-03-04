@@ -1,11 +1,11 @@
 app-id: org.hnefatafl.hnefatafl_client
 runtime: org.freedesktop.Platform
-runtime-version: '24.08'
+runtime-version: '25.08'
 sdk: org.freedesktop.Sdk
 command: org.hnefatafl.hnefatafl_client
 sdk-extensions:
   - org.freedesktop.Sdk.Extension.rust-stable
-  - org.freedesktop.Sdk.Extension.llvm18
+  - org.freedesktop.Sdk.Extension.llvm20
 finish-args:
   - --share=ipc
   - --socket=pulseaudio
@@ -19,11 +19,11 @@ modules:
     sources:
       - type: git
         url: https://github.com/dcampbell24/hnefatafl.git
-        tag: v4.2.2
+        tag: v5.2.0-1
       - cargo-sources.json
     build-options:
-      append-path: /usr/lib/sdk/llvm18/bin
-      prepend-ld-library-path: /usr/lib/sdk/llvm18/lib
+      append-path: /usr/lib/sdk/llvm20/bin
+      prepend-ld-library-path: /usr/lib/sdk/llvm20/lib
       env:
         CARGO_HOME: /run/build/hnefatafl_client/cargo
         CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: clang
@@ -34,6 +34,6 @@ modules:
       - source /usr/lib/sdk/rust-stable/enable.sh && cargo --offline fetch --manifest-path Cargo.toml
       - source /usr/lib/sdk/rust-stable/enable.sh && cargo --offline build --release --bin hnefatafl-client --features client,icon_2 --no-default-features
       - install -Dm755 target/release/hnefatafl-client /app/bin/$FLATPAK_ID
-      - install -Dm644 icons/king.svg /app/share/icons/hicolor/scalable/apps/$FLATPAK_ID.svg
+      - install -Dm644 assets/helmet.svg /app/share/icons/hicolor/scalable/apps/$FLATPAK_ID.svg
       - install -Dm644 packages/$FLATPAK_ID.desktop /app/share/applications/$FLATPAK_ID.desktop
       - install -Dm644 packages/$FLATPAK_ID.metainfo.xml /app/share/metainfo/$FLATPAK_ID.metainfo.xml

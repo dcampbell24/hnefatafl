@@ -1,13 +1,27 @@
+// This file is part of hnefatafl-copenhagen.
+//
+// hnefatafl-copenhagen is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// hnefatafl-copenhagen is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 use std::{
     collections::{HashMap, HashSet},
     fmt,
 };
 
-#[cfg(feature = "server")]
-use lettre::message::Mailbox;
+use crate::{email::Email, glicko::Rating};
 use serde::{Deserialize, Serialize};
 
-use crate::{Id, glicko::Rating};
+use crate::Id;
 
 impl fmt::Display for Accounts {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -22,7 +36,7 @@ impl fmt::Display for Accounts {
     }
 }
 
-#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
 pub struct Account {
     #[serde(default)]
     pub email: Option<Email>,
@@ -64,35 +78,5 @@ impl fmt::Display for Account {
     }
 }
 
-#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
 pub struct Accounts(pub HashMap<String, Account>);
-
-#[derive(Clone, Debug, Default, Deserialize, Hash, PartialEq, Eq, Serialize)]
-pub struct Email {
-    #[serde(default)]
-    pub address: String,
-    #[serde(default)]
-    pub code: Option<u32>,
-    #[serde(default)]
-    pub username: String,
-    #[serde(default)]
-    pub verified: bool,
-}
-
-#[cfg(feature = "server")]
-impl Email {
-    #[must_use]
-    pub fn to_mailbox(&self) -> Option<Mailbox> {
-        Some(Mailbox::new(
-            Some(self.username.clone()),
-            self.address.parse().ok()?,
-        ))
-    }
-
-    #[must_use]
-    pub fn tx(&self) -> String {
-        // Note: We use a FIGURE SPACE to separate the username from the address so
-        // .split_ascii_whitespace() does not treat it as a space.
-        format!("{} <{}>", self.username, self.address)
-    }
-}

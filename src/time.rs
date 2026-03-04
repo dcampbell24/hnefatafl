@@ -1,3 +1,18 @@
+// This file is part of hnefatafl-copenhagen.
+//
+// hnefatafl-copenhagen is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// hnefatafl-copenhagen is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 use std::fmt;
 
 use anyhow::Context;
@@ -191,5 +206,52 @@ fn time_left(milliseconds_left: i64) -> String {
         }
     } else {
         format!("{days} {hours:02}:{minutes:02}:{seconds:02}")
+    }
+}
+
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+pub enum TimeEnum {
+    Classical,
+    Infinity,
+    Long,
+    #[default]
+    Rapid,
+    VeryLong,
+}
+
+impl From<TimeEnum> for TimeSettings {
+    fn from(time_enum: TimeEnum) -> TimeSettings {
+        match time_enum {
+            TimeEnum::Classical => TimeSettings::Timed(Time {
+                add_seconds: 20,
+                milliseconds_left: 30 * MINUTE,
+            }),
+            TimeEnum::Rapid => TimeSettings::Timed(Time {
+                add_seconds: 10,
+                milliseconds_left: 15 * MINUTE,
+            }),
+
+            TimeEnum::Long => TimeSettings::Timed(Time {
+                add_seconds: 60 * 60 * 6,
+                milliseconds_left: 3 * DAY,
+            }),
+            TimeEnum::VeryLong => TimeSettings::Timed(Time {
+                add_seconds: 60 * 60 * 15,
+                milliseconds_left: 12 * 15 * HOUR,
+            }),
+            TimeEnum::Infinity => TimeSettings::UnTimed,
+        }
+    }
+}
+
+impl fmt::Display for TimeEnum {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Classical => write!(f, "00:30:00 | 00:00:20"),
+            Self::Infinity => write!(f, "∞"),
+            Self::Long => write!(f, "3 00:00:00 | 6:00:00"),
+            Self::Rapid => write!(f, "00:15:00 | 00:00:10 "),
+            Self::VeryLong => write!(f, "7 12:00:00 | 15:00:00 "),
+        }
     }
 }

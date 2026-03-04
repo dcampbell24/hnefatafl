@@ -9,6 +9,103 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- hnefatafl-client: make the volume adjustable.
+
+### Changed
+
+- hnefatafl-client: separate admin and admin_tournament.
+
+### Fixed
+
+- hnefatafl-client: you can't watch games that are not started yet.
+- hnefatafl-server-full: joining a game does not cancel when you quit.
+- hnefatafl-client: spelling of Described for translation key.
+- hnefatafl-client: replace timed with time.
+
+## [5.2.0] - 2026-02-26
+
+### Added
+
+- hnefatafl-client: display the players rank next to their name for games_light.
+
+### Changed
+
+- hnefatafl-client: order the games by the players ratings.
+- hnefatafl-server-full: save periodically and when exiting instead of on every change.
+- hnefatafl-server-full: save 100 general texts.
+- make a new tournament that is a hybrid of round robin and elimination.
+
+### Fixed
+
+- hnefatafl-server-full: leave_game.
+- hnefatafl-server-full: save the general chat texts when restarting the server.
+- hnefatafl-server-full: persist request_draw.
+
+## [5.1.0] - 2026-02-13
+
+### Added
+
+- hnefatafl-client: play a sound when you draw a game.
+- hnefatafl-client: set a hotkey for accept draw.
+- hnefatafl-client: signal when a player has left a game.
+
+### Fixed
+
+- hnefatafl-client: set the game id when you accept a game.
+- hnefatafl-client: don't crash on TCP errors.
+- hnefatafl-server-full: enable a player to play a game after leaving before the game has started.
+- hnefatafl-server-full: save when we update the game_id.
+
+## [5.0.1] - 2026-02-04
+
+### Added
+
+- Enable IPv6 support.
+
+### Fixed
+
+- hnefatafl-client: don't crash when playing two games at the same time.
+
+## 5.0.0 - 2026-01-23
+
+### Added
+
+- Tournaments!
+- hnefatafl-server-full: `--secure` flag.
+- admins to the server ron settings file.
+- Document the feature flags.
+- Make `--debug` an argument to hnefatafl-{ai, client, server-full}.
+- hnefatafl-client: optionally on windows display console out by passing
+  `--feature console`.
+
+### Changed
+
+- The icon to a helmet.
+- The license from Apache 2 or MIT to AGPLv3.
+- Use more generic logging
+- Log only the module being used by default.
+
+### Fixed
+
+- Breaking Change: use directories instead of dirs:
+  - dirs::data_dir() -> ProjectDirs::from("org", "Hnefatafl Org", "hnefatafl-copenhagen").data_local_dir()
+  - hnefatafl-copenhagen.ron        -> users.ron
+  - hnefatafl-games-active.postcard -> active-games.postcard
+  - hnefatafl-games.ron             -> archived-games.ron
+  - hnefatafl.postcard              -> archived-games.postcard
+  - hnefatafl.ron                   -> user.ron
+- Send an error message when the server is shutdown.
+- hnefatafl-server-full: don't send an empty message.
+- hnefatafl-server-full: don't send display_users or display_games unless
+  something has changed or you log in.
+- hnefatafl-client: clear the texts before logging in.
+
+## 4.5.0 - 2025-12-18
+
+### Added
+
+- Give the option of sending a message to the players.
+- hnefatafl-server-full: lose if you take a week to move.
 - hnefatafl-client: Korean.
 - hnefatafl-client: add time infinity.
 - hnefatafl-client: sort users by name or rank.
@@ -23,7 +120,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - hnefatafl-client: on the users screen move Leave out of scrolling.
 
-## [4.4.1] - 2025-12-05
+## 4.4.1 - 2025-12-05
 
 ### Fixed
 
@@ -31,7 +128,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - hnefatafl-client: put the time settings on multiple lines and don't set a default.
 - hnefatafl-server-full: quit pending games shorter than a day when quitting.
 
-## [4.4.0] - 2025-12-03
+## 4.4.0 - 2025-12-03
 
 ### Added
 
@@ -55,7 +152,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   file. Set the time correctly.
 - hnefatafl-text-protocol: don't overflow when doing ReviewGameBackward.
 
-## [4.3.0] - 2025-11-24
+## 4.3.0 - 2025-11-24
 
 ### Added
 
@@ -77,7 +174,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix HeatMap sorting.
 - hnefatafl-server-full: only do one write when writing archived games.
 
-## [4.2.2] - 2025-10-22
+## 4.2.2 - 2025-10-22
 
 ### Changed
 
@@ -92,7 +189,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - hnefatafl-client: display "Archived Games" over the archived games when none
   is selected.
 
-## [4.2.0] - 2025-10-20
+## 4.2.0 - 2025-10-20
 
 ### Added
 
@@ -113,7 +210,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Handle previous boards correctly in archived games.
 - Hnefatafl Text Protocol: generate_move
 
-## [4.1.1] - 2025-09-23
+## 4.1.1 - 2025-09-23
 
 ### Added
 
@@ -131,7 +228,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - hnefatafl-server-full: don't send messages from watchers to players during the
   game.
 
-## [4.1.0] - 2025-07-27
+## 4.1.0 - 2025-07-27
 
 ### Added
 
@@ -155,21 +252,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - hnefatafl-client: remove the arrows from replaying a game.
 
-## [4.0.0] - 2025-07-19
+## 4.0.0 - 2025-07-19
 
 ### Fixed
 
 - Change the initial board layout for 13x13.
 - hnefatafl-client: don't log when the rodio stream is closed.
 
-## [3.0.1] - 2025-07-17
+## 3.0.1 - 2025-07-17
 
 ### Fixed
 
 - hnefatafl-client: display strange characters in names.
 - hnefatafl-client: rated / unrated -> yes / no
 
-## [3.0.0] - 2025-07-16
+## 3.0.0 - 2025-07-16
 
 ### Added
 
@@ -187,13 +284,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - hnefatafl-server-full: leave all active games when you quit without clicking quit.
 
-## [2.1.0] - 2025-06-20
+## 2.1.0 - 2025-06-20
 
 ### Fixed
 
 - Make it so you can get the archived games from the client.
 
-## [2.0.3] - 2025-06-18
+## 2.0.3 - 2025-06-18
 
 ### Added
 
@@ -228,7 +325,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - document `Message`.
 - hnefatafl-client: Icelandic and Icelandic Runic.
 
-## [1.2.1] - 2025-06-03
+## 1.2.1 - 2025-06-03
 
 ### Added
 
@@ -238,7 +335,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - hnefatafl-client: update the swords (to be a dagger) and shield icon.
 
-## [1.2.0] - 2025-06-02
+## 1.2.0 - 2025-06-02
 
 ### Added
 
@@ -259,7 +356,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Always report the errors with ? in javascript.
 - hnefatafl-client: handle whitespace in a password better.
 
-## [1.1.4] - 2025-05-23
+## 1.1.4 - 2025-05-23
 
 ### Added
 
@@ -273,7 +370,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - The lowercasing of password bug.
 
-## [1.1.3] - 2025-05-21
+## 1.1.3 - 2025-05-21
 
 ### Changed
 
@@ -281,19 +378,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - hnefatafl-client: add on_paste to a bunch of input_texts.
 - hnefatafl-client: use text_input.secure().
 
-## [1.1.2] - 2025-05-21 (Yanked)
+## 1.1.2 - 2025-05-21 (Yanked)
 
 ### Fixed
 
 - hnefatafl-client: limit the valid password characters.
 
-## [1.1.1] - 2025-05-20
+## 1.1.1 - 2025-05-20
 
 ### Fixed
 
 - When you change the password make it lowercase (to work around a bug).
 
-## [1.1.0] - 2025-05-20 (Yanked)
+## 1.1.0 - 2025-05-20 (Yanked)
 
 ### Added
 
@@ -310,7 +407,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - hnefatafl-client: load the program if their is a ron file error, but show the error.
 - Cleanup ron file handling.
 
-## [1.0.0] - 2025-05-05
+## 1.0.0 - 2025-05-05
 
 ## Changed
 
@@ -325,19 +422,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - hnefatafl-client: Use a checkbox for muted.
 - hnefatafl-client: Display the icon in the title bar on Linux.
 
-## [0.13.4] - 2025-04-21
+## 0.13.4 - 2025-04-21
 
 ### Fixed
 
 - The README.md file.
 
-## [0.13.3] - 2025-04-21 (Yanked)
+## 0.13.3 - 2025-04-21 (Yanked)
 
 ### Added
 
 - Add a link to the website and point the website to rules.
 
-## [0.13.2] - 2025-04-15
+## 0.13.2 - 2025-04-15
 
 ### Added
 
@@ -350,13 +447,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - hnefatafl-client: build the sound files into the executable instead of
   packaging them separately.
 
-## [0.13.1] - 2025-03-27
+## 0.13.1 - 2025-03-27
 
 ### Fixed
 
 - hnefatafl-client: use Shaping::Advanced on the arrows.
 
-## [0.13.0] - 2025-03-27
+## 0.13.0 - 2025-03-27
 
 ### Fixed
 
@@ -368,7 +465,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - hnefatafl-client: update icons.
 - hnefatafl-client: make spectators prettier.
 
-## [0.12.0] - 2025-03-22
+## 0.12.0 - 2025-03-22
 
 ### Added
 
@@ -380,7 +477,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - hnefatafl-client: automatically resize the board.
 - hnefatafl-client: don't mention you're leaving unless you're the attacker or defender.
 
-## [0.11.0] - 2025-03-19
+## 0.11.0 - 2025-03-19
 
 ### Changed
 
@@ -389,7 +486,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - hnefatafl-client: make texting prettier.
 - hnefatafl-client: make the spectators prettier.
 
-## [0.10.0] - 2025-03-19
+## 0.10.0 - 2025-03-19
 
 ### Added
 
@@ -406,7 +503,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The display of the board.
 - hnefatafl-server-full: the player loses if they do not have any moves.
 
-## [0.9.0] - 2025-03-17
+## 0.9.0 - 2025-03-17
 
 ### Changed
 
@@ -416,13 +513,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - hnefatafl-client: the numbers spacing.
 
-## [0.8.3] - 2025-03-15
+## 0.8.3 - 2025-03-15
 
 ### Changed
 
 - hnefatafl-client: the symbols and their size.
 
-## [0.8.2] - 2025-03-14
+## 0.8.2 - 2025-03-14
 
 ### Changed
 
@@ -433,14 +530,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - hnefatafl-client: make the board pretty.
 - hnefatafl-client: don't unwrap() on sound errors.
 
-## [0.8.1] - 2025-03-12
+## 0.8.1 - 2025-03-12
 
 ### Changed
 
 - Bump the VERSION_ID.
 - Make the light / dark buttons into a single button.
 
-## [0.8.0] - 2025-03-11
+## 0.8.0 - 2025-03-11
 
 ### Added
 
@@ -459,13 +556,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - hnefatafl-server-full: error in parsing resigns.
 - hnefatafl-server-full: logout when the user tries to send an empty strings.
 
-## [0.7.0] - 2025-02-23
+## 0.7.0 - 2025-02-23
 
 ### Added
 
 - Make the login screen nicer.
 
-## [0.6.1] - 2025-02-19
+## 0.6.1 - 2025-02-19
 
 ### Added
 
@@ -475,7 +572,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - hnefatafl-server-full: fix error where we were removing games before they ended.
 
-## [0.6.0] - 2025-02-19
+## 0.6.0 - 2025-02-19
 
 ### Added
 
@@ -508,20 +605,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - hnefatafl-server-full: fixed game_over error.
 - hnefatafl-client: If AI resigns it doesn't crash the client.
 
-## [0.5.3] - 2025-02-08
+## 0.5.3 - 2025-02-08
 
 ### Changed
 
 - Don't set the window size to infinity, it crashes on MacOS.
 - Pass the VERSION_ID when you login.
 
-## [0.5.2] - 2025-02-07
+## 0.5.2 - 2025-02-07
 
 ### Changed
 
 - Fix errors in logic.
 
-## [0.5.1] - 2025-02-07 (yanked)
+## 0.5.1 - 2025-02-07 (yanked)
 
 ### Added
 
@@ -531,7 +628,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - hnefatafl-server-full: Throw an error if we encounter a control character or
   the null character.
 
-## [0.5.0] - 2025-02-05
+## 0.5.0 - 2025-02-05
 
 ### Added
 
@@ -544,7 +641,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - hnefatafl-client: Improve the GUI.
 - Resign if you can't generate a move.
 
-## [0.4.1] - 2025-02-04
+## 0.4.1 - 2025-02-04
 
 ### Added
 
@@ -557,45 +654,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - hnefatafl-client: Make users and games scrollable.
 - Make all the features dependencies.
 
-[unreleased]: https://github.com/dcampbell24/hnefatafl/compare/v4.4.1...main
-[4.4.1]: https://github.com/dcampbell24/hnefatafl/compare/v4.4.0...v4.4.1
-[4.4.0]: https://github.com/dcampbell24/hnefatafl/compare/v4.3.0...v4.4.0
-[4.3.0]: https://github.com/dcampbell24/hnefatafl/compare/v4.2.2...v4.3.0
-[4.2.2]: https://github.com/dcampbell24/hnefatafl/compare/v4.2.0...v4.2.2
-[4.2.0]: https://github.com/dcampbell24/hnefatafl/compare/v4.1.1...v4.2.0
-[4.1.1]: https://github.com/dcampbell24/hnefatafl/compare/v4.1.0...v4.1.1
-[4.1.0]: https://github.com/dcampbell24/hnefatafl/compare/v4.0.0...v4.1.0
-[4.0.0]: https://github.com/dcampbell24/hnefatafl/compare/v3.0.1...v4.0.0
-[3.0.1]: https://github.com/dcampbell24/hnefatafl/compare/v3.0.0...v3.0.1
-[3.0.0]: https://github.com/dcampbell24/hnefatafl/compare/v2.1.0...v3.0.0
-[2.1.0]: https://github.com/dcampbell24/hnefatafl/compare/v2.0.3...v2.1.0
-[2.0.3]: https://github.com/dcampbell24/hnefatafl/compare/v1.2.1...v2.0.3
-[1.2.1]: https://github.com/dcampbell24/hnefatafl/compare/v1.2.0...v1.2.1
-[1.2.0]: https://github.com/dcampbell24/hnefatafl/compare/v1.1.4...v1.2.0
-[1.1.4]: https://github.com/dcampbell24/hnefatafl/compare/v1.1.3...v1.1.4
-[1.1.3]: https://github.com/dcampbell24/hnefatafl/compare/v1.1.2...v1.1.3
-[1.1.2]: https://github.com/dcampbell24/hnefatafl/compare/v1.1.1...v1.1.2
-[1.1.1]: https://github.com/dcampbell24/hnefatafl/compare/v1.1.0...v1.1.1
-[1.1.0]: https://github.com/dcampbell24/hnefatafl/compare/v1.0.0...v1.1.0
-[1.0.0]: https://github.com/dcampbell24/hnefatafl/compare/v0.13.4...v1.0.0
-[0.13.4]: https://github.com/dcampbell24/hnefatafl/compare/v0.13.3...v0.13.4
-[0.13.3]: https://github.com/dcampbell24/hnefatafl/compare/v0.13.2...v0.13.3
-[0.13.2]: https://github.com/dcampbell24/hnefatafl/compare/v0.13.1...v0.13.2
-[0.13.1]: https://github.com/dcampbell24/hnefatafl/compare/v0.13.0...v0.13.1
-[0.13.0]: https://github.com/dcampbell24/hnefatafl/compare/v0.12.0...v0.13.0
-[0.12.0]: https://github.com/dcampbell24/hnefatafl/compare/v0.11.0...v0.12.0
-[0.11.0]: https://github.com/dcampbell24/hnefatafl/compare/v0.10.0...v0.11.0
-[0.10.0]: https://github.com/dcampbell24/hnefatafl/compare/v0.9.0...v0.10.0
-[0.9.0]: https://github.com/dcampbell24/hnefatafl/compare/v0.8.3...v0.9.0
-[0.8.3]: https://github.com/dcampbell24/hnefatafl/compare/v0.8.2...v0.8.3
-[0.8.2]: https://github.com/dcampbell24/hnefatafl/compare/v0.8.1...v0.8.2
-[0.8.1]: https://github.com/dcampbell24/hnefatafl/compare/v0.8.0...v0.8.1
-[0.8.0]: https://github.com/dcampbell24/hnefatafl/compare/v0.7.0...v0.8.0
-[0.7.0]: https://github.com/dcampbell24/hnefatafl/compare/v0.6.1...v0.7.0
-[0.6.1]: https://github.com/dcampbell24/hnefatafl/compare/v0.6.0...v0.6.1
-[0.6.0]: https://github.com/dcampbell24/hnefatafl/compare/v0.5.2...v0.6.0
-[0.5.3]: https://github.com/dcampbell24/hnefatafl/compare/v0.5.2...v0.5.3
-[0.5.2]: https://github.com/dcampbell24/hnefatafl/compare/v0.5.1...v0.5.2
-[0.5.1]: https://github.com/dcampbell24/hnefatafl/compare/v0.5.0...v0.5.1
-[0.5.0]: https://github.com/dcampbell24/hnefatafl/compare/v0.4.1...v0.5.0
-[0.4.1]: https://github.com/dcampbell24/hnefatafl/compare/v0.4.0...v0.4.1
+[unreleased]: https://github.com/dcampbell24/hnefatafl/compare/v5.2.0-1...main
+[5.2.0]: https://github.com/dcampbell24/hnefatafl/compare/v5.1.0-1...v5.2.0-1
+[5.1.0]: https://github.com/dcampbell24/hnefatafl/compare/v5.0.1-1...v5.1.0-1
+[5.0.1]: https://github.com/dcampbell24/hnefatafl/compare/v5.0.0-4...v5.0.1-1

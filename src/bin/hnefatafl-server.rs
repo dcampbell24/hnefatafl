@@ -1,3 +1,23 @@
+// This file is part of hnefatafl-copenhagen.
+//
+// hnefatafl-copenhagen is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// hnefatafl-copenhagen is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+#![deny(clippy::expect_used)]
+#![deny(clippy::indexing_slicing)]
+#![deny(clippy::panic)]
+#![deny(clippy::unwrap_used)]
+
 use std::{
     io::{BufReader, Write},
     net::{Shutdown, TcpListener, TcpStream},
@@ -16,7 +36,7 @@ use hnefatafl_copenhagen::{
 /// This is a TCP server that listens for HTP engines
 /// to connect and then plays them against each other.
 #[derive(Parser, Debug)]
-#[command(version, about)]
+#[command(version, about = "Copenhagen Hnefatafl Server Light")]
 struct Args {
     /// Listen for HTP drivers on host and port
     #[arg(default_value = "0.0.0.0", index = 1, value_name = "host")]
@@ -99,17 +119,17 @@ fn start(address: &str) -> anyhow::Result<()> {
     let mut players = Vec::new();
 
     for stream in listener.incoming() {
-        let stream = stream?;
+        let stream_1 = stream?;
 
-        if players.is_empty() {
-            players.push(stream);
-        } else {
+        if let Some(stream_2) = players.pop() {
             let mut game = Htp {
-                attacker_connection: players.pop().unwrap(),
-                defender_connection: stream,
+                attacker_connection: stream_1,
+                defender_connection: stream_2,
             };
 
             thread::spawn(move || game.start());
+        } else {
+            players.push(stream_1);
         }
     }
 

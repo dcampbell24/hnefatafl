@@ -1,3 +1,18 @@
+// This file is part of hnefatafl-copenhagen.
+//
+// hnefatafl-copenhagen is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// hnefatafl-copenhagen is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 use std::{fmt, sync::mpsc::channel, time::Duration};
 
 use chrono::Utc;
@@ -77,12 +92,13 @@ impl AI for AiBanal {
 
 pub struct AiBasic {
     depth: u8,
+    sequential: bool,
 }
 
 impl AiBasic {
     #[must_use]
-    pub fn new(depth: u8) -> Self {
-        Self { depth }
+    pub fn new(depth: u8, sequential: bool) -> Self {
+        Self { depth, sequential }
     }
 }
 
@@ -118,13 +134,23 @@ impl AI for AiBasic {
             });
         }
 
-        let (play, score, escape_vec) = game.alpha_beta_parallel(
-            self.depth as usize,
-            self.depth,
-            None,
-            -f64::INFINITY,
-            f64::INFINITY,
-        );
+        let (play, score, escape_vec) = if self.sequential {
+            game.alpha_beta(
+                self.depth as usize,
+                self.depth,
+                None,
+                -f64::INFINITY,
+                f64::INFINITY,
+            )
+        } else {
+            game.alpha_beta_parallel(
+                self.depth as usize,
+                self.depth,
+                None,
+                -f64::INFINITY,
+                f64::INFINITY,
+            )
+        };
 
         let play = match play {
             Some(play) => play,
@@ -179,10 +205,10 @@ impl AI for AiMonteCarlo {
         let mut trees = AiMonteCarlo::make_trees(game)?;
         let (tx, rx) = channel();
 
-        trees.par_iter_mut().for_each_with(tx, |tx, tree| {
+        trees.par_iter_mut().try_for_each_with(tx, |tx, tree| {
             let nodes = tree.monte_carlo_tree_search(self.duration, self.depth);
-            tx.send(nodes).unwrap();
-        });
+            tx.send(nodes)
+        })?;
 
         let mut loops_total = 0;
         let mut nodes_master = FxHashMap::default();
@@ -219,13 +245,18 @@ impl AI for AiMonteCarlo {
         nodes.sort_by(|a, b| a.score.total_cmp(&b.score));
 
         let turn = game.turn;
+        let message = anyhow::Error::msg("The nodes are empty.");
         let node = match turn {
-            Role::Attacker => nodes.last().unwrap(),
-            Role::Defender => nodes.first().unwrap(),
+            Role::Attacker => nodes.last().ok_or(message)?,
+            Role::Defender => nodes.first().ok_or(message)?,
             Role::Roleless => unreachable!(),
         };
 
-        let play = node.play.as_ref().unwrap();
+        let play = node
+            .play
+            .as_ref()
+            .ok_or(anyhow::Error::msg("A move has not been played yet."))?;
+
         game.play(play)?;
 
         let here_tree = Tree::from(game.clone());
@@ -238,7 +269,7 @@ impl AI for AiMonteCarlo {
         let heat_map = HeatMap::from(&nodes);
 
         Ok(GenerateMove {
-            play: node.play.clone().expect("there should be a play"),
+            play: play.clone(),
             score: node.score,
             delay_milliseconds,
             loops: loops_total,

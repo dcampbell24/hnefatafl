@@ -1,0 +1,92 @@
+;Hnefatafl Copenhagen
+;Written by David Lawrence Campbell
+
+;--------------------------------
+;Include Modern UI
+
+  !include "MUI2.nsh"
+
+;--------------------------------
+;General
+
+  ;Name and file
+  Name "Hnefatafl"
+  OutFile "hnefatafl-copenhagen\tools\hnefatafl-client-installer-5.2.0.exe"
+  Unicode True
+
+  ;Default installation folder
+  InstallDir "$LOCALAPPDATA\hnefatafl-copenhagen"
+
+  ;Get installation folder from registry if available
+  InstallDirRegKey HKCU "Software\hnefatafl-copenhagen" ""
+
+  ;Request application privileges for Windows Vista
+  RequestExecutionLevel user
+
+;--------------------------------
+;Interface Settings
+
+  !define MUI_ABORTWARNING
+
+;--------------------------------
+;Pages
+
+  !insertmacro MUI_PAGE_LICENSE "..\..\COPYING"
+  !insertmacro MUI_PAGE_COMPONENTS
+  !insertmacro MUI_PAGE_DIRECTORY
+  !insertmacro MUI_PAGE_INSTFILES
+
+  !insertmacro MUI_UNPAGE_CONFIRM
+  !insertmacro MUI_UNPAGE_INSTFILES
+
+;--------------------------------
+;Languages
+
+  !insertmacro MUI_LANGUAGE "English"
+
+;--------------------------------
+;Installer Sections
+
+Section "Hnefatafl" SecHnefatafl
+
+  SetOutPath "$INSTDIR"
+
+  File "..\..\target\release\hnefatafl-client.exe"
+  File "helmet.ico"
+
+  ;Store installation folder
+  WriteRegStr HKCU "Software\hnefatafl-copenhagen" "" $INSTDIR
+
+  ;Create uninstaller
+  WriteUninstaller "$INSTDIR\Uninstall.exe"
+
+  ;Create Start Menu entry
+	CreateShortcut $SMPROGRAMS\Hnefatafl.lnk $INSTDIR\hnefatafl-client.exe "" "$INSTDIR\helmet.ico" 0
+
+SectionEnd
+
+;--------------------------------
+;Descriptions
+
+  ;Language strings
+  LangString DESC_SecHnefatafl ${LANG_ENGLISH} "Copenhagen Hnefatafl client that connects to a server."
+
+  ;Assign language strings to sections
+  !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
+    !insertmacro MUI_DESCRIPTION_TEXT ${SecHnefatafl} $(DESC_SecHnefatafl)
+  !insertmacro MUI_FUNCTION_DESCRIPTION_END
+
+;--------------------------------
+;Uninstaller Section
+
+Section "Uninstall"
+
+  Delete "$INSTDIR\hnefatafl-client.exe"
+  Delete "$INSTDIR\Uninstall.exe"
+  Delete "$SMPROGRAMS\Hnefatafl.lnk" 
+
+  RMDir "$INSTDIR"
+
+  DeleteRegKey /ifempty HKCU "Software\hnefatafl-copenhagen"
+
+SectionEnd

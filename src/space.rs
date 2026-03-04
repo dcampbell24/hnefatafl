@@ -1,3 +1,18 @@
+// This file is part of hnefatafl-copenhagen.
+//
+// hnefatafl-copenhagen is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// hnefatafl-copenhagen is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 use std::fmt;
 
 use serde::{Deserialize, Serialize};
@@ -10,6 +25,18 @@ pub enum Space {
     Attacker,
     King,
     Defender,
+}
+
+impl Space {
+    #[must_use]
+    pub fn display_ascii(&self) -> &str {
+        match self {
+            Self::Attacker => "A",
+            Self::Empty => ".",
+            Self::King => "K",
+            Self::Defender => "D",
+        }
+    }
 }
 
 impl TryFrom<char> for Space {
@@ -45,29 +72,6 @@ impl From<Space> for Role {
             Space::Attacker => Role::Attacker,
             Space::Defender | Space::King => Role::Defender,
             Space::Empty => Role::Roleless,
-        }
-    }
-}
-
-impl From<&u8> for Space {
-    fn from(space: &u8) -> Self {
-        match space {
-            0 => Space::Attacker,
-            1 => Space::Defender,
-            2 => Space::Empty,
-            3 => Space::King,
-            _ => unreachable!(),
-        }
-    }
-}
-
-impl From<&Space> for u8 {
-    fn from(space: &Space) -> Self {
-        match space {
-            Space::Attacker => 0,
-            Space::Defender => 1,
-            Space::Empty => 2,
-            Space::King => 3,
         }
     }
 }

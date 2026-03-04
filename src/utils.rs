@@ -1,8 +1,23 @@
+// This file is part of hnefatafl-copenhagen.
+//
+// hnefatafl-copenhagen is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// hnefatafl-copenhagen is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 #[cfg(any(target_family = "unix", target_family = "windows"))]
 use std::process::Command;
-use std::{env, io::Write, path::PathBuf, process::ExitStatus, time::Duration};
+use std::{env, fs::DirBuilder, path::PathBuf, process::ExitStatus, time::Duration};
 
-use chrono::Utc;
+use directories::ProjectDirs;
 use env_logger::Builder;
 use log::LevelFilter;
 
@@ -11,13 +26,18 @@ use crate::ai::{AI, AiBanal, AiBasic, AiMonteCarlo};
 /// # Errors
 ///
 /// If you don't choose banal, basic, or monte-carlo.
-pub fn choose_ai(ai: &str, seconds: Option<u64>, depth: Option<u8>) -> anyhow::Result<Box<dyn AI>> {
+pub fn choose_ai(
+    ai: &str,
+    seconds: Option<u64>,
+    depth: Option<u8>,
+    sequential: bool,
+) -> anyhow::Result<Box<dyn AI>> {
     match ai {
         "banal" => Ok(Box::new(AiBanal)),
         "basic" => {
             let depth = depth.unwrap_or(4);
 
-            Ok(Box::new(AiBasic::new(depth)))
+            Ok(Box::new(AiBasic::new(depth, sequential)))
         }
         "monte-carlo" => {
             let seconds = seconds.unwrap_or(10);
@@ -49,43 +69,53 @@ pub fn clear_screen() -> anyhow::Result<ExitStatus> {
     Ok(exit_status)
 }
 
+/// # Errors
+///
+/// If it fails to create the directory or the directory does not already exist.
+pub fn create_data_folder() -> anyhow::Result<()> {
+    let project_dir = ProjectDirs::from("org", "Hnefatafl Org", "hnefatafl-copenhagen");
+
+    if let Some(project_dir) = project_dir {
+        DirBuilder::new()
+            .recursive(true)
+            .create(project_dir.data_dir())?;
+    }
+
+    Ok(())
+}
+
 #[must_use]
 pub fn data_file(file: &str) -> PathBuf {
-    let mut data_file = if let Some(data_file) = dirs::data_dir() {
-        data_file
+    let project_dir = ProjectDirs::from("org", "Hnefatafl Org", "hnefatafl-copenhagen");
+
+    let mut project_dir = if let Some(project_dir) = project_dir {
+        project_dir.data_local_dir().to_path_buf()
     } else {
         PathBuf::new()
     };
 
-    data_file.push(file);
-    data_file
+    project_dir.push(file);
+    project_dir
 }
 
-pub fn init_logger(systemd: bool) {
+pub fn init_logger(module: &str, debug: bool, systemd: bool) {
     let mut builder = Builder::new();
 
     if systemd {
-        builder.format(|formatter, record| {
-            writeln!(formatter, "[{}]: {}", record.level(), record.args())
-        });
-    } else {
-        builder.format(|formatter, record| {
-            writeln!(
-                formatter,
-                "{} [{}] ({}): {}",
-                Utc::now().format("%Y-%m-%d %H:%M:%S %z"),
-                record.level(),
-                record.target(),
-                record.args()
-            )
-        });
+        builder.format_timestamp(None);
+        builder.format_target(false);
     }
 
     if let Ok(var) = env::var("RUST_LOG") {
         builder.parse_filters(&var);
+    } else if debug {
+        builder.filter(Some(module), LevelFilter::Debug);
     } else {
-        // if no RUST_LOG provided, default to logging at the Info level
-        builder.filter(None, LevelFilter::Info);
+        // If no RUST_LOG provided, default to logging at the Info level.
+        #[cfg(not(feature = "debug"))]
+        builder.filter(Some(module), LevelFilter::Info);
+        #[cfg(feature = "debug")]
+        builder.filter(Some(module), LevelFilter::Debug);
     }
 
     builder.init();

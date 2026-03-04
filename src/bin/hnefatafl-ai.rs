@@ -1,7 +1,26 @@
+// This file is part of hnefatafl-copenhagen.
+//
+// hnefatafl-copenhagen is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// hnefatafl-copenhagen is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+#![deny(clippy::expect_used)]
+#![deny(clippy::indexing_slicing)]
+#![deny(clippy::panic)]
+#![deny(clippy::unwrap_used)]
+
 use std::{
-    io::{self, BufRead, BufReader, Write},
-    net::TcpStream,
-    thread,
+    io::{BufRead, BufReader, Write},
+    net::{TcpStream, ToSocketAddrs as _},
 };
 
 use anyhow::Error;
@@ -13,9 +32,11 @@ use hnefatafl_copenhagen::{
     play::Plae,
     role::Role,
     status::Status,
+    tcp_keep_alive,
     utils::{self, choose_ai},
 };
 use log::{debug, info, trace};
+use socket2::{Domain, SockAddr, Socket, Type};
 
 // Move 26, defender wins, corner escape, time per move 15s 2025-03-06 (hnefatafl-equi).
 
@@ -24,6 +45,7 @@ const PORT: &str = ":49152";
 /// Copenhagen Hnefatafl AI
 ///
 /// This is an AI client that connects to a server.
+#[allow(clippy::struct_excessive_bools)]
 #[derive(Parser, Debug)]
 #[command(long_version = LONG_VERSION, about = "Copenhagen Hnefatafl AI")]
 struct Args {
@@ -47,17 +69,32 @@ struct Args {
     #[arg(default_value = "basic", long)]
     ai: String,
 
+    /// Whether to log on the debug level
+    #[arg(long)]
+    debug: bool,
+
     /// How many seconds to run the monte-carlo AI
     #[arg(long)]
     seconds: Option<u64>,
 
     /// How deep in the game tree to go with Ai
+    ///
+    /// [default basic: 4]
+    /// [default monte-carlo: 20]
     #[arg(long)]
     depth: Option<u8>,
 
-    /// Challenge the AI with AI CHALLENGER
+    /// Join game with id
     #[arg(long)]
-    challenger: Option<String>,
+    join_game: Option<u128>,
+
+    /// Run the basic AI sequentially
+    #[arg(long)]
+    sequential: bool,
+
+    /// Whether the application is being run by systemd
+    #[arg(long)]
+    systemd: bool,
 
     /// Build the manpage
     #[arg(long)]
@@ -66,7 +103,7 @@ struct Args {
 
 fn main() -> anyhow::Result<()> {
     let args = Args::parse();
-    utils::init_logger(false);
+    utils::init_logger("hnefatafl_ai", args.debug, args.systemd);
 
     if args.man {
         let mut buffer: Vec<u8> = Vec::default();
@@ -83,77 +120,84 @@ fn main() -> anyhow::Result<()> {
     let mut username = "ai-".to_string();
     username.push_str(&args.username);
 
-    let mut address = args.host.clone();
-    address.push_str(PORT);
+    let mut address_string = args.host.clone();
+    address_string.push_str(PORT);
 
-    let mut buf = String::new();
-    let mut tcp = TcpStream::connect(address.clone())?;
+    let mut is_ipv6 = false;
+    let mut socket_address = None;
+    let socket_addresses = address_string.to_socket_addrs()?;
+
+    for address in socket_addresses.clone() {
+        if address.is_ipv6() {
+            socket_address = Some(address);
+            is_ipv6 = true;
+            break;
+        }
+    }
+
+    if !is_ipv6 {
+        for address in socket_addresses {
+            if address.is_ipv4() {
+                socket_address = Some(address);
+                break;
+            }
+        }
+    }
+
+    let socket_address = socket_address.ok_or_else(|| {
+        anyhow::Error::msg(format!(
+            "There is no IP address for the host: {address_string}"
+        ))
+    })?;
+
+    let address: SockAddr = socket_address.into();
+    let keep_alive = tcp_keep_alive();
+    let domain_type = if is_ipv6 { Domain::IPV6 } else { Domain::IPV4 };
+    let socket = Socket::new(domain_type, Type::STREAM, None)?;
+    socket.set_tcp_keepalive(&keep_alive)?;
+
+    socket.connect(&address).unwrap_or_else(|error| {
+        eprintln!("socket.connect {address_string}: {error}");
+    });
+
+    info!("connected to {socket_address}");
+
+    let mut tcp: TcpStream = socket.into();
     let mut reader = BufReader::new(tcp.try_clone()?);
 
     tcp.write_all(format!("{VERSION_ID} login {username} {}\n", args.password).as_bytes())?;
+
+    let mut buf = String::new();
     reader.read_line(&mut buf)?;
     assert_eq!(buf, "= login\n");
     buf.clear();
 
-    if let Some(ai_2) = args.challenger {
-        let ai_2 = choose_ai(&ai_2, args.seconds, args.depth)?;
-        new_game(&mut tcp, args.role, &mut reader, &mut buf)?;
+    if let Some(game_id) = args.join_game {
+        tcp.write_all(format!("join_game_pending {game_id}\n").as_bytes())?;
 
-        let message: Vec<_> = buf.split_ascii_whitespace().collect();
-        let game_id = message[3].to_string();
-        buf.clear();
-
-        let game_id_2 = game_id.clone();
-        let tcp_clone = tcp.try_clone()?;
-
-        let ai = choose_ai(&args.ai, args.seconds, args.depth)?;
-        thread::spawn(move || accept_challenger(ai, &mut reader, &mut buf, &mut tcp, &game_id));
-
-        let mut buf_2 = String::new();
-        let mut tcp_2 = TcpStream::connect(address)?;
-        let mut reader_2 = BufReader::new(tcp_2.try_clone()?);
-
-        tcp_2.write_all(format!("{VERSION_ID} login ai-01 PASSWORD\n").as_bytes())?;
-        reader_2.read_line(&mut buf_2)?;
-        assert_eq!(buf_2, "= login\n");
-
-        tcp_2.write_all(format!("join_game_pending {game_id_2}\n").as_bytes())?;
-        let tcp_2_clone = tcp_2.try_clone()?;
-        thread::spawn(move || handle_messages(ai_2, &game_id_2, &mut reader_2, &mut tcp_2));
-
-        let mut buffer = String::new();
-        io::stdin().read_line(&mut buffer)?;
-        tcp_clone.shutdown(std::net::Shutdown::Both)?;
-        tcp_2_clone.shutdown(std::net::Shutdown::Both)?;
+        let ai = choose_ai(&args.ai, args.seconds, args.depth, args.sequential)?;
+        handle_messages(ai, game_id, &mut reader, &mut tcp)?;
     } else {
         loop {
             new_game(&mut tcp, args.role, &mut reader, &mut buf)?;
 
+            info!("{buf}");
+
             let message: Vec<_> = buf.split_ascii_whitespace().collect();
-            info!("{message:?}");
-            let game_id = message[3].to_string();
+            let Some(message) = message.get(3) else {
+                return Err(anyhow::Error::msg("Expecting message[3] to be a game_id"));
+            };
+
+            let game_id = message.parse()?;
             buf.clear();
 
-            wait_for_challenger(&mut reader, &mut buf, &mut tcp, &game_id)?;
+            wait_for_challenger(&mut reader, &mut buf, &mut tcp, game_id)?;
 
-            let ai = choose_ai(&args.ai, args.seconds, args.depth)?;
-            handle_messages(ai, &game_id, &mut reader, &mut tcp)?;
+            let ai = choose_ai(&args.ai, args.seconds, args.depth, args.sequential)?;
+            handle_messages(ai, game_id, &mut reader, &mut tcp)?;
         }
     }
 
-    Ok(())
-}
-
-fn accept_challenger(
-    ai: Box<dyn AI>,
-    reader: &mut BufReader<TcpStream>,
-    buf: &mut String,
-    tcp: &mut TcpStream,
-    game_id: &str,
-) -> anyhow::Result<()> {
-    wait_for_challenger(reader, buf, tcp, game_id)?;
-
-    handle_messages(ai, game_id, reader, tcp)?;
     Ok(())
 }
 
@@ -173,7 +217,9 @@ fn new_game(
         }
 
         let message: Vec<_> = buf.split_ascii_whitespace().collect();
-        if message[1] == "new_game" {
+        if let Some(message) = message.get(1)
+            && *message == "new_game"
+        {
             return Ok(());
         }
 
@@ -185,7 +231,7 @@ fn wait_for_challenger(
     reader: &mut BufReader<TcpStream>,
     buf: &mut String,
     tcp: &mut TcpStream,
-    game_id: &str,
+    game_id: u128,
 ) -> anyhow::Result<()> {
     loop {
         reader.read_line(buf)?;
@@ -211,7 +257,7 @@ fn wait_for_challenger(
 
 fn handle_messages(
     mut ai: Box<dyn AI>,
-    game_id: &str,
+    game_id: u128,
     reader: &mut BufReader<TcpStream>,
     tcp: &mut TcpStream,
 ) -> anyhow::Result<()> {
@@ -227,7 +273,7 @@ fn handle_messages(
             return Err(Error::msg("the TCP stream has closed"));
         }
 
-        let message: Vec<_> = buf.split_ascii_whitespace().collect();
+        let mut message: Vec<_> = buf.split_ascii_whitespace().collect();
 
         if Some("generate_move") == message.get(2).copied() {
             let generate_move = ai.generate_move(&mut game)?;
@@ -242,8 +288,8 @@ fn handle_messages(
                 return Ok(());
             }
         } else if Some("play") == message.get(2).copied() {
-            let words = &message[2..];
-            let play = Plae::try_from(words.to_vec())?;
+            let words = message.split_off(2);
+            let play = Plae::try_from(words)?;
             ai.play(&mut game, &play)?;
 
             debug!("{game}\n");

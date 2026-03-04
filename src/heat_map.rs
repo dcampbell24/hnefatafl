@@ -1,3 +1,18 @@
+// This file is part of hnefatafl-copenhagen.
+//
+// hnefatafl-copenhagen is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// hnefatafl-copenhagen is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 use std::{cmp::Ordering, collections::HashMap, fmt};
 
 use crate::{
@@ -89,6 +104,7 @@ pub struct HeatMap {
 }
 
 impl HeatMap {
+    #[allow(clippy::expect_used)]
     #[allow(clippy::type_complexity)]
     #[allow(clippy::missing_panics_doc)]
     #[must_use]
@@ -160,8 +176,7 @@ impl HeatMap {
                     let heat = board[y * board_size + x];
                     if let Heat::Score(score) = heat {
                         let vertex = Vertex {
-                            size: BoardSize::try_from(board_size)
-                                .expect("we should have a valid board size"),
+                            size: self.board_size,
                             x,
                             y,
                         };
@@ -218,6 +233,7 @@ impl From<(&Game, &Plae)> for HeatMap {
 }
 
 impl From<&Vec<&Node>> for HeatMap {
+    #[allow(clippy::expect_used)]
     #[allow(clippy::float_cmp)]
     fn from(nodes: &Vec<&Node>) -> Self {
         let mut heat_map = if let Some(node) = nodes.first() {

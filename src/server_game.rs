@@ -1,6 +1,21 @@
+// This file is part of hnefatafl-copenhagen.
+//
+// hnefatafl-copenhagen is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// hnefatafl-copenhagen is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 use std::{
     collections::{HashMap, VecDeque},
-    fmt,
+    fmt::{self, Write},
     str::FromStr,
     sync::mpsc::Sender,
 };
@@ -11,14 +26,13 @@ use serde::{Deserialize, Serialize};
 use crate::{
     Id,
     board::{Board, BoardSize},
-    game::{Game, PreviousBoards},
+    game::Game,
     glicko::Rating,
     play::{PlayRecordTimed, Plays},
     rating::Rated,
     role::Role,
     status::Status,
     time::{Time, TimeSettings},
-    tree::Tree,
 };
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -81,58 +95,6 @@ impl PartialEq for ArchivedGame {
 impl Eq for ArchivedGame {}
 
 #[derive(Clone, Debug)]
-pub struct ArchivedGameHandle {
-    pub boards: Tree,
-    pub game: ArchivedGame,
-    pub play: usize,
-}
-
-impl ArchivedGameHandle {
-    #[must_use]
-    #[allow(clippy::missing_panics_doc)]
-    pub fn new(game: &ArchivedGame) -> ArchivedGameHandle {
-        let mut board = Board::new(game.board_size);
-        let mut boards = Tree::new(game.board_size);
-        let mut turn = Role::default();
-
-        let plays = match &game.plays {
-            Plays::PlayRecordsTimed(plays) => {
-                plays.iter().map(|record| record.play.clone()).collect()
-            }
-            Plays::PlayRecords(plays) => plays.clone(),
-        };
-
-        for play in &plays {
-            if let Some(play) = &play {
-                board
-                    .play(
-                        play,
-                        &Status::Ongoing,
-                        &turn,
-                        &mut PreviousBoards::default(),
-                    )
-                    .unwrap();
-
-                boards.insert(&board);
-                turn = match turn {
-                    Role::Attacker => Role::Defender,
-                    Role::Roleless => Role::Roleless,
-                    Role::Defender => Role::Attacker,
-                };
-            }
-        }
-
-        boards.backward_all();
-
-        ArchivedGameHandle {
-            boards,
-            game: game.clone(),
-            play: 0,
-        }
-    }
-}
-
-#[derive(Clone, Debug)]
 pub struct Messenger(Option<Sender<String>>);
 
 impl Messenger {
@@ -155,6 +117,8 @@ pub struct ServerGame {
     pub attacker_tx: Messenger,
     pub defender: String,
     pub defender_tx: Messenger,
+    pub draw_requested: Role,
+    pub elapsed_time: i64,
     pub rated: Rated,
     pub game: Game,
     pub texts: VecDeque<String>,
@@ -168,6 +132,8 @@ impl From<ServerGameSerialized> for ServerGame {
             attacker_tx: Messenger(None),
             defender: game.defender,
             defender_tx: Messenger(None),
+            draw_requested: Role::Roleless,
+            elapsed_time: 0,
             rated: game.rated,
             game: game.game,
             texts: game.texts,
@@ -187,12 +153,12 @@ impl ServerGame {
     #[allow(clippy::missing_panics_doc)]
     #[must_use]
     pub fn new(
-        attacker_tx: Sender<String>,
-        defender_tx: Sender<String>,
+        attacker_tx: Option<Sender<String>>,
+        defender_tx: Option<Sender<String>>,
         game: ServerGameLight,
     ) -> Self {
         let (Some(attacker), Some(defender)) = (game.attacker, game.defender) else {
-            panic!("attacker and defender should be set");
+            unreachable!();
         };
 
         let plays = match game.timed {
@@ -209,9 +175,11 @@ impl ServerGame {
         Self {
             id: game.id,
             attacker,
-            attacker_tx: Messenger(Some(attacker_tx)),
+            attacker_tx: Messenger(attacker_tx),
             defender,
-            defender_tx: Messenger(Some(defender_tx)),
+            defender_tx: Messenger(defender_tx),
+            draw_requested: Role::Roleless,
+            elapsed_time: 0,
             rated: game.rated,
             game: Game {
                 attacker_time: game.timed.clone(),
@@ -263,7 +231,7 @@ impl From<&ServerGame> for ServerGameSerialized {
 #[derive(Clone, Debug, Default)]
 pub struct ServerGames(pub HashMap<Id, ServerGame>);
 
-#[derive(Clone, Default)]
+#[derive(Clone, Default, Eq, PartialEq)]
 pub struct Challenger(pub Option<String>);
 
 impl fmt::Debug for Challenger {
@@ -291,7 +259,7 @@ impl fmt::Display for Challenger {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Eq, PartialEq)]
 pub struct ServerGameLight {
     pub id: Id,
     pub attacker: Option<String>,
@@ -299,8 +267,6 @@ pub struct ServerGameLight {
     pub challenger: Challenger,
     pub rated: Rated,
     pub timed: TimeSettings,
-    pub attacker_channel: Option<usize>,
-    pub defender_channel: Option<usize>,
     pub spectators: HashMap<String, usize>,
     pub challenge_accepted: bool,
     pub game_over: bool,
@@ -315,7 +281,6 @@ impl ServerGameLight {
         rated: Rated,
         timed: TimeSettings,
         board_size: BoardSize,
-        index_supplied: usize,
         role: Role,
     ) -> Self {
         if role == Role::Attacker {
@@ -327,8 +292,6 @@ impl ServerGameLight {
                 rated,
                 timed,
                 board_size,
-                attacker_channel: Some(index_supplied),
-                defender_channel: None,
                 spectators: HashMap::new(),
                 challenge_accepted: false,
                 game_over: false,
@@ -342,13 +305,24 @@ impl ServerGameLight {
                 rated,
                 timed,
                 board_size,
-                attacker_channel: None,
-                defender_channel: Some(index_supplied),
                 spectators: HashMap::new(),
                 challenge_accepted: false,
                 game_over: false,
             }
         }
+    }
+
+    #[must_use]
+    pub fn spectators(&self) -> Vec<usize> {
+        let mut ids = Vec::new();
+
+        for (name, id) in &self.spectators {
+            if Some(name) != self.attacker.as_ref() && Some(name) != self.defender.as_ref() {
+                ids.push(*id);
+            }
+        }
+
+        ids
     }
 }
 
@@ -362,8 +336,6 @@ impl From<&ServerGameSerialized> for ServerGameLight {
             rated: game.rated,
             timed: game.timed.clone(),
             board_size: game.game.board.size(),
-            attacker_channel: None,
-            defender_channel: None,
             spectators: HashMap::new(),
             challenge_accepted: true,
             game_over: false,
@@ -386,7 +358,7 @@ impl fmt::Debug for ServerGameLight {
         };
 
         let Ok(spectators) = ron::ser::to_string(&self.spectators) else {
-            panic!("we should be able to serialize the spectators")
+            unreachable!();
         };
 
         write!(
@@ -437,6 +409,10 @@ impl TryFrom<&[&str]> for ServerGameLight {
     type Error = anyhow::Error;
 
     fn try_from(vector: &[&str]) -> anyhow::Result<Self> {
+        if vector.len() < 12 {
+            return Err(anyhow::Error::msg("ServerGameLight has too few words."));
+        }
+
         let id = vector[1];
         let attacker = vector[2];
         let defender = vector[3];
@@ -475,11 +451,10 @@ impl TryFrom<&[&str]> for ServerGameLight {
         let board_size = BoardSize::from_str(board_size)?;
 
         let Ok(challenge_accepted) = <bool as FromStr>::from_str(challenge_accepted) else {
-            panic!("the value should be a bool");
+            return Err(anyhow::Error::msg("challenge_accepted is not a bool."));
         };
 
-        let spectators =
-            ron::from_str(spectators).expect("we should be able to deserialize the spectators");
+        let spectators = ron::from_str(spectators)?;
 
         let mut game = Self {
             id,
@@ -489,8 +464,6 @@ impl TryFrom<&[&str]> for ServerGameLight {
             rated: Rated::from_str(rated)?,
             timed,
             board_size,
-            attacker_channel: None,
-            defender_channel: None,
             spectators,
             challenge_accepted,
             game_over: false,
@@ -504,12 +477,44 @@ impl TryFrom<&[&str]> for ServerGameLight {
     }
 }
 
-#[derive(Clone, Default)]
+#[derive(Clone, Default, Eq, PartialEq)]
 pub struct ServerGamesLight(pub HashMap<Id, ServerGameLight>);
 
 impl fmt::Debug for ServerGamesLight {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for game in self.0.values().filter(|game| !game.game_over) {
+            write!(f, "{game:?} ")?;
+        }
+
+        Ok(())
+    }
+}
+
+#[derive(Clone, Default, Eq, PartialEq)]
+pub struct ServerGamesLightVec(pub Vec<ServerGameLight>);
+
+impl ServerGamesLightVec {
+    #[allow(clippy::missing_errors_doc)]
+    pub fn display_games(&self, username: Option<&str>) -> anyhow::Result<String> {
+        let mut output = String::new();
+
+        for game in &self.0 {
+            if !game.game_over {
+                write!(output, "{game:?} ")?;
+            } else if let Some(username) = username
+                && game.spectators.contains_key(username)
+            {
+                write!(output, "{game:?} ")?;
+            }
+        }
+
+        Ok(output)
+    }
+}
+
+impl fmt::Debug for ServerGamesLightVec {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        for game in self.0.iter().filter(|game| !game.game_over) {
             write!(f, "{game:?} ")?;
         }
 

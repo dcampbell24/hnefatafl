@@ -1,3 +1,18 @@
+// This file is part of hnefatafl-copenhagen.
+//
+// hnefatafl-copenhagen is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// hnefatafl-copenhagen is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 use std::{
     borrow::Cow,
     collections::{BinaryHeap, HashMap},
@@ -150,6 +165,7 @@ impl Game {
 }
 
 impl Game {
+    #[allow(clippy::expect_used)]
     #[allow(clippy::missing_panics_doc)]
     #[must_use]
     pub fn alpha_beta(
@@ -170,6 +186,7 @@ impl Game {
             for plae in self.all_legal_plays() {
                 let mut child = self.clone();
                 child.play(&plae).expect("this play should be valid");
+
                 let (play_option_2, value_2, escape_vec_2) =
                     child.alpha_beta(original_depth, depth - 1, Some(plae.clone()), alpha, beta);
 
@@ -197,6 +214,7 @@ impl Game {
             for plae in self.all_legal_plays() {
                 let mut child = self.clone();
                 child.play(&plae).expect("this play should be valid");
+
                 let (play_option_2, value_2, escape_vec_2) =
                     child.alpha_beta(original_depth, depth - 1, Some(plae.clone()), alpha, beta);
 
@@ -221,6 +239,7 @@ impl Game {
         }
     }
 
+    #[allow(clippy::expect_used)]
     #[allow(clippy::missing_panics_doc)]
     #[must_use]
     pub fn alpha_beta_parallel(
@@ -244,6 +263,7 @@ impl Game {
                 .map(|plae| {
                     let mut child = self.clone();
                     child.play(plae).expect("this play should be valid");
+
                     child.alpha_beta(original_depth, depth - 1, Some(plae.clone()), alpha, beta)
                 })
                 .collect();
@@ -277,6 +297,7 @@ impl Game {
                 .map(|plae| {
                     let mut child = self.clone();
                     child.play(plae).expect("this play should be valid");
+
                     child.alpha_beta(original_depth, depth - 1, Some(plae.clone()), alpha, beta)
                 })
                 .collect();
@@ -346,11 +367,25 @@ impl Game {
     #[must_use]
     pub fn play_n(&self, n: usize) -> Option<Plae> {
         match &self.plays {
-            Plays::PlayRecordsTimed(plaes_timed) => plaes_timed
-                .iter()
-                .map(|plae_timed| plae_timed.play.clone().unwrap())
-                .nth(n),
-            Plays::PlayRecords(plaes) => plaes.iter().map(|plae| plae.clone().unwrap()).nth(n),
+            Plays::PlayRecordsTimed(plaes_timed) => {
+                let plaes: Vec<_> = plaes_timed
+                    .iter()
+                    .map(|plae_timed| &plae_timed.play)
+                    .collect();
+
+                if let Some(Some(plae)) = plaes.get(n) {
+                    Some(plae.clone())
+                } else {
+                    None
+                }
+            }
+            Plays::PlayRecords(plaes) => {
+                if let Some(Some(plae)) = plaes.get(n) {
+                    Some(plae.clone())
+                } else {
+                    None
+                }
+            }
         }
     }
 
@@ -371,12 +406,10 @@ impl Game {
                 TimeSettings::Timed(time) => {
                     game.attacker_time = TimeSettings::Timed(time);
                     game.defender_time = TimeSettings::Timed(time);
-                    game.time = TimeUnix::default();
                 }
                 TimeSettings::UnTimed => {
                     game.attacker_time = TimeSettings::UnTimed;
                     game.defender_time = TimeSettings::UnTimed;
-                    game.time = TimeUnix::UnTimed;
                 }
             }
 
@@ -469,15 +502,12 @@ impl Game {
 
     #[allow(clippy::missing_panics_doc)]
     #[must_use]
-    pub fn kings_legal_moves(&self) -> (Vertex, Vec<Vertex>) {
+    pub fn kings_legal_moves(&self) -> Option<(Vertex, Vec<Vertex>)> {
         let size = self.board.size();
         let board_size_usize = size.into();
-        let kings_position = self
-            .board
-            .find_the_king()
-            .expect("The king must still be on the board.");
-
+        let kings_position = self.board.find_the_king()?;
         let mut vertexes_to = Vec::new();
+
         for y in 0..board_size_usize {
             let vertex_to = Vertex {
                 size,
@@ -520,7 +550,7 @@ impl Game {
             }
         }
 
-        (kings_position, vertexes_to)
+        Some((kings_position, vertexes_to))
     }
 
     #[allow(clippy::missing_panics_doc)]
@@ -667,10 +697,10 @@ impl Game {
                 }
             }
             Role::Defender => {
-                let (kings_position, move_to) = self.kings_legal_moves();
+                let (kings_position, move_to) = self.kings_legal_moves()?;
 
                 for play in move_to {
-                    if self.board.on_exit_square(&play) {
+                    if play.on_exit_square() {
                         return Some(Plae::Play(Play {
                             role: Role::Defender,
                             from: kings_position,
@@ -839,7 +869,7 @@ impl Game {
             Message::Empty => Ok(None),
             Message::FinalStatus => Ok(Some(format!("{}", self.status))),
             Message::GenerateMove => {
-                let mut ai = AiBasic::new(4);
+                let mut ai = AiBasic::new(4, true);
                 let generate_move = ai.generate_move(self)?;
                 Ok(Some(generate_move.to_string()))
             }
@@ -926,7 +956,10 @@ impl Game {
         utility += f64::from(self.board.closed_off_exits()) * 100.0;
         // Todo: An extra 100.0 points for each corner that touches another corner.
         utility += f64::from(captured.defender) * 10.0;
-        utility -= f64::from(self.board.spaces_around_the_king());
+
+        if let Some(spaces) = self.board.spaces_around_the_king() {
+            utility -= f64::from(spaces);
+        }
 
         (utility, escape_vec)
     }

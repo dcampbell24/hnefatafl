@@ -1,3 +1,23 @@
+// This file is part of hnefatafl-copenhagen.
+//
+// hnefatafl-copenhagen is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// hnefatafl-copenhagen is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+#![deny(clippy::expect_used)]
+#![deny(clippy::indexing_slicing)]
+#![deny(clippy::panic)]
+#![deny(clippy::unwrap_used)]
+
 use std::{
     io::{self, BufReader, Write},
     net::TcpStream,
@@ -20,7 +40,7 @@ use hnefatafl_copenhagen::{
 ///
 /// This plays the game using the Hnefatafl Text Protocol.
 #[derive(Parser, Debug)]
-#[command(version, about)]
+#[command(version, about = "Copenhagen Hnefatafl Engine")]
 struct Args {
     /// Choose an AI to play as
     #[arg(long)]
@@ -41,6 +61,10 @@ struct Args {
     /// Listen for HTP drivers on host
     #[arg(long)]
     host: Option<String>,
+
+    /// Render everything in ASCII
+    #[arg(long)]
+    ascii: bool,
 
     /// Build the manpage
     #[arg(long)]
@@ -64,30 +88,37 @@ fn main() -> anyhow::Result<()> {
         return Ok(());
     }
 
+    let args = Args::parse();
+
+    let mut game = Game::default();
+    if args.ascii {
+        game.chars.ascii();
+        game.board.display_ascii = true;
+    }
+
     if let Some(mut address) = args.host {
         address.push_str(SERVER_PORT);
 
         let ai = match args.ai {
-            Some(ai) => choose_ai(&ai, args.seconds, args.depth)?,
-            None => choose_ai("basic", args.seconds, args.depth)?,
+            Some(ai) => choose_ai(&ai, args.seconds, args.depth, true)?,
+            None => choose_ai("basic", args.seconds, args.depth, true)?,
         };
 
-        play_tcp(ai, &address, args.display_game)?;
+        play_tcp(game, ai, &address, args.display_game)?;
     } else if let Some(ai) = args.ai {
-        let ai = choose_ai(&ai, args.seconds, args.depth)?;
+        let ai = choose_ai(&ai, args.seconds, args.depth, true)?;
 
-        play_ai(ai, args.display_game)?;
+        play_ai(game, ai, args.display_game)?;
     } else {
-        play(args.display_game)?;
+        play(game, args.display_game)?;
     }
 
     Ok(())
 }
 
-fn play(display_game: bool) -> anyhow::Result<()> {
+fn play(mut game: Game, display_game: bool) -> anyhow::Result<()> {
     let mut buffer = String::new();
     let stdin = io::stdin();
-    let mut game = Game::default();
 
     if display_game {
         clear_screen()?;
@@ -122,9 +153,8 @@ fn play(display_game: bool) -> anyhow::Result<()> {
     }
 }
 
-fn play_ai(mut ai: Box<dyn AI>, display_game: bool) -> anyhow::Result<()> {
+fn play_ai(mut game: Game, mut ai: Box<dyn AI>, display_game: bool) -> anyhow::Result<()> {
     let mut buffer = String::new();
-    let mut game = Game::default();
 
     if display_game {
         clear_screen()?;
@@ -149,8 +179,12 @@ fn play_ai(mut ai: Box<dyn AI>, display_game: bool) -> anyhow::Result<()> {
     }
 }
 
-fn play_tcp(mut ai: Box<dyn AI>, address: &str, display_game: bool) -> anyhow::Result<()> {
-    let mut game = Game::default();
+fn play_tcp(
+    mut game: Game,
+    mut ai: Box<dyn AI>,
+    address: &str,
+    display_game: bool,
+) -> anyhow::Result<()> {
     let mut stream = TcpStream::connect(address)?;
     println!("connected to {address} ...");
 

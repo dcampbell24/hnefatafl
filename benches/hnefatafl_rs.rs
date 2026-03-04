@@ -2,7 +2,10 @@ use std::time::Duration;
 
 use criterion::{Criterion, criterion_group, criterion_main};
 
-use hnefatafl_copenhagen::{hnefatafl_rs, setup_hnefatafl_rs};
+#[path = "../tests/hnefatafl_rs.rs"]
+mod test;
+
+use test::{hnefatafl_rs, setup_hnefatafl_rs};
 
 fn game_play_outs(c: &mut Criterion) {
     let game_records = setup_hnefatafl_rs().unwrap();

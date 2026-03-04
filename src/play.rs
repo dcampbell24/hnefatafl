@@ -1,3 +1,18 @@
+// This file is part of hnefatafl-copenhagen.
+//
+// hnefatafl-copenhagen is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// hnefatafl-copenhagen is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 use std::{
     fmt,
     hash::{Hash, Hasher},
@@ -14,6 +29,112 @@ use crate::{
 };
 
 pub const BOARD_LETTERS: &str = "ABCDEFGHIJKLM";
+
+pub const EXIT_SQUARES_11X11: [Vertex; 4] = [
+    Vertex {
+        size: BoardSize::_11,
+        x: 0,
+        y: 0,
+    },
+    Vertex {
+        size: BoardSize::_11,
+        x: 10,
+        y: 0,
+    },
+    Vertex {
+        size: BoardSize::_11,
+        x: 0,
+        y: 10,
+    },
+    Vertex {
+        size: BoardSize::_11,
+        x: 10,
+        y: 10,
+    },
+];
+
+const THRONE_11X11: Vertex = Vertex {
+    size: BoardSize::_11,
+    x: 5,
+    y: 5,
+};
+
+const RESTRICTED_SQUARES_11X11: [Vertex; 5] = [
+    Vertex {
+        size: BoardSize::_11,
+        x: 0,
+        y: 0,
+    },
+    Vertex {
+        size: BoardSize::_11,
+        x: 10,
+        y: 0,
+    },
+    Vertex {
+        size: BoardSize::_11,
+        x: 0,
+        y: 10,
+    },
+    Vertex {
+        size: BoardSize::_11,
+        x: 10,
+        y: 10,
+    },
+    THRONE_11X11,
+];
+
+pub const EXIT_SQUARES_13X13: [Vertex; 4] = [
+    Vertex {
+        size: BoardSize::_13,
+        x: 0,
+        y: 0,
+    },
+    Vertex {
+        size: BoardSize::_13,
+        x: 12,
+        y: 0,
+    },
+    Vertex {
+        size: BoardSize::_13,
+        x: 0,
+        y: 12,
+    },
+    Vertex {
+        size: BoardSize::_13,
+        x: 12,
+        y: 12,
+    },
+];
+
+const THRONE_13X13: Vertex = Vertex {
+    size: BoardSize::_13,
+    x: 6,
+    y: 6,
+};
+
+const RESTRICTED_SQUARES_13X13: [Vertex; 5] = [
+    Vertex {
+        size: BoardSize::_13,
+        x: 0,
+        y: 0,
+    },
+    Vertex {
+        size: BoardSize::_13,
+        x: 12,
+        y: 0,
+    },
+    Vertex {
+        size: BoardSize::_13,
+        x: 0,
+        y: 12,
+    },
+    Vertex {
+        size: BoardSize::_13,
+        x: 12,
+        y: 12,
+    },
+    THRONE_13X13,
+];
 
 #[derive(Clone, Debug, Deserialize, Eq, Ord, PartialOrd, Serialize)]
 pub struct PlayRecordTimed {
@@ -303,6 +424,32 @@ impl Vertex {
             })
         } else {
             None
+        }
+    }
+
+    #[inline]
+    #[must_use]
+    pub fn on_exit_square(&self) -> bool {
+        match self.size {
+            BoardSize::_11 => EXIT_SQUARES_11X11.contains(self),
+            BoardSize::_13 => EXIT_SQUARES_13X13.contains(self),
+        }
+    }
+
+    #[inline]
+    #[must_use]
+    pub fn on_throne(&self) -> bool {
+        match self.size {
+            BoardSize::_11 => THRONE_11X11 == *self,
+            BoardSize::_13 => THRONE_13X13 == *self,
+        }
+    }
+
+    #[must_use]
+    pub fn on_restricted_square(&self) -> bool {
+        match &self.size {
+            BoardSize::_11 => RESTRICTED_SQUARES_11X11.contains(self),
+            BoardSize::_13 => RESTRICTED_SQUARES_13X13.contains(self),
         }
     }
 

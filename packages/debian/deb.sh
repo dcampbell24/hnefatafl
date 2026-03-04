@@ -2,11 +2,13 @@
 
 export RUST_MIN_STACK=67108864
 
-cargo run --release --bin hnefatafl-ai -- --man --username ""
-cargo run --release --bin hnefatafl-client -- --man
-cargo run --release --bin hnefatafl-server -- --man
-cargo run --release --bin hnefatafl-text-protocol -- --man
-cargo run --release -- --man
+cargo build --release
+
+./target/release/hnefatafl-ai --man --username ""
+./target/release/hnefatafl-client --man
+./target/release/hnefatafl-server --man
+./target/release/hnefatafl-server-full --man
+./target/release/hnefatafl-text-protocol --man
 
 gzip --no-name --best hnefatafl-ai.1
 gzip --no-name --best hnefatafl-server.1
@@ -24,13 +26,3 @@ rm hnefatafl-server-full.1.gz
 
 echo $PACKAGE
 lintian -EviIL +pedantic $PACKAGE
-
-if [ -z $1 ]; then
-    exit
-fi
-
-if [ $1 = 'install' ]; then
-    sudo dpkg --remove hnefatafl-copenhagen
-    sudo dpkg --install $PACKAGE
-    sudo systemctl daemon-reload
-fi
