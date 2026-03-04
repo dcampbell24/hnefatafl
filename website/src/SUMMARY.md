@@ -1,6 +1,6 @@
 # Copenhagen Hnefatafl
 
-- [Homepage](README.md)
+- [Hnefatafl](README.md)
 - [History](history.md)
 - [Install](install.md)
 - [Rules](rules.md)
