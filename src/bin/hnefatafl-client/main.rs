@@ -125,7 +125,6 @@ const BOARD_LETTERS_LOWERCASE: [char; 13] = [
     'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
 ];
 
-const HELMET: &[u8] = include_bytes!("helmet.png");
 const ARCHIVED_GAMES_FILE: &str = "archived-games.postcard";
 const USER_CONFIG_FILE: &str = "user.ron";
 
@@ -135,9 +134,10 @@ const PADDING_MEDIUM: u16 = 4;
 const SPACING: Pixels = Pixels(10.0);
 const SPACING_B: Pixels = Pixels(20.0);
 
-const SOUND_CAPTURE: &[u8] = include_bytes!("sound/capture.ogg");
-const SOUND_GAME_OVER: &[u8] = include_bytes!("sound/game_over.ogg");
-const SOUND_MOVE: &[u8] = include_bytes!("sound/move.ogg");
+const HELMET: &[u8] = include_bytes!("assets/helmet.png");
+const SOUND_CAPTURE: &[u8] = include_bytes!("assets/capture.ogg");
+const SOUND_GAME_OVER: &[u8] = include_bytes!("assets/game_over.ogg");
+const SOUND_MOVE: &[u8] = include_bytes!("assets/move.ogg");
 
 /// In milliseconds.
 const TICK: i64 = 100;
