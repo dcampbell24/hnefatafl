@@ -128,6 +128,7 @@ impl Tree {
         }
     }
 
+    // Fixme: use array_windows().
     #[must_use]
     pub fn previous_boards(&self) -> (Plays, PreviousBoards) {
         let mut node = &self.here();
