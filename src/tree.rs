@@ -128,13 +128,11 @@ impl Tree {
         }
     }
 
-    // Fixme: use array_windows().
     #[must_use]
     pub fn previous_boards(&self) -> (Plays, PreviousBoards) {
         let mut node = &self.here();
         let mut previous_boards = PreviousBoards::new(node.board.size());
         let mut boards = VecDeque::new();
-        let mut plays = Vec::new();
 
         previous_boards.0.insert(node.board.clone());
         boards.push_front(node.board.clone());
@@ -145,14 +143,13 @@ impl Tree {
             boards.push_front(node.board.clone());
         }
 
-        let boards: Vec<_> = boards.iter().collect();
-        for windows in boards.windows(2) {
-            let board_1 = windows[0];
-            let board_2 = windows[1];
-
-            let play = board_1.difference(board_2);
-            plays.push(play);
-        }
+        let plays = boards
+            .iter()
+            .collect::<Vec<_>>()
+            .as_slice()
+            .array_windows()
+            .map(|[board_1, board_2]| (*board_1).difference(board_2))
+            .collect();
 
         let plays = Plays::PlayRecords(plays);
         (plays, previous_boards)
