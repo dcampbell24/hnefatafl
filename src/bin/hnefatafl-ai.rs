@@ -21,6 +21,9 @@
 use std::{
     io::{BufRead, BufReader, Write},
     net::{TcpStream, ToSocketAddrs as _},
+    process::Command,
+    thread::sleep,
+    time::Duration,
 };
 
 use anyhow::Error;
@@ -35,7 +38,7 @@ use hnefatafl_copenhagen::{
     tcp_keep_alive,
     utils::{self, choose_ai},
 };
-use log::{debug, info, trace};
+use log::{debug, error, info, trace};
 use socket2::{Domain, SockAddr, Socket, Type};
 
 // Move 26, defender wins, corner escape, time per move 15s 2025-03-06 (hnefatafl-equi).
@@ -156,9 +159,12 @@ fn main() -> anyhow::Result<()> {
     let socket = Socket::new(domain_type, Type::STREAM, None)?;
     socket.set_tcp_keepalive(&keep_alive)?;
 
-    socket.connect(&address).unwrap_or_else(|error| {
-        eprintln!("socket.connect {address_string}: {error}");
-    });
+    systemd_delay_restart(&args)?;
+
+    if let Err(error) = socket.connect(&address) {
+        error!("socket.connect {address_string}: failed");
+        return Err(error.into());
+    }
 
     info!("connected to {socket_address}");
 
@@ -303,4 +309,31 @@ fn handle_messages(
 
         buf.clear();
     }
+}
+
+fn systemd_delay_restart(args: &Args) -> anyhow::Result<()> {
+    if args.systemd {
+        let service = match args.role {
+            Role::Attacker => "hnefatafl-ai-attacker.service",
+            Role::Defender => "hnefatafl-ai-defender.service",
+            Role::Roleless => unreachable!(),
+        };
+
+        let output = Command::new("systemctl")
+            .args(["show", service, "-p", "NRestarts"])
+            .output()?;
+
+        let i = String::from_utf8_lossy(&output.stdout)
+            .replace("NRestarts=", "")
+            .trim()
+            .parse()?;
+
+        if i > 0 {
+            let delay = 2u64.pow(i);
+            log::info!("sleeping for {delay}s...");
+            sleep(Duration::from_secs(delay));
+        }
+    }
+
+    Ok(())
 }
