@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- hnefatafl-server-full: added "server" to server_admins.
 - hnefatafl-client: you can't watch games that are not started yet.
 - hnefatafl-server-full: joining a game does not cancel when you quit.
 - hnefatafl-client: spelling of Described for translation key.
