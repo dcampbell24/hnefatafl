@@ -81,7 +81,7 @@ use iced::{
     },
     window::{self, icon},
 };
-use iced_aw::{date_picker::Date, helpers::date_picker};
+use iced_aw::{ICED_AW_FONT_BYTES, date_picker::Date, helpers::date_picker};
 use image::ImageFormat;
 use log::{debug, error, info, trace};
 use rust_i18n::t;
@@ -330,6 +330,7 @@ fn main() -> anyhow::Result<()> {
             icon: Some(icon::from_file_data(HELMET, Some(ImageFormat::Png))?),
             ..window::Settings::default()
         })
+        .font(ICED_AW_FONT_BYTES)
         .theme(Client::theme);
 
     // For screenshots.
