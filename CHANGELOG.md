@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- hnefatafl-server-full: use a date picker to choose the tournament date.
 - hnefatafl-client: separate admin and admin_tournament.
 
 ### Fixed

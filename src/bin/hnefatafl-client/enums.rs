@@ -28,6 +28,7 @@ use hnefatafl_copenhagen::{
     tree::{Node, Tree},
 };
 use iced::widget::text_editor;
+use iced_aw::date_picker::Date;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Copy, Debug, Default, Deserialize, Serialize)]
@@ -90,6 +91,9 @@ pub(crate) enum Message {
     ChangeTheme(Theme),
     ConnectedTo(String),
     Coordinates(bool),
+    DateChoose,
+    DateCancel,
+    DateSubmit(Date),
     DeleteAccount,
     EmailEveryone,
     EmailReset,
