@@ -157,16 +157,17 @@ fn main() -> anyhow::Result<()> {
             }
         };
 
-        if args.secure {
-            let peer_address = match stream.peer_addr() {
-                Ok(peer_address) => peer_address.ip(),
-                Err(error) => {
-                    error!("peer_address: {error}");
-                    continue;
-                }
-            };
+        let peer_address = match stream.peer_addr() {
+            Ok(peer_address) => peer_address.ip(),
+            Err(error) => {
+                error!("peer_address: {error}");
+                continue;
+            }
+        };
 
+        if args.secure {
             let (tx_close, rx_close) = mpsc::channel();
+
             tx.send((
                 format!("0 server connection_add {peer_address}"),
                 Some(tx_close),
@@ -195,7 +196,7 @@ fn main() -> anyhow::Result<()> {
 
         thread::spawn(move || {
             if let Err(error) = login(index, stream, &tx) {
-                error!("login: {error}");
+                error!("peer_address: {peer_address}, login: {error}");
             }
         });
     }
