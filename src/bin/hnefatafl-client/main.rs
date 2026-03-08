@@ -73,7 +73,7 @@ use iced::{
     stream,
     theme::Palette,
     widget::{
-        self, Column, Container, Row, Scrollable, button, checkbox, column, container,
+        self, Button, Column, Container, Row, Scrollable, button, checkbox, column, container,
         operation::{focus_next, focus_previous},
         pick_list, radio, row, scrollable, slider, text, text_editor,
         text_input::Value,
@@ -81,6 +81,7 @@ use iced::{
     },
     window::{self, icon},
 };
+use iced_aw::{date_picker::Date, helpers::date_picker};
 use image::ImageFormat;
 use log::{debug, error, info, trace};
 use rust_i18n::t;
@@ -248,6 +249,7 @@ fn init_client() -> Client {
         }
     };
 
+    client.tournament_date = Date::today();
     rust_i18n::set_locale(&client.locale_selected.txt());
     client.strings = i18n_buttons();
     client.text_input.clone_from(&client.username);
@@ -731,6 +733,10 @@ struct Client {
     time_defender: TimeSettings,
     #[serde(skip)]
     tournament: Option<Tournament>,
+    #[serde(skip)]
+    tournament_date: Date,
+    #[serde(skip)]
+    tournament_date_show_picker: bool,
     #[serde(skip)]
     tx: Option<mpsc::Sender<String>>,
     #[serde(default)]
@@ -2051,6 +2057,13 @@ impl<'a> Client {
             Message::ChangeTheme(theme) => self.change_theme(theme),
             Message::BoardSizeSelected(size) => self.game_settings.board_size = size,
             Message::ConnectedTo(address) => self.connected_to = address,
+            Message::DateCancel => self.tournament_date_show_picker = false,
+            Message::DateChoose => self.tournament_date_show_picker = true,
+            Message::DateSubmit(date) => {
+                self.send(&format!("tournament_date {date}\n"));
+                self.tournament_date = date;
+                self.tournament_date_show_picker = false;
+            }
             Message::Coordinates(_coordinates) => self.coordinates(),
             Message::DeleteAccount => self.delete_account(),
             Message::EmailEveryone => {
@@ -3150,13 +3163,11 @@ impl<'a> Client {
                             self.send(&format!("text {}", self.text_input));
                         }
                     }
-                    Screen::Tournament => {
-                        if !self.text_input.trim().is_empty() {
-                            self.text_input.push('\n');
-                            self.send(&format!("tournament_date {}", self.text_input));
-                        }
-                    }
-                    Screen::GameNew | Screen::GameReview | Screen::Login | Screen::Users => {}
+                    Screen::GameNew
+                    | Screen::GameReview
+                    | Screen::Login
+                    | Screen::Tournament
+                    | Screen::Users => {}
                 }
 
                 self.text_input.clear();
@@ -4152,10 +4163,16 @@ impl<'a> Client {
                 let mut column = Column::new().padding(PADDING).spacing(SPACING);
 
                 if self.admin_tournament {
-                    let input = iced::widget::text_input("????-??-??", &self.text_input)
-                        .on_input(Message::TextChanged)
-                        .on_paste(Message::TextChanged)
-                        .on_submit(Message::TextSend);
+                    let date_button =
+                        Button::new(text("Tournament Date")).on_press(Message::DateChoose);
+
+                    let date_picker = date_picker(
+                        self.tournament_date_show_picker,
+                        self.tournament_date,
+                        date_button,
+                        Message::DateCancel,
+                        Message::DateSubmit,
+                    );
 
                     let mut delete_button = button("Delete Tournament");
 
@@ -4163,7 +4180,7 @@ impl<'a> Client {
                         delete_button = delete_button.on_press(Message::TournamentDelete);
                     }
 
-                    let row = row![input, delete_button].spacing(SPACING);
+                    let row = row![date_picker, delete_button].spacing(SPACING);
 
                     column = column.push(row);
                 }
