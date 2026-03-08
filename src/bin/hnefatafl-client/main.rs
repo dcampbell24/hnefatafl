@@ -135,7 +135,7 @@ const PADDING_MEDIUM: u16 = 4;
 const SPACING: Pixels = Pixels(10.0);
 const SPACING_B: Pixels = Pixels(20.0);
 
-const CHESS_FONT: Font = Font::with_name("assets/Chess Alpha");
+const CHESS_FONT: Font = Font::with_name("Chess Alpha");
 const HELMET: &[u8] = include_bytes!("assets/helmet.png");
 const SOUND_CAPTURE: &[u8] = include_bytes!("assets/capture.ogg");
 const SOUND_GAME_OVER: &[u8] = include_bytes!("assets/game_over.ogg");
