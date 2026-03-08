@@ -73,7 +73,7 @@ use iced::{
     stream,
     theme::Palette,
     widget::{
-        self, Column, Container, Row, Scrollable, button, checkbox, column, container,
+        self, Button, Column, Container, Row, Scrollable, button, checkbox, column, container,
         operation::{focus_next, focus_previous},
         pick_list, radio, row, scrollable, slider, text, text_editor,
         text_input::Value,
@@ -81,6 +81,7 @@ use iced::{
     },
     window::{self, icon},
 };
+use iced_aw::{ICED_AW_FONT_BYTES, date_picker::Date, helpers::date_picker};
 use image::ImageFormat;
 use log::{debug, error, info, trace};
 use rust_i18n::t;
@@ -125,8 +126,6 @@ const BOARD_LETTERS_LOWERCASE: [char; 13] = [
     'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
 ];
 
-const CHESS_FONT: Font = Font::with_name("Chess Alpha");
-const HELMET: &[u8] = include_bytes!("helmet.png");
 const ARCHIVED_GAMES_FILE: &str = "archived-games.postcard";
 const USER_CONFIG_FILE: &str = "user.ron";
 
@@ -136,9 +135,11 @@ const PADDING_MEDIUM: u16 = 4;
 const SPACING: Pixels = Pixels(10.0);
 const SPACING_B: Pixels = Pixels(20.0);
 
-const SOUND_CAPTURE: &[u8] = include_bytes!("sound/capture.ogg");
-const SOUND_GAME_OVER: &[u8] = include_bytes!("sound/game_over.ogg");
-const SOUND_MOVE: &[u8] = include_bytes!("sound/move.ogg");
+const CHESS_FONT: Font = Font::with_name("assets/Chess Alpha");
+const HELMET: &[u8] = include_bytes!("assets/helmet.png");
+const SOUND_CAPTURE: &[u8] = include_bytes!("assets/capture.ogg");
+const SOUND_GAME_OVER: &[u8] = include_bytes!("assets/game_over.ogg");
+const SOUND_MOVE: &[u8] = include_bytes!("assets/move.ogg");
 
 /// In milliseconds.
 const TICK: i64 = 100;
@@ -249,6 +250,7 @@ fn init_client() -> Client {
         }
     };
 
+    client.tournament_date = Date::today();
     rust_i18n::set_locale(&client.locale_selected.txt());
     client.strings = i18n_buttons();
     client.text_input.clone_from(&client.username);
@@ -329,7 +331,8 @@ fn main() -> anyhow::Result<()> {
             icon: Some(icon::from_file_data(HELMET, Some(ImageFormat::Png))?),
             ..window::Settings::default()
         })
-        .font(include_bytes!("Alpha.ttf").as_slice())
+        .font(include_bytes!("assets/Alpha.ttf").as_slice())
+        .font(ICED_AW_FONT_BYTES)
         .theme(Client::theme);
 
     // For screenshots.
@@ -733,6 +736,10 @@ struct Client {
     time_defender: TimeSettings,
     #[serde(skip)]
     tournament: Option<Tournament>,
+    #[serde(skip)]
+    tournament_date: Date,
+    #[serde(skip)]
+    tournament_date_show_picker: bool,
     #[serde(skip)]
     tx: Option<mpsc::Sender<String>>,
     #[serde(default)]
@@ -2053,6 +2060,13 @@ impl<'a> Client {
             Message::ChangeTheme(theme) => self.change_theme(theme),
             Message::BoardSizeSelected(size) => self.game_settings.board_size = size,
             Message::ConnectedTo(address) => self.connected_to = address,
+            Message::DateCancel => self.tournament_date_show_picker = false,
+            Message::DateChoose => self.tournament_date_show_picker = true,
+            Message::DateSubmit(date) => {
+                self.send(&format!("tournament_date {date}\n"));
+                self.tournament_date = date;
+                self.tournament_date_show_picker = false;
+            }
             Message::Coordinates(_coordinates) => self.coordinates(),
             Message::DeleteAccount => self.delete_account(),
             Message::EmailEveryone => {
@@ -3152,13 +3166,11 @@ impl<'a> Client {
                             self.send(&format!("text {}", self.text_input));
                         }
                     }
-                    Screen::Tournament => {
-                        if !self.text_input.trim().is_empty() {
-                            self.text_input.push('\n');
-                            self.send(&format!("tournament_date {}", self.text_input));
-                        }
-                    }
-                    Screen::GameNew | Screen::GameReview | Screen::Login | Screen::Users => {}
+                    Screen::GameNew
+                    | Screen::GameReview
+                    | Screen::Login
+                    | Screen::Tournament
+                    | Screen::Users => {}
                 }
 
                 self.text_input.clear();
@@ -4154,10 +4166,16 @@ impl<'a> Client {
                 let mut column = Column::new().padding(PADDING).spacing(SPACING);
 
                 if self.admin_tournament {
-                    let input = iced::widget::text_input("????-??-??", &self.text_input)
-                        .on_input(Message::TextChanged)
-                        .on_paste(Message::TextChanged)
-                        .on_submit(Message::TextSend);
+                    let date_button =
+                        Button::new(text("Tournament Date")).on_press(Message::DateChoose);
+
+                    let date_picker = date_picker(
+                        self.tournament_date_show_picker,
+                        self.tournament_date,
+                        date_button,
+                        Message::DateCancel,
+                        Message::DateSubmit,
+                    );
 
                     let mut delete_button = button("Delete Tournament");
 
@@ -4165,7 +4183,7 @@ impl<'a> Client {
                         delete_button = delete_button.on_press(Message::TournamentDelete);
                     }
 
-                    let row = row![input, delete_button].spacing(SPACING);
+                    let row = row![date_picker, delete_button].spacing(SPACING);
 
                     column = column.push(row);
                 }

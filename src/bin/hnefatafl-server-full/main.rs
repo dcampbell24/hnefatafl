@@ -2119,6 +2119,8 @@ impl Server {
                     if let Some(tournament) = &mut self.tournament {
                         tournament.remove_duplicate_ids();
                     }
+
+                    self.admins_tournament.insert("server".to_string());
                 }
                 Err(err) => {
                     return Err(anyhow::Error::msg(format!(

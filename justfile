@@ -13,6 +13,10 @@ coverage:
 enable-git-hooks:
     git config --local core.hooksPath .githooks/
 
+enable-remote-ip:
+    sudo a2enmod remoteip
+    sudo systemctl restart apache2
+
 profile-games:
     echo '1' | sudo tee /proc/sys/kernel/perf_event_paranoid
     samply record cargo test hnefatafl_games --no-default-features --features socket --profile profiling

@@ -1,3 +1,7 @@
+.git
+.DS_Store
+.coverage
+
 /packages/debian/apt
 /profile.json
 /profile.json.gz
@@ -15,5 +19,3 @@ cargo-test-*
 hnefatafl-copenhagen.*.nupkg
 hnefatafl-client-installer-*.exe
 v*.tar.gz
-
-.pijul
