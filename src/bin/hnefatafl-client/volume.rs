@@ -15,7 +15,7 @@ impl Volume {
     pub fn volume(&self) -> f32 {
         match self.0 {
             0 => 0.25,
-            1 => 0.345,
+            1 => 0.375,
             2 => 0.5,
             3 => 0.75,
             4 => 1.0,
