@@ -13,11 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- hnefatafl-server-full: use a date picker to choose the tournament date.
+- hnefatafl-client: use a date picker to choose the tournament date.
 - hnefatafl-client: separate admin and admin_tournament.
 
 ### Fixed
 
+- hnefatafl-server-full: make the log messages more detailed.
 - hnefatafl-server-full: added "server" to server_admins.
 - hnefatafl-client: you can't watch games that are not started yet.
 - hnefatafl-server-full: joining a game does not cancel when you quit.
