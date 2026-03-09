@@ -36,14 +36,14 @@ Go to the Start menu and run Hnefatafl.
 
 ## Debian and Derivatives (Linux)
 
-Download [hnefatafl.list][1] to `/etc/apt/sources.list.d/` or:
+Run:
 
 ```sh
 echo 'deb [arch=amd64 signed-by=/etc/apt/keyrings/packages.hnefatafl.org.asc] https://hnefatafl.org/apt stable main' \
 | sudo tee /etc/apt/sources.list.d/hnefatafl.list
 ```
 
-Then, Download [packages.hnefatafl.org.asc][2] to `/etc/apt/keyrings/` or:
+Then, Download [packages.hnefatafl.org.asc][1] to `/etc/apt/keyrings/` or:
 
 ```sh
 wget https://hnefatafl.org/packages.hnefatafl.org.asc
@@ -56,8 +56,7 @@ Then in your terminal run:
 sudo apt update && sudo apt install hnefatafl-copenhagen
 ```
 
-[1]: hnefatafl.list
-[2]: packages.hnefatafl.org.asc
+[1]: packages.hnefatafl.org.asc
 
 Then under KDE go to `Application Launcher -> Games -> Hnefatafl Copenhagen`
 or in a terminal run `\usr\games\hnefatafl-client`.
