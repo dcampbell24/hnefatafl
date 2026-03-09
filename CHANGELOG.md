@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Turn the player's whose turn it is green in games.
+- Turn the player's name whose turn it is green in games.
 - hnefatafl-client: make the volume adjustable.
 
 ### Changed
