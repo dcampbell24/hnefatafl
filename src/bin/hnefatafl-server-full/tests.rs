@@ -67,12 +67,7 @@ fn capital_letters_fail() {
 
     let password = "A".to_string();
     let ctx = Argon2::default();
-
-    let salt = SaltString::generate(&mut OsRng);
-    let password_hash = ctx
-        .hash_password(password.as_bytes(), &salt)
-        .unwrap()
-        .to_string();
+    let password_hash = ctx.hash_password(password.as_bytes()).unwrap().to_string();
 
     let account = Account {
         password: password_hash,
@@ -83,12 +78,7 @@ fn capital_letters_fail() {
     accounts.0.insert("testing".to_string(), account);
     {
         let account = accounts.0.get_mut("testing").unwrap();
-
-        let salt = SaltString::generate(&mut OsRng);
-        let password_hash = ctx
-            .hash_password(password.as_bytes(), &salt)
-            .unwrap()
-            .to_string();
+        let password_hash = ctx.hash_password(password.as_bytes()).unwrap().to_string();
 
         account.password = password_hash;
     }
