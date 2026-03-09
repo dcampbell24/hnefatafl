@@ -69,8 +69,6 @@ use lettre::{
     transport::smtp::authentication::Credentials,
 };
 use log::{debug, error, info, trace};
-use old_rand::rngs::OsRng;
-use password_hash::SaltString;
 use rand::random;
 use serde::{Deserialize, Serialize};
 use std::fmt::Write as _;
@@ -432,12 +430,7 @@ fn handle_error<T, E: fmt::Display>(result: Result<T, E>) -> T {
 
 fn hash_password(password: &str) -> Option<String> {
     let ctx = Argon2::default();
-    let salt = SaltString::generate(&mut OsRng);
-    Some(
-        ctx.hash_password(password.as_bytes(), &salt)
-            .ok()?
-            .to_string(),
-    )
+    Some(ctx.hash_password(password.as_bytes()).ok()?.to_string())
 }
 
 fn timestamp() -> String {
