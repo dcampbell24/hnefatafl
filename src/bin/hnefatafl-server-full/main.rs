@@ -29,7 +29,7 @@ use std::{
     fmt,
     fs::{self, File, OpenOptions},
     io::{BufRead, BufReader, ErrorKind, Read, Write},
-    net::{TcpListener, TcpStream},
+    net::{IpAddr, TcpListener, TcpStream},
     process::exit,
     str::FromStr,
     sync::{
@@ -195,7 +195,7 @@ fn main() -> anyhow::Result<()> {
         let tx = tx.clone();
 
         thread::spawn(move || {
-            if let Err(error) = login(index, stream, &tx) {
+            if let Err(error) = login(index, stream, peer_address, &tx) {
                 error!("peer_address: {peer_address}, login: {error}");
             }
         });
@@ -208,8 +208,11 @@ fn main() -> anyhow::Result<()> {
 fn login(
     id: Id,
     mut stream: TcpStream,
+    peer_address: IpAddr,
     tx: &mpsc::Sender<(String, Option<mpsc::Sender<String>>)>,
 ) -> anyhow::Result<()> {
+    info!("login attempted from {peer_address}");
+
     let args = Args::parse();
 
     let _remove_connection;
@@ -274,7 +277,7 @@ fn login(
                 continue;
             }
 
-            debug!("{id} {username} {create_account_login} {password}");
+            debug!("{peer_address} {id} {username} {create_account_login} {password}");
 
             if create_account_login == "reset_password" {
                 tx.send((
@@ -323,6 +326,7 @@ fn login(
         return Err(anyhow::Error::msg("the user failed to login"));
     }
     stream.write_all(b"= login\n")?;
+    info!("{peer_address} {id} {username_proper} logged in");
 
     thread::spawn(move || {
         if let Err(error) = receiving_and_writing(stream, &client_rx) {
@@ -341,7 +345,7 @@ fn login(
     let mut game_id = None;
     'outer: for _ in 0..1_000_000 {
         if let Err(err) = reader.read_line(&mut buf) {
-            error!("reader.read_line(): {err}");
+            error!("peer_address: {peer_address}, reader.read_line(): {err}");
             break 'outer;
         }
 
@@ -383,6 +387,8 @@ fn login(
     }
 
     tx.send((format!("{id} {username_proper} logout"), None))?;
+    info!("{peer_address} {id} {username_proper} logged out");
+
     Ok(())
 }
 
@@ -2087,7 +2093,6 @@ impl Server {
                     info!("{index_supplied} {username} provided the wrong password");
                     return Some((tx, false, (*command).to_string()));
                 }
-                info!("{index_supplied} {username} logged in");
 
                 self.clients.insert(index_supplied, tx);
                 account.logged_in = Some(index_supplied);
@@ -2213,7 +2218,6 @@ impl Server {
             if let Some(index_database) = account.logged_in
                 && index_database == index_supplied
             {
-                info!("{index_supplied} {username} logged out");
                 account.logged_in = None;
 
                 self.clients
