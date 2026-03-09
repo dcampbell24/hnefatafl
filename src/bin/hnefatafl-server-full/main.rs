@@ -714,6 +714,7 @@ impl Server {
                 spectators: game_old.spectators,
                 challenge_accepted: false,
                 game_over: false,
+                turn: Role::Roleless,
             };
 
             command = format!("{command} {game:?}");
@@ -956,6 +957,7 @@ impl Server {
         None
     }
 
+    //
     #[allow(clippy::too_many_lines)]
     fn game(
         &mut self,
@@ -1067,6 +1069,7 @@ impl Server {
         }
 
         let mut game_over = false;
+        game_light.turn = Role::Roleless;
 
         match game.game.status {
             Status::AttackerWins => {
@@ -1115,9 +1118,11 @@ impl Server {
             }
             Status::Ongoing => {
                 if attackers_turn_next {
+                    game_light.turn = Role::Attacker;
                     game.attacker_tx
                         .send(format!("game {index} generate_move attacker"));
                 } else {
+                    game_light.turn = Role::Defender;
                     game.defender_tx
                         .send(format!("game {index} generate_move defender"));
                 }
@@ -1880,6 +1885,7 @@ impl Server {
         };
 
         game.challenge_accepted = true;
+        game.turn = Role::Attacker;
 
         let mut attacker_channel_id = 0;
         if let Some(account) = self.accounts.0.get(game.attacker.as_ref()?)
@@ -2372,6 +2378,7 @@ impl Server {
             challenge_accepted: true,
             game_over: false,
             board_size: BoardSize::_11,
+            turn: Role::Attacker,
         };
 
         info!(

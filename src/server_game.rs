@@ -271,6 +271,7 @@ pub struct ServerGameLight {
     pub challenge_accepted: bool,
     pub game_over: bool,
     pub board_size: BoardSize,
+    pub turn: Role,
 }
 
 impl ServerGameLight {
@@ -295,6 +296,7 @@ impl ServerGameLight {
                 spectators: HashMap::new(),
                 challenge_accepted: false,
                 game_over: false,
+                turn: Role::Roleless,
             }
         } else {
             Self {
@@ -308,6 +310,7 @@ impl ServerGameLight {
                 spectators: HashMap::new(),
                 challenge_accepted: false,
                 game_over: false,
+                turn: Role::Roleless,
             }
         }
     }
@@ -339,6 +342,7 @@ impl From<&ServerGameSerialized> for ServerGameLight {
             spectators: HashMap::new(),
             challenge_accepted: true,
             game_over: false,
+            turn: Role::Attacker,
         }
     }
 }
@@ -361,16 +365,35 @@ impl fmt::Debug for ServerGameLight {
             unreachable!();
         };
 
-        write!(
-            f,
-            "game {} {attacker} {defender} {} {:?} {} {:?} {} {spectators}",
-            self.id,
-            self.rated,
-            self.timed,
-            self.board_size,
-            self.challenger,
-            self.challenge_accepted,
-        )
+        if self.challenge_accepted {
+            let challenger = match self.turn {
+                Role::Attacker => Challenger(self.attacker.clone()),
+                Role::Defender => Challenger(self.defender.clone()),
+                Role::Roleless => Challenger(None),
+            };
+
+            write!(
+                f,
+                "game {} {attacker} {defender} {} {:?} {} {:?} {} {spectators}",
+                self.id,
+                self.rated,
+                self.timed,
+                self.board_size,
+                challenger,
+                self.challenge_accepted,
+            )
+        } else {
+            write!(
+                f,
+                "game {} {attacker} {defender} {} {:?} {} {:?} {} {spectators}",
+                self.id,
+                self.rated,
+                self.timed,
+                self.board_size,
+                self.challenger,
+                self.challenge_accepted,
+            )
+        }
     }
 }
 
@@ -467,6 +490,7 @@ impl TryFrom<&[&str]> for ServerGameLight {
             spectators,
             challenge_accepted,
             game_over: false,
+            turn: Role::Roleless,
         };
 
         if challenger != "_" {

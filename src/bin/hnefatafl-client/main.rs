@@ -53,7 +53,7 @@ use hnefatafl_copenhagen::{
     play::{BOARD_LETTERS, Plae, Plays, Vertex},
     rating::Rated,
     role::Role,
-    server_game::{ArchivedGame, ServerGameLight, ServerGamesLight},
+    server_game::{ArchivedGame, Challenger, ServerGameLight, ServerGamesLight},
     space::Space,
     status::Status,
     tcp_keep_alive,
@@ -3305,22 +3305,40 @@ impl<'a> Client {
             let id = game.id;
             game_ids = game_ids.push(text(id));
 
-            attackers = if let Some(attacker) = &game.attacker {
-                if let Some(user) = self.users.get(attacker) {
-                    attackers.push(text!("{attacker} ({})", user.rating.to_string_rounded()))
+            attackers = if let Some(attacker_str) = &game.attacker {
+                let mut attacker = if let Some(user) = self.users.get(attacker_str) {
+                    text!("{attacker_str} ({})", user.rating.to_string_rounded())
                 } else {
-                    attackers.push(text(attacker))
+                    text(attacker_str)
+                };
+
+                if game.challenge_accepted
+                    && let Challenger(Some(name)) = &game.challenger
+                    && name == attacker_str
+                {
+                    attacker = attacker.style(text::success);
                 }
+
+                attackers.push(attacker)
             } else {
                 attackers.push(text(t!("none")))
             };
 
-            defenders = if let Some(defender) = &game.defender {
-                if let Some(user) = self.users.get(defender) {
-                    defenders.push(text!("{defender} ({})", user.rating.to_string_rounded()))
+            defenders = if let Some(defender_str) = &game.defender {
+                let mut defender = if let Some(user) = self.users.get(defender_str) {
+                    text!("{defender_str} ({})", user.rating.to_string_rounded())
                 } else {
-                    defenders.push(text(defender))
+                    text(defender_str)
+                };
+
+                if game.challenge_accepted
+                    && let Challenger(Some(name)) = &game.challenger
+                    && name == defender_str
+                {
+                    defender = defender.style(text::success);
                 }
+
+                defenders.push(defender)
             } else {
                 defenders.push(text(t!("none")))
             };
