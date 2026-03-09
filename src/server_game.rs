@@ -367,8 +367,8 @@ impl fmt::Debug for ServerGameLight {
 
         if self.challenge_accepted {
             let challenger = match self.turn {
-                Role::Attacker => Challenger(self.attacker.clone()),
-                Role::Defender => Challenger(self.defender.clone()),
+                Role::Attacker => Challenger(Some("A".to_string())),
+                Role::Defender => Challenger(Some("D".to_string())),
                 Role::Roleless => Challenger(None),
             };
 
@@ -467,7 +467,6 @@ impl TryFrom<&[&str]> for ServerGameLight {
                 add_seconds: add_seconds.parse::<i64>()?,
                 milliseconds_left: minutes.parse::<i64>()?,
             }),
-            // "un-timed"
             _ => TimeSettings::UnTimed,
         };
 

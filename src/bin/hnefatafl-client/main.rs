@@ -3314,7 +3314,7 @@ impl<'a> Client {
 
                 if game.challenge_accepted
                     && let Challenger(Some(name)) = &game.challenger
-                    && name == attacker_str
+                    && name == "A"
                 {
                     attacker = attacker.style(text::success);
                 }
@@ -3333,7 +3333,7 @@ impl<'a> Client {
 
                 if game.challenge_accepted
                     && let Challenger(Some(name)) = &game.challenger
-                    && name == defender_str
+                    && name == "D"
                 {
                     defender = defender.style(text::success);
                 }
