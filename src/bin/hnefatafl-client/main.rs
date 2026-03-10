@@ -43,6 +43,7 @@ use chrono::{Local, Utc};
 use clap::{CommandFactory, Parser};
 use hnefatafl_copenhagen::{
     COPYRIGHT, Id, SERVER_PORT, VERSION_ID,
+    accounts::{Account, Accounts},
     board::{Board, BoardSize},
     characters::Characters,
     draw::Draw,
@@ -614,6 +615,8 @@ fn text_collect(text: SplitAsciiWhitespace<'_>) -> String {
 #[allow(clippy::struct_excessive_bools)]
 #[derive(Debug, Default, Deserialize, Serialize)]
 struct Client {
+    #[serde(skip)]
+    accounts: Accounts,
     #[serde(skip)]
     admin: bool,
     #[serde(skip)]
@@ -2796,6 +2799,14 @@ impl<'a> Client {
                                     self.users.insert(user.name.clone(), user);
                                 }
                             }
+                            Some("display_users_admin") => {
+                                let accounts: Accounts = ron::from_str(
+                                    text.next().expect("there should be a nex value"),
+                                )
+                                .expect("we should be able to deserialize accounts");
+
+                                self.accounts = accounts;
+                            }
                             Some("draw") => {
                                 self.request_draw = false;
                                 if let Some("accept") = text.next() {
@@ -3244,6 +3255,36 @@ impl<'a> Client {
     }
 
     #[must_use]
+    fn accounts_sorted(&self) -> Vec<(String, Account)> {
+        let mut accounts: Vec<_> = self.accounts.clone().0.into_iter().collect();
+
+        match self.users_sort_by {
+            SortBy::Name => {
+                accounts.sort_by(|(_, a_account), (_, b_account)| {
+                    b_account
+                        .rating
+                        .rating
+                        .partial_cmp(&a_account.rating.rating)
+                        .expect("The number should be comparable.")
+                });
+                accounts.sort_by(|(a_name, _), (b_name, _)| a_name.cmp(b_name));
+            }
+            SortBy::Rating => {
+                accounts.sort_by(|(a_name, _), (b_name, _)| a_name.cmp(b_name));
+                accounts.sort_by(|(_, a_account), (_, b_account)| {
+                    b_account
+                        .rating
+                        .rating
+                        .partial_cmp(&a_account.rating.rating)
+                        .expect("The number should be comparable.")
+                });
+            }
+        }
+
+        accounts
+    }
+
+    #[must_use]
     fn users_sorted(&self) -> Vec<User> {
         let mut users: Vec<_> = self.users.values().cloned().collect();
 
@@ -3532,93 +3573,210 @@ impl<'a> Client {
 
     #[must_use]
     fn users(&self, logged_in: &LoggedIn) -> Scrollable<'_, Message> {
-        let mut ratings = Column::new();
-        let mut usernames = Column::new();
-        let mut wins = Column::new();
-        let mut losses = Column::new();
-        let mut draws = Column::new();
-        let mut win_percents = Column::new();
+        if self.admin {
+            let mut ratings = Column::new();
+            let mut usernames = Column::new();
+            let mut wins = Column::new();
+            let mut losses = Column::new();
+            let mut draws = Column::new();
+            let mut win_percents = Column::new();
+            let mut creation_dates = Column::new();
 
-        for user in self.users_sorted() {
-            if *logged_in == user.logged_in || *logged_in == LoggedIn::None {
-                let wins_number = f64::from_str(&user.wins).expect("This is a f64.");
-                let mut win_percentage = wins_number
-                    / (wins_number + f64::from_str(&user.losses).expect("This is a f64."));
+            for (name, account) in self.accounts_sorted() {
+                if account.logged_in.is_some() || *logged_in == LoggedIn::None {
+                    let wins_number = account.wins as f64;
+                    let mut win_percentage = wins_number / (wins_number + account.losses as f64);
 
-                win_percentage *= 100.0;
-                win_percentage = win_percentage.round_ties_even();
+                    win_percentage *= 100.0;
+                    win_percentage = win_percentage.round_ties_even();
 
-                ratings = ratings.push(text(user.rating.to_string_rounded()));
-                usernames = usernames.push(text(user.name));
-                wins = wins.push(text(user.wins));
-                losses = losses.push(text(user.losses));
-                draws = draws.push(text(user.draws));
-                win_percents = win_percents.push(text!("{}", win_percentage));
+                    ratings = ratings.push(text(account.rating.to_string_rounded()));
+                    usernames = usernames.push(text(name));
+                    wins = wins.push(text(account.wins));
+                    losses = losses.push(text(account.losses));
+                    draws = draws.push(text(account.draws));
+                    win_percents = win_percents.push(text!("{}", win_percentage));
+
+                    let date = account
+                        .creation_date
+                        .0
+                        .to_utc()
+                        .format("%Y-%m-%d %z")
+                        .to_string();
+
+                    creation_dates = creation_dates.push(text(date));
+                }
             }
+
+            let rating = t!("rating");
+            let mut button_1 = button(text("(7)").size(10)).padding(PADDING_SMALL);
+
+            if self.users_sort_by != SortBy::Rating {
+                button_1 = button_1.on_press(Message::UsersSortedBy(SortBy::Rating));
+            }
+
+            let ratings = column![
+                row![text(rating.to_string()), button_1,].spacing(SPACING),
+                text("-".repeat(rating.chars().count())).font(Font::MONOSPACE),
+                ratings
+            ]
+            .padding(PADDING);
+
+            let username = t!("username");
+            let mut button_2 = button(text("(8)").size(10)).padding(PADDING_SMALL);
+
+            if self.users_sort_by != SortBy::Name {
+                button_2 = button_2.on_press(Message::UsersSortedBy(SortBy::Name));
+            }
+
+            let usernames = column![
+                row![text(username.to_string()), button_2,].spacing(SPACING),
+                text("-".repeat(username.chars().count())).font(Font::MONOSPACE),
+                usernames
+            ]
+            .padding(PADDING);
+
+            let win = t!("wins");
+            let wins = column![
+                text(win.to_string()),
+                text("-".repeat(win.chars().count())).font(Font::MONOSPACE),
+                wins
+            ]
+            .padding(PADDING);
+
+            let loss = t!("losses");
+            let losses = column![
+                text(loss.to_string()),
+                text("-".repeat(loss.chars().count())).font(Font::MONOSPACE),
+                losses
+            ]
+            .padding(PADDING);
+
+            let draw = t!("draws");
+            let draws = column![
+                text(draw.to_string()),
+                text("-".repeat(draw.chars().count())).font(Font::MONOSPACE),
+                draws
+            ]
+            .padding(PADDING);
+
+            let win_percent = format!("{} %", t!("wins"));
+            let hyphens_count = win_percent.chars().count();
+            let win_percents = column![
+                text(win_percent),
+                text("-".repeat(hyphens_count)).font(Font::MONOSPACE),
+                win_percents
+            ]
+            .padding(PADDING);
+
+            let creation_date = "creation date".to_string();
+            let hyphens_count = creation_date.chars().count();
+            let creation_dates = column![
+                text(creation_date),
+                text("-".repeat(hyphens_count)).font(Font::MONOSPACE),
+                creation_dates
+            ]
+            .padding(PADDING);
+
+            scrollable(row![
+                ratings,
+                usernames,
+                wins,
+                losses,
+                draws,
+                win_percents,
+                creation_dates
+            ])
+            .spacing(SPACING)
+        } else {
+            let mut ratings = Column::new();
+            let mut usernames = Column::new();
+            let mut wins = Column::new();
+            let mut losses = Column::new();
+            let mut draws = Column::new();
+            let mut win_percents = Column::new();
+
+            for user in self.users_sorted() {
+                if *logged_in == user.logged_in || *logged_in == LoggedIn::None {
+                    let wins_number = f64::from_str(&user.wins).expect("This is a f64.");
+                    let mut win_percentage = wins_number
+                        / (wins_number + f64::from_str(&user.losses).expect("This is a f64."));
+
+                    win_percentage *= 100.0;
+                    win_percentage = win_percentage.round_ties_even();
+
+                    ratings = ratings.push(text(user.rating.to_string_rounded()));
+                    usernames = usernames.push(text(user.name));
+                    wins = wins.push(text(user.wins));
+                    losses = losses.push(text(user.losses));
+                    draws = draws.push(text(user.draws));
+                    win_percents = win_percents.push(text!("{}", win_percentage));
+                }
+            }
+
+            let rating = t!("rating");
+            let mut button_1 = button(text("(7)").size(10)).padding(PADDING_SMALL);
+
+            if self.users_sort_by != SortBy::Rating {
+                button_1 = button_1.on_press(Message::UsersSortedBy(SortBy::Rating));
+            }
+
+            let ratings = column![
+                row![text(rating.to_string()), button_1,].spacing(SPACING),
+                text("-".repeat(rating.chars().count())).font(Font::MONOSPACE),
+                ratings
+            ]
+            .padding(PADDING);
+
+            let username = t!("username");
+            let mut button_2 = button(text("(8)").size(10)).padding(PADDING_SMALL);
+
+            if self.users_sort_by != SortBy::Name {
+                button_2 = button_2.on_press(Message::UsersSortedBy(SortBy::Name));
+            }
+
+            let usernames = column![
+                row![text(username.to_string()), button_2,].spacing(SPACING),
+                text("-".repeat(username.chars().count())).font(Font::MONOSPACE),
+                usernames
+            ]
+            .padding(PADDING);
+
+            let win = t!("wins");
+            let wins = column![
+                text(win.to_string()),
+                text("-".repeat(win.chars().count())).font(Font::MONOSPACE),
+                wins
+            ]
+            .padding(PADDING);
+
+            let loss = t!("losses");
+            let losses = column![
+                text(loss.to_string()),
+                text("-".repeat(loss.chars().count())).font(Font::MONOSPACE),
+                losses
+            ]
+            .padding(PADDING);
+
+            let draw = t!("draws");
+            let draws = column![
+                text(draw.to_string()),
+                text("-".repeat(draw.chars().count())).font(Font::MONOSPACE),
+                draws
+            ]
+            .padding(PADDING);
+
+            let win_percent = format!("{} %", t!("wins"));
+            let hyphens_count = win_percent.chars().count();
+            let win_percents = column![
+                text(win_percent),
+                text("-".repeat(hyphens_count)).font(Font::MONOSPACE),
+                win_percents
+            ]
+            .padding(PADDING);
+
+            scrollable(row![ratings, usernames, wins, losses, draws, win_percents]).spacing(SPACING)
         }
-
-        let rating = t!("rating");
-        let mut button_1 = button(text("(7)").size(10)).padding(PADDING_SMALL);
-
-        if self.users_sort_by != SortBy::Rating {
-            button_1 = button_1.on_press(Message::UsersSortedBy(SortBy::Rating));
-        }
-
-        let ratings = column![
-            row![text(rating.to_string()), button_1,].spacing(SPACING),
-            text("-".repeat(rating.chars().count())).font(Font::MONOSPACE),
-            ratings
-        ]
-        .padding(PADDING);
-
-        let username = t!("username");
-        let mut button_2 = button(text("(8)").size(10)).padding(PADDING_SMALL);
-
-        if self.users_sort_by != SortBy::Name {
-            button_2 = button_2.on_press(Message::UsersSortedBy(SortBy::Name));
-        }
-
-        let usernames = column![
-            row![text(username.to_string()), button_2,].spacing(SPACING),
-            text("-".repeat(username.chars().count())).font(Font::MONOSPACE),
-            usernames
-        ]
-        .padding(PADDING);
-
-        let win = t!("wins");
-        let wins = column![
-            text(win.to_string()),
-            text("-".repeat(win.chars().count())).font(Font::MONOSPACE),
-            wins
-        ]
-        .padding(PADDING);
-
-        let loss = t!("losses");
-        let losses = column![
-            text(loss.to_string()),
-            text("-".repeat(loss.chars().count())).font(Font::MONOSPACE),
-            losses
-        ]
-        .padding(PADDING);
-
-        let draw = t!("draws");
-        let draws = column![
-            text(draw.to_string()),
-            text("-".repeat(draw.chars().count())).font(Font::MONOSPACE),
-            draws
-        ]
-        .padding(PADDING);
-
-        let win_percent = format!("{} %", t!("wins"));
-        let hyphens_count = win_percent.chars().count();
-        let win_percents = column![
-            text(win_percent),
-            text("-".repeat(hyphens_count)).font(Font::MONOSPACE),
-            win_percents
-        ]
-        .padding(PADDING);
-
-        scrollable(row![ratings, usernames, wins, losses, draws, win_percents]).spacing(SPACING)
     }
 
     #[must_use]

@@ -754,8 +754,18 @@ impl Server {
             debug!("0 {username} display_users");
             self.accounts_old = self.accounts.clone();
 
-            for tx in &mut self.clients.values() {
-                let _ok = tx.send(format!("= display_users {}", &self.accounts));
+            for (name, account) in &self.accounts.0 {
+                if let Some(id) = account.logged_in
+                    && let Some(tx) = self.clients.get(&id)
+                {
+                    if self.admins.contains(name) {
+                        if let Ok(string) = &self.accounts.display_admin() {
+                            let _ok = tx.send(format!("= display_users_admin {string}"));
+                        }
+                    } else {
+                        let _ok = tx.send(format!("= display_users {}", &self.accounts));
+                    }
+                }
             }
         }
 
