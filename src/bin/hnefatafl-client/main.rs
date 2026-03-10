@@ -3571,6 +3571,7 @@ impl<'a> Client {
         handle_error(self.save_client_ron());
     }
 
+    #[allow(clippy::too_many_lines, clippy::cast_precision_loss)]
     #[must_use]
     fn users(&self, logged_in: &LoggedIn) -> Scrollable<'_, Message> {
         if self.admin {
