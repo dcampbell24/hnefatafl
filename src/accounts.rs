@@ -24,6 +24,17 @@ use serde::{Deserialize, Serialize};
 
 use crate::Id;
 
+impl Accounts {
+    /// # Errors
+    ///
+    /// If serialization fails.
+    pub fn display_admin(&self) -> anyhow::Result<String> {
+        let string = ron::ser::to_string(&self)?;
+
+        Ok(string)
+    }
+}
+
 impl fmt::Display for Accounts {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut accounts = Vec::new();
