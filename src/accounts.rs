@@ -52,10 +52,12 @@ impl fmt::Display for Accounts {
 pub struct Account {
     #[serde(default)]
     pub email: Option<Email>,
+    /// A unix timestamp in seconds when the email was sent.
     #[serde(default)]
     pub email_sent: i64,
     #[serde(default)]
     pub password: String,
+    /// If logged in, holds the index into clients.
     #[serde(default)]
     pub logged_in: Option<usize>,
     #[serde(default)]
