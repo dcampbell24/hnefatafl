@@ -122,7 +122,7 @@ fn main() -> anyhow::Result<()> {
         Server::advertise_updates(tx.clone());
     }
 
-    Server::check_update_rd_send(tx.clone());
+    Server::check_once_a_day(tx.clone());
 
     if args.autostart_tournament {
         Server::new_tournament(tx.clone());
@@ -595,7 +595,7 @@ impl Server {
     /// deviation is the same as a new player and that a typical RD is 50.
     #[must_use]
     fn check_update_rd(&mut self) -> bool {
-        let now = Local::now().to_utc().timestamp();
+        let now = Utc::now().timestamp();
         if now - self.ran_update_rd.0 >= TWO_MONTHS {
             for account in self.accounts.0.values_mut() {
                 account.rating.update_rd();
@@ -607,9 +607,10 @@ impl Server {
         }
     }
 
-    fn check_update_rd_send(tx: Sender<(String, Option<Sender<String>>)>) {
+    fn check_once_a_day(tx: Sender<(String, Option<Sender<String>>)>) {
         thread::spawn(move || {
             loop {
+                handle_error(tx.send(("0 server delete_unused_accounts".to_string(), None)));
                 handle_error(tx.send(("0 server check_update_rd".to_string(), None)));
                 thread::sleep(Duration::from_secs(DAY_IN_SECONDS));
             }
@@ -1448,6 +1449,39 @@ impl Server {
                 ),
                 "delete_account" => {
                     self.delete_account(username, index_supplied);
+                    None
+                }
+                "delete_unused_accounts" => {
+                    let now = Utc::now();
+                    let mut accounts = Vec::new();
+
+                    let mut playing = HashSet::new();
+                    for game in self.games_light.0.values() {
+                        if let Some(attacker) = &game.attacker {
+                            playing.insert(attacker);
+                        }
+
+                        if let Some(defender) = &game.defender {
+                            playing.insert(defender);
+                        }
+                    }
+
+                    for (name, account) in &self.accounts.0 {
+                        if account.wins == 0
+                            && account.losses == 0
+                            && account.draws == 0
+                            && now.checked_sub_days(Days::new(7)) > Some(account.creation_date.0)
+                            && !playing.contains(name)
+                        {
+                            accounts.push(name.clone());
+                        }
+                    }
+
+                    for name in &accounts {
+                        info!("deleting {name}...");
+                        self.accounts.0.remove(name);
+                    }
+
                     None
                 }
                 "display_games" => {

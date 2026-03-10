@@ -19,6 +19,7 @@ use std::{
 };
 
 use crate::{email::Email, glicko::Rating};
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
 use crate::Id;
@@ -58,6 +59,17 @@ pub struct Account {
     pub send_emails: bool,
     #[serde(skip)]
     pub pending_games: HashSet<Id>,
+    #[serde(default)]
+    pub creation_date: DateTimeUtc,
+}
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+pub struct DateTimeUtc(pub DateTime<Utc>);
+
+impl Default for DateTimeUtc {
+    fn default() -> Self {
+        Self(Utc::now())
+    }
 }
 
 impl fmt::Display for Account {

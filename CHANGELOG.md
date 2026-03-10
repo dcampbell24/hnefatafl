@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- hnefatafl-server-full: Delete unused accounts after a week.
 - Turn the player's name whose turn it is green in games.
 - hnefatafl-client: make the volume adjustable.
 
