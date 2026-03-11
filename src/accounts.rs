@@ -74,6 +74,8 @@ pub struct Account {
     pub pending_games: HashSet<Id>,
     #[serde(default)]
     pub creation_date: DateTimeUtc,
+    #[serde(default)]
+    pub last_logged_in: DateTimeUtc,
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]

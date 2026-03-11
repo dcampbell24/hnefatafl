@@ -39,7 +39,7 @@ use std::{
 };
 
 use ::serde::{Deserialize, Serialize};
-use chrono::{Local, Utc};
+use chrono::{DateTime, Local, Utc};
 use clap::{CommandFactory, Parser};
 use hnefatafl_copenhagen::{
     COPYRIGHT, Id, SERVER_PORT, VERSION_ID,
@@ -3571,7 +3571,11 @@ impl<'a> Client {
         handle_error(self.save_client_ron());
     }
 
-    #[allow(clippy::too_many_lines, clippy::cast_precision_loss)]
+    #[allow(
+        clippy::cast_precision_loss,
+        clippy::similar_names,
+        clippy::too_many_lines
+    )]
     #[must_use]
     fn users(&self, logged_in: &LoggedIn) -> Scrollable<'_, Message> {
         if self.admin {
@@ -3581,7 +3585,11 @@ impl<'a> Client {
             let mut losses = Column::new();
             let mut draws = Column::new();
             let mut win_percents = Column::new();
+            let mut emails = Column::new();
+            let mut emails_sent = Column::new();
+            let mut send_emails = Column::new();
             let mut creation_dates = Column::new();
+            let mut last_logged_in = Column::new();
 
             for (name, account) in self.accounts_sorted() {
                 if account.logged_in.is_some() || *logged_in == LoggedIn::None {
@@ -3598,14 +3606,38 @@ impl<'a> Client {
                     draws = draws.push(text(account.draws));
                     win_percents = win_percents.push(text!("{}", win_percentage));
 
+                    emails = if let Some(email) = &account.email {
+                        emails.push(text(email.address.clone()))
+                    } else {
+                        emails.push(text(""))
+                    };
+
+                    emails_sent =
+                        if let Some(email_sent) = DateTime::from_timestamp(account.email_sent, 0) {
+                            emails_sent.push(text(email_sent.format("%Y-%m-%d").to_string()))
+                        } else {
+                            emails_sent.push(text(""))
+                        };
+
+                    send_emails = send_emails.push(text(account.send_emails));
+
                     let date = account
                         .creation_date
                         .0
                         .to_utc()
-                        .format("%Y-%m-%d %z")
+                        .format("%Y-%m-%d")
                         .to_string();
 
                     creation_dates = creation_dates.push(text(date));
+
+                    let date = account
+                        .last_logged_in
+                        .0
+                        .to_utc()
+                        .format("%Y-%m-%d %H:%M:%S %z")
+                        .to_string();
+
+                    last_logged_in = last_logged_in.push(text(date));
                 }
             }
 
@@ -3670,12 +3702,48 @@ impl<'a> Client {
             ]
             .padding(PADDING);
 
-            let creation_date = "creation date".to_string();
+            let email = "email".to_string();
+            let hyphens_count = email.chars().count();
+            let emails = column![
+                text(email),
+                text("-".repeat(hyphens_count)).font(Font::MONOSPACE),
+                emails
+            ]
+            .padding(PADDING);
+
+            let email_sent = "email sent".to_string();
+            let hyphens_count = email_sent.chars().count();
+            let emails_sent = column![
+                text(email_sent),
+                text("-".repeat(hyphens_count)).font(Font::MONOSPACE),
+                emails_sent
+            ]
+            .padding(PADDING);
+
+            let send_email = "send emails".to_string();
+            let hyphens_count = send_email.chars().count();
+            let send_emails = column![
+                text(send_email),
+                text("-".repeat(hyphens_count)).font(Font::MONOSPACE),
+                send_emails
+            ]
+            .padding(PADDING);
+
+            let creation_date = "creation".to_string();
             let hyphens_count = creation_date.chars().count();
             let creation_dates = column![
                 text(creation_date),
                 text("-".repeat(hyphens_count)).font(Font::MONOSPACE),
                 creation_dates
+            ]
+            .padding(PADDING);
+
+            let last_logged_in_ = "logged in".to_string();
+            let hyphens_count = last_logged_in_.chars().count();
+            let last_logged_in = column![
+                text(last_logged_in_),
+                text("-".repeat(hyphens_count)).font(Font::MONOSPACE),
+                last_logged_in
             ]
             .padding(PADDING);
 
@@ -3686,7 +3754,11 @@ impl<'a> Client {
                 losses,
                 draws,
                 win_percents,
-                creation_dates
+                emails,
+                emails_sent,
+                send_emails,
+                creation_dates,
+                last_logged_in,
             ])
             .spacing(SPACING)
         } else {
@@ -4447,9 +4519,9 @@ impl<'a> Client {
                 column = column.push(self.display_tournament());
                 scrollable(column).spacing(SPACING).into()
             }
-            Screen::Users => row![
+            Screen::Users => column![
+                button(text!("{} (Esc)", self.strings["Leave"].as_str())).on_press(Message::Leave),
                 self.users(&LoggedIn::None),
-                button(text!("{} (Esc)", self.strings["Leave"].as_str())).on_press(Message::Leave)
             ]
             .padding(PADDING)
             .spacing(SPACING)
