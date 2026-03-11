@@ -45,7 +45,7 @@ use chrono::{DateTime, Days, Local, Utc};
 use clap::Parser;
 use hnefatafl_copenhagen::{
     Id, SERVER_PORT, VERSION_ID,
-    accounts::{Account, Accounts},
+    accounts::{Account, Accounts, DateTimeUtc},
     board::BoardSize,
     draw::Draw,
     email::Email,
@@ -85,6 +85,7 @@ const MESSAGE_FILE: &str = "message.txt";
 
 const HOUR_IN_SECONDS: u64 = 60 * 60;
 const DAY_IN_SECONDS: u64 = HOUR_IN_SECONDS * 24;
+const DAYS_FOR_INACTIVE_ACCOUNT: u64 = 14;
 
 /// Seconds in two months: `60.0 * 60.0 * 24.0 * 30.417 * 2.0 = 5_256_057.6`
 const TWO_MONTHS: i64 = 5_256_058;
@@ -1480,7 +1481,8 @@ impl Server {
                         if account.wins == 0
                             && account.losses == 0
                             && account.draws == 0
-                            && now.checked_sub_days(Days::new(7)) > Some(account.creation_date.0)
+                            && now.checked_sub_days(Days::new(DAYS_FOR_INACTIVE_ACCOUNT))
+                                > Some(account.creation_date.0)
                             && !playing.contains(name)
                         {
                             accounts.push(name.clone());
@@ -2139,6 +2141,7 @@ impl Server {
 
                 self.clients.insert(index_supplied, tx);
                 account.logged_in = Some(index_supplied);
+                account.last_logged_in = DateTimeUtc(Utc::now());
 
                 Some((
                     self.clients.get(&index_supplied)?.clone(),
