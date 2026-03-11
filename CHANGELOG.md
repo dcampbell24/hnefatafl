@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add and display details about accounts to admins.
-- hnefatafl-server-full: Delete unused accounts after two weeks.
+- hnefatafl-server-full: Delete unused accounts after two weeks of inactivity.
 - Turn the player's name whose turn it is green in games.
 - hnefatafl-client: make the volume adjustable.
 

@@ -1480,7 +1480,7 @@ impl Server {
                             && account.losses == 0
                             && account.draws == 0
                             && now.checked_sub_days(Days::new(DAYS_FOR_INACTIVE_ACCOUNT))
-                                > Some(account.creation_date.0)
+                                > Some(account.last_logged_in.0)
                             && !playing.contains(name)
                         {
                             accounts.push(name.clone());
@@ -2237,6 +2237,7 @@ impl Server {
                 && index_database == index_supplied
             {
                 account.logged_in = None;
+                account.last_logged_in = DateTimeUtc(Utc::now());
 
                 self.clients
                     .get(&index_supplied)?
