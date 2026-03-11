@@ -428,14 +428,10 @@ impl fmt::Display for ServerGameLight {
     }
 }
 
-impl TryFrom<&[&str]> for ServerGameLight {
+impl TryFrom<&[&str; 12]> for ServerGameLight {
     type Error = anyhow::Error;
 
-    fn try_from(vector: &[&str]) -> anyhow::Result<Self> {
-        if vector.len() < 12 {
-            return Err(anyhow::Error::msg("ServerGameLight has too few words."));
-        }
-
+    fn try_from(vector: &[&str; 12]) -> anyhow::Result<Self> {
         let id = vector[1];
         let attacker = vector[2];
         let defender = vector[3];
