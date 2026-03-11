@@ -25,5 +25,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install libasound2-dev mold
+          rustup update stable
           cargo test --features js
           cargo test --benches

@@ -30,4 +30,5 @@ jobs:
           sudo apt-get update
           sudo apt-get install libasound2-dev mold
           rustup component add clippy
+          rustup update stable
           cargo clippy --all-targets --examples --features js
