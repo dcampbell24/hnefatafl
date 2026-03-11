@@ -37,10 +37,6 @@ pub(crate) struct Args {
     #[arg(long)]
     pub skip_advertising_updates: bool,
 
-    /// Whether to skip messages
-    #[arg(long)]
-    pub skip_message: bool,
-
     /// Whether to skip the data file
     #[arg(long)]
     pub skip_the_data_file: bool,
