@@ -73,21 +73,6 @@ pub(crate) enum JoinGame {
     Watch,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub(crate) enum LoggedIn {
-    No,
-    Yes,
-}
-
-impl From<LoggedIn> for bool {
-    fn from(logged_in: LoggedIn) -> Self {
-        match logged_in {
-            LoggedIn::No => false,
-            LoggedIn::Yes => true,
-        }
-    }
-}
-
 #[derive(Clone, Debug)]
 pub(crate) enum Message {
     AccountSettings,

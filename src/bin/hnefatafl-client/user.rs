@@ -16,8 +16,6 @@
 use hnefatafl_copenhagen::glicko::{CONFIDENCE_INTERVAL_95, Rating};
 use log::error;
 
-use crate::enums::LoggedIn;
-
 #[derive(Clone, Debug)]
 pub(crate) struct User {
     pub name: String,
@@ -25,7 +23,7 @@ pub(crate) struct User {
     pub losses: String,
     pub draws: String,
     pub rating: Rating,
-    pub logged_in: LoggedIn,
+    pub logged_in: bool,
 }
 
 impl From<&[&str; 6]> for User {
@@ -45,11 +43,7 @@ impl From<&[&str; 6]> for User {
             unreachable!();
         };
 
-        let logged_in = if "logged_in" == logged_in {
-            LoggedIn::Yes
-        } else {
-            LoggedIn::No
-        };
+        let logged_in = "logged_in" == logged_in;
 
         User {
             name: name.to_string(),
