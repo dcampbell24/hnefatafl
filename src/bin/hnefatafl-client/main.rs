@@ -3630,7 +3630,11 @@ impl<'a> Client {
                         .format("%Y-%m-%d %H:%M:%S %z")
                         .to_string();
 
-                    last_logged_in = last_logged_in.push(text(date));
+                    last_logged_in = if account.logged_in.is_some() {
+                        last_logged_in.push(text(date).style(text::success))
+                    } else {
+                        last_logged_in.push(text(date))
+                    };
                 }
             }
 
@@ -3740,20 +3744,17 @@ impl<'a> Client {
             ]
             .padding(PADDING);
 
-            scrollable(row![
-                ratings,
-                usernames,
-                wins,
-                losses,
-                draws,
-                win_percents,
-                emails,
-                emails_sent,
-                send_emails,
-                creation_dates,
-                last_logged_in,
-            ])
-            .spacing(SPACING)
+            let mut rows = row![ratings, usernames, wins, losses, draws, win_percents,];
+
+            if *logged_in == LoggedIn::None {
+                rows = rows.push(emails);
+                rows = rows.push(emails_sent);
+                rows = rows.push(send_emails);
+                rows = rows.push(creation_dates);
+                rows = rows.push(last_logged_in);
+            }
+
+            scrollable(rows).spacing(SPACING)
         } else {
             let mut ratings = Column::new();
             let mut usernames = Column::new();
