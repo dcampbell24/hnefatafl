@@ -1,6 +1,6 @@
 [package]
 name = "hnefatafl-copenhagen"
-version = "5.2.0"
+version = "5.3.0"
 authors = ["David Campbell <david@hnefatafl.org>"]
 edition = "2024"
 rust-version =  "1.94"
@@ -201,7 +201,7 @@ assets = [
     ["target/release/hnefatafl-text-protocol", "usr/games/", "755"],
 ]
 changelog = "packages/debian/changelog"
-revision = "3"
+revision = "1"
 section = "games"
 
 [package.metadata.bundle]
