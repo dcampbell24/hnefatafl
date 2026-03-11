@@ -2775,7 +2775,12 @@ impl<'a> Client {
                                 self.games_light_vec.clear();
 
                                 let games: Vec<&str> = text.collect();
-                                for chunks in games.chunks_exact(12) {
+
+                                let (chunks, []) = games.as_chunks::<12>() else {
+                                    panic!("chunks is an exact multiple of 12");
+                                };
+
+                                for chunks in chunks {
                                     let game = ServerGameLight::try_from(chunks)
                                         .expect("the value should be a valid ServerGameLight");
 
@@ -2792,7 +2797,12 @@ impl<'a> Client {
                                 self.users.clear();
 
                                 let users: Vec<&str> = text.collect();
-                                for user in users.chunks_exact(6) {
+
+                                let (chunks, []) = users.as_chunks::<6>() else {
+                                    panic!("chunks is an exact multiple of 6");
+                                };
+
+                                for user in chunks {
                                     let user: User = user.into();
                                     self.users.insert(user.name.clone(), user);
                                 }

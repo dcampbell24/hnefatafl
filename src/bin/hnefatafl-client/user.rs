@@ -28,8 +28,8 @@ pub(crate) struct User {
     pub logged_in: LoggedIn,
 }
 
-impl From<&[&str]> for User {
-    fn from(user: &[&str]) -> Self {
+impl From<&[&str; 6]> for User {
+    fn from(user: &[&str; 6]) -> Self {
         let rating = user[4];
         let (mut rating, mut deviation) = rating.split_once("±").unwrap_or_else(|| {
             error!("The ratings has this form: {rating}");
