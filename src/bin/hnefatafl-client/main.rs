@@ -3774,8 +3774,7 @@ impl<'a> Client {
             let mut win_percents = Column::new();
 
             for user in self.users_sorted() {
-                let logged_in: bool = user.logged_in.into();
-                if show_logged_out_users || logged_in {
+                if show_logged_out_users || user.logged_in {
                     let wins_number = f64::from_str(&user.wins).expect("This is a f64.");
                     let mut win_percentage = wins_number
                         / (wins_number + f64::from_str(&user.losses).expect("This is a f64."));
