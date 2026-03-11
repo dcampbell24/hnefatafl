@@ -432,17 +432,20 @@ impl TryFrom<&[&str; 12]> for ServerGameLight {
     type Error = anyhow::Error;
 
     fn try_from(vector: &[&str; 12]) -> anyhow::Result<Self> {
-        let id = vector[1];
-        let attacker = vector[2];
-        let defender = vector[3];
-        let rated = vector[4];
-        let timed = vector[5];
-        let minutes = vector[6];
-        let add_seconds = vector[7];
-        let board_size = vector[8];
-        let challenger = vector[9];
-        let challenge_accepted = vector[10];
-        let spectators = vector[11];
+        let [
+            _,
+            id,
+            attacker,
+            defender,
+            rated,
+            timed,
+            minutes,
+            add_seconds,
+            board_size,
+            challenger,
+            challenge_accepted,
+            spectators,
+        ] = *vector;
 
         let id = id.parse::<Id>()?;
 

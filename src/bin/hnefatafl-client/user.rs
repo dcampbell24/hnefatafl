@@ -30,7 +30,8 @@ pub(crate) struct User {
 
 impl From<&[&str; 6]> for User {
     fn from(user: &[&str; 6]) -> Self {
-        let rating = user[4];
+        let [name, wins, losses, draws, rating, logged_in] = *user;
+
         let (mut rating, mut deviation) = rating.split_once("±").unwrap_or_else(|| {
             error!("The ratings has this form: {rating}");
             unreachable!();
@@ -44,17 +45,17 @@ impl From<&[&str; 6]> for User {
             unreachable!();
         };
 
-        let logged_in = if "logged_in" == user[5] {
+        let logged_in = if "logged_in" == logged_in {
             LoggedIn::Yes
         } else {
             LoggedIn::No
         };
 
         User {
-            name: user[0].to_string(),
-            wins: user[1].to_string(),
-            losses: user[2].to_string(),
-            draws: user[3].to_string(),
+            name: name.to_string(),
+            wins: wins.to_string(),
+            losses: losses.to_string(),
+            draws: draws.to_string(),
             rating: Rating {
                 rating,
                 rd: deviation / CONFIDENCE_INTERVAL_95,
