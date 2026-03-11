@@ -39,7 +39,6 @@ impl Server {
                 .stderr(Stdio::null())
                 .arg("--skip-the-data-file")
                 .arg("--skip-advertising-updates")
-                .arg("--skip-message")
                 .spawn()?
         } else {
             std::process::Command::new("./target/debug/hnefatafl-server-full")
@@ -47,7 +46,6 @@ impl Server {
                 .stderr(Stdio::null())
                 .arg("--skip-the-data-file")
                 .arg("--skip-advertising-updates")
-                .arg("--skip-message")
                 .spawn()?
         };
 

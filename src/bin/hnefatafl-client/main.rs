@@ -681,8 +681,6 @@ struct Client {
     heat_map_display: bool,
     #[serde(default)]
     locale_selected: Locale,
-    #[serde(skip)]
-    message: String,
     #[serde(default)]
     my_games_only: bool,
     #[serde(skip)]
@@ -3009,11 +3007,6 @@ impl<'a> Client {
                             }
                             Some("leave_game") => self.game_id = 0,
                             Some("login") => self.screen = Screen::Games,
-                            Some("message") => {
-                                let message =
-                                    text.collect::<Vec<&str>>().join(" ").replace("\\n", "\n");
-                                self.message = message;
-                            }
                             Some("new_game") => {
                                 // = new_game game 15 none david rated fischer 900_000 10
                                 if Some("game") == text.next() {
@@ -4152,10 +4145,6 @@ impl<'a> Client {
             }
             Screen::Games => {
                 let mut column = Column::new().padding(PADDING).spacing(SPACING);
-
-                if !self.message.is_empty() {
-                    column = column.push(text(self.message.clone()));
-                }
 
                 if self.admin {
                     column = column.push(button("Email Everyone").on_press(Message::EmailEveryone));
