@@ -3783,7 +3783,13 @@ impl<'a> Client {
                     win_percentage = win_percentage.round_ties_even();
 
                     ratings = ratings.push(text(user.rating.to_string_rounded()));
-                    usernames = usernames.push(text(user.name));
+
+                    usernames = if user.logged_in && show_logged_out_users {
+                        usernames.push(text(user.name).style(text::success))
+                    } else {
+                        usernames.push(text(user.name))
+                    };
+
                     wins = wins.push(text(user.wins));
                     losses = losses.push(text(user.losses));
                     draws = draws.push(text(user.draws));
