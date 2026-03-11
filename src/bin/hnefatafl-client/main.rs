@@ -93,7 +93,7 @@ use crate::{
     archived_game_handle::ArchivedGameHandle,
     command_line::Args,
     dimensions::Dimensions,
-    enums::{Coordinates, JoinGame, LoggedIn, Message, Move, Screen, Size, SortBy, State, Theme},
+    enums::{Coordinates, JoinGame, Message, Move, Screen, Size, SortBy, State, Theme},
     new_game_settings::NewGameSettings,
     user::User,
     volume::{MAX_VOLUME, Volume},
@@ -3580,7 +3580,7 @@ impl<'a> Client {
         clippy::too_many_lines
     )]
     #[must_use]
-    fn users(&self, logged_in: &LoggedIn) -> Scrollable<'_, Message> {
+    fn users(&self, show_logged_out_users: bool) -> Scrollable<'_, Message> {
         if self.admin {
             let mut ratings = Column::new();
             let mut usernames = Column::new();
@@ -3595,7 +3595,7 @@ impl<'a> Client {
             let mut last_logged_in = Column::new();
 
             for (name, account) in self.accounts_sorted() {
-                if account.logged_in.is_some() || *logged_in == LoggedIn::None {
+                if show_logged_out_users || account.logged_in.is_some() {
                     let wins_number = account.wins as f64;
                     let mut win_percentage = wins_number / (wins_number + account.losses as f64);
 
@@ -3756,7 +3756,7 @@ impl<'a> Client {
 
             let mut rows = row![ratings, usernames, wins, losses, draws, win_percents,];
 
-            if *logged_in == LoggedIn::None {
+            if show_logged_out_users {
                 rows = rows.push(emails);
                 rows = rows.push(emails_sent);
                 rows = rows.push(send_emails);
@@ -3774,7 +3774,8 @@ impl<'a> Client {
             let mut win_percents = Column::new();
 
             for user in self.users_sorted() {
-                if *logged_in == user.logged_in || *logged_in == LoggedIn::None {
+                let logged_in: bool = user.logged_in.into();
+                if show_logged_out_users || logged_in {
                     let wins_number = f64::from_str(&user.wins).expect("This is a f64.");
                     let mut win_percentage = wins_number
                         / (wins_number + f64::from_str(&user.losses).expect("This is a f64."));
@@ -3866,7 +3867,7 @@ impl<'a> Client {
 
         let games = self.games();
         let texting = self.texting(texts, true).padding(PADDING);
-        let users = self.users(&LoggedIn::Yes);
+        let users = self.users(false);
 
         let user_area = scrollable(column![games, users, texting]);
         container(user_area)
@@ -4521,7 +4522,7 @@ impl<'a> Client {
             }
             Screen::Users => column![
                 button(text!("{} (Esc)", self.strings["Leave"].as_str())).on_press(Message::Leave),
-                self.users(&LoggedIn::None),
+                self.users(true),
             ]
             .padding(PADDING)
             .spacing(SPACING)
