@@ -78,7 +78,7 @@ pub fn create_data_folder() -> anyhow::Result<()> {
     if let Some(project_dir) = project_dir {
         DirBuilder::new()
             .recursive(true)
-            .create(project_dir.data_dir())?;
+            .create(project_dir.data_local_dir())?;
     }
 
     Ok(())

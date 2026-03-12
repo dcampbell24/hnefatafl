@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Create a data local directory not a data directory.
 - hnefatafl-client: display the rating for admins games.
 
 ## [5.3.0] - 2026-03-11
