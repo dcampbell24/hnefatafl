@@ -15,9 +15,9 @@
 # OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 pkgname=hnefatafl-copenhagen
-pkgver=5.3.0
-pkgrel=5
-real_pkgrel=2
+pkgver=5.3.1
+pkgrel=1
+real_pkgrel=1
 pkgdesc="Copenhagen Hnefatafl client. Discord: https://discord.gg/h56CAHEBXd"
 url="https://hnefatafl.org"
 license=("AGPL-3.0-or-later")
