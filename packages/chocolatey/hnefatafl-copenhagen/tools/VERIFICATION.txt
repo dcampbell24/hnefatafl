@@ -2,11 +2,11 @@
 Verification is intended to assist the Chocolatey moderators and community
 in verifying that this package's contents are trustworthy.
 
-Download the file at https://hnefatafl.org/binaries/nsis/hnefatafl-client-installer-5.3.0.exe
+Download the file at https://hnefatafl.org/binaries/nsis/hnefatafl-client-installer-5.3.1.exe
 
 You can use checksum.exe (choco install checksum).
 
-checksum -t sha256 -f hnefatafl-client-installer-5.3.0.exe
-E96666E5C87266A766A9F155EACFD1B115F2E7200F6834AA38049500118152DB
+checksum -t sha256 -f hnefatafl-client-installer-5.3.1.exe
+
 
 I am the software author.
