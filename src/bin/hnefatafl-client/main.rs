@@ -130,10 +130,10 @@ const BOARD_LETTERS_LOWERCASE: [char; 13] = [
 const ARCHIVED_GAMES_FILE: &str = "archived-games.postcard";
 const USER_CONFIG_FILE: &str = "user.ron";
 
-const PADDING: u16 = 10;
+const PADDING: u16 = 8;
 const PADDING_SMALL: u16 = 2;
 const PADDING_MEDIUM: u16 = 4;
-const SPACING: Pixels = Pixels(10.0);
+const SPACING: Pixels = Pixels(8.0);
 const SPACING_B: Pixels = Pixels(20.0);
 
 const HELMET: &[u8] = include_bytes!("assets/helmet.png");
