@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- hnefatafl-client: always put resign and request draw on the same line.
+
+### Fixed
+
+- hnefatafl-client: display the rating for admins games.
+
 ## [5.3.0] - 2026-03-11
 
 ### Added

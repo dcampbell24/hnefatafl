@@ -1643,20 +1643,7 @@ impl<'a> Client {
 
         if !watching {
             if self.my_turn {
-                match self.screen_size {
-                    Size::Tiny | Size::Small => {
-                        user_area = user_area.push(
-                            column![
-                                row![resign].spacing(SPACING),
-                                row![request_draw].spacing(SPACING),
-                            ]
-                            .spacing(SPACING),
-                        );
-                    }
-                    Size::TinyWide | Size::Medium | Size::Large | Size::Giant => {
-                        user_area = user_area.push(row![resign, request_draw].spacing(SPACING));
-                    }
-                }
+                user_area = user_area.push(row![resign, request_draw].spacing(SPACING));
             } else {
                 let row = if self.request_draw {
                     column![
