@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- hnefatafl-client: make the spacing and padding slightly smaller.
 - hnefatafl-client: always put resign and request draw on the same line.
 
 ### Fixed
