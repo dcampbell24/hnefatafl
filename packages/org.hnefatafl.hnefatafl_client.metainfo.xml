@@ -70,6 +70,13 @@
   </screenshots>
 
   <releases>
+    <release version="5.3.1" date="2026-03-12">
+      <url type="details">https://github.com/dcampbell24/hnefatafl/blob/main/CHANGELOG.md#531---2026-03-12</url>
+      <description>
+        <p>See the CHANGELOG.md file.</p>
+      </description>
+    </release>
+
     <release version="5.3.0" date="2026-03-11">
       <url type="details">https://github.com/dcampbell24/hnefatafl/blob/main/CHANGELOG.md#530---2026-03-11</url>
       <description>

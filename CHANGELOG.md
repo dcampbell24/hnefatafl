@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.3.1] - 2026-03-12
+
 ### Changed
 
 - hnefatafl-client: always put resign and request draw on the same line.
@@ -675,8 +677,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - hnefatafl-client: Make users and games scrollable.
 - Make all the features dependencies.
 
-[unreleased]: https://github.com/dcampbell24/hnefatafl/compare/v5.3.0-1...main
-[5.3.0]: https://github.com/dcampbell24/hnefatafl/compare/v5.2.0-1...v5.3.0-1
+[unreleased]: https://github.com/dcampbell24/hnefatafl/compare/v5.3.1-1...main
+[5.3.1]: https://github.com/dcampbell24/hnefatafl/compare/v5.3.0-2...v5.3.1-1
+[5.3.0]: https://github.com/dcampbell24/hnefatafl/compare/v5.2.0-1...v5.3.0-2
 [5.2.0]: https://github.com/dcampbell24/hnefatafl/compare/v5.1.0-1...v5.2.0-1
 [5.1.0]: https://github.com/dcampbell24/hnefatafl/compare/v5.0.1-1...v5.1.0-1
 [5.0.1]: https://github.com/dcampbell24/hnefatafl/compare/v5.0.0-4...v5.0.1-1
