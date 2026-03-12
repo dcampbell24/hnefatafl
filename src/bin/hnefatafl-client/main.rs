@@ -3350,10 +3350,18 @@ impl<'a> Client {
             game_ids = game_ids.push(text(id));
 
             attackers = if let Some(attacker_str) = &game.attacker {
-                let mut attacker = if let Some(user) = self.users.get(attacker_str) {
-                    text!("{attacker_str} ({})", user.rating.to_string_rounded())
+                let mut attacker = if self.admin {
+                    if let Some(account) = self.accounts.0.get(attacker_str) {
+                        text!("{attacker_str} ({})", account.rating.to_string_rounded())
+                    } else {
+                        text(attacker_str)
+                    }
                 } else {
-                    text(attacker_str)
+                    if let Some(user) = self.users.get(attacker_str) {
+                        text!("{attacker_str} ({})", user.rating.to_string_rounded())
+                    } else {
+                        text(attacker_str)
+                    }
                 };
 
                 if game.challenge_accepted
@@ -3369,10 +3377,18 @@ impl<'a> Client {
             };
 
             defenders = if let Some(defender_str) = &game.defender {
-                let mut defender = if let Some(user) = self.users.get(defender_str) {
-                    text!("{defender_str} ({})", user.rating.to_string_rounded())
+                let mut defender = if self.admin {
+                    if let Some(account) = self.accounts.0.get(defender_str) {
+                        text!("{defender_str} ({})", account.rating.to_string_rounded())
+                    } else {
+                        text(defender_str)
+                    }
                 } else {
-                    text(defender_str)
+                    if let Some(user) = self.users.get(defender_str) {
+                        text!("{defender_str} ({})", user.rating.to_string_rounded())
+                    } else {
+                        text(defender_str)
+                    }
                 };
 
                 if game.challenge_accepted
