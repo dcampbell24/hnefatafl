@@ -53,6 +53,9 @@ html-client:
     sudo mkdir --parent /var/www/html/pkg
     sudo cp -r pkg /var/www/html
 
+start_sshd:
+    sudo service ssh start
+
 [group('Operating Systems')]
 macos:
     cargo bundle --bin hnefatafl-client --features client --no-default-features --release
