@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - hnefatafl-client: get the locale from the system if not set.
 
+### Fixed
+
+- hnefatafl-server-full: Only add the player as a spectator when the game
+  starts if they're logged in.
+
 ## [5.3.1] - 2026-03-12
 
 ### Changed

@@ -1898,24 +1898,35 @@ impl Server {
         game.challenge_accepted = true;
         game.turn = Role::Attacker;
 
+        let mut attacker_logged_in = false;
         let mut attacker_channel_id = 0;
+
         if let Some(account) = self.accounts.0.get(game.attacker.as_ref()?)
             && let Some(id) = account.logged_in
         {
             attacker_channel_id = id;
+            attacker_logged_in = true;
         }
 
         let mut defender_channel_id = 0;
+        let mut defender_logged_in = false;
+
         if let Some(account) = self.accounts.0.get(game.defender.as_ref()?)
             && let Some(id) = account.logged_in
         {
             defender_channel_id = id;
+            defender_logged_in = true;
         }
 
-        game.spectators
-            .insert(game.attacker.clone()?, attacker_channel_id);
-        game.spectators
-            .insert(game.defender.clone()?, defender_channel_id);
+        if attacker_logged_in {
+            game.spectators
+                .insert(game.attacker.clone()?, attacker_channel_id);
+        }
+
+        if defender_logged_in {
+            game.spectators
+                .insert(game.defender.clone()?, defender_channel_id);
+        }
 
         let (Some(attacker), Some(defender)) = (&game.attacker, &game.defender) else {
             unreachable!();
