@@ -257,7 +257,7 @@ fn init_client() -> Client {
         rust_i18n::set_locale(&locale.txt());
     } else {
         let locale = get_locale().unwrap_or_else(|| String::from("en-US"));
-        let locale: Locale = locale.as_str().into();
+        let locale: Locale = locale.to_lowercase().as_str().into();
 
         rust_i18n::set_locale(&locale.txt());
         client.locale_selected = Some(locale);
