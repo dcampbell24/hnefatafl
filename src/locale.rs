@@ -60,6 +60,27 @@ impl Locale {
     }
 }
 
+impl From<&str> for Locale {
+    fn from(locale: &str) -> Self {
+        let locale: String = locale.chars().take(2).collect();
+        match locale.as_str() {
+            "zh" => Self::Chinese,
+            "es" => Self::Spanish,
+            "ar" => Self::Arabic,
+            "id" => Self::Indonesian,
+            "pt" => Self::PortugueseBr,
+            "fr" => Self::French,
+            "ja" => Self::Japanese,
+            "ru" => Self::Russian,
+            "de" => Self::German,
+            "is" => Self::Icelandic,
+            "sv" => Self::Swedish,
+            "ko" => Self::Korean,
+            _ => Self::English,
+        }
+    }
+}
+
 impl fmt::Display for Locale {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {

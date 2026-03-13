@@ -61,6 +61,7 @@ iced_aw = { version = "0.13", default-features = false, features = ["date_picker
 image = { version = "0.25", default-features = false, features = ["png"], optional = true }
 rodio = { version = "0.22", default-features = false, features = ["playback", "vorbis"], optional = true }
 smol_str = { version = "0.3", optional = true }
+sys-locale = { version = "0.3", optional = true }
 webbrowser = { version = "1", features = ["hardened"], optional = true }
 
 # js engine
@@ -82,7 +83,7 @@ password-hash = { version = "0.6", optional = true }
 
 [features]
 default = ["client", "server", "toml"]
-client = ["dep:iced", "dep:iced_aw", "dep:image", "dep:rodio", "dep:smol_str", "socket", "dep:webbrowser"]
+client = ["dep:iced", "dep:iced_aw", "dep:image", "dep:rodio", "dep:smol_str", "socket", "dep:sys-locale", "dep:webbrowser"]
 console = []
 debug =  ["iced?/debug"]
 js = ["dep:wasm-bindgen", "getrandom/wasm_js", "iced?/web-colors", "iced?/webgl"]
