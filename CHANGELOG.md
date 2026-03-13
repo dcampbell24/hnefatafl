@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- hnefatafl-client: get the locale from the system if not set.
+
 ## [5.3.1] - 2026-03-12
 
 ### Changed

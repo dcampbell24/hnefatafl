@@ -88,6 +88,7 @@ use log::{debug, error, info, trace};
 use rust_i18n::t;
 use smol_str::ToSmolStr;
 use socket2::{Domain, SockAddr, Socket, Type};
+use sys_locale::get_locale;
 
 use crate::{
     archived_game_handle::ArchivedGameHandle,
@@ -251,7 +252,17 @@ fn init_client() -> Client {
     };
 
     client.tournament_date = Date::today();
-    rust_i18n::set_locale(&client.locale_selected.txt());
+
+    if let Some(locale) = &client.locale_selected {
+        rust_i18n::set_locale(&locale.txt());
+    } else {
+        let locale = get_locale().unwrap_or_else(|| String::from("en-US"));
+        let locale: Locale = locale.as_str().into();
+
+        rust_i18n::set_locale(&locale.txt());
+        client.locale_selected = Some(locale);
+    }
+
     client.strings = i18n_buttons();
     client.text_input.clone_from(&client.username);
 
@@ -680,7 +691,7 @@ struct Client {
     #[serde(skip)]
     heat_map_display: bool,
     #[serde(default)]
-    locale_selected: Locale,
+    locale_selected: Option<Locale>,
     #[serde(default)]
     my_games_only: bool,
     #[serde(skip)]
@@ -2103,7 +2114,7 @@ impl<'a> Client {
                     self.strings.insert(string.clone(), t!(string).to_string());
                 }
 
-                self.locale_selected = locale;
+                self.locale_selected = Some(locale);
                 handle_error(self.save_client_ron());
             }
             Message::MyGamesOnly(_selected) => {
@@ -4328,7 +4339,7 @@ impl<'a> Client {
 
                 let locale = row![
                     text!("{}: ", t!("locale")).size(20),
-                    pick_list(locale, Some(self.locale_selected), Message::LocaleSelected),
+                    pick_list(locale, self.locale_selected, Message::LocaleSelected),
                 ];
 
                 let mut buttons_2 = if self.theme == Theme::Light {

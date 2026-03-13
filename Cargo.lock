@@ -2247,6 +2247,7 @@ dependencies = [
  "serde",
  "smol_str 0.3.6",
  "socket2",
+ "sys-locale",
  "thiserror 2.0.18",
  "toml 1.0.6+spec-1.1.0",
  "wasm-bindgen",
