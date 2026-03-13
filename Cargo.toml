@@ -53,7 +53,6 @@ ron = { version = "0.12", features = ["integer128"] }
 rustc-hash = "2"
 rust-i18n = "3"
 serde = { version = "1", features = ["derive", "rc"] }
-serde_with = "3"
 thiserror = "2"
 toml = { version = "1",  optional = true }
 
