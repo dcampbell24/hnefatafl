@@ -88,7 +88,7 @@ use log::{debug, error, info, trace};
 use rust_i18n::t;
 use smol_str::ToSmolStr;
 use socket2::{Domain, SockAddr, Socket, Type};
-use sys_locale::get_locale;
+use sys_locale::{get_locale, get_locales};
 
 use crate::{
     archived_game_handle::ArchivedGameHandle,
@@ -256,11 +256,30 @@ fn init_client() -> Client {
     if let Some(locale) = &client.locale_selected {
         rust_i18n::set_locale(&locale.txt());
     } else {
-        let locale = get_locale().unwrap_or_else(|| String::from("en-US"));
-        let locale: Locale = locale.to_lowercase().as_str().into();
+        let mut locale_1 = None;
 
-        rust_i18n::set_locale(&locale.txt());
-        client.locale_selected = Some(locale);
+        if get_locales().count() > 0 {
+            for locale_2 in get_locales() {
+                if let Ok(locale) = locale_2.as_str().try_into() {
+                    locale_1 = Some(locale);
+                }
+            }
+        }
+
+        if locale_1.is_none() {
+            let locale_2 = get_locale().unwrap_or_else(|| String::from("en-US"));
+
+            if let Ok(locale) = locale_2.as_str().try_into() {
+                locale_1 = Some(locale);
+            } else {
+                locale_1 = Some(Locale::English);
+            }
+        }
+
+        if let Some(locale) = locale_1 {
+            rust_i18n::set_locale(&locale.txt());
+            client.locale_selected = Some(locale);
+        }
     }
 
     client.strings = i18n_buttons();

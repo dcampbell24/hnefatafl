@@ -60,23 +60,26 @@ impl Locale {
     }
 }
 
-impl From<&str> for Locale {
-    fn from(locale: &str) -> Self {
-        let locale: String = locale.chars().take(2).collect();
+impl TryFrom<&str> for Locale {
+    type Error = anyhow::Error;
+
+    fn try_from(locale: &str) -> anyhow::Result<Self> {
+        let locale: String = locale.to_lowercase().chars().take(2).collect();
         match locale.as_str() {
-            "zh" => Self::Chinese,
-            "es" => Self::Spanish,
-            "ar" => Self::Arabic,
-            "id" => Self::Indonesian,
-            "pt" => Self::PortugueseBr,
-            "fr" => Self::French,
-            "ja" => Self::Japanese,
-            "ru" => Self::Russian,
-            "de" => Self::German,
-            "is" => Self::Icelandic,
-            "sv" => Self::Swedish,
-            "ko" => Self::Korean,
-            _ => Self::English,
+            "en" => Ok(Self::English),
+            "zh" => Ok(Self::Chinese),
+            "es" => Ok(Self::Spanish),
+            "ar" => Ok(Self::Arabic),
+            "id" => Ok(Self::Indonesian),
+            "pt" => Ok(Self::PortugueseBr),
+            "fr" => Ok(Self::French),
+            "ja" => Ok(Self::Japanese),
+            "ru" => Ok(Self::Russian),
+            "de" => Ok(Self::German),
+            "is" => Ok(Self::Icelandic),
+            "sv" => Ok(Self::Swedish),
+            "ko" => Ok(Self::Korean),
+            _ => Err(anyhow::Error::msg("can't find a locale")),
         }
     }
 }
