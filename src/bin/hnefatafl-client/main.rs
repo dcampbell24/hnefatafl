@@ -218,18 +218,19 @@ fn i18n_buttons() -> HashMap<String, String> {
     strings
 }
 
+#[allow(clippy::too_many_lines)]
 fn init_client() -> Client {
-    let user_config_file_postcard = data_file(ARCHIVED_GAMES_FILE);
-    let user_config_file_ron = data_file(USER_CONFIG_FILE);
+    let archived_games_file = data_file(ARCHIVED_GAMES_FILE);
+    let user_file = data_file(USER_CONFIG_FILE);
     let mut error = Vec::new();
 
-    let mut client: Client = match &fs::read_to_string(&user_config_file_ron) {
+    let mut client: Client = match &fs::read_to_string(&user_file) {
         Ok(string) => match ron::from_str(string) {
             Ok(client) => client,
             Err(err) => {
                 error.push(format!(
                     "Error parsing the ron file {}: {err}",
-                    user_config_file_ron.display()
+                    user_file.display()
                 ));
                 Client::default()
             }
@@ -238,13 +239,13 @@ fn init_client() -> Client {
             if err.kind() == ErrorKind::NotFound {
                 error.push(format!(
                     "Unable to find User Configuration file: {}",
-                    user_config_file_ron.display()
+                    user_file.display()
                 ));
                 Client::default()
             } else {
                 error.push(format!(
                     "Error opening the file {}: {err}",
-                    user_config_file_ron.display()
+                    user_file.display()
                 ));
                 Client::default()
             }
@@ -262,6 +263,7 @@ fn init_client() -> Client {
             for locale_2 in get_locales() {
                 if let Ok(locale) = locale_2.as_str().try_into() {
                     locale_1 = Some(locale);
+                    break;
                 }
             }
         }
@@ -279,19 +281,22 @@ fn init_client() -> Client {
         if let Some(locale) = locale_1 {
             rust_i18n::set_locale(&locale.txt());
             client.locale_selected = Some(locale);
+            client
+                .save_client_ron()
+                .expect("saving user file should work");
         }
     }
 
     client.strings = i18n_buttons();
     client.text_input.clone_from(&client.username);
 
-    let archived_games: Vec<ArchivedGame> = match &fs::read(&user_config_file_postcard) {
+    let archived_games: Vec<ArchivedGame> = match &fs::read(&archived_games_file) {
         Ok(bytes) => match postcard::from_bytes(bytes) {
             Ok(client) => client,
             Err(err) => {
                 error.push(format!(
                     "Error parsing the postcard file {}: {err}",
-                    user_config_file_postcard.display()
+                    archived_games_file.display()
                 ));
                 Vec::new()
             }
@@ -301,14 +306,14 @@ fn init_client() -> Client {
                 error.push(format!(
                     "{}: {}",
                     t!("Unable to find Archived Games file"),
-                    user_config_file_postcard.display()
+                    archived_games_file.display()
                 ));
                 Vec::new()
             } else {
                 error.push(format!(
                     "{} {}: {err}",
                     t!("Error opening the file"),
-                    user_config_file_postcard.display()
+                    archived_games_file.display()
                 ));
                 Vec::new()
             }
