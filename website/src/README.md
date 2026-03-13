@@ -1,4 +1,4 @@
-![Hnefatafl Board](images/hnefatafl.png)
+![Hnefatafl Board](screenshots/runic_game.png)
 
 <div id="google_translate_element"></div>
 <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
