@@ -86,6 +86,7 @@ use iced_aw::{ICED_AW_FONT_BYTES, date_picker::Date, helpers::date_picker};
 use image::ImageFormat;
 use log::{debug, error, info, trace};
 use rust_i18n::t;
+use serde_with::{DefaultOnError, serde_as};
 use smol_str::ToSmolStr;
 use socket2::{Domain, SockAddr, Socket, Type};
 use sys_locale::get_locale;
@@ -624,6 +625,7 @@ fn text_collect(text: SplitAsciiWhitespace<'_>) -> String {
 }
 
 #[allow(clippy::struct_excessive_bools)]
+#[serde_as]
 #[derive(Debug, Default, Deserialize, Serialize)]
 struct Client {
     #[serde(skip)]
@@ -690,7 +692,7 @@ struct Client {
     heat_map: Option<HeatMap>,
     #[serde(skip)]
     heat_map_display: bool,
-    #[serde(default)]
+    #[serde_as(deserialize_as = "DefaultOnError")]
     locale_selected: Option<Locale>,
     #[serde(default)]
     my_games_only: bool,
