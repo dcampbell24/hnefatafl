@@ -43,6 +43,16 @@ echo 'deb [arch=amd64 signed-by=/etc/apt/keyrings/packages.hnefatafl.org.asc] ht
 | sudo tee /etc/apt/sources.list.d/hnefatafl.list
 ```
 
+or if using the newer `/etc/apt/sources.list.d/debian.sources`. Add:
+
+```plaintext
+Types: deb
+URIs: https://hnefatafl.org/apt
+Suites: stable
+Components: main
+Signed-By: /etc/apt/keyrings/packages.hnefatafl.org.asc
+```
+
 Then, Download [packages.hnefatafl.org.asc][1] to `/etc/apt/keyrings/` or:
 
 ```sh
