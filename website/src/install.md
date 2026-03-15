@@ -43,7 +43,7 @@ echo 'deb [arch=amd64 signed-by=/etc/apt/keyrings/packages.hnefatafl.org.asc] ht
 | sudo tee /etc/apt/sources.list.d/hnefatafl.list
 ```
 
-or if using the newer `/etc/apt/sources.list.d/debian.sources`. Add:
+or if using the newer `/etc/apt/sources.list.d/debian.sources`, add:
 
 ```plaintext
 Types: deb
