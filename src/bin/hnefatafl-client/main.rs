@@ -76,9 +76,7 @@ use iced::{
     widget::{
         self, Button, Column, Container, Row, Scrollable, button, checkbox, column, container,
         operation::{focus_next, focus_previous},
-        pick_list, radio, row, scrollable, slider, text, text_editor,
-        text_input::Value,
-        tooltip,
+        pick_list, radio, row, scrollable, slider, text, text_editor, tooltip,
     },
     window::{self, icon},
 };
@@ -1873,7 +1871,6 @@ impl<'a> Client {
         handle_error(self.save_client_ron());
     }
 
-    #[allow(clippy::too_many_lines)]
     #[allow(clippy::collapsible_match)]
     pub(crate) fn subscriptions(&self) -> Subscription<Message> {
         let subscription_1 = if let Some(game) = &self.game {
@@ -1895,124 +1892,66 @@ impl<'a> Client {
                 Some(Message::WindowResized((size.width, size.height)))
             }
             Event::Keyboard(event) => match event {
-                keyboard::Event::KeyPressed {
-                    key: Key::Character(ch),
-                    modifiers,
-                    ..
-                } => {
+                keyboard::Event::KeyPressed { key, modifiers, .. } => {
                     let shift = modifiers.shift();
 
-                    if modifiers.control() || modifiers.command() {
-                        if *ch == *Value::new("a").to_smolstr() {
-                            Some(Message::PressA(shift))
-                        } else if *ch == *Value::new("b").to_smolstr() {
-                            Some(Message::PressB(shift))
-                        } else if *ch == *Value::new("c").to_smolstr() {
-                            Some(Message::PressC(shift))
-                        } else if *ch == *Value::new("d").to_smolstr() {
-                            Some(Message::PressD(shift))
-                        } else if *ch == *Value::new("e").to_smolstr() {
-                            Some(Message::PressE(shift))
-                        } else if *ch == *Value::new("f").to_smolstr() {
-                            Some(Message::PressF(shift))
-                        } else if *ch == *Value::new("g").to_smolstr() {
-                            Some(Message::PressG(shift))
-                        } else if *ch == *Value::new("h").to_smolstr() {
-                            Some(Message::PressH(shift))
-                        } else if *ch == *Value::new("i").to_smolstr() {
-                            Some(Message::PressI(shift))
-                        } else if *ch == *Value::new("j").to_smolstr() {
-                            Some(Message::PressJ(shift))
-                        } else if *ch == *Value::new("k").to_smolstr() {
-                            Some(Message::PressK(shift))
-                        } else if *ch == *Value::new("l").to_smolstr() {
-                            Some(Message::PressL(shift))
-                        } else if *ch == *Value::new("m").to_smolstr() {
-                            Some(Message::PressM(shift))
-                        } else if *ch == *Value::new("n").to_smolstr() {
-                            Some(Message::PressN(shift))
-                        } else if *ch == *Value::new("o").to_smolstr() {
-                            Some(Message::PressO(shift))
-                        } else if *ch == *Value::new("p").to_smolstr() {
-                            Some(Message::PressP(shift))
-                        } else if *ch == *Value::new("q").to_smolstr() {
-                            Some(Message::PressQ(shift))
-                        } else if *ch == *Value::new("r").to_smolstr() {
-                            Some(Message::PressR(shift))
-                        } else if *ch == *Value::new("s").to_smolstr() {
-                            Some(Message::PressS(shift))
-                        } else if *ch == *Value::new("t").to_smolstr() {
-                            Some(Message::PressT(shift))
-                        } else if *ch == *Value::new("u").to_smolstr() {
-                            Some(Message::PressU(shift))
-                        } else if *ch == *Value::new("v").to_smolstr() {
-                            Some(Message::PressV(shift))
-                        } else if *ch == *Value::new("w").to_smolstr() {
-                            Some(Message::PressW(shift))
-                        } else if *ch == *Value::new("x").to_smolstr() {
-                            Some(Message::PressX(shift))
-                        } else if *ch == *Value::new("y").to_smolstr() {
-                            Some(Message::PressY(shift))
-                        } else if *ch == *Value::new("z").to_smolstr() {
-                            Some(Message::PressZ(shift))
-                        } else if *ch == *Value::new("1").to_smolstr() {
-                            Some(Message::Press1)
-                        } else if *ch == *Value::new("2").to_smolstr() {
-                            Some(Message::Press2)
-                        } else if *ch == *Value::new("3").to_smolstr() {
-                            Some(Message::Press3)
-                        } else if *ch == *Value::new("4").to_smolstr() {
-                            Some(Message::Press4)
-                        } else if *ch == *Value::new("5").to_smolstr() {
-                            Some(Message::Press5)
-                        } else if *ch == *Value::new("6").to_smolstr() {
-                            Some(Message::Press6)
-                        } else if *ch == *Value::new("7").to_smolstr() {
-                            Some(Message::Press7)
-                        } else if *ch == *Value::new("8").to_smolstr() {
-                            Some(Message::Press8)
-                        } else if *ch == *Value::new("9").to_smolstr() {
-                            Some(Message::Press9)
-                        } else if *ch == *Value::new("0").to_smolstr() {
-                            Some(Message::Press0)
-                        } else if *ch == *Value::new("-").to_smolstr() {
-                            Some(Message::PressMinus)
-                        } else if (*ch == *Value::new("=").to_smolstr() && shift)
-                            || *ch == *Value::new("+").to_smolstr()
-                        {
-                            Some(Message::PressPlus)
-                        } else {
-                            None
+                    match key {
+                        Key::Character(ch) if modifiers.control() || modifiers.command() => {
+                            match ch {
+                                ch if *ch == *"a".to_smolstr() => Some(Message::PressA(shift)),
+                                ch if *ch == *"b".to_smolstr() => Some(Message::PressB(shift)),
+                                ch if *ch == *"c".to_smolstr() => Some(Message::PressC(shift)),
+                                ch if *ch == *"d".to_smolstr() => Some(Message::PressD(shift)),
+                                ch if *ch == *"e".to_smolstr() => Some(Message::PressE(shift)),
+                                ch if *ch == *"f".to_smolstr() => Some(Message::PressF(shift)),
+                                ch if *ch == *"g".to_smolstr() => Some(Message::PressG(shift)),
+                                ch if *ch == *"h".to_smolstr() => Some(Message::PressH(shift)),
+                                ch if *ch == *"i".to_smolstr() => Some(Message::PressI(shift)),
+                                ch if *ch == *"j".to_smolstr() => Some(Message::PressJ(shift)),
+                                ch if *ch == *"k".to_smolstr() => Some(Message::PressK(shift)),
+                                ch if *ch == *"l".to_smolstr() => Some(Message::PressL(shift)),
+                                ch if *ch == *"m".to_smolstr() => Some(Message::PressM(shift)),
+                                ch if *ch == *"n".to_smolstr() => Some(Message::PressN(shift)),
+                                ch if *ch == *"o".to_smolstr() => Some(Message::PressO(shift)),
+                                ch if *ch == *"p".to_smolstr() => Some(Message::PressP(shift)),
+                                ch if *ch == *"q".to_smolstr() => Some(Message::PressQ(shift)),
+                                ch if *ch == *"r".to_smolstr() => Some(Message::PressR(shift)),
+                                ch if *ch == *"s".to_smolstr() => Some(Message::PressS(shift)),
+                                ch if *ch == *"t".to_smolstr() => Some(Message::PressT(shift)),
+                                ch if *ch == *"u".to_smolstr() => Some(Message::PressU(shift)),
+                                ch if *ch == *"v".to_smolstr() => Some(Message::PressV(shift)),
+                                ch if *ch == *"w".to_smolstr() => Some(Message::PressW(shift)),
+                                ch if *ch == *"x".to_smolstr() => Some(Message::PressX(shift)),
+                                ch if *ch == *"y".to_smolstr() => Some(Message::PressY(shift)),
+                                ch if *ch == *"z".to_smolstr() => Some(Message::PressZ(shift)),
+                                ch if *ch == *"1".to_smolstr() => Some(Message::Press1),
+                                ch if *ch == *"2".to_smolstr() => Some(Message::Press2),
+                                ch if *ch == *"3".to_smolstr() => Some(Message::Press3),
+                                ch if *ch == *"4".to_smolstr() => Some(Message::Press4),
+                                ch if *ch == *"5".to_smolstr() => Some(Message::Press5),
+                                ch if *ch == *"6".to_smolstr() => Some(Message::Press6),
+                                ch if *ch == *"7".to_smolstr() => Some(Message::Press7),
+                                ch if *ch == *"8".to_smolstr() => Some(Message::Press8),
+                                ch if *ch == *"9".to_smolstr() => Some(Message::Press9),
+                                ch if *ch == *"0".to_smolstr() => Some(Message::Press0),
+                                ch if *ch == *"-".to_smolstr() => Some(Message::PressMinus),
+                                ch if *ch == *"=".to_smolstr() && shift => Some(Message::PressPlus),
+                                _ => None,
+                            }
                         }
-                    } else {
-                        None
-                    }
-                }
-                keyboard::Event::KeyPressed {
-                    key: Key::Named(named),
-                    modifiers,
-                    ..
-                } => {
-                    if named == Named::Enter {
-                        Some(Message::PressEnter)
-                    } else if modifiers.shift() && named == Named::Tab {
-                        Some(Message::FocusPrevious)
-                    } else if named == Named::Tab {
-                        Some(Message::FocusNext)
-                    } else if named == Named::ArrowUp {
-                        Some(Message::ReviewGameBackwardAll)
-                    } else if named == Named::ArrowLeft {
-                        Some(Message::ReviewGameBackward)
-                    } else if named == Named::ArrowRight && modifiers.shift() {
-                        Some(Message::ReviewGameChildNext)
-                    } else if named == Named::ArrowRight {
-                        Some(Message::ReviewGameForward)
-                    } else if named == Named::ArrowDown {
-                        Some(Message::ReviewGameForwardAll)
-                    } else if named == Named::Escape {
-                        Some(Message::Leave)
-                    } else {
-                        None
+                        Key::Named(name) => match name {
+                            Named::Enter => Some(Message::PressEnter),
+                            Named::Tab if shift => Some(Message::FocusPrevious),
+                            Named::Tab => Some(Message::FocusNext),
+                            Named::ArrowUp => Some(Message::ReviewGameBackwardAll),
+                            Named::ArrowLeft => Some(Message::ReviewGameBackward),
+                            Named::ArrowRight if shift => Some(Message::ReviewGameChildNext),
+                            Named::ArrowRight => Some(Message::ReviewGameForward),
+                            Named::ArrowDown => Some(Message::ReviewGameForwardAll),
+                            Named::Escape => Some(Message::Leave),
+                            _ => None,
+                        },
+                        _ => None,
                     }
                 }
                 _ => None,
