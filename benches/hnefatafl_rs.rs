@@ -1,5 +1,4 @@
 // SPDX-FileCopyrightText: 2025 David Campbell <david@hnefatafl.or>
-//
 // SPDX-License-Identifier: MIT
 
 use std::time::Duration;
