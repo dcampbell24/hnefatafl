@@ -1,5 +1,47 @@
 version = 1
 
+[[annotations]]
+path = "assets/header.png"
+SPDX-License-Identifier = "CC-BY-NC-ND-4.0"
+SPDX-FileCopyrightText = [
+    "2025 David Campbell <david@hnefatafl.org>",
+]
+
+[[annotations]]
+path = "assets/helmet.svg"
+SPDX-License-Identifier = "CC-BY-NC-ND-4.0"
+SPDX-FileCopyrightText = [
+    "2025 David Campbell <david@hnefatafl.org>",
+]
+
+[[annotations]]
+path = "assets/hnefatafl-individual-CLA.pdf"
+SPDX-License-Identifier = "CC-BY-NC-ND-4.0"
+SPDX-FileCopyrightText = [
+    "2025 David Campbell <david@hnefatafl.org>",
+]
+
+[[annotations]]
+path = "assets/hnefatafl-individual-CLA.tex"
+SPDX-License-Identifier = "CC-BY-NC-ND-4.0"
+SPDX-FileCopyrightText = [
+    "2025 David Campbell <david@hnefatafl.org>",
+]
+
+[[annotations]]
+path = "assets/king.png"
+SPDX-License-Identifier = "CC-BY-NC-ND-4.0"
+SPDX-FileCopyrightText = [
+    "2025 David Campbell <david@hnefatafl.org>",
+]
+
+[[annotations]]
+path = "assets/king.svg"
+SPDX-License-Identifier = "CC-BY-NC-ND-4.0"
+SPDX-FileCopyrightText = [
+    "2025 David Campbell <david@hnefatafl.org>",
+]
+
 # Automatically generated file.
 [[annotations]]
 path = "Cargo.lock"
@@ -37,6 +79,13 @@ SPDX-FileCopyrightText = [
 [[annotations]]
 path = "src/**"
 SPDX-License-Identifier = "AGPL-3.0-or-later"
+SPDX-FileCopyrightText = [
+    "2025 David Campbell <david@hnefatafl.org>",
+]
+
+[[annotations]]
+path = "src/bin/hnefatafl-client/assets/helmet.png"
+SPDX-License-Identifier = "CC-BY-NC-ND-4.0"
 SPDX-FileCopyrightText = [
     "2025 David Campbell <david@hnefatafl.org>",
 ]
