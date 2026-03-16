@@ -1,5 +1,6 @@
 version = 1
 
+# https://commons.wikimedia.org/wiki/File:Codeberg_logo_horizontal.svg
 [[annotations]]
 path = "assets/codeberg.png"
 SPDX-License-Identifier = "CC0-1.0"
