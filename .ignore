@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 David Campbell <david@hnefatafl.org>
+#
+# SPDX-License-Identifier: MIT
+
 .git
 .DS_Store
 .coverage

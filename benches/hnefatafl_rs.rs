@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2025 David Campbell <david@hnefatafl.or>
+//
+// SPDX-License-Identifier: MIT
+
 use std::time::Duration;
 
 use criterion::{Criterion, criterion_group, criterion_main};

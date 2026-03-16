@@ -1,11 +1,14 @@
-# Maintainer: David Campbell <dcampbell24@gmail.com>
+# Maintainer:
+# SPDX-FileCopyrightText: 2025 David Campbell <david@hnefatafl.or>
+#
+# SPDX-License-Identifier: 0BSD
 
 # Zero-Clause BSD
 # ===============
-
+#
 # Permission to use, copy, modify, and/or distribute this software for
 # any purpose with or without fee is hereby granted.
-
+#
 # THE SOFTWARE IS PROVIDED “AS IS” AND THE AUTHOR DISCLAIMS ALL
 # WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES
 # OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE

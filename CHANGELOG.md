@@ -1,3 +1,8 @@
+<!-->
+SPDX-FileCopyrightText: 2025 David Campbell <david@hnefatafl.org>
+SPDX-License-Identifier: AGPL-3.0-or-later
+<-->
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
