@@ -24,12 +24,6 @@ Made with [contrib.rocks](https://contrib.rocks).
 
 ## Copyright and Licenses
 
-These files are licensed under the AGPLv3:
-
-```toml
-include = ["src/**/*", "README.md", "CHANGELOG.md", "COPYING"]
-```
-
 All of the files either have their license at the top of the file or are noted
 in REUSE.toml or both.
 
