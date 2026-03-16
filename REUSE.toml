@@ -1,6 +1,28 @@
 version = 1
 
 [[annotations]]
+path = "assets/codeberg.png"
+SPDX-License-Identifier = "CC0-1.0"
+SPDX-FileCopyrightText = "NONE"
+
+###
+# All the following assets are really proprietary, but that is not an allowed license
+
+[[annotations]]
+path = "assets/Discord-Logo-Blurple.png"
+SPDX-License-Identifier = "CC-BY-NC-ND-4.0"
+SPDX-FileCopyrightText = [
+    "https://discord.com/branding",
+]
+
+[[annotations]]
+path = "assets/github.png"
+SPDX-License-Identifier = "CC-BY-NC-ND-4.0"
+SPDX-FileCopyrightText = [
+    "https://brand.github.com/foundations/logo",
+]
+
+[[annotations]]
 path = "assets/header.png"
 SPDX-License-Identifier = "CC-BY-NC-ND-4.0"
 SPDX-FileCopyrightText = [
@@ -41,6 +63,8 @@ SPDX-License-Identifier = "CC-BY-NC-ND-4.0"
 SPDX-FileCopyrightText = [
     "2025 David Campbell <david@hnefatafl.org>",
 ]
+
+###
 
 # Automatically generated file.
 [[annotations]]
