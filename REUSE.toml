@@ -13,58 +13,42 @@ SPDX-FileCopyrightText = "NONE"
 [[annotations]]
 path = "assets/Discord-Logo-Blurple.png"
 SPDX-License-Identifier = "CC-BY-NC-ND-4.0"
-SPDX-FileCopyrightText = [
-    "https://discord.com/branding",
-]
+SPDX-FileCopyrightText = "https://discord.com/branding"
 
 [[annotations]]
 path = "assets/github.png"
 SPDX-License-Identifier = "CC-BY-NC-ND-4.0"
-SPDX-FileCopyrightText = [
-    "https://brand.github.com/foundations/logo",
-]
+SPDX-FileCopyrightText = "https://brand.github.com/foundations/logo"
 
 [[annotations]]
 path = "assets/header.png"
 SPDX-License-Identifier = "CC-BY-NC-ND-4.0"
-SPDX-FileCopyrightText = [
-    "2025 David Campbell <david@hnefatafl.org>",
-]
+SPDX-FileCopyrightText = "2025 David Campbell <david@hnefatafl.org>"
 
 [[annotations]]
 path = "assets/helmet.svg"
 SPDX-License-Identifier = "CC-BY-NC-ND-4.0"
-SPDX-FileCopyrightText = [
-    "2025 David Campbell <david@hnefatafl.org>",
-]
+SPDX-FileCopyrightText = "2025 David Campbell <david@hnefatafl.org>"
 
 [[annotations]]
 path = "assets/hnefatafl-individual-CLA.pdf"
 SPDX-License-Identifier = "CC-BY-NC-ND-4.0"
-SPDX-FileCopyrightText = [
-    "2025 David Campbell <david@hnefatafl.org>",
-]
+SPDX-FileCopyrightText = "2025 David Campbell <david@hnefatafl.org>"
 
 [[annotations]]
 path = "assets/hnefatafl-individual-CLA.tex"
 SPDX-License-Identifier = "CC-BY-NC-ND-4.0"
-SPDX-FileCopyrightText = [
-    "2025 David Campbell <david@hnefatafl.org>",
-]
+SPDX-FileCopyrightText = "2025 David Campbell <david@hnefatafl.org>"
 
 [[annotations]]
 path = "assets/king.png"
 SPDX-License-Identifier = "CC-BY-NC-ND-4.0"
-SPDX-FileCopyrightText = [
-    "2025 David Campbell <david@hnefatafl.org>",
-]
+SPDX-FileCopyrightText = "2025 David Campbell <david@hnefatafl.org>"
 
 [[annotations]]
 path = "assets/king.svg"
 SPDX-License-Identifier = "CC-BY-NC-ND-4.0"
-SPDX-FileCopyrightText = [
-    "2025 David Campbell <david@hnefatafl.org>",
-]
+SPDX-FileCopyrightText = "2025 David Campbell <david@hnefatafl.org>"
 
 ###
 
@@ -83,38 +67,28 @@ SPDX-FileCopyrightText = "NONE"
 [[annotations]]
 path = "documents/glicko.pdf"
 SPDX-License-Identifier = "CC0-1.0"
-SPDX-FileCopyrightText = [
-    "2016 Dr. Mark E Glickman <glickman@fas.harvard.edu>",
-]
+SPDX-FileCopyrightText = "2016 Dr. Mark E Glickman <glickman@fas.harvard.edu>"
 
 [[annotations]]
 path = "documents/gtp2-spec-draft2.pdf"
 SPDX-License-Identifier = "GFDL-1.1-only"
-SPDX-FileCopyrightText = [
-    "2002 Gunnar farnebäck",
-]
+SPDX-FileCopyrightText = "2002 Gunnar farnebäck"
 
 # Packaging files.
 [[annotations]]
 path = "packages/**"
 SPDX-License-Identifier = "MIT"
-SPDX-FileCopyrightText = [
-    "2025 David Campbell <david@hnefatafl.org>",
-]
+SPDX-FileCopyrightText = "2025 David Campbell <david@hnefatafl.org>"
 
 [[annotations]]
 path = "src/**"
 SPDX-License-Identifier = "AGPL-3.0-or-later"
-SPDX-FileCopyrightText = [
-    "2025 David Campbell <david@hnefatafl.org>",
-]
+SPDX-FileCopyrightText = "2025 David Campbell <david@hnefatafl.org>"
 
 [[annotations]]
 path = "src/bin/hnefatafl-client/assets/helmet.png"
 SPDX-License-Identifier = "CC-BY-NC-ND-4.0"
-SPDX-FileCopyrightText = [
-    "2025 David Campbell <david@hnefatafl.org>",
-]
+SPDX-FileCopyrightText = "2025 David Campbell <david@hnefatafl.org>"
 
 [[annotations]]
 path = "supply-chain/**"
@@ -129,9 +103,7 @@ SPDX-FileCopyrightText = "NONE"
 [[annotations]]
 path = "website/**"
 SPDX-License-Identifier = "CC-BY-4.0"
-SPDX-FileCopyrightText = [
-    "2025 David Campbell <david@hnefatafl.org>",
-]
+SPDX-FileCopyrightText = "2025 David Campbell <david@hnefatafl.org>"
 
 [[annotations]]
 path = ".github/**"
