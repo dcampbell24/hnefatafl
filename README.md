@@ -12,6 +12,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 [![Discord]][discord-link]&ensp;
 [![Install]][install-link]&ensp;
 [![docs-rs]][docs-rs-link]&ensp;
+[![REUSE status]][reuse]&ensp;
 [![coverage]][coverage-link]
 
 [github]: assets/github.png
@@ -22,8 +23,10 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 [discord-link]: https://discord.gg/h56CAHEBXd
 [docs-rs]: https://img.shields.io/badge/docs.rs-66c2a5?logo=docs.rs
 [docs-rs-link]: https://docs.rs/hnefatafl-copenhagen
-[install]: https://img.shields.io/badge/Install-blue
+[Install]: https://img.shields.io/badge/Install-blue
 [install-link]: https://hnefatafl.org/install.html
+[REUSE status]: https://api.reuse.software/badge/github.com/dcampbell24/hnefatafl
+[reuse]: https://api.reuse.software/info/github.com/dcampbell24/hnefatafl
 [coverage]: https://img.shields.io/badge/coverage-33.43%25-red
 [coverage-link]: https://dlc.name/hnefatafl
 
