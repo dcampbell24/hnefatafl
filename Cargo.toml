@@ -18,7 +18,6 @@ keywords = ["board-game", "copenhagen", "hnefatafl", "strategy", "tafl"]
 categories = ["game-engines", "games", "wasm"]
 default-run = "hnefatafl-server-full"
 
-# Only these files are licensed under the AGPLv3:
 include = ["src/**/*", "README.md", "CHANGELOG.md", "COPYING"]
 
 [dev-dependencies]
