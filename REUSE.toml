@@ -1,0 +1,68 @@
+version = 1
+
+# Automatically generated files.
+[[annotations]]
+path = "docs/**"
+SPDX-License-Identifier = "CC0-1.0"
+SPDX-FileCopyrightText = "NONE"
+
+[[annotations]]
+path = "documents/glicko.pdf"
+SPDX-License-Identifier = "CC0-1.0"
+SPDX-FileCopyrightText = [
+    "2016 Dr. Mark E Glickman <glickman@fas.harvard.edu>",
+]
+
+[[annotations]]
+path = "documents/gtp2-spec-draft2.pdf"
+SPDX-License-Identifier = "GFDL-1.1-only"
+SPDX-FileCopyrightText = [
+    "2002 Gunnar farnebäck",
+]
+
+# Packaging files.
+[[annotations]]
+path = "packages/**"
+SPDX-License-Identifier = "MIT"
+SPDX-FileCopyrightText = [
+    "2025 David Campbell <david@hnefatafl.org>",
+]
+
+[[annotations]]
+path = "src/**"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+SPDX-FileCopyrightText = [
+    "2025 David Campbell <david@hnefatafl.org>",
+]
+
+[[annotations]]
+path = "supply-chain/**"
+SPDX-License-Identifier = "CC0-1.0"
+SPDX-FileCopyrightText = "NONE"
+
+[[annotations]]
+path = "tests/copenhagen.csv"
+SPDX-License-Identifier = "CC0-1.0"
+SPDX-FileCopyrightText = "NONE"
+
+[[annotations]]
+path = "website/**"
+SPDX-License-Identifier = "CC-BY-4.0"
+SPDX-FileCopyrightText = [
+    "2025 David Campbell <david@hnefatafl.org>",
+]
+
+[[annotations]]
+path = ".github/**"
+SPDX-License-Identifier = "CC0-1.0"
+SPDX-FileCopyrightText = "NONE"
+
+[[annotations]]
+path = ".markdownlint.json"
+SPDX-License-Identifier = "CC0-1.0"
+SPDX-FileCopyrightText = "NONE"
+
+[[annotations]]
+path = ".vscode/settings.json"
+SPDX-License-Identifier = "CC0-1.0"
+SPDX-FileCopyrightText = "NONE"

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 David Campbell <david@hnefatafl.or>
+#
+# SPDX-License-Identifier: MIT
+
 [package]
 name = "hnefatafl-copenhagen"
 version = "5.3.1"

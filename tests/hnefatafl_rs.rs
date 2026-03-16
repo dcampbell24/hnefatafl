@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2025 David Campbell <david@hnefatafl.org>
+//
+// SPDX-License-Identifier: MIT
+
 #![cfg(test)]
 
 use std::{fmt, io::Cursor, str::FromStr};

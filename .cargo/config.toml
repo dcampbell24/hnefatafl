@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 David Campbell <david@hnefatafl.or>
+#
+# SPDX-License-Identifier: MIT
+
 [build]
 # rustflags = ["-C", "target-cpu=native", "-C", "target-feature=-avx"]
 
