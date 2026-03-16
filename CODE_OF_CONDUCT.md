@@ -1,6 +1,6 @@
 <!-- >
 SPDX-FileCopyrightText: 2026 Organization for Ethical Source <info@ethicalsource.dev>
-SPDX-License-Identifier: CC-BY-SA
+SPDX-License-Identifier: CC-BY-SA-4.0
 <-->
 
 # Contributor Covenant 3.0 Code of Conduct
