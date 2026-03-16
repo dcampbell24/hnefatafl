@@ -1932,7 +1932,9 @@ impl<'a> Client {
                         ch if *ch == *"9".to_smolstr() => Some(Message::Press9),
                         ch if *ch == *"0".to_smolstr() => Some(Message::Press0),
                         ch if *ch == *"-".to_smolstr() => Some(Message::PressMinus),
-                        ch if *ch == *"=".to_smolstr() && shift => Some(Message::PressPlus),
+                        ch if (*ch == *"=".to_smolstr() && shift) || *ch == *"+".to_smolstr() => {
+                            Some(Message::PressPlus)
+                        }
                         _ => None,
                     },
                     Key::Named(name) => match name {
