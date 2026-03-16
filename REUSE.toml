@@ -1,5 +1,11 @@
 version = 1
 
+# Automatically generated file.
+[[annotations]]
+path = "Cargo.lock"
+SPDX-License-Identifier = "CC0-1.0"
+SPDX-FileCopyrightText = "NONE"
+
 # Automatically generated files.
 [[annotations]]
 path = "docs/**"
