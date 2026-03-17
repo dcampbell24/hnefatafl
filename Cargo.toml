@@ -41,7 +41,7 @@ default-features = false
 [dependencies]
 anyhow = "1"
 # burn = { version = "0.16", features = ["train", "wgpu", "vision"] }
-jiff = { version = "0.2.23", features = ["serde"] }
+jiff = { version = "0.2", features = ["serde"] }
 clap = { version = "4", features = ["derive"] }
 clap_mangen = "0.2"
 directories = "6"
