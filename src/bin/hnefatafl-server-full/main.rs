@@ -44,7 +44,6 @@ use std::{
 };
 
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
-use chrono::{DateTime, Days, Local, Utc};
 use clap::Parser;
 use hnefatafl_copenhagen::{
     Id, SERVER_PORT, VERSION_ID,
@@ -66,6 +65,7 @@ use hnefatafl_copenhagen::{
     utils::{self, create_data_folder, data_file},
 };
 use itertools::Itertools;
+use jiff::Timestamp;
 use lettre::{
     SmtpTransport, Transport,
     message::{Mailbox, header::ContentType},
@@ -338,7 +338,7 @@ fn login(
     tx.send((format!("{id} {username_proper} email_get"), None))?;
     tx.send((format!("{id} {username_proper} texts"), None))?;
     tx.send((format!("{id} {username_proper} display_games"), None))?;
-    tx.send((format!("{id} {username_proper} tournament_status_0"), None))?;
+    tx.send((format!("{id} {username_proper} tournament_status_1"), None))?;
     tx.send((format!("{id} {username_proper} admin"), None))?;
     tx.send((format!("{id} {username_proper} admin_tournament"), None))?;
 
@@ -436,7 +436,7 @@ fn hash_password(password: &str) -> Option<String> {
 }
 
 fn timestamp() -> String {
-    Utc::now().format("[%F %T UTC]").to_string()
+    Timestamp::now().strftime("[%F %T UTC]").to_string()
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
@@ -597,7 +597,7 @@ impl Server {
     /// deviation is the same as a new player and that a typical RD is 50.
     #[must_use]
     fn check_update_rd(&mut self) -> bool {
-        let now = Utc::now().timestamp();
+        let now = Timestamp::now().as_second();
         if now - self.ran_update_rd.0 >= TWO_MONTHS {
             for account in self.accounts.0.values_mut() {
                 account.rating.update_rd();
@@ -777,7 +777,7 @@ impl Server {
                     if game.game.status == Status::Ongoing
                         && let TimeUnix::Time(game_time) = &mut game.game.time
                     {
-                        let now = Local::now().to_utc().timestamp_millis();
+                        let now = Timestamp::now().as_millisecond();
                         let elapsed_time = now - *game_time;
                         game.elapsed_time += elapsed_time;
                         *game_time = now;
@@ -815,7 +815,7 @@ impl Server {
                     if game.game.status == Status::Ongoing
                         && let TimeUnix::Time(game_time) = &mut game.game.time
                     {
-                        let now = Local::now().to_utc().timestamp_millis();
+                        let now = Timestamp::now().as_millisecond();
                         let elapsed_time = now - *game_time;
                         game.elapsed_time += elapsed_time;
                         *game_time = now;
@@ -1464,7 +1464,7 @@ impl Server {
                     None
                 }
                 "delete_unused_accounts" => {
-                    let now = Utc::now();
+                    let now = Timestamp::now();
                     let mut accounts = Vec::new();
 
                     let mut playing = HashSet::new();
@@ -1482,8 +1482,7 @@ impl Server {
                         if account.wins == 0
                             && account.losses == 0
                             && account.draws == 0
-                            && now.checked_sub_days(Days::new(DAYS_FOR_INACTIVE_ACCOUNT))
-                                > Some(account.last_logged_in.0)
+                            // Fixme! && now.checked_sub_days(Days::new(DAYS_FOR_INACTIVE_ACCOUNT)) > Some(account.last_logged_in.0)
                             && !playing.contains(name)
                         {
                             accounts.push(name.clone());
@@ -1712,7 +1711,7 @@ impl Server {
                     if let Some(email) = &account.email {
                         if email.verified {
                             let day = 60 * 60 * 24;
-                            let now = Utc::now().timestamp();
+                            let now = Timestamp::now().as_second();
                             if now - account.email_sent > day {
                                 let password = format!("{:x}", random::<u32>());
                                 account.password = hash_password(&password)?;
@@ -1828,7 +1827,7 @@ impl Server {
 
                     None
                 }
-                "tournament_status_0" => {
+                "tournament_status_1" => {
                     trace!("tournament_status: {:#?}", self.tournament);
 
                     if args.skip_advertising_updates {
@@ -1840,7 +1839,7 @@ impl Server {
                         Some((
                             tx.clone(),
                             true,
-                            format!("tournament_status_0 {tournament}"),
+                            format!("tournament_status_1 {tournament}"),
                         ))
                     }
                 }
@@ -1848,7 +1847,7 @@ impl Server {
                     if self.admins_tournament.contains(username)
                         && let Some(tournament) = &mut self.tournament
                         && tournament.groups.is_none()
-                        && Utc::now() >= tournament.date
+                        && Timestamp::now() >= tournament.date
                     {
                         info!("Starting tournament...");
 
@@ -2109,7 +2108,7 @@ impl Server {
 
                 self.clients.insert(index_supplied, tx);
                 account.logged_in = Some(index_supplied);
-                account.last_logged_in = DateTimeUtc(Utc::now());
+                account.last_logged_in = DateTimeUtc(Timestamp::now());
 
                 Some((
                     self.clients.get(&index_supplied)?.clone(),
@@ -2233,7 +2232,7 @@ impl Server {
                 && index_database == index_supplied
             {
                 account.logged_in = None;
-                account.last_logged_in = DateTimeUtc(Utc::now());
+                account.last_logged_in = DateTimeUtc(Timestamp::now());
 
                 self.clients
                     .get(&index_supplied)?
@@ -2334,24 +2333,12 @@ impl Server {
         thread::spawn(move || {
             handle_error(tx.send(("0 server tournament_start".to_string(), None)));
 
+            /* Fixme!
             loop {
-                let now_utc = Utc::now();
-
-                let tomorrow_midnight_utc = (now_utc + Days::new(1))
-                    .date_naive()
-                    .and_hms_opt(0, 0, 0)
-                    .unwrap_or_else(|| {
-                        error!("and_hms_opt failed");
-                        exit(1)
-                    })
-                    .and_local_timezone(Utc)
-                    .single()
-                    .unwrap_or_else(|| {
-                        error!("single failed");
-                        exit(1)
-                    });
-
+                let now_utc = Timestamp::now();
+                let tomorrow_midnight_utc = now_utc + Days::new(1);
                 let duration_until_midnight = tomorrow_midnight_utc.signed_duration_since(now_utc);
+
                 debug!(
                     "seconds until midnight UTC: {}",
                     duration_until_midnight.num_seconds()
@@ -2367,6 +2354,7 @@ impl Server {
 
                 handle_error(tx.send(("0 server tournament_start".to_string(), None)));
             }
+            */
         });
     }
 
@@ -2682,15 +2670,11 @@ impl Server {
             return Err(anyhow::Error::msg("tournament_date: date is empty"));
         };
 
-        let datetime = match DateTime::parse_from_str(
-            &format!("{date} 00:00:00 +0000"),
-            "%Y-%m-%d %H:%M:%S %z",
-        ) {
-            Ok(datetime) => datetime,
+        tournament.date = match date.parse() {
+            Ok(timestamp) => timestamp,
             Err(error) => return Err(anyhow::Error::msg(format!("tournament_date: {error}"))),
         };
 
-        tournament.date = datetime.to_utc();
         self.tournament = Some(tournament);
 
         Ok(())
@@ -2700,7 +2684,7 @@ impl Server {
         trace!("tournament_status: {:#?}", self.tournament);
 
         if let Ok(mut tournament) = ron::ser::to_string(&self.tournament) {
-            tournament = format!("= tournament_status_0 {tournament}");
+            tournament = format!("= tournament_status_1 {tournament}");
 
             for tx in self.clients.values() {
                 let _ok = tx.send(tournament.clone());

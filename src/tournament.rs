@@ -21,7 +21,7 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-use chrono::{DateTime, Utc};
+use jiff::Timestamp;
 use rand::seq::SliceRandom;
 use serde::{Deserialize, Serialize};
 
@@ -32,7 +32,7 @@ pub struct Tournament {
     pub id: u64,
     pub players: HashSet<String>,
     pub players_left: HashSet<String>,
-    pub date: DateTime<Utc>,
+    pub date: Timestamp,
     pub groups: Option<Vec<Vec<Arc<Mutex<Group>>>>>,
     pub tournament_games: HashMap<Id, Arc<Mutex<Group>>>,
 }

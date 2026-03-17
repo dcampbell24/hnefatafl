@@ -22,7 +22,7 @@ use std::{
 };
 
 use crate::{email::Email, glicko::Rating};
-use chrono::{DateTime, Utc};
+use jiff::Timestamp;
 use serde::{Deserialize, Serialize};
 
 use crate::Id;
@@ -82,11 +82,11 @@ pub struct Account {
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
-pub struct DateTimeUtc(pub DateTime<Utc>);
+pub struct DateTimeUtc(pub Timestamp);
 
 impl Default for DateTimeUtc {
     fn default() -> Self {
-        Self(Utc::now())
+        Self(Timestamp::now())
     }
 }
 
