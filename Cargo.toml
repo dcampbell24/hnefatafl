@@ -41,11 +41,11 @@ default-features = false
 [dependencies]
 anyhow = "1"
 # burn = { version = "0.16", features = ["train", "wgpu", "vision"] }
-jiff = { version = "0.2", features = ["serde"] }
 clap = { version = "4", features = ["derive"] }
 clap_mangen = "0.2"
 directories = "6"
 env_logger = "0.11"
+jiff = { version = "0.2", features = ["serde"] }
 log = "0.4"
 postcard = { version = "1", features = ["alloc"] }
 rand = "0.10"
