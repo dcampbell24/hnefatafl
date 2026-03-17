@@ -1900,7 +1900,8 @@ impl<'a> Client {
                     Key::Character(ch) if modifiers.control() || modifiers.command() => match ch {
                         ch if *ch == *"a".to_smolstr() => Some(Message::PressA(shift)),
                         ch if *ch == *"b".to_smolstr() => Some(Message::PressB(shift)),
-                        ch if *ch == *"c".to_smolstr() => Some(Message::PressC(shift)),
+                        // Fixme: ctrl + shift + "c" is copy.
+                        ch if *ch == *"c".to_smolstr() && !shift => Some(Message::PressC(shift)),
                         ch if *ch == *"d".to_smolstr() => Some(Message::PressD(shift)),
                         ch if *ch == *"e".to_smolstr() => Some(Message::PressE(shift)),
                         ch if *ch == *"f".to_smolstr() => Some(Message::PressF(shift)),
@@ -1919,7 +1920,8 @@ impl<'a> Client {
                         ch if *ch == *"s".to_smolstr() => Some(Message::PressS(shift)),
                         ch if *ch == *"t".to_smolstr() => Some(Message::PressT(shift)),
                         ch if *ch == *"u".to_smolstr() => Some(Message::PressU(shift)),
-                        ch if *ch == *"v".to_smolstr() => Some(Message::PressV(shift)),
+                        // Fixme: ctrl + shift + "v" is paste.
+                        ch if *ch == *"v".to_smolstr() && !shift => Some(Message::PressV(shift)),
                         ch if *ch == *"w".to_smolstr() => Some(Message::PressW(shift)),
                         ch if *ch == *"x".to_smolstr() => Some(Message::PressX(shift)),
                         ch if *ch == *"y".to_smolstr() => Some(Message::PressY(shift)),
