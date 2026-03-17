@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- hnefatafl-client: copy and paste and declining some games overlap. Removed decline game.
+
 ### Added
 
 - hnefatafl-client: get the locale from the system if not set.
