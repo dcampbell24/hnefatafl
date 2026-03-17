@@ -65,7 +65,7 @@ use hnefatafl_copenhagen::{
     utils::{self, create_data_folder, data_file},
 };
 use itertools::Itertools;
-use jiff::Timestamp;
+use jiff::{Timestamp, ToSpan, Zoned};
 use lettre::{
     SmtpTransport, Transport,
     message::{Mailbox, header::ContentType},
@@ -87,7 +87,7 @@ const KEEP_TEXTS: usize = 100;
 
 const HOUR_IN_SECONDS: u64 = 60 * 60;
 const DAY_IN_SECONDS: u64 = HOUR_IN_SECONDS * 24;
-const DAYS_FOR_INACTIVE_ACCOUNT: u64 = 14;
+const DAYS_FOR_INACTIVE_ACCOUNT: i64 = 14;
 
 /// Seconds in two months: `60.0 * 60.0 * 24.0 * 30.417 * 2.0 = 5_256_057.6`
 const TWO_MONTHS: i64 = 5_256_058;
@@ -1482,7 +1482,8 @@ impl Server {
                         if account.wins == 0
                             && account.losses == 0
                             && account.draws == 0
-                            // Fixme! && now.checked_sub_days(Days::new(DAYS_FOR_INACTIVE_ACCOUNT)) > Some(account.last_logged_in.0)
+                            && let Ok(timestamp) = now.checked_sub(DAYS_FOR_INACTIVE_ACCOUNT.day())
+                            && timestamp > account.last_logged_in.0
                             && !playing.contains(name)
                         {
                             accounts.push(name.clone());
@@ -2333,28 +2334,36 @@ impl Server {
         thread::spawn(move || {
             handle_error(tx.send(("0 server tournament_start".to_string(), None)));
 
-            /* Fixme!
             loop {
-                let now_utc = Timestamp::now();
-                let tomorrow_midnight_utc = now_utc + Days::new(1);
-                let duration_until_midnight = tomorrow_midnight_utc.signed_duration_since(now_utc);
+                let now = Zoned::now().with_time_zone(jiff::tz::TimeZone::UTC);
+                match Zoned::now()
+                    .with_time_zone(jiff::tz::TimeZone::UTC)
+                    .end_of_day()
+                {
+                    Ok(midnight) => {
+                        let duration = now.duration_until(&midnight);
+                        debug!("midnight: {midnight}");
+                        debug!("seconds until midnight: {}", duration.as_secs());
 
-                debug!(
-                    "seconds until midnight UTC: {}",
-                    duration_until_midnight.num_seconds()
-                );
-
-                let std_duration = duration_until_midnight.to_std().unwrap_or_else(|error| {
-                    error!("to_std failed: {error}");
-                    exit(1)
-                });
-
-                sleep(std_duration);
-                sleep(Duration::from_secs(1));
+                        match duration.try_into() {
+                            Ok(duration) => {
+                                sleep(duration);
+                                sleep(Duration::from_secs(2));
+                            }
+                            Err(error) => {
+                                error!("new_tournament (1): {error}");
+                                exit(1);
+                            }
+                        }
+                    }
+                    Err(error) => {
+                        error!("new_tournament (2): {error}");
+                        exit(1);
+                    }
+                }
 
                 handle_error(tx.send(("0 server tournament_start".to_string(), None)));
             }
-            */
         });
     }
 

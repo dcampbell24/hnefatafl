@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Replaced currently unmaintained chrono with jiff. I had to make a new tournament status.
+
 ### Fixed
 
 - hnefatafl-client: copy and paste and declining some games overlap. Removed decline game.
