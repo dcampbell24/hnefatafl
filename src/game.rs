@@ -25,7 +25,7 @@ use std::{
     str::FromStr,
 };
 
-use chrono::Utc;
+use jiff::Timestamp;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use rustc_hash::{FxBuildHasher, FxHashMap, FxHashSet};
 use serde::{Deserialize, Serialize};
@@ -739,7 +739,7 @@ impl Game {
                     &mut self.time,
                 ),
             } {
-                let now = Utc::now().timestamp_millis();
+                let now = Timestamp::now().as_millisecond();
                 timer.milliseconds_left -= now - *time;
                 *time = now;
 
@@ -1060,6 +1060,6 @@ pub enum TimeUnix {
 
 impl Default for TimeUnix {
     fn default() -> Self {
-        Self::Time(Utc::now().timestamp_millis())
+        Self::Time(Timestamp::now().as_millisecond())
     }
 }

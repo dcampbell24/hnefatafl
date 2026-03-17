@@ -41,8 +41,8 @@ use std::{
     time::Duration,
 };
 
+use jiff::Timestamp;
 use ::serde::{Deserialize, Serialize};
-use chrono::{DateTime, Local, Utc};
 use clap::{CommandFactory, Parser};
 use hnefatafl_copenhagen::{
     COPYRIGHT, Id, SERVER_PORT, VERSION_ID,
@@ -2024,7 +2024,7 @@ impl<'a> Client {
             Message::DateCancel => self.tournament_date_show_picker = false,
             Message::DateChoose => self.tournament_date_show_picker = true,
             Message::DateSubmit(date) => {
-                self.send(&format!("tournament_date {date}\n"));
+                self.send(&format!("tournament_date {date}T00:00:00Z\n"));
                 self.tournament_date = date;
                 self.tournament_date_show_picker = false;
             }
@@ -2929,7 +2929,7 @@ impl<'a> Client {
                                                 TimeUnix::Time(time_ago),
                                             ) = (&mut self.time_attacker, &game.time)
                                             {
-                                                let now = Local::now().to_utc().timestamp_millis();
+                                                let now = Timestamp::now().as_millisecond();
                                                 time.milliseconds_left -= now - time_ago;
                                                 if time.milliseconds_left < 0 {
                                                     time.milliseconds_left = 0;
@@ -2943,7 +2943,7 @@ impl<'a> Client {
                                                 TimeUnix::Time(time_ago),
                                             ) = (&mut self.time_defender, &game.time)
                                             {
-                                                let now = Local::now().to_utc().timestamp_millis();
+                                                let now = Timestamp::now().as_millisecond();
                                                 time.milliseconds_left -= now - time_ago;
                                                 if time.milliseconds_left < 0 {
                                                     time.milliseconds_left = 0;
@@ -2991,12 +2991,12 @@ impl<'a> Client {
                                 }
                             }
                             Some("ping") => {
-                                let after = Utc::now().timestamp_millis();
+                                let after = Timestamp::now().as_millisecond();
                                 self.now_diff = after - self.now;
                             }
                             Some("text") => self.texts.push_front(text_collect(text)),
                             Some("text_game") => self.texts_game.push_front(text_collect(text)),
-                            Some("tournament_status_0") => {
+                            Some("tournament_status_1") => {
                                 if let Some(tournament) = text.next() {
                                     let tournament: Option<Tournament> = ron::from_str(tournament)
                                         .expect("This is a valid tournament.");
@@ -3166,7 +3166,7 @@ impl<'a> Client {
                 self.counter = self.counter.wrapping_add(1);
 
                 if self.counter.is_multiple_of(25) {
-                    self.now = Utc::now().timestamp_millis();
+                    self.now = Timestamp::now().as_millisecond();
                     self.send("ping\n");
                 }
 
@@ -3593,20 +3593,18 @@ impl<'a> Client {
                         emails.push(text(""))
                     };
 
-                    emails_sent =
-                        if let Some(email_sent) = DateTime::from_timestamp(account.email_sent, 0) {
-                            emails_sent.push(text(email_sent.format("%Y-%m-%d").to_string()))
-                        } else {
-                            emails_sent.push(text(""))
-                        };
+                    if let Ok(timestamp) = Timestamp::from_second(account.email_sent) {
+                        emails_sent = emails_sent.push(text(timestamp.strftime("%Y-%m-%d").to_string()));
+                    } else {
+                        emails_sent = emails_sent.push(text(""));
+                    };
 
                     send_emails = send_emails.push(text(account.send_emails));
 
                     let date = account
                         .creation_date
                         .0
-                        .to_utc()
-                        .format("%Y-%m-%d")
+                        .strftime("%Y-%m-%d")
                         .to_string();
 
                     creation_dates = creation_dates.push(text(date));
@@ -3614,8 +3612,7 @@ impl<'a> Client {
                     let date = account
                         .last_logged_in
                         .0
-                        .to_utc()
-                        .format("%Y-%m-%d %H:%M:%S %z")
+                        .strftime("%Y-%m-%d %H:%M:%S %z")
                         .to_string();
 
                     last_logged_in = if account.logged_in.is_some() {
@@ -4025,10 +4022,10 @@ impl<'a> Client {
                     .on_press(Message::Leave);
                 let mut column = column![
                     subject,
-                    text("From: Hnefatafl Org <no-reply@hnefatafl.org>"),
+                    text("From: Hnefatafl Org <noreply@hnefatafl.org>"),
                     text("Content-Type: text/plain; charset=utf-8"),
                     text("Content-Transfer-Encoding: 7bit"),
-                    text!("Date: {}", Utc::now().to_rfc2822()),
+                    text!("Date: {}", Timestamp::now().strftime("%F %T UTC")),
                     text("Body:"),
                     editor,
                     send_emails,
@@ -4431,7 +4428,7 @@ impl<'a> Client {
 
                 let mut date = Row::new().spacing(SPACING);
                 let start_date = t!("Tournament Start Date");
-                date = date.push(text!("{start_date}: {}", tournament.date.to_rfc2822()));
+                date = date.push(text!("{start_date}: {}", tournament.date.strftime("%F %T UTC")));
 
                 let button_0 = button(text!(
                     "{} (0)",

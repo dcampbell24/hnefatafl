@@ -45,6 +45,7 @@
         "skia",
         "smol",
         "smolstr",
+        "strftime",
         "tafl",
         "thiserror",
         "vecdeque",

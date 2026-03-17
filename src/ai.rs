@@ -18,7 +18,7 @@
 
 use std::{fmt, sync::mpsc::channel, time::Duration};
 
-use chrono::Utc;
+use jiff::Timestamp;
 use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
 use rustc_hash::FxHashMap;
 
@@ -107,7 +107,7 @@ impl AiBasic {
 
 impl AI for AiBasic {
     fn generate_move(&mut self, game: &mut Game) -> anyhow::Result<GenerateMove> {
-        let t0 = Utc::now().timestamp_millis();
+        let t0 = Timestamp::now().as_millisecond();
 
         if game.status != Status::Ongoing {
             return Err(InvalidMove::GameOver.into());
@@ -124,7 +124,7 @@ impl AI for AiBasic {
             };
 
             let heat_map = HeatMap::from((&*game, &play));
-            let t1 = Utc::now().timestamp_millis();
+            let t1 = Timestamp::now().as_millisecond();
             let delay_milliseconds = t1 - t0;
 
             return Ok(GenerateMove {
@@ -169,7 +169,7 @@ impl AI for AiBasic {
 
         let heat_map = HeatMap::from((&*game, &play));
 
-        let t1 = Utc::now().timestamp_millis();
+        let t1 = Timestamp::now().as_millisecond();
         let delay_milliseconds = t1 - t0;
 
         Ok(GenerateMove {
@@ -204,7 +204,7 @@ impl AI for AiMonteCarlo {
             return Err(InvalidMove::GameOver.into());
         }
 
-        let t0 = Utc::now().timestamp_millis();
+        let t0 = Timestamp::now().as_millisecond();
         let mut trees = AiMonteCarlo::make_trees(game)?;
         let (tx, rx) = channel();
 
@@ -267,7 +267,7 @@ impl AI for AiMonteCarlo {
             *tree = here_tree.clone();
         }
 
-        let t1 = Utc::now().timestamp_millis();
+        let t1 = Timestamp::now().as_millisecond();
         let delay_milliseconds = t1 - t0;
         let heat_map = HeatMap::from(&nodes);
 

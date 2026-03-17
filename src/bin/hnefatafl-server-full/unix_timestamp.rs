@@ -16,7 +16,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // SPDX-FileCopyrightText: 2025 David Campbell <david@hnefatafl.org>
 
-use chrono::Local;
+use jiff::Timestamp;
 use serde::{Deserialize, Serialize};
 
 /// Non-leap seconds since January 1, 1970 0:00:00 UTC.
@@ -25,6 +25,6 @@ pub(crate) struct UnixTimestamp(pub i64);
 
 impl Default for UnixTimestamp {
     fn default() -> Self {
-        Self(Local::now().to_utc().timestamp())
+        Self(Timestamp::now().as_second())
     }
 }
