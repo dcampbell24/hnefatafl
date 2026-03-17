@@ -41,7 +41,6 @@ use std::{
     time::Duration,
 };
 
-use jiff::Timestamp;
 use ::serde::{Deserialize, Serialize};
 use clap::{CommandFactory, Parser};
 use hnefatafl_copenhagen::{
@@ -85,6 +84,7 @@ use iced::{
 };
 use iced_aw::{ICED_AW_FONT_BYTES, date_picker::Date, helpers::date_picker};
 use image::ImageFormat;
+use jiff::Timestamp;
 use log::{debug, error, info, trace};
 use rust_i18n::t;
 use smol_str::ToSmolStr;
@@ -3594,18 +3594,15 @@ impl<'a> Client {
                     };
 
                     if let Ok(timestamp) = Timestamp::from_second(account.email_sent) {
-                        emails_sent = emails_sent.push(text(timestamp.strftime("%Y-%m-%d").to_string()));
+                        emails_sent =
+                            emails_sent.push(text(timestamp.strftime("%Y-%m-%d").to_string()));
                     } else {
                         emails_sent = emails_sent.push(text(""));
-                    };
+                    }
 
                     send_emails = send_emails.push(text(account.send_emails));
 
-                    let date = account
-                        .creation_date
-                        .0
-                        .strftime("%Y-%m-%d")
-                        .to_string();
+                    let date = account.creation_date.0.strftime("%Y-%m-%d").to_string();
 
                     creation_dates = creation_dates.push(text(date));
 
@@ -4428,7 +4425,10 @@ impl<'a> Client {
 
                 let mut date = Row::new().spacing(SPACING);
                 let start_date = t!("Tournament Start Date");
-                date = date.push(text!("{start_date}: {}", tournament.date.strftime("%F %T UTC")));
+                date = date.push(text!(
+                    "{start_date}: {}",
+                    tournament.date.strftime("%F %T UTC")
+                ));
 
                 let button_0 = button(text!(
                     "{} (0)",
