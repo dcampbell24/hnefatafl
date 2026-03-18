@@ -12,20 +12,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
-
-- Replaced currently unmaintained chrono with jiff. I had to make a new tournament status.
-
-### Fixed
-
-- hnefatafl-client: copy and paste and declining some games overlap. Removed decline game.
-
 ### Added
 
 - hnefatafl-client: get the locale from the system if not set.
 
+### Changed
+
+- Replaced unmaintained chrono with jiff. I had to make a new tournament status.
+
 ### Fixed
 
+- hnefatafl-client: copy and paste and declining some games overlap. Removed decline game.
 - hnefatafl-server-full: Only add the player as a spectator when the game
   starts if they're logged in.
 
