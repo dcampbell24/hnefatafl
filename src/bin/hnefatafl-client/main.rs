@@ -4251,7 +4251,7 @@ impl<'a> Client {
                     self.archived_games.clone()
                 };
 
-                let my_games_text = text!("{} (5)", t!("My Games Only"));
+                let my_games_text = text!("{} (3)", t!("My Games Only"));
                 let my_games = checkbox(self.my_games_only).on_toggle(Message::MyGamesOnly);
 
                 let buttons_1 =
