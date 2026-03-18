@@ -2346,9 +2346,9 @@ impl Server {
                         debug!("seconds until midnight: {}", duration.as_secs());
 
                         match duration.try_into() {
-                            Ok(duration) => {
+                            Ok(mut duration) => {
+                                duration += Duration::from_secs(2);
                                 sleep(duration);
-                                sleep(Duration::from_secs(2));
                             }
                             Err(error) => {
                                 error!("new_tournament (1): {error}");
