@@ -2433,7 +2433,7 @@ impl<'a> Client {
             Message::Press1 => match self.screen {
                 Screen::AccountSettings | Screen::Login => self.reset_email(),
                 Screen::EmailEveryone | Screen::Tournament | Screen::Users => {}
-                Screen::Games => self.send("archived_games\n"),
+                Screen::Games => self.game_new(),
                 Screen::GameNew => self.game_settings.role_selected = Some(Role::Attacker),
                 Screen::Game | Screen::GameReview => {
                     if !(self.press_numbers[0]
@@ -2459,7 +2459,7 @@ impl<'a> Client {
                     self.send(&format!("change_password {}\n", self.password));
                 }
                 Screen::EmailEveryone | Screen::Tournament | Screen::Users => {}
-                Screen::Games => self.my_games_only(),
+                Screen::Games => self.screen = Screen::Tournament,
                 Screen::GameNew => self.game_settings.role_selected = Some(Role::Defender),
                 Screen::Game | Screen::GameReview => {
                     let (board, _) = self.board_and_heatmap();
@@ -2494,7 +2494,7 @@ impl<'a> Client {
             Message::Press3 => match self.screen {
                 Screen::AccountSettings => self.toggle_show_password(),
                 Screen::EmailEveryone | Screen::Tournament | Screen::Users => {}
-                Screen::Games => self.game_new(),
+                Screen::Games => self.screen = Screen::AccountSettings,
                 Screen::GameNew => self.game_settings.board_size = BoardSize::_11,
                 Screen::Login => self.my_games_only(),
                 Screen::Game | Screen::GameReview => {
@@ -2543,7 +2543,7 @@ impl<'a> Client {
                 | Screen::EmailEveryone
                 | Screen::Tournament
                 | Screen::Users => {}
-                Screen::Games => self.screen = Screen::AccountSettings,
+                Screen::Games => self.send("archived_games\n"),
                 Screen::GameNew => self.game_settings.time = Some(TimeEnum::Rapid),
                 Screen::Login => self.reset_password(),
                 Screen::Game | Screen::GameReview => {
@@ -2569,8 +2569,11 @@ impl<'a> Client {
                 }
             },
             Message::Press7 => match self.screen {
-                Screen::AccountSettings | Screen::EmailEveryone | Screen::Tournament => {}
-                Screen::Games | Screen::Users => self.users_sort_by = SortBy::Rating,
+                Screen::AccountSettings
+                | Screen::EmailEveryone
+                | Screen::Tournament
+                | Screen::Users => {}
+                Screen::Games => self.my_games_only(),
                 Screen::GameNew => self.game_settings.time = Some(TimeEnum::Long),
                 Screen::Login => self.change_theme(Theme::Dark),
                 Screen::Game | Screen::GameReview => {
@@ -2581,7 +2584,7 @@ impl<'a> Client {
             },
             Message::Press8 => match self.screen {
                 Screen::AccountSettings | Screen::EmailEveryone | Screen::Tournament => {}
-                Screen::Games | Screen::Users => self.users_sort_by = SortBy::Name,
+                Screen::Games | Screen::Users => self.users_sort_by = SortBy::Rating,
                 Screen::GameNew => self.game_settings.time = Some(TimeEnum::VeryLong),
                 Screen::Login => self.change_theme(Theme::Light),
                 Screen::Game | Screen::GameReview => {
@@ -2591,12 +2594,9 @@ impl<'a> Client {
                 }
             },
             Message::Press9 => match self.screen {
-                Screen::AccountSettings
-                | Screen::EmailEveryone
-                | Screen::Games
-                | Screen::Tournament
-                | Screen::Users => {}
+                Screen::AccountSettings | Screen::EmailEveryone | Screen::Tournament => {}
                 Screen::GameNew => self.game_settings.time = Some(TimeEnum::Infinity),
+                Screen::Games | Screen::Users => self.users_sort_by = SortBy::Name,
                 Screen::Login => open_url("https://discord.gg/h56CAHEBXd"),
                 Screen::Game | Screen::GameReview => {
                     self.clear_numbers_except(9);
@@ -3621,7 +3621,7 @@ impl<'a> Client {
             }
 
             let rating = t!("rating");
-            let mut button_1 = button(text("(7)").size(10)).padding(PADDING_SMALL);
+            let mut button_1 = button(text("(8)").size(10)).padding(PADDING_SMALL);
 
             if self.users_sort_by != SortBy::Rating {
                 button_1 = button_1.on_press(Message::UsersSortedBy(SortBy::Rating));
@@ -3635,7 +3635,7 @@ impl<'a> Client {
             .padding(PADDING);
 
             let username = t!("username");
-            let mut button_2 = button(text("(8)").size(10)).padding(PADDING_SMALL);
+            let mut button_2 = button(text("(9)").size(10)).padding(PADDING_SMALL);
 
             if self.users_sort_by != SortBy::Name {
                 button_2 = button_2.on_press(Message::UsersSortedBy(SortBy::Name));
@@ -4133,12 +4133,6 @@ impl<'a> Client {
                 column.push(row_6).into()
             }
             Screen::Games => {
-                let mut column = Column::new().padding(PADDING).spacing(SPACING);
-
-                if self.admin {
-                    column = column.push(button("Email Everyone").on_press(Message::EmailEveryone));
-                }
-
                 let username =
                     row![text!("{}: {}", t!("username"), &self.username)].spacing(SPACING);
 
@@ -4146,35 +4140,26 @@ impl<'a> Client {
                     .padding(PADDING / 2)
                     .style(container::bordered_box);
 
-                let tournament = button(text!("{} (0)", self.strings["Tournament"].as_str()))
+                let tournament = button(text!("{} (2)", self.strings["Tournament"].as_str()))
                     .on_press(Message::Tournament);
 
-                let my_games_text = text!("{} (2)", t!("My Games Only")).center();
+                let my_games_text = text!("{} (7)", t!("My Games Only")).center();
                 let my_games = checkbox(self.my_games_only)
                     .on_toggle(Message::MyGamesOnly)
                     .size(32);
 
                 let get_archived_games =
-                    button(text!("{} (1)", self.strings["Get Archived Games"].as_str()))
+                    button(text!("{} (5)", self.strings["Get Archived Games"].as_str()))
                         .on_press(Message::ArchivedGamesGet);
 
-                let username = row![
-                    username,
-                    tournament,
-                    get_archived_games,
-                    my_games,
-                    my_games_text
-                ]
-                .spacing(SPACING);
-
-                let create_game = button(text!("{} (3)", self.strings["Create Game"].as_str()))
+                let create_game = button(text!("{} (1)", self.strings["Create Game"].as_str()))
                     .on_press(Message::GameNew);
 
                 let users = button(text!("{} (4)", self.strings["Users"].as_str()))
                     .on_press(Message::Users);
 
                 let account_setting =
-                    button(text!("{} (5)", self.strings["Account Settings"].as_str()))
+                    button(text!("{} (3)", self.strings["Account Settings"].as_str()))
                         .on_press(Message::AccountSettings);
 
                 let website = button(text!("{} (6)", self.strings["Rules"].as_str())).on_press(
@@ -4184,13 +4169,20 @@ impl<'a> Client {
                 let quit = button(text!("{} (Esc)", self.strings["Leave"].as_str()))
                     .on_press(Message::Leave);
 
-                let top = row![create_game, users, account_setting, website, quit].spacing(SPACING);
+                let top = row![create_game, tournament, account_setting, users].spacing(SPACING);
+                let mut middle = row![get_archived_games, website, quit].spacing(SPACING);
+
+                if self.admin {
+                    middle = middle.push(button("Email Everyone").on_press(Message::EmailEveryone));
+                }
+
+                let username = row![username, my_games, my_games_text].spacing(SPACING);
                 let user_area = self.user_area(false);
 
-                column = column.push(username);
-                column = column.push(top);
-                column = column.push(user_area);
-                column.into()
+                column![top, middle, username, user_area]
+                    .spacing(SPACING)
+                    .padding(PADDING)
+                    .into()
             }
             Screen::Login => {
                 let username = row![
@@ -4262,11 +4254,11 @@ impl<'a> Client {
                     self.archived_games.clone()
                 };
 
-                let my_games_text = text!("{} (3)", t!("My Games Only"));
+                let my_games_text = text!("{} (5)", t!("My Games Only"));
                 let my_games = checkbox(self.my_games_only).on_toggle(Message::MyGamesOnly);
 
                 let buttons_1 =
-                    row![login, create_account, reset_password, review_game,].spacing(SPACING);
+                    row![login, create_account, reset_password, review_game].spacing(SPACING);
 
                 let review_game_pick = pick_list(
                     archived_games,
