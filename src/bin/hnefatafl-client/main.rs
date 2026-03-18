@@ -3913,7 +3913,7 @@ impl<'a> Client {
                         columns = columns.push(row);
                     } else {
                         row = row.push(text!(
-                            "{}: [{}] {} ",
+                            "{} [{}]: {} ",
                             t!("email address"),
                             t!("unverified"),
                             email.address,
