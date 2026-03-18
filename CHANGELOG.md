@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- hnefatafl-client: reorder the games menu.
 - Replaced unmaintained chrono with jiff. I had to make a new tournament status.
 
 ### Fixed
