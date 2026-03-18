@@ -3871,20 +3871,6 @@ impl<'a> Client {
     pub fn view(&self) -> Element<'_, Message> {
         match self.screen {
             Screen::AccountSettings => {
-                let mut rating = String::new();
-                let mut wins = String::new();
-                let mut draws = String::new();
-                let mut losses = String::new();
-
-                for user in self.users.values() {
-                    if self.username == user.name {
-                        rating = user.rating.to_string_rounded();
-                        wins.clone_from(&user.wins);
-                        losses.clone_from(&user.losses);
-                        draws.clone_from(&user.draws);
-                    }
-                }
-
                 let mut columns = column![
                     text!(
                         "{} {} {} TCP",
@@ -3893,10 +3879,6 @@ impl<'a> Client {
                         t!("via")
                     ),
                     text!("{}: {}", t!("username"), &self.username),
-                    text!("{}: {rating}", t!("rating")),
-                    text!("{}: {wins}", t!("wins")),
-                    text!("{}: {losses}", t!("losses")),
-                    text!("{}: {draws}", t!("draws")),
                 ]
                 .padding(PADDING)
                 .spacing(SPACING);
