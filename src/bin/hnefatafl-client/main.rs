@@ -4144,10 +4144,7 @@ impl<'a> Client {
                     .on_press(Message::Tournament);
 
                 let my_games_text = text!("{} (7)", t!("My Games Only")).center();
-                let my_games = checkbox(self.my_games_only)
-                    .on_toggle(Message::MyGamesOnly)
-                    .size(32);
-
+                let my_games = checkbox(self.my_games_only).on_toggle(Message::MyGamesOnly);
                 let get_archived_games =
                     button(text!("{} (5)", self.strings["Get Archived Games"].as_str()))
                         .on_press(Message::ArchivedGamesGet);
