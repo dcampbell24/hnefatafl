@@ -3905,7 +3905,7 @@ impl<'a> Client {
                     let mut row = Row::new();
                     if email.verified {
                         row = row.push(text!(
-                            "{}: [{}] {} ",
+                            "{} [{}]: {} ",
                             t!("email address"),
                             t!("verified"),
                             email.address,
