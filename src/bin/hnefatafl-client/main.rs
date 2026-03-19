@@ -2287,7 +2287,10 @@ impl<'a> Client {
             }
             Message::OpenUrl(string) => open_url(&string),
             Message::GameResume(id) => self.resume(id),
-            Message::GameSubmit => self.game_submit(),
+            Message::GameSubmit => {
+                self.game_submit();
+                self.active_tab = TabId::Games;
+            }
             Message::PasswordChanged(password) => {
                 let (password, ends_with_whitespace) = utils::split_whitespace_password(&password);
                 self.password_ends_with_whitespace = ends_with_whitespace;
