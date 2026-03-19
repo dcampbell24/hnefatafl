@@ -2053,6 +2053,7 @@ impl<'a> Client {
                 self.connected_tcp = false;
                 self.text_input = self.username.clone();
                 self.screen = Screen::Login;
+                self.email = None;
             }
             Screen::GameReview => {
                 self.heat_map = None;

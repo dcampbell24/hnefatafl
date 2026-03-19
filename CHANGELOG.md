@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- hnefatafl-client: set email to None when logging out.
 - hnefatafl-client: reset delete_account and close the TCP connection when deleting an account.
 - hnefatafl-client: copy and paste and declining some games overlap. Removed decline game.
 - hnefatafl-server-full: Only add the player as a spectator when the game
