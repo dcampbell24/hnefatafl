@@ -1382,12 +1382,15 @@ impl<'a> Client {
             Message::RoleSelected,
         );
 
-        let rated = row![
-            text!("{} (6):", t!("rated")),
-            checkbox(self.game_settings.rated.into()).on_toggle(Message::RatedSelected)
-        ]
-        .padding(PADDING)
-        .spacing(SPACING);
+        let rated = iced_aw::widget::LabeledFrame::new(
+            text(t!("rated")),
+            row![
+                text!("(6)"),
+                checkbox(self.game_settings.rated.into()).on_toggle(Message::RatedSelected)
+            ]
+            .padding(PADDING)
+            .spacing(SPACING),
+        );
 
         let mut new_game = button(text!("{} (Enter)", self.strings["New Game"].as_str()));
         if self.game_settings.role_selected.is_some() && self.game_settings.time.is_some() {
