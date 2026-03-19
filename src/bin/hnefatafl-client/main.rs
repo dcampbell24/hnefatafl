@@ -2654,9 +2654,8 @@ impl<'a> Client {
                 Screen::Games => match self.active_tab {
                     TabId::AccountSettings => todo!(),
                     TabId::GameNew => self.game_settings.board_size = BoardSize::_11,
-                    TabId::Games => self.users_sort_by = SortBy::Rating,
+                    TabId::Games | TabId::Users => self.users_sort_by = SortBy::Rating,
                     TabId::Tournament => todo!(),
-                    TabId::Users => todo!(),
                 },
                 Screen::Login => open_url("https://discord.gg/h56CAHEBXd"),
                 Screen::Game | Screen::GameReview => {
@@ -2670,9 +2669,8 @@ impl<'a> Client {
                 Screen::Games => match self.active_tab {
                     TabId::AccountSettings => todo!(),
                     TabId::GameNew => self.game_settings.board_size = BoardSize::_13,
-                    TabId::Games => self.users_sort_by = SortBy::Name,
+                    TabId::Games | TabId::Users => self.users_sort_by = SortBy::Name,
                     TabId::Tournament => todo!(),
-                    TabId::Users => todo!(),
                 },
                 Screen::Login => open_url("https://hnefatafl.org"),
                 Screen::Game | Screen::GameReview => {
