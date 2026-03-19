@@ -909,18 +909,6 @@ impl<'a> Client {
         columns
     }
 
-    fn add_infinity(&self, column: Column<'a, Message>) -> Column<'a, Message> {
-        let infinity = radio(
-            format!("{} (e)", TimeEnum::Infinity),
-            TimeEnum::Infinity,
-            self.game_settings.time,
-            Message::Time,
-        );
-
-        let row = row![infinity].padding(PADDING).spacing(SPACING);
-        column.push(row)
-    }
-
     fn archived_game_reset(&mut self) {
         self.archived_game_handle = None;
         self.archived_game_selected = None;
@@ -1423,13 +1411,17 @@ impl<'a> Client {
             Message::BoardSizeSelected,
         );
 
-        let row_1 = row![text!("{}:", t!("role")), attacker, defender]
-            .padding(PADDING)
-            .spacing(SPACING);
+        let row_role = iced_aw::widget::LabeledFrame::new(
+            text(t!("role")),
+            row![attacker, defender].padding(PADDING).spacing(SPACING),
+        );
 
-        let row_2 = row![text!("{}:", t!("board size")), size_11x11, size_13x13]
-            .padding(PADDING)
-            .spacing(SPACING);
+        let row_board_size = iced_aw::widget::LabeledFrame::new(
+            text(t!("board size")),
+            row![size_11x11, size_13x13]
+                .padding(PADDING)
+                .spacing(SPACING),
+        );
 
         let rapid = radio(
             format!("{} (a)", TimeEnum::Rapid),
@@ -1459,18 +1451,25 @@ impl<'a> Client {
             Message::Time,
         );
 
-        let row_3 = row![text!("{}:", t!("time"))]
-            .padding(PADDING)
-            .spacing(SPACING);
+        let infinity = radio(
+            format!("{} (e)", TimeEnum::Infinity),
+            TimeEnum::Infinity,
+            self.game_settings.time,
+            Message::Time,
+        );
 
-        let row_4 = row![rapid, classical].padding(PADDING).spacing(SPACING);
-        let row_5 = row![long, very_long].padding(PADDING).spacing(SPACING);
+        let row_1 = row![rapid, classical].spacing(SPACING);
+        let row_2 = row![long, very_long].spacing(SPACING);
+        let row_3 = row![infinity].spacing(SPACING);
 
-        let mut column = column![rated, row_1, row_2, row_3, row_4, row_5];
-        column = self.add_infinity(column);
+        let row_time = iced_aw::widget::LabeledFrame::new(
+            text(t!("time")),
+            column![row_1, row_2, row_3].padding(PADDING),
+        );
 
-        let row_6 = row![new_game, leave].padding(PADDING).spacing(SPACING);
-        column.push(row_6)
+        let leave = row![new_game, leave].padding(PADDING).spacing(SPACING);
+
+        column![rated, row_role, row_board_size, row_time, leave]
     }
 
     fn game_submit(&mut self) {
