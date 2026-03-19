@@ -2602,7 +2602,7 @@ impl<'a> Client {
                     TabId::AccountSettings => todo!(),
                     TabId::GameNew => self.game_settings.rated = !self.game_settings.rated,
                     TabId::Games => self.send("archived_games\n"),
-                    TabId::Tournament => todo!(),
+                    TabId::Tournament => open_url("https://hnefatafl.org/tournaments.html"),
                     TabId::Users => todo!(),
                 },
                 Screen::Login => self.review_game(),
@@ -2620,7 +2620,7 @@ impl<'a> Client {
                     TabId::AccountSettings => todo!(),
                     TabId::GameNew => self.game_settings.role_selected = Some(Role::Attacker),
                     TabId::Games => open_url("https://hnefatafl.org/rules.html"),
-                    TabId::Tournament => todo!(),
+                    TabId::Tournament => self.send("join_tournament\n"),
                     TabId::Users => todo!(),
                 },
                 // Fixme: Screen::GameNew => self.game_settings.time = Some(TimeEnum::Long),
@@ -2637,7 +2637,7 @@ impl<'a> Client {
                     TabId::AccountSettings => todo!(),
                     TabId::GameNew => self.game_settings.role_selected = Some(Role::Defender),
                     TabId::Games => self.my_games_only(),
-                    TabId::Tournament => todo!(),
+                    TabId::Tournament => self.send("leave_tournament\n"),
                     TabId::Users => todo!(),
                 },
                 // Fixme: Screen::GameNew => self.game_settings.time = Some(TimeEnum::VeryLong),
@@ -4364,14 +4364,14 @@ impl<'a> Client {
         ));
 
         let button_0 = button(text!(
-            "{} (0)",
+            "{} (6)",
             self.strings["Tournaments Described"].as_str()
         ))
         .on_press(Message::Tournaments);
 
-        let mut button_1 = button(text!("{} (1)", self.strings["Join Tournament"].as_str()));
+        let mut button_1 = button(text!("{} (7)", self.strings["Join Tournament"].as_str()));
 
-        let mut button_2 = button(text!("{} (2)", self.strings["Leave Tournament"].as_str()));
+        let mut button_2 = button(text!("{} (8)", self.strings["Leave Tournament"].as_str()));
 
         if tournament.players.contains(&self.username) {
             button_2 = button_2.on_press(Message::TournamentLeave);
