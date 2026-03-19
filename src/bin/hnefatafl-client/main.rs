@@ -2321,45 +2321,60 @@ impl<'a> Client {
                 Screen::EmailEveryone | Screen::Game | Screen::Games | Screen::GameReview => {}
             },
             Message::PressA(shift) => match self.screen {
-                Screen::EmailEveryone => {}
                 Screen::Game | Screen::GameReview => {
                     self.press_letter('a');
                     self.press_letter_and_number();
                 }
-                Screen::Games => self.join_game_press(0, shift),
+                Screen::Games if self.active_tab == TabId::Games => self.join_game_press(0, shift),
+                Screen::Games if self.active_tab == TabId::GameNew => {
+                    self.game_settings.time = Some(TimeEnum::Rapid);
+                }
                 Screen::Login => self.change_theme(Theme::Tol),
+                Screen::EmailEveryone | Screen::Games => {}
             },
             Message::PressB(shift) => match self.screen {
-                Screen::EmailEveryone | Screen::Login => {}
                 Screen::Game | Screen::GameReview => {
                     self.press_letter('b');
                     self.press_letter_and_number();
                 }
-                Screen::Games => self.join_game_press(1, shift),
+                Screen::Games if self.active_tab == TabId::Games => self.join_game_press(1, shift),
+                Screen::Games if self.active_tab == TabId::GameNew => {
+                    self.game_settings.time = Some(TimeEnum::Classical);
+                }
+                Screen::EmailEveryone | Screen::Games | Screen::Login => {}
             },
             Message::PressC(shift) => match self.screen {
-                Screen::EmailEveryone | Screen::Login => {}
                 Screen::Game | Screen::GameReview => {
                     self.press_letter('c');
                     self.press_letter_and_number();
                 }
-                Screen::Games => self.join_game_press(2, shift),
+                Screen::Games if self.active_tab == TabId::Games => self.join_game_press(2, shift),
+                Screen::Games if self.active_tab == TabId::GameNew => {
+                    self.game_settings.time = Some(TimeEnum::Long);
+                }
+                Screen::EmailEveryone | Screen::Games | Screen::Login => {}
             },
             Message::PressD(shift) => match self.screen {
-                Screen::EmailEveryone | Screen::Login => {}
                 Screen::Game | Screen::GameReview => {
                     self.press_letter('d');
                     self.press_letter_and_number();
                 }
-                Screen::Games => self.join_game_press(3, shift),
+                Screen::Games if self.active_tab == TabId::Games => self.join_game_press(3, shift),
+                Screen::Games if self.active_tab == TabId::GameNew => {
+                    self.game_settings.time = Some(TimeEnum::VeryLong);
+                }
+                Screen::EmailEveryone | Screen::Games | Screen::Login => {}
             },
             Message::PressE(shift) => match self.screen {
-                Screen::EmailEveryone | Screen::Login => {}
                 Screen::Game | Screen::GameReview => {
                     self.press_letter('e');
                     self.press_letter_and_number();
                 }
-                Screen::Games => self.join_game_press(4, shift),
+                Screen::Games if self.active_tab == TabId::Games => self.join_game_press(4, shift),
+                Screen::Games if self.active_tab == TabId::GameNew => {
+                    self.game_settings.time = Some(TimeEnum::Infinity);
+                }
+                Screen::EmailEveryone | Screen::Games | Screen::Login => {}
             },
             Message::PressF(shift) => match self.screen {
                 Screen::EmailEveryone | Screen::Login => {}
@@ -2489,7 +2504,6 @@ impl<'a> Client {
                 Screen::Games => self.join_game_press(25, shift),
             },
             Message::Press1 => match self.screen {
-                // Fixme: account settings
                 Screen::Login => self.toggle_show_password(),
                 Screen::EmailEveryone => {}
                 Screen::Games => self.active_tab = TabId::Games,
