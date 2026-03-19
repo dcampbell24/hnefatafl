@@ -1464,7 +1464,7 @@ impl<'a> Client {
 
         let row_time = iced_aw::widget::LabeledFrame::new(
             text(t!("time")),
-            column![row_1, row_2, row_3].padding(PADDING),
+            column![row_1, row_2, row_3].padding(PADDING).spacing(3),
         );
 
         let leave = row![new_game, leave].padding(PADDING).spacing(SPACING);
