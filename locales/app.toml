@@ -309,6 +309,23 @@ ru = "Ошибка открытия файла"
 sv-SE = "Det gick inte att öppna filen"
 zh-CN = "打开文件时出错"
 
+["Games"]
+ar = "ألعاب"
+de = "Spiele"
+en-US = "Games"
+es = "Juegos"
+fr = "Jeux"
+id = "Pertandingan"
+is-IS = "Leikir"
+is-RU = "ᛚᛂᛁᚴᛁᚱ"
+ja = "ゲーム"
+ko = "계략"
+pt-BR = "Jogos"
+pt-PT = "Jogos"
+ru = "Игры"
+sv-SE = "Spel"
+zh-CN = "游戏"
+
 ["Get Archived Games"]
 ar = "احصل على الألعاب المؤرشفة"
 de = "Archivierte Spiele abrufen"
