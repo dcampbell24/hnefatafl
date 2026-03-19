@@ -85,7 +85,9 @@ use iced::{
     },
     window::{self, icon},
 };
-use iced_aw::{ICED_AW_FONT_BYTES, Tabs, date_picker::Date, helpers::date_picker};
+use iced_aw::{
+    ICED_AW_FONT_BYTES, Tabs, date_picker::Date, helpers::date_picker, widget::LabeledFrame,
+};
 use image::ImageFormat;
 use jiff::Timestamp;
 use log::{debug, error, info, trace};
@@ -1382,7 +1384,7 @@ impl<'a> Client {
             Message::RoleSelected,
         );
 
-        let rated = iced_aw::widget::LabeledFrame::new(
+        let rated = LabeledFrame::new(
             text(t!("rated")),
             row![
                 text!("(6)"),
@@ -1414,12 +1416,12 @@ impl<'a> Client {
             Message::BoardSizeSelected,
         );
 
-        let row_role = iced_aw::widget::LabeledFrame::new(
+        let row_role = LabeledFrame::new(
             text(t!("role")),
             row![attacker, defender].padding(PADDING).spacing(SPACING),
         );
 
-        let row_board_size = iced_aw::widget::LabeledFrame::new(
+        let row_board_size = LabeledFrame::new(
             text(t!("board size")),
             row![size_11x11, size_13x13]
                 .padding(PADDING)
@@ -1465,7 +1467,7 @@ impl<'a> Client {
         let row_2 = row![long, very_long].spacing(SPACING);
         let row_3 = row![infinity].spacing(SPACING);
 
-        let row_time = iced_aw::widget::LabeledFrame::new(
+        let row_time = LabeledFrame::new(
             text(t!("time")),
             column![row_1, row_2, row_3].padding(PADDING).spacing(3),
         );
@@ -4406,11 +4408,6 @@ impl<'a> Client {
         ]
         .spacing(SPACING);
 
-        let title = t!("Players");
-        let dashes = text("-".repeat(title.len())).font(Font::MONOSPACE);
-        let title = text(title);
-        let title = column![title, dashes];
-
         let mut players = Column::new();
         let mut player_names: Vec<_> = tournament.players.iter().collect();
         player_names.sort();
@@ -4421,8 +4418,7 @@ impl<'a> Client {
 
         column = column.push(date);
         column = column.push(buttons);
-        column = column.push(title);
-        column = column.push(players);
+        column = column.push(LabeledFrame::new(text(t!("Players")), players));
 
         if self.admin_tournament {
             let mut delete_button = button("Delete Tournament Tree");
