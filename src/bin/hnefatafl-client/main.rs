@@ -907,7 +907,7 @@ impl<'a> Client {
 
     fn add_infinity(&self, column: Column<'a, Message>) -> Column<'a, Message> {
         let infinity = radio(
-            format!("{} (9)", TimeEnum::Infinity),
+            format!("{} (e)", TimeEnum::Infinity),
             TimeEnum::Infinity,
             self.game_settings.time,
             Message::Time,
@@ -1376,21 +1376,21 @@ impl<'a> Client {
 
     fn game_new_view(&self) -> Column<'_, Message> {
         let attacker = radio(
-            format!("{} (1)", t!("attacker")),
+            format!("{} (7)", t!("attacker")),
             Role::Attacker,
             self.game_settings.role_selected,
             Message::RoleSelected,
         );
 
         let defender = radio(
-            format!("{} (2)", t!("defender")),
+            format!("{} (8)", t!("defender")),
             Role::Defender,
             self.game_settings.role_selected,
             Message::RoleSelected,
         );
 
         let rated = row![
-            text!("{} (0):", t!("rated")),
+            text!("{} (6):", t!("rated")),
             checkbox(self.game_settings.rated.into()).on_toggle(Message::RatedSelected)
         ]
         .padding(PADDING)
@@ -1405,14 +1405,14 @@ impl<'a> Client {
             button(text!("{} (Esc)", self.strings["Quit"].as_str())).on_press(Message::Leave);
 
         let size_11x11 = radio(
-            "11x11 (3)",
+            "11x11 (9)",
             BoardSize::_11,
             Some(self.game_settings.board_size),
             Message::BoardSizeSelected,
         );
 
         let size_13x13 = radio(
-            "13x13 (4)",
+            "13x13 (0)",
             BoardSize::_13,
             Some(self.game_settings.board_size),
             Message::BoardSizeSelected,
@@ -1427,28 +1427,28 @@ impl<'a> Client {
             .spacing(SPACING);
 
         let rapid = radio(
-            format!("{} (5)", TimeEnum::Rapid),
+            format!("{} (a)", TimeEnum::Rapid),
             TimeEnum::Rapid,
             self.game_settings.time,
             Message::Time,
         );
 
         let classical = radio(
-            format!("{} (6)", TimeEnum::Classical),
+            format!("{} (b)", TimeEnum::Classical),
             TimeEnum::Classical,
             self.game_settings.time,
             Message::Time,
         );
 
         let long = radio(
-            format!("{} (7)", TimeEnum::Long),
+            format!("{} (c)", TimeEnum::Long),
             TimeEnum::Long,
             self.game_settings.time,
             Message::Time,
         );
 
         let very_long = radio(
-            format!("{} (8)", TimeEnum::VeryLong),
+            format!("{} (d)", TimeEnum::VeryLong),
             TimeEnum::VeryLong,
             self.game_settings.time,
             Message::Time,
@@ -2486,7 +2486,6 @@ impl<'a> Client {
                 Screen::Login => self.toggle_show_password(),
                 Screen::EmailEveryone => {}
                 Screen::Games => self.active_tab = TabId::Games,
-                // Fixme: Screen::GameNew => self.game_settings.role_selected = Some(Role::Attacker),
                 Screen::Game | Screen::GameReview => {
                     if !(self.press_numbers[0]
                         || self.press_numbers[10]
@@ -2510,7 +2509,6 @@ impl<'a> Client {
                 // Fixme: account settings self.send(&format!("change_password {}\n", self.password));
                 Screen::EmailEveryone => {}
                 Screen::Games => self.active_tab = TabId::GameNew,
-                // Fixme: Screen::GameNew => self.game_settings.role_selected = Some(Role::Defender),
                 Screen::Game | Screen::GameReview => {
                     let (board, _) = self.board_and_heatmap();
                     match board.size() {
@@ -2545,7 +2543,6 @@ impl<'a> Client {
                 // Fixme: account settings self.toggle_show_password(),  Screen::AccountSettings,
                 Screen::EmailEveryone => {}
                 Screen::Games => self.active_tab = TabId::Tournament,
-                // Fixme: Screen::GameNew => self.game_settings.board_size = BoardSize::_11,
                 Screen::Login => self.my_games_only(),
                 Screen::Game | Screen::GameReview => {
                     let (board, _) = self.board_and_heatmap();
@@ -2580,7 +2577,6 @@ impl<'a> Client {
                 // Fixme: account settings self.delete_account(),
                 Screen::EmailEveryone => {}
                 Screen::Games => self.active_tab = TabId::AccountSettings,
-                // Fixme: Screen::GameNew => self.game_settings.board_size = BoardSize::_13,
                 Screen::Login => self.create_account(),
                 Screen::Game | Screen::GameReview => {
                     self.clear_numbers_except(4);
@@ -2602,7 +2598,13 @@ impl<'a> Client {
             Message::Press6 => match self.screen {
                 Screen::EmailEveryone => {}
                 // Fixme: Screen::GameNew => self.game_settings.time = Some(TimeEnum::Classical),
-                Screen::Games => self.send("archived_games\n"),
+                Screen::Games => match self.active_tab {
+                    TabId::AccountSettings => todo!(),
+                    TabId::GameNew => self.game_settings.rated = !self.game_settings.rated,
+                    TabId::Games => self.send("archived_games\n"),
+                    TabId::Tournament => todo!(),
+                    TabId::Users => todo!(),
+                },
                 Screen::Login => self.review_game(),
                 Screen::Game | Screen::GameReview => {
                     if self.screen == Screen::Game || self.screen == Screen::GameReview {
@@ -2614,7 +2616,13 @@ impl<'a> Client {
             },
             Message::Press7 => match self.screen {
                 Screen::EmailEveryone => {}
-                Screen::Games => open_url("https://hnefatafl.org/rules.html"),
+                Screen::Games => match self.active_tab {
+                    TabId::AccountSettings => todo!(),
+                    TabId::GameNew => self.game_settings.role_selected = Some(Role::Attacker),
+                    TabId::Games => open_url("https://hnefatafl.org/rules.html"),
+                    TabId::Tournament => todo!(),
+                    TabId::Users => todo!(),
+                },
                 // Fixme: Screen::GameNew => self.game_settings.time = Some(TimeEnum::Long),
                 Screen::Login => self.change_theme(Theme::Dark),
                 Screen::Game | Screen::GameReview => {
@@ -2625,7 +2633,13 @@ impl<'a> Client {
             },
             Message::Press8 => match self.screen {
                 Screen::EmailEveryone => {}
-                Screen::Games => self.my_games_only(),
+                Screen::Games => match self.active_tab {
+                    TabId::AccountSettings => todo!(),
+                    TabId::GameNew => self.game_settings.role_selected = Some(Role::Defender),
+                    TabId::Games => self.my_games_only(),
+                    TabId::Tournament => todo!(),
+                    TabId::Users => todo!(),
+                },
                 // Fixme: Screen::GameNew => self.game_settings.time = Some(TimeEnum::VeryLong),
                 Screen::Login => self.change_theme(Theme::Light),
                 Screen::Game | Screen::GameReview => {
@@ -2637,7 +2651,13 @@ impl<'a> Client {
             Message::Press9 => match self.screen {
                 Screen::EmailEveryone => {}
                 // Fixme: Screen::GameNew => self.game_settings.time = Some(TimeEnum::Infinity),
-                Screen::Games => self.users_sort_by = SortBy::Rating,
+                Screen::Games => match self.active_tab {
+                    TabId::AccountSettings => todo!(),
+                    TabId::GameNew => self.game_settings.board_size = BoardSize::_11,
+                    TabId::Games => self.users_sort_by = SortBy::Rating,
+                    TabId::Tournament => todo!(),
+                    TabId::Users => todo!(),
+                },
                 Screen::Login => open_url("https://discord.gg/h56CAHEBXd"),
                 Screen::Game | Screen::GameReview => {
                     self.clear_numbers_except(9);
@@ -2647,8 +2667,13 @@ impl<'a> Client {
             },
             Message::Press0 => match self.screen {
                 Screen::EmailEveryone => {}
-                Screen::Games => self.users_sort_by = SortBy::Name,
-                // Fixme: Screen::GameNew => self.game_settings.rated = !self.game_settings.rated,
+                Screen::Games => match self.active_tab {
+                    TabId::AccountSettings => todo!(),
+                    TabId::GameNew => self.game_settings.board_size = BoardSize::_13,
+                    TabId::Games => self.users_sort_by = SortBy::Name,
+                    TabId::Tournament => todo!(),
+                    TabId::Users => todo!(),
+                },
                 Screen::Login => open_url("https://hnefatafl.org"),
                 Screen::Game | Screen::GameReview => {
                     self.clear_numbers_except(10);
@@ -3823,7 +3848,7 @@ impl<'a> Client {
             }
 
             let rating = t!("rating");
-            let mut button_1 = button(text("(7)").size(10)).padding(PADDING_SMALL);
+            let mut button_1 = button(text("(9)").size(10)).padding(PADDING_SMALL);
 
             if self.users_sort_by != SortBy::Rating {
                 button_1 = button_1.on_press(Message::UsersSortedBy(SortBy::Rating));
@@ -3837,7 +3862,7 @@ impl<'a> Client {
             .padding(PADDING);
 
             let username = t!("username");
-            let mut button_2 = button(text("(8)").size(10)).padding(PADDING_SMALL);
+            let mut button_2 = button(text("(0)").size(10)).padding(PADDING_SMALL);
 
             if self.users_sort_by != SortBy::Name {
                 button_2 = button_2.on_press(Message::UsersSortedBy(SortBy::Name));
