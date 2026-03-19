@@ -1868,6 +1868,7 @@ impl Server {
                     the_rest.as_slice(),
                 ),
                 "=" => None,
+                //
                 _ => self.clients.get(&index_supplied).map(|channel| {
                     error!("{index_supplied} {username} {command}");
                     (channel.clone(), false, (*command).to_string())

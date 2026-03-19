@@ -14,16 +14,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- hnefatafl-client: the field password_input.
 - hnefatafl-client: tabs.
 - hnefatafl-client: get the locale from the system if not set.
 
 ### Changed
 
-- hnefatafl-client: reorder the games menu.
 - Replaced unmaintained chrono with jiff. I had to make a new tournament status.
 
 ### Fixed
 
+- hnefatafl-client: reset delete_account and close the TCP connection when deleting an account.
 - hnefatafl-client: copy and paste and declining some games overlap. Removed decline game.
 - hnefatafl-server-full: Only add the player as a spectator when the game
   starts if they're logged in.

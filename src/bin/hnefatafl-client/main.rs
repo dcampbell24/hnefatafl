@@ -20,6 +20,8 @@
 #![cfg_attr(all(windows, not(feature = "console")), windows_subsystem = "windows")]
 #![deny(clippy::unwrap_used)]
 
+// Fixme: we reuse the email when you log out ans switch accounts.
+
 mod archived_game_handle;
 mod command_line;
 mod dimensions;
@@ -698,6 +700,8 @@ struct Client {
     #[serde(skip)]
     email: Option<Email>,
     #[serde(skip)]
+    email_input: String,
+    #[serde(skip)]
     emails_bcc: Vec<String>,
     #[serde(skip)]
     error: Option<String>,
@@ -827,9 +831,9 @@ impl<'a> Client {
                 let mut row = Row::new();
                 row = row.push(text!("{}: ", t!("email code")));
                 row = row.push(
-                    widget::text_input("", &self.text_input)
-                        .on_input(Message::TextChanged)
-                        .on_paste(Message::TextChanged)
+                    widget::text_input("", &self.email_input)
+                        .on_input(Message::EmailChanged)
+                        .on_paste(Message::EmailChanged)
                         .on_submit(Message::TextSendEmailCode),
                 );
                 columns = columns.push(row);
@@ -838,9 +842,9 @@ impl<'a> Client {
             let mut row = Row::new();
             row = row.push(text!("{}: ", t!("email address")));
             row = row.push(
-                widget::text_input("", &self.text_input)
-                    .on_input(Message::TextChanged)
-                    .on_paste(Message::TextChanged)
+                widget::text_input("", &self.email_input)
+                    .on_input(Message::EmailChanged)
+                    .on_paste(Message::EmailChanged)
                     .on_submit(Message::TextSendEmail),
             );
 
@@ -1160,7 +1164,8 @@ impl<'a> Client {
     fn delete_account(&mut self) {
         if self.delete_account {
             self.send("delete_account\n");
-            self.screen = Screen::Login;
+            self.leave();
+            self.delete_account = false;
         } else {
             self.delete_account = true;
         }
@@ -2231,6 +2236,7 @@ impl<'a> Client {
             }
             Message::Coordinates(_coordinates) => self.coordinates(),
             Message::DeleteAccount => self.delete_account(),
+            Message::EmailChanged(email) => self.email_input = email,
             Message::EmailEveryone => {
                 self.screen = Screen::EmailEveryone;
                 self.send("emails_bcc\n");
@@ -3194,13 +3200,12 @@ impl<'a> Client {
             Message::TextSendEmail => {
                 self.error_email = None;
 
-                self.send(&format!("email {}\n", self.text_input));
-                self.text_input.clear();
+                self.send(&format!("email {}\n", self.email_input));
+                self.email_input.clear();
             }
             Message::TextSendEmailCode => {
                 self.error_email = None;
-
-                self.send(&format!("email_code {}\n", self.text_input));
+                self.send(&format!("email_code {}\n", self.email_input));
             }
             Message::TextSendCreateAccount => self.create_account(),
             Message::TextSendLogin => self.login(),
