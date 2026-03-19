@@ -338,7 +338,7 @@ fn login(
     tx.send((format!("{id} {username_proper} email_get"), None))?;
     tx.send((format!("{id} {username_proper} texts"), None))?;
     tx.send((format!("{id} {username_proper} display_games"), None))?;
-    tx.send((format!("{id} {username_proper} tournament_status_1"), None))?;
+    tx.send((format!("{id} {username_proper} tournament_status_0"), None))?;
     tx.send((format!("{id} {username_proper} admin"), None))?;
     tx.send((format!("{id} {username_proper} admin_tournament"), None))?;
 
@@ -1828,7 +1828,7 @@ impl Server {
 
                     None
                 }
-                "tournament_status_1" => {
+                "tournament_status_0" => {
                     trace!("tournament_status: {:#?}", self.tournament);
 
                     if args.skip_advertising_updates {
@@ -1840,7 +1840,7 @@ impl Server {
                         Some((
                             tx.clone(),
                             true,
-                            format!("tournament_status_1 {tournament}"),
+                            format!("tournament_status_0 {tournament}"),
                         ))
                     }
                 }
@@ -2694,7 +2694,7 @@ impl Server {
         trace!("tournament_status: {:#?}", self.tournament);
 
         if let Ok(mut tournament) = ron::ser::to_string(&self.tournament) {
-            tournament = format!("= tournament_status_1 {tournament}");
+            tournament = format!("= tournament_status_0 {tournament}");
 
             for tx in self.clients.values() {
                 let _ok = tx.send(tournament.clone());

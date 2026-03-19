@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Replaced unmaintained chrono with jiff. I had to make a new tournament status.
+- Replaced unmaintained chrono with jiff.
 
 ### Fixed
 
