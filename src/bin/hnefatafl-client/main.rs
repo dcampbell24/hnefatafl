@@ -25,6 +25,7 @@ mod command_line;
 mod dimensions;
 mod enums;
 mod new_game_settings;
+mod tabs;
 mod user;
 mod volume;
 
@@ -68,7 +69,7 @@ use hnefatafl_copenhagen::{
 #[cfg(target_os = "linux")]
 use iced::window::settings::PlatformSpecific;
 use iced::{
-    Color, Element, Event, Font, Pixels, Subscription, Task,
+    Color, Element, Event, Font, Length, Pixels, Subscription, Task,
     alignment::{Horizontal, Vertical},
     color, event,
     futures::{SinkExt, Stream, executor},
@@ -82,7 +83,7 @@ use iced::{
     },
     window::{self, icon},
 };
-use iced_aw::{ICED_AW_FONT_BYTES, date_picker::Date, helpers::date_picker};
+use iced_aw::{ICED_AW_FONT_BYTES, Tabs, date_picker::Date, helpers::date_picker};
 use image::ImageFormat;
 use jiff::Timestamp;
 use log::{debug, error, info, trace};
@@ -97,6 +98,7 @@ use crate::{
     dimensions::Dimensions,
     enums::{Coordinates, JoinGame, Message, Move, Screen, Size, SortBy, State, Theme},
     new_game_settings::NewGameSettings,
+    tabs::TabId,
     user::User,
     volume::{MAX_VOLUME, Volume},
 };
@@ -654,6 +656,8 @@ struct Client {
     #[serde(skip)]
     accounts: Accounts,
     #[serde(skip)]
+    active_tab: TabId,
+    #[serde(skip)]
     admin: bool,
     #[serde(skip)]
     admin_tournament: bool,
@@ -788,6 +792,119 @@ struct Client {
 }
 
 impl<'a> Client {
+    fn account_settings_view(&self) -> Column<'_, Message> {
+        let mut columns = column![
+            text!(
+                "{} {} {} TCP",
+                t!("connected to"),
+                &self.connected_to,
+                t!("via")
+            ),
+            text!("{}: {}", t!("username"), &self.username),
+        ]
+        .padding(PADDING)
+        .spacing(SPACING);
+
+        if let Some(email) = &self.email {
+            let mut row = Row::new();
+            if email.verified {
+                row = row.push(text!(
+                    "{} [{}]: {} ",
+                    t!("email address"),
+                    t!("verified"),
+                    email.address,
+                ));
+                columns = columns.push(row);
+            } else {
+                row = row.push(text!(
+                    "{} [{}]: {} ",
+                    t!("email address"),
+                    t!("unverified"),
+                    email.address,
+                ));
+                columns = columns.push(row);
+
+                let mut row = Row::new();
+                row = row.push(text!("{}: ", t!("email code")));
+                row = row.push(
+                    widget::text_input("", &self.text_input)
+                        .on_input(Message::TextChanged)
+                        .on_paste(Message::TextChanged)
+                        .on_submit(Message::TextSendEmailCode),
+                );
+                columns = columns.push(row);
+            }
+        } else {
+            let mut row = Row::new();
+            row = row.push(text!("{}: ", t!("email address")));
+            row = row.push(
+                widget::text_input("", &self.text_input)
+                    .on_input(Message::TextChanged)
+                    .on_paste(Message::TextChanged)
+                    .on_submit(Message::TextSendEmail),
+            );
+
+            columns = columns.push(row);
+            columns = columns.push(row![text!("{}: ", t!("email code"))]);
+        }
+
+        columns = columns.push(row![
+            button(text!("{} (1)", self.strings["Reset Email"].as_str()))
+                .on_press(Message::EmailReset)
+        ]);
+
+        if let Some(error) = &self.error_email {
+            columns = columns.push(row![text!("error: {error}").style(text::danger)]);
+        }
+
+        let mut change_password_button =
+            button(text!("{} (2)", self.strings["Change Password"].as_str()));
+
+        if !self.password_ends_with_whitespace {
+            change_password_button = change_password_button.on_press(Message::TextSend);
+        }
+
+        columns = columns.push(
+            row![
+                change_password_button,
+                widget::text_input("", &self.password)
+                    .secure(!self.password_show)
+                    .on_input(Message::PasswordChanged)
+                    .on_paste(Message::PasswordChanged),
+            ]
+            .spacing(SPACING),
+        );
+
+        columns = columns.push(
+            row![
+                checkbox(self.password_show).on_toggle(Message::PasswordShow),
+                text!("{} (3)", t!("show password")),
+            ]
+            .spacing(SPACING),
+        );
+
+        if self.delete_account {
+            columns = columns.push(
+                button(text!(
+                    "{} (4)",
+                    self.strings["REALLY DELETE ACCOUNT"].as_str()
+                ))
+                .on_press(Message::DeleteAccount),
+            );
+        } else {
+            columns = columns.push(
+                button(text!("{} (4)", self.strings["Delete Account"].as_str()))
+                    .on_press(Message::DeleteAccount),
+            );
+        }
+
+        columns = columns.push(
+            button(text!("{} (Esc)", self.strings["Quit"].as_str())).on_press(Message::Leave),
+        );
+
+        columns
+    }
+
     fn add_infinity(&self, column: Column<'a, Message>) -> Column<'a, Message> {
         let infinity = radio(
             format!("{} (9)", TimeEnum::Infinity),
@@ -1257,9 +1374,98 @@ impl<'a> Client {
         }
     }
 
-    fn game_new(&mut self) {
-        self.game_settings = NewGameSettings::default();
-        self.screen = Screen::GameNew;
+    fn game_new_view(&self) -> Column<'_, Message> {
+        let attacker = radio(
+            format!("{} (1)", t!("attacker")),
+            Role::Attacker,
+            self.game_settings.role_selected,
+            Message::RoleSelected,
+        );
+
+        let defender = radio(
+            format!("{} (2)", t!("defender")),
+            Role::Defender,
+            self.game_settings.role_selected,
+            Message::RoleSelected,
+        );
+
+        let rated = row![
+            text!("{} (0):", t!("rated")),
+            checkbox(self.game_settings.rated.into()).on_toggle(Message::RatedSelected)
+        ]
+        .padding(PADDING)
+        .spacing(SPACING);
+
+        let mut new_game = button(text!("{} (Enter)", self.strings["New Game"].as_str()));
+        if self.game_settings.role_selected.is_some() && self.game_settings.time.is_some() {
+            new_game = new_game.on_press(Message::GameSubmit);
+        }
+
+        let leave =
+            button(text!("{} (Esc)", self.strings["Quit"].as_str())).on_press(Message::Leave);
+
+        let size_11x11 = radio(
+            "11x11 (3)",
+            BoardSize::_11,
+            Some(self.game_settings.board_size),
+            Message::BoardSizeSelected,
+        );
+
+        let size_13x13 = radio(
+            "13x13 (4)",
+            BoardSize::_13,
+            Some(self.game_settings.board_size),
+            Message::BoardSizeSelected,
+        );
+
+        let row_1 = row![text!("{}:", t!("role")), attacker, defender]
+            .padding(PADDING)
+            .spacing(SPACING);
+
+        let row_2 = row![text!("{}:", t!("board size")), size_11x11, size_13x13]
+            .padding(PADDING)
+            .spacing(SPACING);
+
+        let rapid = radio(
+            format!("{} (5)", TimeEnum::Rapid),
+            TimeEnum::Rapid,
+            self.game_settings.time,
+            Message::Time,
+        );
+
+        let classical = radio(
+            format!("{} (6)", TimeEnum::Classical),
+            TimeEnum::Classical,
+            self.game_settings.time,
+            Message::Time,
+        );
+
+        let long = radio(
+            format!("{} (7)", TimeEnum::Long),
+            TimeEnum::Long,
+            self.game_settings.time,
+            Message::Time,
+        );
+
+        let very_long = radio(
+            format!("{} (8)", TimeEnum::VeryLong),
+            TimeEnum::VeryLong,
+            self.game_settings.time,
+            Message::Time,
+        );
+
+        let row_3 = row![text!("{}:", t!("time"))]
+            .padding(PADDING)
+            .spacing(SPACING);
+
+        let row_4 = row![rapid, classical].padding(PADDING).spacing(SPACING);
+        let row_5 = row![long, very_long].padding(PADDING).spacing(SPACING);
+
+        let mut column = column![rated, row_1, row_2, row_3, row_4, row_5];
+        column = self.add_infinity(column);
+
+        let row_6 = row![new_game, leave].padding(PADDING).spacing(SPACING);
+        column.push(row_6)
     }
 
     fn game_submit(&mut self) {
@@ -1821,11 +2027,7 @@ impl<'a> Client {
 
     fn leave(&mut self) {
         match self.screen {
-            Screen::AccountSettings
-            | Screen::EmailEveryone
-            | Screen::GameNew
-            | Screen::Users
-            | Screen::Tournament => {
+            Screen::EmailEveryone => {
                 self.screen = Screen::Games;
                 self.text_input = String::new();
             }
@@ -2008,7 +2210,6 @@ impl<'a> Client {
         self.error = None;
 
         match message {
-            Message::AccountSettings => self.screen = Screen::AccountSettings,
             Message::ArchivedGames(mut archived_games) => {
                 archived_games.reverse();
                 self.archived_games = archived_games;
@@ -2085,7 +2286,6 @@ impl<'a> Client {
                 self.my_games_only();
             }
             Message::OpenUrl(string) => open_url(&string),
-            Message::GameNew => self.game_new(),
             Message::GameResume(id) => self.resume(id),
             Message::GameSubmit => self.game_submit(),
             Message::PasswordChanged(password) => {
@@ -2106,22 +2306,12 @@ impl<'a> Client {
             Message::PlayMoveRevert => self.play_from = None,
             Message::PlayResign => self.resign(),
             Message::PressEnter => match self.screen {
-                Screen::AccountSettings
-                | Screen::EmailEveryone
-                | Screen::Game
-                | Screen::Games
-                | Screen::GameReview
-                | Screen::Tournament
-                | Screen::Users => {}
-                Screen::GameNew => self.game_submit(),
+                Screen::Games if self.active_tab == TabId::GameNew => self.game_submit(),
                 Screen::Login => self.login(),
+                Screen::EmailEveryone | Screen::Game | Screen::Games | Screen::GameReview => {}
             },
             Message::PressA(shift) => match self.screen {
-                Screen::AccountSettings
-                | Screen::EmailEveryone
-                | Screen::GameNew
-                | Screen::Tournament
-                | Screen::Users => {}
+                Screen::EmailEveryone => {}
                 Screen::Game | Screen::GameReview => {
                     self.press_letter('a');
                     self.press_letter_and_number();
@@ -2130,12 +2320,7 @@ impl<'a> Client {
                 Screen::Login => self.change_theme(Theme::Tol),
             },
             Message::PressB(shift) => match self.screen {
-                Screen::AccountSettings
-                | Screen::EmailEveryone
-                | Screen::GameNew
-                | Screen::Login
-                | Screen::Tournament
-                | Screen::Users => {}
+                Screen::EmailEveryone | Screen::Login => {}
                 Screen::Game | Screen::GameReview => {
                     self.press_letter('b');
                     self.press_letter_and_number();
@@ -2143,12 +2328,7 @@ impl<'a> Client {
                 Screen::Games => self.join_game_press(1, shift),
             },
             Message::PressC(shift) => match self.screen {
-                Screen::AccountSettings
-                | Screen::EmailEveryone
-                | Screen::GameNew
-                | Screen::Login
-                | Screen::Tournament
-                | Screen::Users => {}
+                Screen::EmailEveryone | Screen::Login => {}
                 Screen::Game | Screen::GameReview => {
                     self.press_letter('c');
                     self.press_letter_and_number();
@@ -2156,12 +2336,7 @@ impl<'a> Client {
                 Screen::Games => self.join_game_press(2, shift),
             },
             Message::PressD(shift) => match self.screen {
-                Screen::AccountSettings
-                | Screen::EmailEveryone
-                | Screen::GameNew
-                | Screen::Login
-                | Screen::Tournament
-                | Screen::Users => {}
+                Screen::EmailEveryone | Screen::Login => {}
                 Screen::Game | Screen::GameReview => {
                     self.press_letter('d');
                     self.press_letter_and_number();
@@ -2169,12 +2344,7 @@ impl<'a> Client {
                 Screen::Games => self.join_game_press(3, shift),
             },
             Message::PressE(shift) => match self.screen {
-                Screen::AccountSettings
-                | Screen::EmailEveryone
-                | Screen::GameNew
-                | Screen::Login
-                | Screen::Tournament
-                | Screen::Users => {}
+                Screen::EmailEveryone | Screen::Login => {}
                 Screen::Game | Screen::GameReview => {
                     self.press_letter('e');
                     self.press_letter_and_number();
@@ -2182,12 +2352,7 @@ impl<'a> Client {
                 Screen::Games => self.join_game_press(4, shift),
             },
             Message::PressF(shift) => match self.screen {
-                Screen::AccountSettings
-                | Screen::EmailEveryone
-                | Screen::GameNew
-                | Screen::Login
-                | Screen::Tournament
-                | Screen::Users => {}
+                Screen::EmailEveryone | Screen::Login => {}
                 Screen::Game | Screen::GameReview => {
                     self.press_letter('f');
                     self.press_letter_and_number();
@@ -2195,12 +2360,7 @@ impl<'a> Client {
                 Screen::Games => self.join_game_press(5, shift),
             },
             Message::PressG(shift) => match self.screen {
-                Screen::AccountSettings
-                | Screen::EmailEveryone
-                | Screen::GameNew
-                | Screen::Login
-                | Screen::Tournament
-                | Screen::Users => {}
+                Screen::EmailEveryone | Screen::Login => {}
                 Screen::Game | Screen::GameReview => {
                     self.press_letter('g');
                     self.press_letter_and_number();
@@ -2208,12 +2368,7 @@ impl<'a> Client {
                 Screen::Games => self.join_game_press(6, shift),
             },
             Message::PressH(shift) => match self.screen {
-                Screen::AccountSettings
-                | Screen::EmailEveryone
-                | Screen::GameNew
-                | Screen::Login
-                | Screen::Tournament
-                | Screen::Users => {}
+                Screen::EmailEveryone | Screen::Login => {}
                 Screen::Game | Screen::GameReview => {
                     self.press_letter('h');
                     self.press_letter_and_number();
@@ -2221,12 +2376,7 @@ impl<'a> Client {
                 Screen::Games => self.join_game_press(7, shift),
             },
             Message::PressI(shift) => match self.screen {
-                Screen::AccountSettings
-                | Screen::EmailEveryone
-                | Screen::GameNew
-                | Screen::Login
-                | Screen::Tournament
-                | Screen::Users => {}
+                Screen::EmailEveryone | Screen::Login => {}
                 Screen::Game | Screen::GameReview => {
                     self.press_letter('i');
                     self.press_letter_and_number();
@@ -2234,12 +2384,7 @@ impl<'a> Client {
                 Screen::Games => self.join_game_press(8, shift),
             },
             Message::PressJ(shift) => match self.screen {
-                Screen::AccountSettings
-                | Screen::EmailEveryone
-                | Screen::GameNew
-                | Screen::Login
-                | Screen::Tournament
-                | Screen::Users => {}
+                Screen::EmailEveryone | Screen::Login => {}
                 Screen::Game | Screen::GameReview => {
                     self.press_letter('j');
                     self.press_letter_and_number();
@@ -2247,12 +2392,7 @@ impl<'a> Client {
                 Screen::Games => self.join_game_press(9, shift),
             },
             Message::PressK(shift) => match self.screen {
-                Screen::AccountSettings
-                | Screen::EmailEveryone
-                | Screen::GameNew
-                | Screen::Login
-                | Screen::Tournament
-                | Screen::Users => {}
+                Screen::EmailEveryone | Screen::Login => {}
                 Screen::Game | Screen::GameReview => {
                     self.press_letter('k');
                     self.press_letter_and_number();
@@ -2260,12 +2400,7 @@ impl<'a> Client {
                 Screen::Games => self.join_game_press(10, shift),
             },
             Message::PressL(shift) => match self.screen {
-                Screen::AccountSettings
-                | Screen::EmailEveryone
-                | Screen::GameNew
-                | Screen::Login
-                | Screen::Tournament
-                | Screen::Users => {}
+                Screen::EmailEveryone | Screen::Login => {}
                 Screen::Game | Screen::GameReview => {
                     self.press_letter('l');
                     self.press_letter_and_number();
@@ -2273,12 +2408,7 @@ impl<'a> Client {
                 Screen::Games => self.join_game_press(11, shift),
             },
             Message::PressM(shift) => match self.screen {
-                Screen::AccountSettings
-                | Screen::EmailEveryone
-                | Screen::GameNew
-                | Screen::Login
-                | Screen::Tournament
-                | Screen::Users => {}
+                Screen::EmailEveryone | Screen::Login => {}
                 Screen::Game | Screen::GameReview => {
                     self.press_letter('m');
                     self.press_letter_and_number();
@@ -2286,55 +2416,29 @@ impl<'a> Client {
                 Screen::Games => self.join_game_press(12, shift),
             },
             Message::PressN(shift) => match self.screen {
-                Screen::AccountSettings
-                | Screen::EmailEveryone
-                | Screen::GameNew
-                | Screen::Login
-                | Screen::Tournament
-                | Screen::Users => {}
+                Screen::EmailEveryone | Screen::Login => {}
                 Screen::Game | Screen::GameReview => self.coordinates(),
                 Screen::Games => self.join_game_press(13, shift),
             },
             Message::PressO(shift) => match self.screen {
-                Screen::AccountSettings
-                | Screen::EmailEveryone
-                | Screen::GameNew
-                | Screen::Login
-                | Screen::Tournament
-                | Screen::Users => {}
+                Screen::EmailEveryone | Screen::Login => {}
                 Screen::Game | Screen::GameReview => self.sound_muted(),
                 Screen::Games => self.join_game_press(14, shift),
             },
             Message::PressP(shift) => match self.screen {
-                Screen::AccountSettings
-                | Screen::EmailEveryone
-                | Screen::GameNew
-                | Screen::Login
-                | Screen::Tournament
-                | Screen::Users => {}
+                Screen::EmailEveryone | Screen::Login => {}
                 Screen::Game => self.resign(),
                 Screen::Games => self.join_game_press(1, shift),
                 Screen::GameReview => self.estimate_score(),
             },
             Message::PressQ(shift) => match self.screen {
-                Screen::AccountSettings
-                | Screen::EmailEveryone
-                | Screen::GameNew
-                | Screen::Login
-                | Screen::Tournament
-                | Screen::Users => {}
+                Screen::EmailEveryone | Screen::Login => {}
                 Screen::Game => self.draw(),
                 Screen::Games => self.join_game_press(16, shift),
                 Screen::GameReview => self.heat_map_display = !self.heat_map_display,
             },
             Message::PressR(shift) => match self.screen {
-                Screen::AccountSettings
-                | Screen::EmailEveryone
-                | Screen::GameNew
-                | Screen::GameReview
-                | Screen::Login
-                | Screen::Tournament
-                | Screen::Users => {}
+                Screen::EmailEveryone | Screen::GameReview | Screen::Login => {}
                 Screen::Game => {
                     if self.request_draw {
                         self.send(&format!("draw {} {}\n", self.game_id, Draw::Accept));
@@ -2343,98 +2447,43 @@ impl<'a> Client {
                 Screen::Games => self.join_game_press(17, shift),
             },
             Message::PressS(shift) => match self.screen {
-                Screen::AccountSettings
-                | Screen::EmailEveryone
-                | Screen::Game
-                | Screen::GameNew
-                | Screen::GameReview
-                | Screen::Login
-                | Screen::Tournament
-                | Screen::Users => {}
+                Screen::EmailEveryone | Screen::Game | Screen::GameReview | Screen::Login => {}
                 Screen::Games => self.join_game_press(18, shift),
             },
             Message::PressT(shift) => match self.screen {
-                Screen::AccountSettings
-                | Screen::EmailEveryone
-                | Screen::Game
-                | Screen::GameNew
-                | Screen::GameReview
-                | Screen::Login
-                | Screen::Tournament
-                | Screen::Users => {}
+                Screen::EmailEveryone | Screen::Game | Screen::GameReview | Screen::Login => {}
                 Screen::Games => self.join_game_press(19, shift),
             },
             Message::PressU(shift) => match self.screen {
-                Screen::AccountSettings
-                | Screen::EmailEveryone
-                | Screen::Game
-                | Screen::GameNew
-                | Screen::GameReview
-                | Screen::Login
-                | Screen::Tournament
-                | Screen::Users => {}
+                Screen::EmailEveryone | Screen::Game | Screen::GameReview | Screen::Login => {}
                 Screen::Games => self.join_game_press(20, shift),
             },
             Message::PressV(shift) => match self.screen {
-                Screen::AccountSettings
-                | Screen::EmailEveryone
-                | Screen::Game
-                | Screen::GameNew
-                | Screen::GameReview
-                | Screen::Login
-                | Screen::Tournament
-                | Screen::Users => {}
+                Screen::EmailEveryone | Screen::Game | Screen::GameReview | Screen::Login => {}
                 Screen::Games => self.join_game_press(21, shift),
             },
             Message::PressW(shift) => match self.screen {
-                Screen::AccountSettings
-                | Screen::EmailEveryone
-                | Screen::Game
-                | Screen::GameNew
-                | Screen::GameReview
-                | Screen::Login
-                | Screen::Tournament
-                | Screen::Users => {}
+                Screen::EmailEveryone | Screen::Game | Screen::GameReview | Screen::Login => {}
                 Screen::Games => self.join_game_press(22, shift),
             },
             Message::PressX(shift) => match self.screen {
-                Screen::AccountSettings
-                | Screen::EmailEveryone
-                | Screen::Game
-                | Screen::GameNew
-                | Screen::GameReview
-                | Screen::Login
-                | Screen::Tournament
-                | Screen::Users => {}
+                Screen::EmailEveryone | Screen::Game | Screen::GameReview | Screen::Login => {}
                 Screen::Games => self.join_game_press(23, shift),
             },
             Message::PressY(shift) => match self.screen {
-                Screen::AccountSettings
-                | Screen::EmailEveryone
-                | Screen::Game
-                | Screen::GameNew
-                | Screen::GameReview
-                | Screen::Login
-                | Screen::Tournament
-                | Screen::Users => {}
+                Screen::EmailEveryone | Screen::Game | Screen::GameReview | Screen::Login => {}
                 Screen::Games => self.join_game_press(24, shift),
             },
             Message::PressZ(shift) => match self.screen {
-                Screen::AccountSettings
-                | Screen::EmailEveryone
-                | Screen::Game
-                | Screen::GameNew
-                | Screen::GameReview
-                | Screen::Login
-                | Screen::Tournament
-                | Screen::Users => {}
+                Screen::EmailEveryone | Screen::Game | Screen::GameReview | Screen::Login => {}
                 Screen::Games => self.join_game_press(25, shift),
             },
             Message::Press1 => match self.screen {
-                Screen::AccountSettings | Screen::Login => self.reset_email(),
-                Screen::EmailEveryone | Screen::Tournament | Screen::Users => {}
-                Screen::Games => self.game_new(),
-                Screen::GameNew => self.game_settings.role_selected = Some(Role::Attacker),
+                // Fixme: account settings
+                Screen::Login => self.toggle_show_password(),
+                Screen::EmailEveryone => {}
+                Screen::Games => self.active_tab = TabId::Games,
+                // Fixme: Screen::GameNew => self.game_settings.role_selected = Some(Role::Attacker),
                 Screen::Game | Screen::GameReview => {
                     if !(self.press_numbers[0]
                         || self.press_numbers[10]
@@ -2455,12 +2504,10 @@ impl<'a> Client {
                 }
             },
             Message::Press2 => match self.screen {
-                Screen::AccountSettings => {
-                    self.send(&format!("change_password {}\n", self.password));
-                }
-                Screen::EmailEveryone | Screen::Tournament | Screen::Users => {}
-                Screen::Games => self.screen = Screen::Tournament,
-                Screen::GameNew => self.game_settings.role_selected = Some(Role::Defender),
+                // Fixme: account settings self.send(&format!("change_password {}\n", self.password));
+                Screen::EmailEveryone => {}
+                Screen::Games => self.active_tab = TabId::GameNew,
+                // Fixme: Screen::GameNew => self.game_settings.role_selected = Some(Role::Defender),
                 Screen::Game | Screen::GameReview => {
                     let (board, _) = self.board_and_heatmap();
                     match board.size() {
@@ -2492,10 +2539,10 @@ impl<'a> Client {
                 Screen::Login => self.toggle_save_password(),
             },
             Message::Press3 => match self.screen {
-                Screen::AccountSettings => self.toggle_show_password(),
-                Screen::EmailEveryone | Screen::Tournament | Screen::Users => {}
-                Screen::Games => self.screen = Screen::AccountSettings,
-                Screen::GameNew => self.game_settings.board_size = BoardSize::_11,
+                // Fixme: account settings self.toggle_show_password(),  Screen::AccountSettings,
+                Screen::EmailEveryone => {}
+                Screen::Games => self.active_tab = TabId::Tournament,
+                // Fixme: Screen::GameNew => self.game_settings.board_size = BoardSize::_11,
                 Screen::Login => self.my_games_only(),
                 Screen::Game | Screen::GameReview => {
                     let (board, _) = self.board_and_heatmap();
@@ -2527,10 +2574,10 @@ impl<'a> Client {
                 }
             },
             Message::Press4 => match self.screen {
-                Screen::AccountSettings => self.delete_account(),
-                Screen::EmailEveryone | Screen::Tournament | Screen::Users => {}
-                Screen::Games => self.screen = Screen::Users,
-                Screen::GameNew => self.game_settings.board_size = BoardSize::_13,
+                // Fixme: account settings self.delete_account(),
+                Screen::EmailEveryone => {}
+                Screen::Games => self.active_tab = TabId::AccountSettings,
+                // Fixme: Screen::GameNew => self.game_settings.board_size = BoardSize::_13,
                 Screen::Login => self.create_account(),
                 Screen::Game | Screen::GameReview => {
                     self.clear_numbers_except(4);
@@ -2539,12 +2586,9 @@ impl<'a> Client {
                 }
             },
             Message::Press5 => match self.screen {
-                Screen::AccountSettings
-                | Screen::EmailEveryone
-                | Screen::Tournament
-                | Screen::Users => {}
-                Screen::Games => self.send("archived_games\n"),
-                Screen::GameNew => self.game_settings.time = Some(TimeEnum::Rapid),
+                Screen::EmailEveryone => {}
+                Screen::Games => self.active_tab = TabId::Users,
+                // Fixme: Screen::GameNew => self.game_settings.time = Some(TimeEnum::Rapid),
                 Screen::Login => self.reset_password(),
                 Screen::Game | Screen::GameReview => {
                     self.clear_numbers_except(5);
@@ -2553,12 +2597,9 @@ impl<'a> Client {
                 }
             },
             Message::Press6 => match self.screen {
-                Screen::AccountSettings
-                | Screen::EmailEveryone
-                | Screen::Tournament
-                | Screen::Users => {}
-                Screen::GameNew => self.game_settings.time = Some(TimeEnum::Classical),
-                Screen::Games => open_url("https://hnefatafl.org/rules.html"),
+                Screen::EmailEveryone => {}
+                // Fixme: Screen::GameNew => self.game_settings.time = Some(TimeEnum::Classical),
+                Screen::Games => self.send("archived_games\n"),
                 Screen::Login => self.review_game(),
                 Screen::Game | Screen::GameReview => {
                     if self.screen == Screen::Game || self.screen == Screen::GameReview {
@@ -2569,12 +2610,9 @@ impl<'a> Client {
                 }
             },
             Message::Press7 => match self.screen {
-                Screen::AccountSettings
-                | Screen::EmailEveryone
-                | Screen::Tournament
-                | Screen::Users => {}
-                Screen::Games => self.my_games_only(),
-                Screen::GameNew => self.game_settings.time = Some(TimeEnum::Long),
+                Screen::EmailEveryone => {}
+                Screen::Games => open_url("https://hnefatafl.org/rules.html"),
+                // Fixme: Screen::GameNew => self.game_settings.time = Some(TimeEnum::Long),
                 Screen::Login => self.change_theme(Theme::Dark),
                 Screen::Game | Screen::GameReview => {
                     self.clear_numbers_except(7);
@@ -2583,9 +2621,9 @@ impl<'a> Client {
                 }
             },
             Message::Press8 => match self.screen {
-                Screen::AccountSettings | Screen::EmailEveryone | Screen::Tournament => {}
-                Screen::Games | Screen::Users => self.users_sort_by = SortBy::Rating,
-                Screen::GameNew => self.game_settings.time = Some(TimeEnum::VeryLong),
+                Screen::EmailEveryone => {}
+                Screen::Games => self.my_games_only(),
+                // Fixme: Screen::GameNew => self.game_settings.time = Some(TimeEnum::VeryLong),
                 Screen::Login => self.change_theme(Theme::Light),
                 Screen::Game | Screen::GameReview => {
                     self.clear_numbers_except(8);
@@ -2594,9 +2632,9 @@ impl<'a> Client {
                 }
             },
             Message::Press9 => match self.screen {
-                Screen::AccountSettings | Screen::EmailEveryone | Screen::Tournament => {}
-                Screen::GameNew => self.game_settings.time = Some(TimeEnum::Infinity),
-                Screen::Games | Screen::Users => self.users_sort_by = SortBy::Name,
+                Screen::EmailEveryone => {}
+                // Fixme: Screen::GameNew => self.game_settings.time = Some(TimeEnum::Infinity),
+                Screen::Games => self.users_sort_by = SortBy::Rating,
                 Screen::Login => open_url("https://discord.gg/h56CAHEBXd"),
                 Screen::Game | Screen::GameReview => {
                     self.clear_numbers_except(9);
@@ -2605,12 +2643,9 @@ impl<'a> Client {
                 }
             },
             Message::Press0 => match self.screen {
-                Screen::AccountSettings
-                | Screen::EmailEveryone
-                | Screen::Games
-                | Screen::Tournament
-                | Screen::Users => {}
-                Screen::GameNew => self.game_settings.rated = !self.game_settings.rated,
+                Screen::EmailEveryone => {}
+                Screen::Games => self.users_sort_by = SortBy::Name,
+                // Fixme: Screen::GameNew => self.game_settings.rated = !self.game_settings.rated,
                 Screen::Login => open_url("https://hnefatafl.org"),
                 Screen::Game | Screen::GameReview => {
                     self.clear_numbers_except(10);
@@ -2619,25 +2654,13 @@ impl<'a> Client {
                 }
             },
             Message::PressMinus => match self.screen {
-                Screen::AccountSettings
-                | Screen::EmailEveryone
-                | Screen::Games
-                | Screen::Tournament
-                | Screen::Users
-                | Screen::GameNew
-                | Screen::Login => {}
+                Screen::EmailEveryone | Screen::Games | Screen::Login => {}
                 Screen::Game | Screen::GameReview => {
                     self.volume.0 = self.volume.0.saturating_sub(1);
                 }
             },
             Message::PressPlus => match self.screen {
-                Screen::AccountSettings
-                | Screen::EmailEveryone
-                | Screen::Games
-                | Screen::Tournament
-                | Screen::Users
-                | Screen::GameNew
-                | Screen::Login => {}
+                Screen::EmailEveryone | Screen::Games | Screen::Login => {}
                 Screen::Game | Screen::GameReview => {
                     self.volume.0 = self.volume.0.saturating_add(1);
                 }
@@ -2652,8 +2675,8 @@ impl<'a> Client {
                 self.error_persistent
                     .push(t!("The TCP connection failed.").to_string());
             }
+            Message::TabSelected(tab) => self.active_tab = tab,
             Message::TcpDisconnect => self.connected_tcp = false,
-            Message::Tournament => self.screen = Screen::Tournament,
             Message::TournamentJoin => self.send("join_tournament\n"),
             Message::TournamentLeave => self.send("leave_tournament\n"),
             Message::TournamentStart => self.send("tournament_start\n"),
@@ -3120,9 +3143,7 @@ impl<'a> Client {
             }
             Message::TextSend => {
                 match self.screen {
-                    Screen::AccountSettings => {
-                        self.send(&format!("change_password {}\n", self.password));
-                    }
+                    // Fixme: account settings self.send(&format!("change_password {}\n", self.password));
                     Screen::EmailEveryone => {
                         // subject == self.text_input
                         let email = self.content.text().replace('\n', "\\n");
@@ -3140,11 +3161,7 @@ impl<'a> Client {
                             self.send(&format!("text {}", self.text_input));
                         }
                     }
-                    Screen::GameNew
-                    | Screen::GameReview
-                    | Screen::Login
-                    | Screen::Tournament
-                    | Screen::Users => {}
+                    Screen::GameReview | Screen::Login => {}
                 }
 
                 self.text_input.clear();
@@ -3196,7 +3213,6 @@ impl<'a> Client {
             Message::Tournaments => open_url("https://hnefatafl.org/tournaments.html"),
             Message::TournamentDelete => self.send("tournament_delete\n"),
             Message::TournamentTreeDelete => self.send("tournament_groups_delete\n"),
-            Message::Users => self.screen = Screen::Users,
             Message::UsersSortedBy(sort_by) => self.users_sort_by = sort_by,
             Message::VolumeChanged(volume) => self.volume.0 = volume,
             Message::WindowResized((width, height)) => {
@@ -3483,6 +3499,40 @@ impl<'a> Client {
         ])
     }
 
+    fn games_view(&self) -> Column<'_, Message> {
+        let username = row![text!("{}: {}", t!("username"), &self.username)].spacing(SPACING);
+
+        let username = container(username)
+            .padding(PADDING / 2)
+            .style(container::bordered_box);
+
+        let my_games_text = text!("{} (8)", t!("My Games Only")).center();
+        let my_games = checkbox(self.my_games_only).on_toggle(Message::MyGamesOnly);
+        let get_archived_games =
+            button(text!("{} (6)", self.strings["Get Archived Games"].as_str()))
+                .on_press(Message::ArchivedGamesGet);
+
+        let website = button(text!("{} (7)", self.strings["Rules"].as_str())).on_press(
+            Message::OpenUrl("https://hnefatafl.org/rules.html".to_string()),
+        );
+
+        let quit =
+            button(text!("{} (Esc)", self.strings["Quit"].as_str())).on_press(Message::Leave);
+
+        let mut middle = row![get_archived_games, website, quit].spacing(SPACING);
+
+        if self.admin {
+            middle = middle.push(button("Email Everyone").on_press(Message::EmailEveryone));
+        }
+
+        let username = row![username, my_games, my_games_text].spacing(SPACING);
+        let user_area = self.user_area(false);
+
+        column![middle, username, user_area]
+            .spacing(SPACING)
+            .padding(PADDING)
+    }
+
     fn handle_play(&mut self, role: Option<&str>, from: &str, to: &str) {
         self.captures = HashSet::new();
 
@@ -3621,7 +3671,7 @@ impl<'a> Client {
             }
 
             let rating = t!("rating");
-            let mut button_1 = button(text("(8)").size(10)).padding(PADDING_SMALL);
+            let mut button_1 = button(text("(9)").size(10)).padding(PADDING_SMALL);
 
             if self.users_sort_by != SortBy::Rating {
                 button_1 = button_1.on_press(Message::UsersSortedBy(SortBy::Rating));
@@ -3635,7 +3685,7 @@ impl<'a> Client {
             .padding(PADDING);
 
             let username = t!("username");
-            let mut button_2 = button(text("(9)").size(10)).padding(PADDING_SMALL);
+            let mut button_2 = button(text("(0)").size(10)).padding(PADDING_SMALL);
 
             if self.users_sort_by != SortBy::Name {
                 button_2 = button_2.on_press(Message::UsersSortedBy(SortBy::Name));
@@ -3870,119 +3920,6 @@ impl<'a> Client {
     #[allow(clippy::too_many_lines)]
     pub fn view(&self) -> Element<'_, Message> {
         match self.screen {
-            Screen::AccountSettings => {
-                let mut columns = column![
-                    text!(
-                        "{} {} {} TCP",
-                        t!("connected to"),
-                        &self.connected_to,
-                        t!("via")
-                    ),
-                    text!("{}: {}", t!("username"), &self.username),
-                ]
-                .padding(PADDING)
-                .spacing(SPACING);
-
-                if let Some(email) = &self.email {
-                    let mut row = Row::new();
-                    if email.verified {
-                        row = row.push(text!(
-                            "{} [{}]: {} ",
-                            t!("email address"),
-                            t!("verified"),
-                            email.address,
-                        ));
-                        columns = columns.push(row);
-                    } else {
-                        row = row.push(text!(
-                            "{} [{}]: {} ",
-                            t!("email address"),
-                            t!("unverified"),
-                            email.address,
-                        ));
-                        columns = columns.push(row);
-
-                        let mut row = Row::new();
-                        row = row.push(text!("{}: ", t!("email code")));
-                        row = row.push(
-                            widget::text_input("", &self.text_input)
-                                .on_input(Message::TextChanged)
-                                .on_paste(Message::TextChanged)
-                                .on_submit(Message::TextSendEmailCode),
-                        );
-                        columns = columns.push(row);
-                    }
-                } else {
-                    let mut row = Row::new();
-                    row = row.push(text!("{}: ", t!("email address")));
-                    row = row.push(
-                        widget::text_input("", &self.text_input)
-                            .on_input(Message::TextChanged)
-                            .on_paste(Message::TextChanged)
-                            .on_submit(Message::TextSendEmail),
-                    );
-
-                    columns = columns.push(row);
-                    columns = columns.push(row![text!("{}: ", t!("email code"))]);
-                }
-
-                columns = columns.push(row![
-                    button(text!("{} (1)", self.strings["Reset Email"].as_str()))
-                        .on_press(Message::EmailReset)
-                ]);
-
-                if let Some(error) = &self.error_email {
-                    columns = columns.push(row![text!("error: {error}").style(text::danger)]);
-                }
-
-                let mut change_password_button =
-                    button(text!("{} (2)", self.strings["Change Password"].as_str()));
-
-                if !self.password_ends_with_whitespace {
-                    change_password_button = change_password_button.on_press(Message::TextSend);
-                }
-
-                columns = columns.push(
-                    row![
-                        change_password_button,
-                        widget::text_input("", &self.password)
-                            .secure(!self.password_show)
-                            .on_input(Message::PasswordChanged)
-                            .on_paste(Message::PasswordChanged),
-                    ]
-                    .spacing(SPACING),
-                );
-
-                columns = columns.push(
-                    row![
-                        checkbox(self.password_show).on_toggle(Message::PasswordShow),
-                        text!("{} (3)", t!("show password")),
-                    ]
-                    .spacing(SPACING),
-                );
-
-                if self.delete_account {
-                    columns = columns.push(
-                        button(text!(
-                            "{} (4)",
-                            self.strings["REALLY DELETE ACCOUNT"].as_str()
-                        ))
-                        .on_press(Message::DeleteAccount),
-                    );
-                } else {
-                    columns = columns.push(
-                        button(text!("{} (4)", self.strings["Delete Account"].as_str()))
-                            .on_press(Message::DeleteAccount),
-                    );
-                }
-
-                columns = columns.push(
-                    button(text!("{} (Esc)", self.strings["Leave"].as_str()))
-                        .on_press(Message::Leave),
-                );
-
-                columns.into()
-            }
             Screen::EmailEveryone => {
                 let subject = row![
                     text("Subject: "),
@@ -3997,7 +3934,7 @@ impl<'a> Client {
                     .on_action(Message::TextEdit);
 
                 let send_emails = button("Send Emails").on_press(Message::TextSend);
-                let leave = button(text!("{} (Esc)", self.strings["Leave"].as_str()))
+                let leave = button(text!("{} (Esc)", self.strings["Quit"].as_str()))
                     .on_press(Message::Leave);
                 let mut column = column![
                     subject,
@@ -4021,148 +3958,45 @@ impl<'a> Client {
                 scrollable(column).spacing(SPACING).into()
             }
             Screen::Game | Screen::GameReview => self.display_game(),
-            Screen::GameNew => {
-                let attacker = radio(
-                    format!("{} (1)", t!("attacker")),
-                    Role::Attacker,
-                    self.game_settings.role_selected,
-                    Message::RoleSelected,
-                );
-
-                let defender = radio(
-                    format!("{} (2)", t!("defender")),
-                    Role::Defender,
-                    self.game_settings.role_selected,
-                    Message::RoleSelected,
-                );
-
-                let rated = row![
-                    text!("{} (0):", t!("rated")),
-                    checkbox(self.game_settings.rated.into()).on_toggle(Message::RatedSelected)
-                ]
-                .padding(PADDING)
-                .spacing(SPACING);
-
-                let mut new_game = button(text!("{} (Enter)", self.strings["New Game"].as_str()));
-                if self.game_settings.role_selected.is_some() && self.game_settings.time.is_some() {
-                    new_game = new_game.on_press(Message::GameSubmit);
-                }
-
-                let leave = button(text!("{} (Esc)", self.strings["Leave"].as_str()))
-                    .on_press(Message::Leave);
-
-                let size_11x11 = radio(
-                    "11x11 (3)",
-                    BoardSize::_11,
-                    Some(self.game_settings.board_size),
-                    Message::BoardSizeSelected,
-                );
-
-                let size_13x13 = radio(
-                    "13x13 (4)",
-                    BoardSize::_13,
-                    Some(self.game_settings.board_size),
-                    Message::BoardSizeSelected,
-                );
-
-                let row_1 = row![text!("{}:", t!("role")), attacker, defender]
+            Screen::Games => Tabs::new(Message::TabSelected)
+                .push(
+                    TabId::Games,
+                    iced_aw::TabLabel::Text(format!("{} (1)", t!("Games"))),
+                    self.games_view(),
+                )
+                .push(
+                    TabId::GameNew,
+                    iced_aw::TabLabel::Text(format!(
+                        "{} (2)",
+                        self.strings["Create Game"].as_str()
+                    )),
+                    self.game_new_view(),
+                )
+                .push(
+                    TabId::Tournament,
+                    iced_aw::TabLabel::Text(format!("{} (3)", self.strings["Tournament"].as_str())),
+                    self.tournament_view(),
+                )
+                .push(
+                    TabId::AccountSettings,
+                    iced_aw::TabLabel::Text(format!("{} (4)", self.strings["Account Settings"])),
+                    self.account_settings_view(),
+                )
+                .push(
+                    TabId::Users,
+                    iced_aw::TabLabel::Text(format!("{} (5)", self.strings["Users"])),
+                    column![
+                        button(text!("{} (Esc)", self.strings["Quit"].as_str()))
+                            .on_press(Message::Leave),
+                        self.users(true)
+                    ]
                     .padding(PADDING)
-                    .spacing(SPACING);
-
-                let row_2 = row![text!("{}:", t!("board size")), size_11x11, size_13x13]
-                    .padding(PADDING)
-                    .spacing(SPACING);
-
-                let rapid = radio(
-                    format!("{} (5)", TimeEnum::Rapid),
-                    TimeEnum::Rapid,
-                    self.game_settings.time,
-                    Message::Time,
-                );
-
-                let classical = radio(
-                    format!("{} (6)", TimeEnum::Classical),
-                    TimeEnum::Classical,
-                    self.game_settings.time,
-                    Message::Time,
-                );
-
-                let long = radio(
-                    format!("{} (7)", TimeEnum::Long),
-                    TimeEnum::Long,
-                    self.game_settings.time,
-                    Message::Time,
-                );
-
-                let very_long = radio(
-                    format!("{} (8)", TimeEnum::VeryLong),
-                    TimeEnum::VeryLong,
-                    self.game_settings.time,
-                    Message::Time,
-                );
-
-                let row_3 = row![text!("{}:", t!("time"))]
-                    .padding(PADDING)
-                    .spacing(SPACING);
-
-                let row_4 = row![rapid, classical].padding(PADDING).spacing(SPACING);
-                let row_5 = row![long, very_long].padding(PADDING).spacing(SPACING);
-
-                let mut column = column![rated, row_1, row_2, row_3, row_4, row_5];
-                column = self.add_infinity(column);
-
-                let row_6 = row![new_game, leave].padding(PADDING).spacing(SPACING);
-                column.push(row_6).into()
-            }
-            Screen::Games => {
-                let username =
-                    row![text!("{}: {}", t!("username"), &self.username)].spacing(SPACING);
-
-                let username = container(username)
-                    .padding(PADDING / 2)
-                    .style(container::bordered_box);
-
-                let tournament = button(text!("{} (2)", self.strings["Tournament"].as_str()))
-                    .on_press(Message::Tournament);
-
-                let my_games_text = text!("{} (7)", t!("My Games Only")).center();
-                let my_games = checkbox(self.my_games_only).on_toggle(Message::MyGamesOnly);
-                let get_archived_games =
-                    button(text!("{} (5)", self.strings["Get Archived Games"].as_str()))
-                        .on_press(Message::ArchivedGamesGet);
-
-                let create_game = button(text!("{} (1)", self.strings["Create Game"].as_str()))
-                    .on_press(Message::GameNew);
-
-                let users = button(text!("{} (4)", self.strings["Users"].as_str()))
-                    .on_press(Message::Users);
-
-                let account_setting =
-                    button(text!("{} (3)", self.strings["Account Settings"].as_str()))
-                        .on_press(Message::AccountSettings);
-
-                let website = button(text!("{} (6)", self.strings["Rules"].as_str())).on_press(
-                    Message::OpenUrl("https://hnefatafl.org/rules.html".to_string()),
-                );
-
-                let quit = button(text!("{} (Esc)", self.strings["Leave"].as_str()))
-                    .on_press(Message::Leave);
-
-                let top = row![create_game, tournament, account_setting, users].spacing(SPACING);
-                let mut middle = row![get_archived_games, website, quit].spacing(SPACING);
-
-                if self.admin {
-                    middle = middle.push(button("Email Everyone").on_press(Message::EmailEveryone));
-                }
-
-                let username = row![username, my_games, my_games_text].spacing(SPACING);
-                let user_area = self.user_area(false);
-
-                column![top, middle, username, user_area]
-                    .spacing(SPACING)
-                    .padding(PADDING)
-                    .into()
-            }
+                    .spacing(SPACING),
+                )
+                .height(Length::Shrink)
+                .width(Length::Fill)
+                .set_active_tab(&self.active_tab)
+                .into(),
             Screen::Login => {
                 let username = row![
                     text!("{}:", t!("username")).size(20),
@@ -4358,126 +4192,6 @@ impl<'a> Client {
                 .spacing(SPACING)
                 .into()
             }
-            Screen::Tournament => {
-                let mut column = Column::new().padding(PADDING).spacing(SPACING);
-
-                if self.admin_tournament {
-                    let date_button =
-                        Button::new(text("Tournament Date")).on_press(Message::DateChoose);
-
-                    let date_picker = date_picker(
-                        self.tournament_date_show_picker,
-                        self.tournament_date,
-                        date_button,
-                        Message::DateCancel,
-                        Message::DateSubmit,
-                    );
-
-                    let mut delete_button = button("Delete Tournament");
-
-                    if self.tournament.is_some() {
-                        delete_button = delete_button.on_press(Message::TournamentDelete);
-                    }
-
-                    let row = row![date_picker, delete_button].spacing(SPACING);
-
-                    column = column.push(row);
-                }
-
-                let Some(tournament) = &self.tournament else {
-                    column = column.push(text(t!("There is no tournament.")));
-                    column = column.push(
-                        button(text!("{} (Esc)", self.strings["Leave"].as_str()))
-                            .on_press(Message::Leave),
-                    );
-
-                    return column.into();
-                };
-
-                let mut date = Row::new().spacing(SPACING);
-                let start_date = t!("Tournament Start Date");
-                date = date.push(text!(
-                    "{start_date}: {}",
-                    tournament.date.strftime("%F %T UTC")
-                ));
-
-                let button_0 = button(text!(
-                    "{} (0)",
-                    self.strings["Tournaments Described"].as_str()
-                ))
-                .on_press(Message::Tournaments);
-
-                let mut button_1 =
-                    button(text!("{} (1)", self.strings["Join Tournament"].as_str()));
-
-                let mut button_2 =
-                    button(text!("{} (2)", self.strings["Leave Tournament"].as_str()));
-
-                if tournament.players.contains(&self.username) {
-                    button_2 = button_2.on_press(Message::TournamentLeave);
-                } else {
-                    button_1 = button_1.on_press(Message::TournamentJoin);
-                }
-
-                let buttons = row![
-                    button_0,
-                    button_1,
-                    button_2,
-                    button(text!("{} (Esc)", self.strings["Leave"].as_str()))
-                        .on_press(Message::Leave),
-                ]
-                .spacing(SPACING);
-
-                let title = t!("Players");
-                let dashes = text("-".repeat(title.len())).font(Font::MONOSPACE);
-                let title = text(title);
-                let title = column![title, dashes];
-
-                let mut players = Column::new();
-                let mut player_names: Vec<_> = tournament.players.iter().collect();
-                player_names.sort();
-
-                for player in &player_names {
-                    players = players.push(text(*player));
-                }
-
-                column = column.push(date);
-                column = column.push(buttons);
-                column = column.push(title);
-                column = column.push(players);
-
-                if self.admin_tournament {
-                    let mut delete_button = button("Delete Tournament Tree");
-
-                    if let Some(tournament) = &self.tournament
-                        && tournament.groups.is_some()
-                    {
-                        delete_button = delete_button.on_press(Message::TournamentTreeDelete);
-                    }
-
-                    let mut start_tournament = button("Start Tournament");
-
-                    if let Some(tournament) = &self.tournament {
-                        if tournament.groups.is_none() {
-                            start_tournament = start_tournament.on_press(Message::TournamentStart);
-                        }
-                    } else {
-                        start_tournament = start_tournament.on_press(Message::TournamentStart);
-                    }
-
-                    column = column.push(row![start_tournament, delete_button].spacing(SPACING));
-                }
-
-                column = column.push(self.display_tournament());
-                scrollable(column).spacing(SPACING).into()
-            }
-            Screen::Users => column![
-                button(text!("{} (Esc)", self.strings["Leave"].as_str())).on_press(Message::Leave),
-                self.users(true),
-            ]
-            .padding(PADDING)
-            .spacing(SPACING)
-            .into(),
         }
     }
 
@@ -4578,6 +4292,115 @@ impl<'a> Client {
     fn toggle_show_password(&mut self) {
         self.password_show = !self.password_show;
         handle_error(self.save_client_ron());
+    }
+
+    fn tournament_view(&self) -> Scrollable<'_, Message> {
+        let mut column = Column::new().padding(PADDING).spacing(SPACING);
+
+        if self.admin_tournament {
+            let date_button = Button::new(text("Tournament Date")).on_press(Message::DateChoose);
+
+            let date_picker = date_picker(
+                self.tournament_date_show_picker,
+                self.tournament_date,
+                date_button,
+                Message::DateCancel,
+                Message::DateSubmit,
+            );
+
+            let mut delete_button = button("Delete Tournament");
+
+            if self.tournament.is_some() {
+                delete_button = delete_button.on_press(Message::TournamentDelete);
+            }
+
+            let row = row![date_picker, delete_button].spacing(SPACING);
+
+            column = column.push(row);
+        }
+
+        let Some(tournament) = &self.tournament else {
+            column = column.push(text(t!("There is no tournament.")));
+            column = column.push(
+                button(text!("{} (Esc)", self.strings["Quit"].as_str())).on_press(Message::Leave),
+            );
+
+            return scrollable(column).spacing(SPACING);
+        };
+
+        let mut date = Row::new().spacing(SPACING);
+        let start_date = t!("Tournament Start Date");
+        date = date.push(text!(
+            "{start_date}: {}",
+            tournament.date.strftime("%F %T UTC")
+        ));
+
+        let button_0 = button(text!(
+            "{} (0)",
+            self.strings["Tournaments Described"].as_str()
+        ))
+        .on_press(Message::Tournaments);
+
+        let mut button_1 = button(text!("{} (1)", self.strings["Join Tournament"].as_str()));
+
+        let mut button_2 = button(text!("{} (2)", self.strings["Leave Tournament"].as_str()));
+
+        if tournament.players.contains(&self.username) {
+            button_2 = button_2.on_press(Message::TournamentLeave);
+        } else {
+            button_1 = button_1.on_press(Message::TournamentJoin);
+        }
+
+        let buttons = row![
+            button_0,
+            button_1,
+            button_2,
+            button(text!("{} (Esc)", self.strings["Quit"].as_str())).on_press(Message::Leave),
+        ]
+        .spacing(SPACING);
+
+        let title = t!("Players");
+        let dashes = text("-".repeat(title.len())).font(Font::MONOSPACE);
+        let title = text(title);
+        let title = column![title, dashes];
+
+        let mut players = Column::new();
+        let mut player_names: Vec<_> = tournament.players.iter().collect();
+        player_names.sort();
+
+        for player in &player_names {
+            players = players.push(text(*player));
+        }
+
+        column = column.push(date);
+        column = column.push(buttons);
+        column = column.push(title);
+        column = column.push(players);
+
+        if self.admin_tournament {
+            let mut delete_button = button("Delete Tournament Tree");
+
+            if let Some(tournament) = &self.tournament
+                && tournament.groups.is_some()
+            {
+                delete_button = delete_button.on_press(Message::TournamentTreeDelete);
+            }
+
+            let mut start_tournament = button("Start Tournament");
+
+            if let Some(tournament) = &self.tournament {
+                if tournament.groups.is_none() {
+                    start_tournament = start_tournament.on_press(Message::TournamentStart);
+                }
+            } else {
+                start_tournament = start_tournament.on_press(Message::TournamentStart);
+            }
+
+            column = column.push(row![start_tournament, delete_button].spacing(SPACING));
+        }
+
+        column = column.push(self.display_tournament());
+        scrollable(column).spacing(SPACING)
     }
 
     fn letter(

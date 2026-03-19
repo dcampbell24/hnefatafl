@@ -34,6 +34,8 @@ use iced::widget::text_editor;
 use iced_aw::date_picker::Date;
 use serde::{Deserialize, Serialize};
 
+use crate::tabs::TabId;
+
 #[derive(Clone, Copy, Debug, Default, Deserialize, Serialize)]
 pub(crate) enum Coordinates {
     Hide,
@@ -78,7 +80,6 @@ pub(crate) enum JoinGame {
 
 #[derive(Clone, Debug)]
 pub(crate) enum Message {
-    AccountSettings,
     ArchivedGames(Vec<ArchivedGame>),
     ArchivedGamesGet,
     ArchivedGameSelected(ArchivedGame),
@@ -103,7 +104,6 @@ pub(crate) enum Message {
     GameCancel(Id),
     GameDecline(Id),
     GameJoin(Id),
-    GameNew,
     GameResume(Id),
     GameSubmit,
     GameWatch(Id),
@@ -173,6 +173,7 @@ pub(crate) enum Message {
     RoleSelected(Role),
     ServerShutdown,
     StreamConnected(mpsc::Sender<String>),
+    TabSelected(TabId),
     TcpConnectFailed,
     TcpDisconnect,
     TextChanged(String),
@@ -185,14 +186,12 @@ pub(crate) enum Message {
     TextSendLogin,
     Tick,
     Time(TimeEnum),
-    Tournament,
     Tournaments,
     TournamentJoin,
     TournamentLeave,
     TournamentStart,
     TournamentDelete,
     TournamentTreeDelete,
-    Users,
     UsersSortedBy(SortBy),
     VolumeChanged(u32),
     WindowResized((f32, f32)),
@@ -208,16 +207,12 @@ pub(crate) enum Move {
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub(crate) enum Screen {
-    AccountSettings,
     EmailEveryone,
     #[default]
     Login,
     Game,
-    GameNew,
     GameReview,
     Games,
-    Tournament,
-    Users,
 }
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
