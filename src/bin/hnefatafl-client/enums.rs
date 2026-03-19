@@ -92,6 +92,7 @@ pub(crate) enum Message {
     DateCancel,
     DateSubmit(Date),
     DeleteAccount,
+    EmailChanged(String),
     EmailEveryone,
     EmailReset,
     EstimateScore,
