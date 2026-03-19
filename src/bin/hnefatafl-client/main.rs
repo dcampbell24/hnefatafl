@@ -849,7 +849,7 @@ impl<'a> Client {
         }
 
         columns = columns.push(row![
-            button(text!("{} (1)", self.strings["Reset Email"].as_str()))
+            button(text!("{} (6)", self.strings["Reset Email"].as_str()))
                 .on_press(Message::EmailReset)
         ]);
 
@@ -858,7 +858,7 @@ impl<'a> Client {
         }
 
         let mut change_password_button =
-            button(text!("{} (2)", self.strings["Change Password"].as_str()));
+            button(text!("{} (7)", self.strings["Change Password"].as_str()));
 
         if !self.password_ends_with_whitespace {
             change_password_button = change_password_button.on_press(Message::TextSend);
@@ -878,7 +878,7 @@ impl<'a> Client {
         columns = columns.push(
             row![
                 checkbox(self.password_show).on_toggle(Message::PasswordShow),
-                text!("{} (3)", t!("show password")),
+                text!("{} (8)", t!("show password")),
             ]
             .spacing(SPACING),
         );
@@ -886,14 +886,14 @@ impl<'a> Client {
         if self.delete_account {
             columns = columns.push(
                 button(text!(
-                    "{} (4)",
+                    "{} (9)",
                     self.strings["REALLY DELETE ACCOUNT"].as_str()
                 ))
                 .on_press(Message::DeleteAccount),
             );
         } else {
             columns = columns.push(
-                button(text!("{} (4)", self.strings["Delete Account"].as_str()))
+                button(text!("{} (9)", self.strings["Delete Account"].as_str()))
                     .on_press(Message::DeleteAccount),
             );
         }
@@ -2506,7 +2506,6 @@ impl<'a> Client {
                 }
             },
             Message::Press2 => match self.screen {
-                // Fixme: account settings self.send(&format!("change_password {}\n", self.password));
                 Screen::EmailEveryone => {}
                 Screen::Games => self.active_tab = TabId::GameNew,
                 Screen::Game | Screen::GameReview => {
@@ -2540,7 +2539,6 @@ impl<'a> Client {
                 Screen::Login => self.toggle_save_password(),
             },
             Message::Press3 => match self.screen {
-                // Fixme: account settings self.toggle_show_password(),  Screen::AccountSettings,
                 Screen::EmailEveryone => {}
                 Screen::Games => self.active_tab = TabId::Tournament,
                 Screen::Login => self.my_games_only(),
@@ -2574,7 +2572,6 @@ impl<'a> Client {
                 }
             },
             Message::Press4 => match self.screen {
-                // Fixme: account settings self.delete_account(),
                 Screen::EmailEveryone => {}
                 Screen::Games => self.active_tab = TabId::AccountSettings,
                 Screen::Login => self.create_account(),
@@ -2599,11 +2596,11 @@ impl<'a> Client {
                 Screen::EmailEveryone => {}
                 // Fixme: Screen::GameNew => self.game_settings.time = Some(TimeEnum::Classical),
                 Screen::Games => match self.active_tab {
-                    TabId::AccountSettings => todo!(),
+                    TabId::AccountSettings => self.reset_email(),
                     TabId::GameNew => self.game_settings.rated = !self.game_settings.rated,
                     TabId::Games => self.send("archived_games\n"),
                     TabId::Tournament => open_url("https://hnefatafl.org/tournaments.html"),
-                    TabId::Users => todo!(),
+                    TabId::Users => {}
                 },
                 Screen::Login => self.review_game(),
                 Screen::Game | Screen::GameReview => {
@@ -2617,11 +2614,14 @@ impl<'a> Client {
             Message::Press7 => match self.screen {
                 Screen::EmailEveryone => {}
                 Screen::Games => match self.active_tab {
-                    TabId::AccountSettings => todo!(),
+                    // Fixme!
+                    TabId::AccountSettings => {
+                        self.send(&format!("change_password {}\n", self.password));
+                    }
                     TabId::GameNew => self.game_settings.role_selected = Some(Role::Attacker),
                     TabId::Games => open_url("https://hnefatafl.org/rules.html"),
                     TabId::Tournament => self.send("join_tournament\n"),
-                    TabId::Users => todo!(),
+                    TabId::Users => {}
                 },
                 // Fixme: Screen::GameNew => self.game_settings.time = Some(TimeEnum::Long),
                 Screen::Login => self.change_theme(Theme::Dark),
@@ -2634,11 +2634,11 @@ impl<'a> Client {
             Message::Press8 => match self.screen {
                 Screen::EmailEveryone => {}
                 Screen::Games => match self.active_tab {
-                    TabId::AccountSettings => todo!(),
+                    TabId::AccountSettings => self.toggle_show_password(),
                     TabId::GameNew => self.game_settings.role_selected = Some(Role::Defender),
                     TabId::Games => self.my_games_only(),
                     TabId::Tournament => self.send("leave_tournament\n"),
-                    TabId::Users => todo!(),
+                    TabId::Users => {}
                 },
                 // Fixme: Screen::GameNew => self.game_settings.time = Some(TimeEnum::VeryLong),
                 Screen::Login => self.change_theme(Theme::Light),
@@ -2652,10 +2652,10 @@ impl<'a> Client {
                 Screen::EmailEveryone => {}
                 // Fixme: Screen::GameNew => self.game_settings.time = Some(TimeEnum::Infinity),
                 Screen::Games => match self.active_tab {
-                    TabId::AccountSettings => todo!(),
+                    TabId::AccountSettings => self.delete_account(),
                     TabId::GameNew => self.game_settings.board_size = BoardSize::_11,
                     TabId::Games | TabId::Users => self.users_sort_by = SortBy::Rating,
-                    TabId::Tournament => todo!(),
+                    TabId::Tournament => {}
                 },
                 Screen::Login => open_url("https://discord.gg/h56CAHEBXd"),
                 Screen::Game | Screen::GameReview => {
@@ -2667,10 +2667,9 @@ impl<'a> Client {
             Message::Press0 => match self.screen {
                 Screen::EmailEveryone => {}
                 Screen::Games => match self.active_tab {
-                    TabId::AccountSettings => todo!(),
+                    TabId::AccountSettings | TabId::Tournament => {}
                     TabId::GameNew => self.game_settings.board_size = BoardSize::_13,
                     TabId::Games | TabId::Users => self.users_sort_by = SortBy::Name,
-                    TabId::Tournament => todo!(),
                 },
                 Screen::Login => open_url("https://hnefatafl.org"),
                 Screen::Game | Screen::GameReview => {
