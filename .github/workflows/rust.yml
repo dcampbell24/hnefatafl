@@ -34,6 +34,6 @@ jobs:
           rustup update stable
 
           cargo fmt --all --check
-          cargo clippy --examples --features js
-          cargo test --features js
-          cargo test --benches --features js
+          cargo clippy --examples
+          cargo test
+          cargo test --benches
