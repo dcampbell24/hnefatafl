@@ -21,7 +21,7 @@ jobs:
       actions: read # An explanation.
 
     steps:
-      - uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3 # v5
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           persist-credentials: false
 
@@ -34,6 +34,6 @@ jobs:
           rustup update stable
 
           cargo fmt --all --check
-          cargo clippy --examples
-          cargo test
-          cargo test --benches
+          cargo clippy --examples --features js
+          cargo test --features js
+          cargo test --benches --features js
