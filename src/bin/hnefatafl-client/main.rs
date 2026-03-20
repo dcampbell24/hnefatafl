@@ -2332,7 +2332,7 @@ impl<'a> Client {
                 Screen::Games if self.active_tab == TabId::GameNew => {
                     self.game_settings.time = Some(TimeEnum::Rapid);
                 }
-                Screen::Login => self.change_theme(Theme::Tol),
+                Screen::Login => self.review_game(),
                 Screen::EmailEveryone | Screen::Games => {}
             },
             Message::PressB(shift) => match self.screen {
@@ -2626,7 +2626,7 @@ impl<'a> Client {
                     TabId::Tournament => open_url("https://hnefatafl.org/tournaments.html"),
                     TabId::Users => {}
                 },
-                Screen::Login => self.review_game(),
+                Screen::Login => self.change_theme(Theme::Dark),
                 Screen::Game | Screen::GameReview => {
                     if self.screen == Screen::Game || self.screen == Screen::GameReview {
                         self.clear_numbers_except(6);
@@ -2648,7 +2648,7 @@ impl<'a> Client {
                     TabId::Users => {}
                 },
                 // Fixme: Screen::GameNew => self.game_settings.time = Some(TimeEnum::Long),
-                Screen::Login => self.change_theme(Theme::Dark),
+                Screen::Login => self.change_theme(Theme::Light),
                 Screen::Game | Screen::GameReview => {
                     self.clear_numbers_except(7);
                     self.press_numbers[6] = !self.press_numbers[6];
@@ -2665,7 +2665,7 @@ impl<'a> Client {
                     TabId::Users => {}
                 },
                 // Fixme: Screen::GameNew => self.game_settings.time = Some(TimeEnum::VeryLong),
-                Screen::Login => self.change_theme(Theme::Light),
+                Screen::Login => self.change_theme(Theme::Tol),
                 Screen::Game | Screen::GameReview => {
                     self.clear_numbers_except(8);
                     self.press_numbers[7] = !self.press_numbers[7];
@@ -4104,7 +4104,7 @@ impl<'a> Client {
                     error_persistent = error_persistent.push(text(error).style(text::danger));
                 }
 
-                let mut review_game = button(text!("{} (6)", self.strings["Review Game"].as_str()));
+                let mut review_game = button(text!("{} (a)", self.strings["Review Game"].as_str()));
                 if self.archived_game_selected.is_some() {
                     review_game = review_game.on_press(Message::ReviewGame);
                 }
@@ -4156,27 +4156,27 @@ impl<'a> Client {
 
                 let theme = if self.theme == Theme::Light {
                     row![
-                        button(text!("{} (7)", self.strings["Dark"].as_str()))
+                        button(text!("{} (6)", self.strings["Dark"].as_str()))
                             .on_press(Message::ChangeTheme(Theme::Dark)),
-                        button(text!("{} (8)", self.strings["Light"].as_str())),
-                        button(text("Tol (a)")).on_press(Message::ChangeTheme(Theme::Tol)),
+                        button(text!("{} (7)", self.strings["Light"].as_str())),
+                        button(text("Tol (8)")).on_press(Message::ChangeTheme(Theme::Tol)),
                     ]
                     .spacing(SPACING)
                 } else if self.theme == Theme::Dark {
                     row![
-                        button(text!("{} (7)", self.strings["Dark"].as_str())),
-                        button(text!("{} (8)", self.strings["Light"].as_str()))
+                        button(text!("{} (6)", self.strings["Dark"].as_str())),
+                        button(text!("{} (7)", self.strings["Light"].as_str()))
                             .on_press(Message::ChangeTheme(Theme::Light)),
-                        button(text("Tol (a)")).on_press(Message::ChangeTheme(Theme::Tol)),
+                        button(text("Tol (8)")).on_press(Message::ChangeTheme(Theme::Tol)),
                     ]
                     .spacing(SPACING)
                 } else {
                     row![
-                        button(text!("{} (7)", self.strings["Dark"].as_str()))
+                        button(text!("{} (6)", self.strings["Dark"].as_str()))
                             .on_press(Message::ChangeTheme(Theme::Dark)),
-                        button(text!("{} (8)", self.strings["Light"].as_str()))
+                        button(text!("{} (7)", self.strings["Light"].as_str()))
                             .on_press(Message::ChangeTheme(Theme::Light)),
-                        button(text("Tol (a)")),
+                        button(text("Tol (8)")),
                     ]
                     .spacing(SPACING)
                 };
@@ -4222,9 +4222,9 @@ impl<'a> Client {
                     ]
                     .spacing(SPACING),
                     buttons_1,
-                    review_game_pick,
                     row![theme, websites].spacing(SPACING),
                     locale,
+                    review_game_pick,
                     help_text,
                     help_text_2,
                     help_text_3,
