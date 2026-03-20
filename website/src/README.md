@@ -54,5 +54,3 @@ If you have any issues with the software, open an issue on [github][1].
 <a href="https://github.com/sponsors/dcampbell24">
   <img alt="Money PNG by Vecteezy" src="images/money.png" title="Money PNG by Vecteezy">
 </a>
-
-<footer>© 2026 David Lawrence Campbell</footer>
