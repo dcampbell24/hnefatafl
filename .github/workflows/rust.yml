@@ -1,12 +1,16 @@
 on: push
-name: cargo test
+name: All of the Rust Commit Checks
+
+# Make sure CI fails on all warnings, including Clippy lints
+env:
+  RUSTFLAGS: "-D warnings"
 
 permissions:
   actions: read # An explanation.
 
 jobs:
-  cargo_test:
-    name: cargo test
+  clippy_check:
+    name: clippy check
     runs-on: ubuntu-latest
 
     concurrency:
@@ -19,12 +23,17 @@ jobs:
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
-            persist-credentials: false
+          persist-credentials: false
 
-      - name: Run cargo test
+      - name: Run clippy
         run: |
           sudo apt-get update
           sudo apt-get install libasound2-dev mold
+
+          rustup component add clippy rustfmt
           rustup update stable
+
+          cargo fmt --all --check
+          cargo clippy --examples --features js
           cargo test --features js
-          cargo test --benches
+          cargo test --benches --features js
