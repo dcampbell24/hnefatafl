@@ -7,7 +7,7 @@ authors = [
 language = "en"
 
 [rust]
-edition = "2021"
+edition = "2024"
 
 [output.html]
 git-repository-url = "https://github.com/dcampbell24/hnefatafl"
@@ -27,4 +27,6 @@ boost-paragraph = 1
 expand = true
 heading-split-level = 2
 
-[preprocessor.djot]
+[preprocessor.embedify]
+footer.enable = true
+footer.message = "Copyright © 2026 [David Lawrence Campbell](https://dlc.name)"
