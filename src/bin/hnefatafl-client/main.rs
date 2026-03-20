@@ -206,7 +206,6 @@ fn i18n_buttons() -> HashMap<String, String> {
         t!("Get Archived Games").to_string(),
     );
     strings.insert("Heat Map".to_string(), t!("Heat Map").to_string());
-    strings.insert("Join Discord".to_string(), t!("Join Discord").to_string());
     strings.insert("Cancel".to_string(), t!("Cancel").to_string());
     strings.insert("Tournament".to_string(), t!("Tournament").to_string());
     strings.insert(
@@ -4118,9 +4117,10 @@ impl<'a> Client {
 
                 let my_games_text = text!("{} (3)", t!("My Games Only"));
                 let my_games = checkbox(self.my_games_only).on_toggle(Message::MyGamesOnly);
+                let quit = button(text!("{} (Esc)", self.strings["Quit"].as_str()))
+                    .on_press(Message::Leave);
 
-                let buttons_1 =
-                    row![login, create_account, reset_password, review_game].spacing(SPACING);
+                let buttons_1 = row![login, create_account, reset_password, quit].spacing(SPACING);
 
                 let review_game_pick = pick_list(
                     archived_games,
@@ -4129,7 +4129,7 @@ impl<'a> Client {
                 )
                 .placeholder(t!("Archived Games"));
 
-                let review_game_pick = row![review_game_pick].spacing(SPACING);
+                let review_game_pick = row![review_game, review_game_pick].spacing(SPACING);
 
                 let locale = [
                     Locale::English,
@@ -4154,7 +4154,7 @@ impl<'a> Client {
                     pick_list(locale, self.locale_selected, Message::LocaleSelected),
                 ];
 
-                let mut buttons_2 = if self.theme == Theme::Light {
+                let theme = if self.theme == Theme::Light {
                     row![
                         button(text!("{} (7)", self.strings["Dark"].as_str()))
                             .on_press(Message::ChangeTheme(Theme::Dark)),
@@ -4181,21 +4181,16 @@ impl<'a> Client {
                     .spacing(SPACING)
                 };
 
-                let discord = button(text!("{} (9)", self.strings["Join Discord"].as_str()))
-                    .on_press(Message::OpenUrl(
-                        "https://discord.gg/h56CAHEBXd".to_string(),
-                    ));
+                let theme = LabeledFrame::new(text(t!("Theme")), theme);
+                let discord = button(text!("Discord (9)")).on_press(Message::OpenUrl(
+                    "https://discord.gg/h56CAHEBXd".to_string(),
+                ));
 
-                let website = button("https://hnefatafl.org (0)")
+                let website = button("Hnefatafl Org (0)")
                     .on_press(Message::OpenUrl("https://hnefatafl.org".to_string()));
 
-                let quit = button(text!("{} (Esc)", self.strings["Quit"].as_str()))
-                    .on_press(Message::Leave);
-
-                buttons_2 = buttons_2.push(discord);
-                buttons_2 = buttons_2.push(website);
-                buttons_2 = buttons_2.push(quit);
-
+                let websites = row![discord, website].spacing(SPACING);
+                let websites = LabeledFrame::new(text(t!("Websites")), websites);
                 let help_text = container(text!(
                     "Tab: {}, Shift + Tab: {}",
                     self.chars.arrow_right,
@@ -4228,8 +4223,8 @@ impl<'a> Client {
                     .spacing(SPACING),
                     buttons_1,
                     review_game_pick,
+                    row![theme, websites].spacing(SPACING),
                     locale,
-                    buttons_2,
                     help_text,
                     help_text_2,
                     help_text_3,
