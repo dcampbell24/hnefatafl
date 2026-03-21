@@ -53,12 +53,6 @@ path = "Cargo.lock"
 SPDX-License-Identifier = "CC0-1.0"
 SPDX-FileCopyrightText = "NONE"
 
-# Automatically generated files.
-[[annotations]]
-path = "docs/**"
-SPDX-License-Identifier = "CC0-1.0"
-SPDX-FileCopyrightText = "NONE"
-
 # In the Public Domain.
 [[annotations]]
 path = "documents/glicko.pdf"

@@ -1,4 +1,4 @@
-on: push
+on: [push, pull_request]
 name: Security Analysis with zizmor 🌈
 
 permissions:
@@ -28,7 +28,7 @@ jobs:
       - name: Run zizmor 🌈
         run: |
           cd "$GITHUB_WORKSPACE"
-          uvx zizmor --pedantic --gh-token "$GH_TOKEN" .github/workflows/*
+          uvx zizmor --pedantic --gh-token "$GH_TOKEN" .github/
 
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
