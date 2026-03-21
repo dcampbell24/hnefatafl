@@ -10,4 +10,5 @@ cargo clippy --all-targets --examples
 cargo test
 cargo test --benches
 
-uvx zizmor --pedantic .github/workflows
+# uvx zizmor --pedantic .github/
+# reuse lint

@@ -1,4 +1,4 @@
-on: push
+on: [push, pull_request]
 name: All of the Rust Commit Checks
 
 # Make sure CI fails on all warnings, including Clippy lints
