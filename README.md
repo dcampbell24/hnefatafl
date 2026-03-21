@@ -27,7 +27,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 [install-link]: https://hnefatafl.org/install.html
 [REUSE status]: https://api.reuse.software/badge/github.com/dcampbell24/hnefatafl
 [reuse]: https://api.reuse.software/info/github.com/dcampbell24/hnefatafl
-[coverage]: https://img.shields.io/badge/coverage-33.43%25-red
+[coverage]: https://img.shields.io/badge/coverage-32.04%25-red
 [coverage-link]: https://dlc.name/hnefatafl
 
 ![Opening Game](website/src/screenshots/opening_game.png)
