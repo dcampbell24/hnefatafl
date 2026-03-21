@@ -3,7 +3,7 @@
 
 [package]
 name = "hnefatafl-copenhagen"
-version = "5.3.1"
+version = "5.4.0"
 edition = "2024"
 rust-version =  "1.94"
 description = "Copenhagen Hnefatafl client, engine, server and artificial intelligence"
@@ -203,7 +203,7 @@ assets = [
     ["target/release/hnefatafl-text-protocol", "usr/games/", "755"],
 ]
 changelog = "packages/debian/changelog"
-revision = "2"
+revision = "1"
 section = "games"
 
 [package.metadata.bundle]
