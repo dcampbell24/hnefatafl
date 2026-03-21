@@ -4172,7 +4172,9 @@ impl<'a> Client {
                     "You can play on the board by pressing control (Ctrl) or command (⌘) and a letter then a number or vice versa."
                 ));
 
-                let help_text_4 = text(t!("You have a week to move, then you lose the game."));
+                let help_text_4 = text(t!(
+                    "You have at maximum a week to move, then you lose the game."
+                ));
 
                 column![
                     username,
