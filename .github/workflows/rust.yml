@@ -9,8 +9,8 @@ permissions:
   actions: read # An explanation.
 
 jobs:
-  clippy_check:
-    name: clippy check
+  rust_checks:
+    name: Rust Checks
     runs-on: ubuntu-latest
 
     concurrency:
