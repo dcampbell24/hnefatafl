@@ -2628,9 +2628,8 @@ impl<'a> Client {
                         self.send(&format!("change_password {}\n", self.password));
                     }
                     TabId::GameNew => self.game_settings.role_selected = Some(Role::Attacker),
-                    TabId::Games => open_url("https://hnefatafl.org/rules.html"),
+                    TabId::Games | TabId::Users => {}
                     TabId::Tournament => self.send("join_tournament\n"),
-                    TabId::Users => {}
                 },
                 Screen::Login => self.change_theme(Theme::Light),
                 Screen::Game | Screen::GameReview => {
@@ -4096,8 +4095,6 @@ impl<'a> Client {
                 )
                 .placeholder(t!("Archived Games"));
 
-                let review_game_pick = row![review_game, review_game_pick].spacing(SPACING);
-
                 let locale = [
                     Locale::English,
                     Locale::Chinese,
@@ -4192,6 +4189,7 @@ impl<'a> Client {
                     buttons_1,
                     row![theme, websites].spacing(SPACING),
                     locale,
+                    review_game,
                     review_game_pick,
                     help_text,
                     help_text_2,
