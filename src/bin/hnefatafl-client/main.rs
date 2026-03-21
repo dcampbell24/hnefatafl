@@ -20,8 +20,6 @@
 #![cfg_attr(all(windows, not(feature = "console")), windows_subsystem = "windows")]
 #![deny(clippy::unwrap_used)]
 
-// Fixme: we reuse the email when you log out ans switch accounts.
-
 mod archived_game_handle;
 mod command_line;
 mod dimensions;
@@ -2608,7 +2606,6 @@ impl<'a> Client {
             Message::Press5 => match self.screen {
                 Screen::EmailEveryone => {}
                 Screen::Games => self.active_tab = TabId::Users,
-                // Fixme: Screen::GameNew => self.game_settings.time = Some(TimeEnum::Rapid),
                 Screen::Login => self.reset_password(),
                 Screen::Game | Screen::GameReview => {
                     self.clear_numbers_except(5);
@@ -2618,7 +2615,6 @@ impl<'a> Client {
             },
             Message::Press6 => match self.screen {
                 Screen::EmailEveryone => {}
-                // Fixme: Screen::GameNew => self.game_settings.time = Some(TimeEnum::Classical),
                 Screen::Games => match self.active_tab {
                     TabId::AccountSettings => self.reset_email(),
                     TabId::GameNew => self.game_settings.rated = !self.game_settings.rated,
@@ -2638,7 +2634,6 @@ impl<'a> Client {
             Message::Press7 => match self.screen {
                 Screen::EmailEveryone => {}
                 Screen::Games => match self.active_tab {
-                    // Fixme!
                     TabId::AccountSettings => {
                         self.send(&format!("change_password {}\n", self.password));
                     }
@@ -2647,7 +2642,6 @@ impl<'a> Client {
                     TabId::Tournament => self.send("join_tournament\n"),
                     TabId::Users => {}
                 },
-                // Fixme: Screen::GameNew => self.game_settings.time = Some(TimeEnum::Long),
                 Screen::Login => self.change_theme(Theme::Light),
                 Screen::Game | Screen::GameReview => {
                     self.clear_numbers_except(7);
@@ -2664,7 +2658,6 @@ impl<'a> Client {
                     TabId::Tournament => self.send("leave_tournament\n"),
                     TabId::Users => {}
                 },
-                // Fixme: Screen::GameNew => self.game_settings.time = Some(TimeEnum::VeryLong),
                 Screen::Login => self.change_theme(Theme::Tol),
                 Screen::Game | Screen::GameReview => {
                     self.clear_numbers_except(8);
@@ -2674,7 +2667,6 @@ impl<'a> Client {
             },
             Message::Press9 => match self.screen {
                 Screen::EmailEveryone => {}
-                // Fixme: Screen::GameNew => self.game_settings.time = Some(TimeEnum::Infinity),
                 Screen::Games => match self.active_tab {
                     TabId::AccountSettings => self.delete_account(),
                     TabId::GameNew => self.game_settings.board_size = BoardSize::_11,
@@ -3192,9 +3184,7 @@ impl<'a> Client {
             }
             Message::TextSend => {
                 match self.screen {
-                    // Fixme: account settings self.send(&format!("change_password {}\n", self.password));
                     Screen::EmailEveryone => {
-                        // subject == self.text_input
                         let email = self.content.text().replace('\n', "\\n");
                         self.send(&format!("email_everyone {} {email}\n", self.text_input));
                     }
