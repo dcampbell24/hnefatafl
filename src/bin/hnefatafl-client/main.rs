@@ -852,16 +852,14 @@ impl<'a> Client {
         }
 
         columns = columns.push(row![
-            button(text!("{} (6)", self.strings["Reset Email"].as_str()))
-                .on_press(Message::EmailReset)
+            button(text!("{} (6)", self.strings["Reset Email"])).on_press(Message::EmailReset)
         ]);
 
         if let Some(error) = &self.error_email {
             columns = columns.push(row![text!("error: {error}").style(text::danger)]);
         }
 
-        let mut change_password_button =
-            button(text!("{} (7)", self.strings["Change Password"].as_str()));
+        let mut change_password_button = button(text!("{} (7)", self.strings["Change Password"]));
 
         if !self.password_ends_with_whitespace {
             change_password_button = change_password_button.on_press(Message::TextSend);
@@ -888,22 +886,18 @@ impl<'a> Client {
 
         if self.delete_account {
             columns = columns.push(
-                button(text!(
-                    "{} (9)",
-                    self.strings["REALLY DELETE ACCOUNT"].as_str()
-                ))
-                .on_press(Message::DeleteAccount),
+                button(text!("{} (9)", self.strings["REALLY DELETE ACCOUNT"]))
+                    .on_press(Message::DeleteAccount),
             );
         } else {
             columns = columns.push(
-                button(text!("{} (9)", self.strings["Delete Account"].as_str()))
+                button(text!("{} (9)", self.strings["Delete Account"]))
                     .on_press(Message::DeleteAccount),
             );
         }
 
-        columns = columns.push(
-            button(text!("{} (Esc)", self.strings["Quit"].as_str())).on_press(Message::Leave),
-        );
+        columns =
+            columns.push(button(text!("{} (Esc)", self.strings["Quit"])).on_press(Message::Leave));
 
         columns
     }
@@ -1391,13 +1385,12 @@ impl<'a> Client {
             .spacing(SPACING),
         );
 
-        let mut new_game = button(text!("{} (Enter)", self.strings["New Game"].as_str()));
+        let mut new_game = button(text!("{} (Enter)", self.strings["New Game"]));
         if self.game_settings.role_selected.is_some() && self.game_settings.time.is_some() {
             new_game = new_game.on_press(Message::GameSubmit);
         }
 
-        let leave =
-            button(text!("{} (Esc)", self.strings["Quit"].as_str())).on_press(Message::Leave);
+        let leave = button(text!("{} (Esc)", self.strings["Quit"])).on_press(Message::Leave);
 
         let size_11x11 = radio(
             "11x11 (9)",
@@ -1883,11 +1876,10 @@ impl<'a> Client {
             spectators = spectators.push(text(spectator));
         }
 
-        let resign =
-            button(text!("{} (p)", self.strings["Resign"].as_str())).on_press(Message::PlayResign);
+        let resign = button(text!("{} (p)", self.strings["Resign"])).on_press(Message::PlayResign);
 
-        let request_draw = button(text!("{} (q)", self.strings["Request Draw"].as_str()))
-            .on_press(Message::PlayDraw);
+        let request_draw =
+            button(text!("{} (q)", self.strings["Request Draw"])).on_press(Message::PlayDraw);
 
         if !watching {
             if self.my_turn {
@@ -1896,7 +1888,7 @@ impl<'a> Client {
                 let row = if self.request_draw {
                     column![
                         row![
-                            button(text!("{} (r)", self.strings["Accept Draw"].as_str()))
+                            button(text!("{} (r)", self.strings["Accept Draw"]))
                                 .on_press(Message::PlayDrawDecision(Draw::Accept)),
                         ]
                         .spacing(SPACING)
@@ -1924,8 +1916,7 @@ impl<'a> Client {
         .spacing(SPACING);
         user_area = user_area.push(volume);
 
-        let leave =
-            button(text!("{} (Esc)", self.strings["Leave"].as_str())).on_press(Message::Leave);
+        let leave = button(text!("{} (Esc)", self.strings["Leave"])).on_press(Message::Leave);
 
         match status {
             Status::AttackerWins => {
@@ -1946,8 +1937,7 @@ impl<'a> Client {
                 heat_map = heat_map.on_toggle(Message::HeatMap);
             }
 
-            let mut heat_map_button =
-                button(text!("{} (p) (q)", self.strings["Heat Map"].as_str()));
+            let mut heat_map_button = button(text!("{} (p) (q)", self.strings["Heat Map"]));
 
             if !self.estimate_score && *status == Status::Ongoing {
                 heat_map_button = heat_map_button.on_press(Message::EstimateScore);
@@ -3437,26 +3427,26 @@ impl<'a> Client {
             match self.join_game(game) {
                 JoinGame::Cancel => {
                     buttons_row = buttons_row.push(
-                        button(text!("{}{i}", self.strings["Cancel"].as_str()))
+                        button(text!("{}{i}", self.strings["Cancel"]))
                             .on_press(Message::GameCancel(id)),
                     );
                 }
                 JoinGame::Join => {
                     buttons_row = buttons_row.push(
-                        button(text!("{}{i}", self.strings["Join"].as_str()))
+                        button(text!("{}{i}", self.strings["Join"]))
                             .on_press(Message::GameJoin(id)),
                     );
                 }
                 JoinGame::None => {}
                 JoinGame::Resume => {
                     buttons_row = buttons_row.push(
-                        button(text!("{}{i}", self.strings["Resume"].as_str()))
+                        button(text!("{}{i}", self.strings["Resume"]))
                             .on_press(Message::GameResume(id)),
                     );
                 }
                 JoinGame::Watch => {
                     buttons_row = buttons_row.push(
-                        button(text!("{}{i}", self.strings["Watch"].as_str()))
+                        button(text!("{}{i}", self.strings["Watch"]))
                             .on_press(Message::GameWatch(id)),
                     );
                 }
@@ -3466,13 +3456,13 @@ impl<'a> Client {
                 State::Challenger | State::Spectator => {}
                 State::Creator => {
                     buttons_row = buttons_row.push(
-                        button(text!("{}{i}", self.strings["Accept"].as_str()))
+                        button(text!("{}{i}", self.strings["Accept"]))
                             .on_press(Message::GameAccept(id)),
                     );
                     buttons_row = buttons_row.push(
                         button(text!(
                             "{}{}",
-                            self.strings["Decline"].as_str(),
+                            self.strings["Decline"],
                             i.to_ascii_uppercase()
                         ))
                         .on_press(Message::GameDecline(id)),
@@ -3480,7 +3470,7 @@ impl<'a> Client {
                 }
                 State::CreatorOnly => {
                     buttons_row = buttons_row.push(
-                        button(text!("{}{i}", self.strings["Cancel"].as_str()))
+                        button(text!("{}{i}", self.strings["Cancel"]))
                             .on_press(Message::CancelGame(id)),
                     );
                 }
@@ -3546,18 +3536,12 @@ impl<'a> Client {
 
         let my_games_text = text!("{} (8)", t!("My Games Only")).center();
         let my_games = checkbox(self.my_games_only).on_toggle(Message::MyGamesOnly);
-        let get_archived_games =
-            button(text!("{} (6)", self.strings["Get Archived Games"].as_str()))
-                .on_press(Message::ArchivedGamesGet);
+        let get_archived_games = button(text!("{} (6)", self.strings["Get Archived Games"]))
+            .on_press(Message::ArchivedGamesGet);
 
-        let website = button(text!("{} (7)", self.strings["Rules"].as_str())).on_press(
-            Message::OpenUrl("https://hnefatafl.org/rules.html".to_string()),
-        );
+        let quit = button(text!("{} (Esc)", self.strings["Quit"])).on_press(Message::Leave);
 
-        let quit =
-            button(text!("{} (Esc)", self.strings["Quit"].as_str())).on_press(Message::Leave);
-
-        let mut middle = row![get_archived_games, website, quit].spacing(SPACING);
+        let mut middle = row![get_archived_games, quit].spacing(SPACING);
 
         if self.admin {
             middle = middle.push(button("Email Everyone").on_press(Message::EmailEveryone));
@@ -3972,8 +3956,8 @@ impl<'a> Client {
                     .on_action(Message::TextEdit);
 
                 let send_emails = button("Send Emails").on_press(Message::TextSend);
-                let leave = button(text!("{} (Esc)", self.strings["Quit"].as_str()))
-                    .on_press(Message::Leave);
+                let leave =
+                    button(text!("{} (Esc)", self.strings["Quit"])).on_press(Message::Leave);
                 let mut column = column![
                     subject,
                     text("From: Hnefatafl Org <noreply@hnefatafl.org>"),
@@ -4004,15 +3988,12 @@ impl<'a> Client {
                 )
                 .push(
                     TabId::GameNew,
-                    iced_aw::TabLabel::Text(format!(
-                        "{} (2)",
-                        self.strings["Create Game"].as_str()
-                    )),
+                    iced_aw::TabLabel::Text(format!("{} (2)", self.strings["Create Game"])),
                     self.game_new_view(),
                 )
                 .push(
                     TabId::Tournament,
-                    iced_aw::TabLabel::Text(format!("{} (3)", self.strings["Tournament"].as_str())),
+                    iced_aw::TabLabel::Text(format!("{} (3)", self.strings["Tournament"])),
                     self.tournament_view(),
                 )
                 .push(
@@ -4024,8 +4005,7 @@ impl<'a> Client {
                     TabId::Users,
                     iced_aw::TabLabel::Text(format!("{} (5)", self.strings["Users"])),
                     column![
-                        button(text!("{} (Esc)", self.strings["Quit"].as_str()))
-                            .on_press(Message::Leave),
+                        button(text!("{} (Esc)", self.strings["Quit"])).on_press(Message::Leave),
                         self.users(true)
                     ]
                     .padding(PADDING)
@@ -4067,19 +4047,17 @@ impl<'a> Client {
                 let save_password_text = text!("{} (2)", t!("save password"));
                 let save_password = checkbox(self.password_save).on_toggle(Message::PasswordSave);
 
-                let mut login = button(text!("{} (Enter)", self.strings["Login"].as_str()));
+                let mut login = button(text!("{} (Enter)", self.strings["Login"]));
                 if !self.password_ends_with_whitespace {
                     login = login.on_press(Message::TextSendLogin);
                 }
 
-                let mut create_account =
-                    button(text!("{} (4)", self.strings["Create Account"].as_str()));
+                let mut create_account = button(text!("{} (4)", self.strings["Create Account"]));
                 if !self.text_input.is_empty() && !self.password_ends_with_whitespace {
                     create_account = create_account.on_press(Message::TextSendCreateAccount);
                 }
 
-                let mut reset_password =
-                    button(text!("{} (5)", self.strings["Reset Password"].as_str()));
+                let mut reset_password = button(text!("{} (5)", self.strings["Reset Password"]));
                 if !self.text_input.is_empty() {
                     reset_password = reset_password.on_press(Message::ResetPassword);
                 }
@@ -4094,7 +4072,7 @@ impl<'a> Client {
                     error_persistent = error_persistent.push(text(error).style(text::danger));
                 }
 
-                let mut review_game = button(text!("{} (a)", self.strings["Review Game"].as_str()));
+                let mut review_game = button(text!("{} (a)", self.strings["Review Game"]));
                 if self.archived_game_selected.is_some() {
                     review_game = review_game.on_press(Message::ReviewGame);
                 }
@@ -4107,8 +4085,7 @@ impl<'a> Client {
 
                 let my_games_text = text!("{} (3)", t!("My Games Only"));
                 let my_games = checkbox(self.my_games_only).on_toggle(Message::MyGamesOnly);
-                let quit = button(text!("{} (Esc)", self.strings["Quit"].as_str()))
-                    .on_press(Message::Leave);
+                let quit = button(text!("{} (Esc)", self.strings["Quit"])).on_press(Message::Leave);
 
                 let buttons_1 = row![login, create_account, reset_password, quit].spacing(SPACING);
 
@@ -4146,25 +4123,25 @@ impl<'a> Client {
 
                 let theme = if self.theme == Theme::Light {
                     row![
-                        button(text!("{} (6)", self.strings["Dark"].as_str()))
+                        button(text!("{} (6)", self.strings["Dark"]))
                             .on_press(Message::ChangeTheme(Theme::Dark)),
-                        button(text!("{} (7)", self.strings["Light"].as_str())),
+                        button(text!("{} (7)", self.strings["Light"])),
                         button(text("Tol (8)")).on_press(Message::ChangeTheme(Theme::Tol)),
                     ]
                     .spacing(SPACING)
                 } else if self.theme == Theme::Dark {
                     row![
-                        button(text!("{} (6)", self.strings["Dark"].as_str())),
-                        button(text!("{} (7)", self.strings["Light"].as_str()))
+                        button(text!("{} (6)", self.strings["Dark"])),
+                        button(text!("{} (7)", self.strings["Light"]))
                             .on_press(Message::ChangeTheme(Theme::Light)),
                         button(text("Tol (8)")).on_press(Message::ChangeTheme(Theme::Tol)),
                     ]
                     .spacing(SPACING)
                 } else {
                     row![
-                        button(text!("{} (6)", self.strings["Dark"].as_str()))
+                        button(text!("{} (6)", self.strings["Dark"]))
                             .on_press(Message::ChangeTheme(Theme::Dark)),
-                        button(text!("{} (7)", self.strings["Light"].as_str()))
+                        button(text!("{} (7)", self.strings["Light"]))
                             .on_press(Message::ChangeTheme(Theme::Light)),
                         button(text("Tol (8)")),
                     ]
@@ -4176,8 +4153,9 @@ impl<'a> Client {
                     "https://discord.gg/h56CAHEBXd".to_string(),
                 ));
 
-                let website = button("Hnefatafl Org (0)")
-                    .on_press(Message::OpenUrl("https://hnefatafl.org".to_string()));
+                let website = button(text!("{} (0)", self.strings["Rules"])).on_press(
+                    Message::OpenUrl("https://hnefatafl.org/rules.html".to_string()),
+                );
 
                 let websites = row![discord, website].spacing(SPACING);
                 let websites = LabeledFrame::new(text(t!("Websites")), websites);
@@ -4355,9 +4333,8 @@ impl<'a> Client {
 
         let Some(tournament) = &self.tournament else {
             column = column.push(text(t!("There is no tournament.")));
-            column = column.push(
-                button(text!("{} (Esc)", self.strings["Quit"].as_str())).on_press(Message::Leave),
-            );
+            column = column
+                .push(button(text!("{} (Esc)", self.strings["Quit"])).on_press(Message::Leave));
 
             return scrollable(column).spacing(SPACING);
         };
@@ -4369,15 +4346,11 @@ impl<'a> Client {
             tournament.date.strftime("%F %T UTC")
         ));
 
-        let button_0 = button(text!(
-            "{} (6)",
-            self.strings["Tournaments Described"].as_str()
-        ))
-        .on_press(Message::Tournaments);
+        let button_0 = button(text!("{} (6)", self.strings["Tournaments Described"]))
+            .on_press(Message::Tournaments);
 
-        let mut button_1 = button(text!("{} (7)", self.strings["Join Tournament"].as_str()));
-
-        let mut button_2 = button(text!("{} (8)", self.strings["Leave Tournament"].as_str()));
+        let mut button_1 = button(text!("{} (7)", self.strings["Join Tournament"]));
+        let mut button_2 = button(text!("{} (8)", self.strings["Leave Tournament"]));
 
         if tournament.players.contains(&self.username) {
             button_2 = button_2.on_press(Message::TournamentLeave);
@@ -4389,7 +4362,7 @@ impl<'a> Client {
             button_0,
             button_1,
             button_2,
-            button(text!("{} (Esc)", self.strings["Quit"].as_str())).on_press(Message::Leave),
+            button(text!("{} (Esc)", self.strings["Quit"])).on_press(Message::Leave),
         ]
         .spacing(SPACING);
 
