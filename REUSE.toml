@@ -76,6 +76,12 @@ path = "packages/**"
 SPDX-License-Identifier = "MIT"
 SPDX-FileCopyrightText = "2025 David Campbell <david@hnefatafl.org>"
 
+# Really proprietary, but that is not a SPDX license.
+[[annotations]]
+path = "packages/chocolatey/helmet.ico"
+SPDX-License-Identifier = "CC-BY-NC-ND-4.0"
+SPDX-FileCopyrightText = "2025 David Campbell <david@hnefatafl.org>"
+
 [[annotations]]
 path = "src/bin/hnefatafl-client/assets/*.ogg"
 SPDX-License-Identifier = "AGPL-3.0-or-later"
