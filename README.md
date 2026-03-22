@@ -15,11 +15,11 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 [![REUSE status]][reuse]&ensp;
 [![coverage]][coverage-link]
 
-[github]: https://img.shields.io/badge/github-111111?logo=github
+[github]: https://img.shields.io/badge/GitHub-111111?logo=github
 [github-link]: https://github.com/dcampbell24/hnefatafl
-[codeberg]: https://img.shields.io/badge/codeberg-eeeeee?logo=codeberg
+[codeberg]: https://img.shields.io/badge/Codeberg-eeeeee?logo=codeberg
 [codeberg-link]: https://codeberg.org/dcampbell/hnefatafl
-[Discord]:  https://img.shields.io/badge/discord-111111?logo=discord
+[Discord]:  https://img.shields.io/badge/Discord-111111?logo=discord
 [discord-link]: https://discord.gg/h56CAHEBXd
 [docs-rs]: https://img.shields.io/badge/docs.rs-66c2a5?logo=docs.rs
 [docs-rs-link]: https://docs.rs/hnefatafl-copenhagen
