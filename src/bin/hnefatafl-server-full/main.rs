@@ -1286,7 +1286,7 @@ impl Server {
         info!("{index_supplied} {username} email {}", email.tx());
 
         let email_send = lettre::Message::builder()
-            .from("Hnefatafl Org <no-reply@hnefatafl.org>".parse().ok()?)
+            .from("Hnefatafl Org <noreply@hnefatafl.org>".parse().ok()?)
             .to(email.to_mailbox()?)
             .subject("Account Verification")
             .header(ContentType::TEXT_PLAIN)
@@ -1540,7 +1540,7 @@ impl Server {
                     }
 
                     let email = email
-                        .from("Hnefatafl Org <no-reply@hnefatafl.org>".parse().ok()?)
+                        .from("Hnefatafl Org <noreply@hnefatafl.org>".parse().ok()?)
                         .subject(*subject)
                         .header(ContentType::TEXT_PLAIN)
                         .body(email_string)
@@ -1718,7 +1718,7 @@ impl Server {
                                 account.password = hash_password(&password)?;
 
                                 let message = lettre::Message::builder()
-                                .from("Hnefatafl Org <no-reply@hnefatafl.org>".parse().ok()?)
+                                .from("Hnefatafl Org <noreply@hnefatafl.org>".parse().ok()?)
                                 .to(email.to_mailbox()?)
                                 .subject("Password Reset")
                                 .header(ContentType::TEXT_PLAIN)
