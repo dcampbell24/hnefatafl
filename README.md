@@ -70,7 +70,7 @@ and run a client:
 ```sh
 # On Windows pass to cargo `--features console` to see console output.
 # Pass to cargo `--features debug` to enable iced debugging.
-cargo run --release --example hnefatafl-client -- --host localhost
+cargo run --release --bin hnefatafl-client -- --host localhost
 ```
 
 If you are running on Linux, you'll need some dependencies as [described] on the
