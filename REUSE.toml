@@ -1,23 +1,5 @@
 version = 1
 
-# https://commons.wikimedia.org/wiki/File:Codeberg_logo_horizontal.svg
-[[annotations]]
-path = "assets/codeberg.png"
-SPDX-License-Identifier = "CC0-1.0"
-SPDX-FileCopyrightText = "NONE"
-
-# Really proprietary, but that is not a SPDX license.
-[[annotations]]
-path = "assets/Discord-Logo-Blurple.png"
-SPDX-License-Identifier = "CC-BY-NC-ND-4.0"
-SPDX-FileCopyrightText = "https://discord.com/branding"
-
-# Really proprietary, but that is not a SPDX license.
-[[annotations]]
-path = "assets/github.png"
-SPDX-License-Identifier = "CC-BY-NC-ND-4.0"
-SPDX-FileCopyrightText = "https://brand.github.com/foundations/logo"
-
 # Really proprietary, but that is not a SPDX license.
 [[annotations]]
 path = "assets/header.png"
