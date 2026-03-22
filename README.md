@@ -17,7 +17,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 [github]: https://img.shields.io/badge/github-111111?logo=github
 [github-link]: https://github.com/dcampbell24/hnefatafl
-[codeberg]: https://img.shields.io/badge/codeberg-ffffff?logo=codeberg
+[codeberg]: https://img.shields.io/badge/codeberg-eeeeee?logo=codeberg
 [codeberg-link]: https://codeberg.org/dcampbell/hnefatafl
 [Discord]:  https://img.shields.io/badge/discord-111111?logo=discord
 [discord-link]: https://discord.gg/h56CAHEBXd
