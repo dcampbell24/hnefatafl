@@ -23,6 +23,31 @@ or in a terminal run `\usr\bin\hnefatafl-client`.
 [AUR]: https://img.shields.io/aur/version/hnefatafl-copenhagen
 [aur-link]: https://aur.archlinux.org/packages/hnefatafl-copenhagen
 
+## Cargo (Linux, macOS, Windows) [![crates-io]][crates-io-link]
+
+### Dependencies (Linux)
+
+ALSA development files are needed to build `cpal` on Linux (`rodio` dependency,
+`hnefatafl-client` dependency). These are provided as part of the
+`alsa-lib` package on Arch, `libasound2-dev` package on Debian and Ubuntu, and
+`alsa-lib-devel` on Fedora.
+
+The package uses the `mold` linker. This is provided via the `mold`
+package on Arch, Debian, Ubuntu, and Fedora.
+
+### Run
+
+In your terminal run the following to run the client with [Rust's] cargo:
+
+```sh
+cargo install hnefatafl-copenhagen
+hnefatafl-client
+```
+
+[crates-io]: https://img.shields.io/crates/v/hnefatafl-copenhagen.svg
+[crates-io-link]: https://crates.io/crates/hnefatafl-copenhagen
+[Rust's]: https://www.rust-lang.org/learn/get-started
+
 ## Chocolatey (Windows) [![chocolatey]][choco-link]
 
 Install [Chocolatey](https://chocolatey.org/install).
@@ -70,31 +95,6 @@ sudo apt update && sudo apt install hnefatafl-copenhagen
 
 Then under KDE go to `Application Launcher -> Games -> Hnefatafl Copenhagen`
 or in a terminal run `\usr\games\hnefatafl-client`.
-
-## Cargo (Linux, macOS, Windows) [![crates-io]][crates-io-link]
-
-### Dependencies (Linux)
-
-ALSA development files are needed to build `cpal` on Linux (`rodio` dependency,
-`hnefatafl-client` dependency). These are provided as part of the
-`alsa-lib` package on Arch, `libasound2-dev` package on Debian and Ubuntu, and
-`alsa-lib-devel` on Fedora.
-
-The package uses the `mold` linker. This is provided via the `mold`
-package on Arch, Debian, Ubuntu, and Fedora.
-
-### Run
-
-In your terminal run the following to run the client with [Rust's] cargo:
-
-```sh
-cargo install hnefatafl-copenhagen
-hnefatafl-client
-```
-
-[crates-io]: https://img.shields.io/crates/v/hnefatafl-copenhagen.svg
-[crates-io-link]: https://crates.io/crates/hnefatafl-copenhagen
-[Rust's]: https://www.rust-lang.org/learn/get-started
 
 ## Flatpak (Linux) [![flathub]][flathub-link]
 
@@ -210,15 +210,45 @@ There are also at least these bugs:
 4. I think you have to restart Redox after entering the application, because
    TcpStream shutdown is not implemented.
 
-## Source [![github]][github-link]
+## Source [![github]][github-link] [![codeberg]][codeberg-link]
 
-See the github [README.md] file.
+First you need to install [Rust]. If running on Linux, then you need to
+install [dependencies]. Then:
 
-[github]: https://img.shields.io/badge/github-8da0cb?logo=github
+```sh
+git clone https://github.com/dcampbell24/hnefatafl.git
+# or
+git clone https://codeberg.org/dcampbell/hnefatafl.git
+
+cd hnefatafl
+```
+
+You can pass `-- --help` to any of the following commands to get all of the
+runtime options.
+
+Then you can run the engine with:
+
+```sh
+cargo run --release --bin hnefatafl-text-protocol -- --display-game
+```
+
+or you can start a local server:
+
+```sh
+cargo run --release
+```
+
+and run a local client:
+
+```sh
+# On Windows pass to cargo `--features console` to see console output.
+# Pass to cargo `--features debug` to enable iced debugging.
+cargo run --release --bin hnefatafl-client -- --host localhost
+```
+
+[dependencies]: https://hnefatafl.org/install.html#dependencies-linux
+[github]: https://img.shields.io/badge/GitHub-111111?logo=github
 [github-link]: https://github.com/dcampbell24/hnefatafl
-[README.md]: https://github.com/dcampbell24/hnefatafl?tab=readme-ov-file#building-and-running
-
-## Note
-
-At the moment their may be fairly regular updates. If you run into problems,
-make sure you are running the latest version.
+[codeberg]: https://img.shields.io/badge/Codeberg-eeeeee?logo=codeberg
+[codeberg-link]: https://codeberg.org/dcampbell/hnefatafl
+[Rust]: https://rust-lang.org/learn/get-started/

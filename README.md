@@ -7,24 +7,15 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 [Copenhagen Hnefatafl]: https://hnefatafl.org
 
-[![github]][github-link]&ensp;
-[![codeberg]][codeberg-link]&ensp;
 [![Discord]][discord-link]&ensp;
-[![Install]][install-link]&ensp;
 [![docs-rs]][docs-rs-link]&ensp;
 [![REUSE status]][reuse]&ensp;
 [![coverage]][coverage-link]
 
-[github]: https://img.shields.io/badge/GitHub-111111?logo=github
-[github-link]: https://github.com/dcampbell24/hnefatafl
-[codeberg]: https://img.shields.io/badge/Codeberg-eeeeee?logo=codeberg
-[codeberg-link]: https://codeberg.org/dcampbell/hnefatafl
 [Discord]:  https://img.shields.io/badge/Discord-111111?logo=discord
 [discord-link]: https://discord.gg/h56CAHEBXd
 [docs-rs]: https://img.shields.io/badge/docs.rs-66c2a5?logo=docs.rs
 [docs-rs-link]: https://docs.rs/hnefatafl-copenhagen
-[Install]: https://img.shields.io/badge/Install-blue
-[install-link]: https://hnefatafl.org/install.html
 [REUSE status]: https://api.reuse.software/badge/github.com/dcampbell24/hnefatafl
 [reuse]: https://api.reuse.software/info/github.com/dcampbell24/hnefatafl
 [coverage]: https://img.shields.io/badge/coverage-32.04%25-red
@@ -43,42 +34,9 @@ help on how to use the engine see the module [documentation].
 
 ## Building and Running
 
-First you need to install [Rust]. Then:
+Take a look at all of the [installation options].
 
-```sh
-git clone https://github.com/dcampbell24/hnefatafl.git
-cd hnefatafl
-```
-
-You can pass `-- --help` to any of the following commands to get all of the
-runtime options.
-
-Then you can run the engine with:
-
-```sh
-cargo run --release --bin hnefatafl-text-protocol -- --display-game
-```
-
-or you can start a local server:
-
-```sh
-cargo run --release
-```
-
-and run a client:
-
-```sh
-# On Windows pass to cargo `--features console` to see console output.
-# Pass to cargo `--features debug` to enable iced debugging.
-cargo run --release --bin hnefatafl-client -- --host localhost
-```
-
-If you are running on Linux, you'll need some dependencies as [described] on the
-[website].
-
-[Rust]: https://rust-lang.org/learn/get-started/
-[described]: https://hnefatafl.org/install.html#dependencies-linux
-[website]: https://hnefatafl.org
+[installation options]: https://hnefatafl.org/install.html
 
 ## Icon
 
