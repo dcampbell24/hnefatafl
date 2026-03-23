@@ -12,7 +12,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
     width="100"
     href="#hnefatafl"
   ></td>
-  <td valign="center"><a class="header" height="100" href="https://hnefatafl.org">
+  <td valign="center"><a class="header" href="https://hnefatafl.org">
     Hnefatafl Copenhagen
   </a></td>
   </tr></table>
