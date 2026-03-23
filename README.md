@@ -6,7 +6,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 <h1 id="hnefatafl">
   <table style="border: none !important;"><tr>
   <td valign="center"><img
-    alt="Icon"
+    alt="Helmet"
     src="assets/helmet.svg"
     title="Derived from an image by Marvin Tubat (https://www.freelancer.com/u/marvintubat123)"
     width="100"
