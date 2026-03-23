@@ -4,7 +4,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 <-->
 
 <h1 id="hnefatafl">
-  <table style="border: none;"><tr>
+  <table style="border: none !important;"><tr>
   <td valign="center"><img
     alt="Icon"
     src="assets/helmet.svg"
