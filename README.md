@@ -3,17 +3,19 @@ SPDX-FileCopyrightText: 2025 David Campbell <david@hnefatafl.org>
 SPDX-License-Identifier: AGPL-3.0-or-later
 <-->
 
-<h1 id="hnefatafl" align="center" style="display: flex; align-items: center;">
-  <img
+<h1 id="hnefatafl">
+  <table style="border: none;"><tr>
+  <td valign="center"><img
     alt="Icon"
     src="assets/helmet.svg"
     title="Derived from an image by Marvin Tubat (https://www.freelancer.com/u/marvintubat123)"
     width="100"
     href="#hnefatafl"
-  >
-  <a align="center" class="header" height="100" href="https://hnefatafl.org">
+  ></td>
+  <td valign="center"><a class="header" height="100" href="https://hnefatafl.org">
     Hnefatafl Copenhagen
-  </a>
+  </a></td>
+  </tr><table>
 </h1>
 
 [![Discord]][discord-link]&ensp;
