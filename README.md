@@ -3,9 +3,18 @@ SPDX-FileCopyrightText: 2025 David Campbell <david@hnefatafl.org>
 SPDX-License-Identifier: AGPL-3.0-or-later
 <-->
 
-# [Copenhagen Hnefatafl]
-
-[Copenhagen Hnefatafl]: https://hnefatafl.org
+<h1 id="hnefatafl" style="display: flex; align-items: center;">
+  <img
+    alt="Icon"
+    src="assets/helmet.svg"
+    title="Derived from an image by Marvin Tubat (https://www.freelancer.com/u/marvintubat123)"
+    width="100"
+    href="#hnefatafl"
+  >
+  <a class="header" height="100" href="https://hnefatafl.org">
+    Hnefatafl Copenhagen
+  </a>
+</h1>
 
 [![Discord]][discord-link]&ensp;
 [![docs-rs]][docs-rs-link]&ensp;
@@ -37,13 +46,6 @@ help on how to use the engine see the module [documentation].
 Take a look at all of the [installation options].
 
 [installation options]: https://hnefatafl.org/install.html
-
-## Icon
-
-<img src="assets/helmet.svg" alt="drawing" width="100"/> is derived from an
-image by [Marvin Tubat].
-
-[Marvin Tubat]: https://www.freelancer.com/u/marvintubat123
 
 ## License
 
