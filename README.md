@@ -3,7 +3,7 @@ SPDX-FileCopyrightText: 2025 David Campbell <david@hnefatafl.org>
 SPDX-License-Identifier: AGPL-3.0-or-later
 <-->
 
-<h1 id="hnefatafl" style="display: flex; align-items: center;">
+<h1 id="hnefatafl" align="center" style="display: flex; align-items: center;">
   <img
     alt="Icon"
     src="assets/helmet.svg"
