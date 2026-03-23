@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Update the README.md and descriptions.
+- Update the README.md.
 - hnefatafl-server-full: Replace <no-reply@hnefatafl.org> with <noreply@hnefatafl.org>.
 
 ## [5.4.0] - 2026-03-21
