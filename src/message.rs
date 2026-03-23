@@ -46,7 +46,7 @@ use crate::{
 ///
 /// ```sh
 /// cargo install wasm-pack
-/// make js
+/// wasm-pack build --target web --no-default-features --features js
 /// ```
 ///
 /// Then copy the pkg folder to your web browser's site folder. For example with Apache on Debian:
