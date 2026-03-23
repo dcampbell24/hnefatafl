@@ -15,7 +15,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
   <td valign="center"><a class="header" height="100" href="https://hnefatafl.org">
     Hnefatafl Copenhagen
   </a></td>
-  </tr><table>
+  </tr></table>
 </h1>
 
 [![Discord]][discord-link]&ensp;
