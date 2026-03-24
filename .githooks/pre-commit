@@ -10,5 +10,8 @@ cargo clippy --all-targets --examples
 cargo test
 cargo test --benches
 
-uvx zizmor --pedantic .github/
+# cargo install zizmor --locked
+zizmor --pedantic .github/
+
+# sudo apt-get install reuse
 reuse lint
