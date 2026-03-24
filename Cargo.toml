@@ -55,7 +55,6 @@ rustc-hash = "2"
 rust-i18n = "3"
 serde = { version = "1", features = ["derive", "rc"] }
 thiserror = "2"
-toml = { version = "1",  optional = true }
 
 # client
 iced_aw = { version = "0.13", default-features = false, features = ["date_picker", "labeled_frame", "tabs"], optional = true }
@@ -64,6 +63,9 @@ rodio = { version = "0.22", default-features = false, features = ["playback", "v
 smol_str = { version = "0.3", optional = true }
 sys-locale = { version = "0.3", optional = true }
 webbrowser = { version = "1", features = ["hardened"], optional = true }
+
+# count-keys
+toml = { version = "1",  optional = true }
 
 # js engine
 getrandom = { version = "0.4", optional = true }
