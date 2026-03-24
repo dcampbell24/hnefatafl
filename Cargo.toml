@@ -83,7 +83,7 @@ lettre = { version = "0.11", optional = true }
 password-hash = { version = "0.6", optional = true }
 
 [features]
-default = ["client", "server", "toml"]
+default = ["client", "server"]
 client = ["dep:iced", "dep:iced_aw", "dep:image", "dep:rodio", "dep:smol_str", "socket", "dep:sys-locale", "dep:webbrowser"]
 console = []
 debug =  ["iced?/debug"]
