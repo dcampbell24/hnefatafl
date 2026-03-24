@@ -5,13 +5,12 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 <h1 id="hnefatafl">
   <table style="border: none !important;"><tr>
-  <td valign="center"><img
+  <td valign="center"><a href="https://www.freelancer.com/u/marvintubat123"><img
     alt="Helmet"
     src="assets/helmet.svg"
     title="Derived from an image by Marvin Tubat."
     width="100"
-    href="https://www.freelancer.com/u/marvintubat123"
-  ></td>
+  ></a></td>
   <td valign="center"><a class="header" href="https://hnefatafl.org">
     Hnefatafl Copenhagen
   </a></td>
