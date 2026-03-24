@@ -20,7 +20,7 @@ yay --sync hnefatafl-copenhagen
 Then under KDE go to `Application Launcher -> Games -> Hnefatafl Copenhagen`
 or in a terminal run `\usr\bin\hnefatafl-client`.
 
-[AUR]: https://img.shields.io/aur/version/hnefatafl-copenhagen
+[AUR]: https://img.shields.io/aur/version/hnefatafl-copenhagen?logo=archlinux
 [aur-link]: https://aur.archlinux.org/packages/hnefatafl-copenhagen
 
 ## Cargo (Linux, macOS, Windows) [![crates-io]][crates-io-link]
@@ -44,7 +44,7 @@ cargo install hnefatafl-copenhagen
 hnefatafl-client
 ```
 
-[crates-io]: https://img.shields.io/crates/v/hnefatafl-copenhagen.svg
+[crates-io]: https://img.shields.io/crates/v/hnefatafl-copenhagen.svg?logo=rust
 [crates-io-link]: https://crates.io/crates/hnefatafl-copenhagen
 [Rust's]: https://www.rust-lang.org/learn/get-started
 
@@ -56,10 +56,12 @@ Then install [hnefatafl-copenhagen](https://community.chocolatey.org/packages/hn
 
 Go to the Start menu and run Hnefatafl.
 
-[chocolatey]: https://img.shields.io/chocolatey/v/hnefatafl-copenhagen
+[chocolatey]: https://img.shields.io/chocolatey/v/hnefatafl-copenhagen?logo=chocolatey
 [choco-link]: https://community.chocolatey.org/packages/hnefatafl-copenhagen/
 
-## Debian and Derivatives (Linux)
+## Debian and Derivatives (Linux) ![deb]
+
+[deb]: https://img.shields.io/badge/-111111?logo=debian
 
 Run:
 
@@ -103,7 +105,7 @@ See [flathub.org](https://flathub.org/apps/org.hnefatafl.hnefatafl_client).
 Or after installing the application under KDE go to
 `Application Launcher -> Games -> Hnefatafl Copenhagen`
 
-[flathub]: https://img.shields.io/flathub/v/org.hnefatafl.hnefatafl_client
+[flathub]: https://img.shields.io/flathub/v/org.hnefatafl.hnefatafl_client?logo=flathub
 [flathub-link]: https://flathub.org/apps/org.hnefatafl.hnefatafl_client
 
 ## F-Droid (Android)
@@ -144,7 +146,7 @@ go to the `Preferences` -> `Output`, then increase the `Display scale %`.
 
 ## NPM [![npm]][npm-link]
 
-[npm]: https://img.shields.io/npm/v/hnefatafl-copenhagen
+[npm]: https://img.shields.io/npm/v/hnefatafl-copenhagen?logo=npm
 [npm-link]: https://www.npmjs.com/package/hnefatafl-copenhagen
 
 ```sh
