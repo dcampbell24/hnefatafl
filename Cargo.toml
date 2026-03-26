@@ -114,6 +114,7 @@ test = false
 
 [[bin]]
 name = "hnefatafl-ai"
+required-features = ["socket"]
 bench = false
 test = false
 
