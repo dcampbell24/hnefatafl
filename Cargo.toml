@@ -80,7 +80,7 @@ reqwest = { version = "0.13", features = ["blocking"], optional = true }
 # server
 argon2 = { version = "0.6.0-rc.7", optional = true }
 ctrlc = { version = "3", features = ["termination"], optional = true }
-itertools = { version = "0.14.0", optional = true }
+itertools = { version = "0.14", optional = true }
 lettre = { version = "0.11", optional = true }
 password-hash = { version = "0.6", optional = true }
 
