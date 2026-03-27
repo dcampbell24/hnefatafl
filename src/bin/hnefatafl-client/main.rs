@@ -84,7 +84,8 @@ use iced::{
     window::{self, icon},
 };
 use iced_aw::{
-    ICED_AW_FONT_BYTES, Tabs, date_picker::Date, helpers::date_picker, widget::LabeledFrame,
+    ICED_AW_FONT_BYTES, Tabs, date_picker::Date, helpers::date_picker, number_input,
+    widget::LabeledFrame,
 };
 use image::ImageFormat;
 use jiff::Timestamp;
@@ -136,6 +137,7 @@ const BOARD_LETTERS_LOWERCASE: [char; 13] = [
 const ARCHIVED_GAMES_FILE: &str = "archived-games.postcard";
 const USER_CONFIG_FILE: &str = "user.ron";
 
+const MAX_RATING: f64 = 100_000.0;
 const PADDING: u16 = 8;
 const PADDING_SMALL: u16 = 2;
 const PADDING_MEDIUM: u16 = 4;
@@ -335,6 +337,10 @@ fn init_client() -> Client {
     let mut letters = HashMap::new();
     for ch in BOARD_LETTERS_LOWERCASE {
         letters.insert(ch, false);
+    }
+
+    if client.rating_maximum == 0.0 {
+        client.rating_maximum = MAX_RATING;
     }
 
     client
@@ -750,6 +756,10 @@ struct Client {
     press_letters: HashSet<char>,
     #[serde(skip)]
     press_numbers: [bool; 13],
+    #[serde(default)]
+    rating_minimum: f64,
+    #[serde(default)]
+    rating_maximum: f64,
     #[serde(skip)]
     request_draw: bool,
     #[serde(skip)]
@@ -1467,6 +1477,24 @@ impl<'a> Client {
         column![rated, row_role, row_board_size, row_time, leave]
     }
 
+    fn games_filtered(&mut self) {
+        let filtered_games = self.archived_games.iter().filter(|game| {
+            let rating = f64::max(game.attacker_rating.rating, game.defender_rating.rating);
+            rating >= self.rating_minimum && rating <= self.rating_maximum
+        });
+
+        if self.my_games_only {
+            self.archived_games_filtered = Some(
+                filtered_games
+                    .filter(|game| game.attacker == self.username || game.defender == self.username)
+                    .cloned()
+                    .collect(),
+            );
+        } else {
+            self.archived_games_filtered = Some(filtered_games.cloned().collect());
+        }
+    }
+
     fn game_submit(&mut self) {
         let Some(role) = self.game_settings.role_selected else {
             error!("No role selected.");
@@ -2056,20 +2084,8 @@ impl<'a> Client {
     }
 
     fn my_games_only(&mut self) {
-        let selected = !self.my_games_only;
-        if selected {
-            self.archived_games_filtered = Some(
-                self.archived_games
-                    .iter()
-                    .filter(|game| game.attacker == self.username || game.defender == self.username)
-                    .cloned()
-                    .collect(),
-            );
-        } else {
-            self.archived_games_filtered = None;
-        }
-
-        self.my_games_only = selected;
+        self.my_games_only = !self.my_games_only;
+        self.games_filtered();
         handle_error(self.save_client_ron());
     }
 
@@ -2695,6 +2711,16 @@ impl<'a> Client {
                     self.volume.0 = self.volume.0.saturating_add(1);
                 }
             },
+            Message::RatingMaximumChanged(rating) => {
+                self.rating_maximum = rating;
+                self.games_filtered();
+                handle_error(self.save_client_ron());
+            }
+            Message::RatingMinimumChanged(rating) => {
+                self.rating_minimum = rating;
+                self.games_filtered();
+                handle_error(self.save_client_ron());
+            }
             Message::ServerShutdown => {
                 self.error_persistent
                     .push(t!("The server was shut down.").to_string());
@@ -4071,10 +4097,31 @@ impl<'a> Client {
                     error_persistent = error_persistent.push(text(error).style(text::danger));
                 }
 
+                let minimum_rating = number_input(
+                    &self.rating_minimum,
+                    0.0..=self.rating_maximum,
+                    Message::RatingMinimumChanged,
+                );
+
+                let maximum_rating = number_input(
+                    &self.rating_maximum,
+                    self.rating_minimum..=MAX_RATING,
+                    Message::RatingMaximumChanged,
+                );
+
                 let mut review_game = button(text!("{} (a)", self.strings["Review Game"]));
                 if self.archived_game_selected.is_some() {
                     review_game = review_game.on_press(Message::ReviewGame);
                 }
+
+                let review_game = row![
+                    review_game,
+                    text(t!("Minimum Rating")),
+                    minimum_rating,
+                    text(t!("Maximum Rating")),
+                    maximum_rating
+                ]
+                .spacing(SPACING);
 
                 let archived_games = if let Some(archived_games) = &self.archived_games_filtered {
                     archived_games.clone()
@@ -4254,6 +4301,8 @@ impl<'a> Client {
             password,
             password_save: self.password_save,
             password_show: self.password_show,
+            rating_maximum: self.rating_maximum,
+            rating_minimum: self.rating_minimum,
             sound_muted: self.sound_muted,
             theme: self.theme,
             username: self.username.clone(),
