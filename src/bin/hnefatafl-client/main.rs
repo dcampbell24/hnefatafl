@@ -155,75 +155,6 @@ const TICK_U: u64 = 100;
 
 rust_i18n::i18n!();
 
-fn i18n_buttons() -> HashMap<String, String> {
-    let mut strings = HashMap::new();
-
-    strings.insert("Login".to_string(), t!("Login").to_string());
-    strings.insert(
-        "Create Account".to_string(),
-        t!("Create Account").to_string(),
-    );
-    strings.insert(
-        "Reset Password".to_string(),
-        t!("Reset Password").to_string(),
-    );
-    strings.insert("Leave".to_string(), t!("Leave").to_string());
-    strings.insert("Quit".to_string(), t!("Quit").to_string());
-    strings.insert("Dark".to_string(), t!("Dark").to_string());
-    strings.insert("Light".to_string(), t!("Light").to_string());
-    strings.insert("Create Game".to_string(), t!("Create Game").to_string());
-    strings.insert("Users".to_string(), t!("Users").to_string());
-    strings.insert(
-        "Account Settings".to_string(),
-        t!("Account Settings").to_string(),
-    );
-    strings.insert("Rules".to_string(), t!("Rules").to_string());
-    strings.insert("Reset Email".to_string(), t!("Reset Email").to_string());
-    strings.insert(
-        "Change Password".to_string(),
-        t!("Change Password").to_string(),
-    );
-    strings.insert(
-        "Delete Account".to_string(),
-        t!("Delete Account").to_string(),
-    );
-    strings.insert(
-        "REALLY DELETE ACCOUNT".to_string(),
-        t!("REALLY DELETE ACCOUNT").to_string(),
-    );
-    strings.insert("New Game".to_string(), t!("New Game").to_string());
-    strings.insert("Accept".to_string(), t!("Accept").to_string());
-    strings.insert("Decline".to_string(), t!("Decline").to_string());
-    strings.insert("Watch".to_string(), t!("Watch").to_string());
-    strings.insert("Join".to_string(), t!("Join").to_string());
-    strings.insert("Resume".to_string(), t!("Resume").to_string());
-    strings.insert("Resign".to_string(), t!("Resign").to_string());
-    strings.insert("Request Draw".to_string(), t!("Request Draw").to_string());
-    strings.insert("Accept Draw".to_string(), t!("Accept Draw").to_string());
-    strings.insert("Review Game".to_string(), t!("Review Game").to_string());
-    strings.insert(
-        "Get Archived Games".to_string(),
-        t!("Get Archived Games").to_string(),
-    );
-    strings.insert("Heat Map".to_string(), t!("Heat Map").to_string());
-    strings.insert("Cancel".to_string(), t!("Cancel").to_string());
-    strings.insert("Tournament".to_string(), t!("Tournament").to_string());
-    strings.insert(
-        "Join Tournament".to_string(),
-        t!("Join Tournament").to_string(),
-    );
-    strings.insert(
-        "Leave Tournament".to_string(),
-        t!("Leave Tournament").to_string(),
-    );
-    strings.insert(
-        "Tournaments Described".to_string(),
-        t!("Tournaments Described").to_string(),
-    );
-
-    strings
-}
-
 #[allow(clippy::too_many_lines)]
 fn init_client() -> Client {
     let archived_games_file = data_file(ARCHIVED_GAMES_FILE);
@@ -293,7 +224,6 @@ fn init_client() -> Client {
         }
     }
 
-    client.strings = i18n_buttons();
     client.text_input.clone_from(&client.username);
 
     let archived_games: Vec<ArchivedGame> = match &fs::read(&archived_games_file) {
@@ -777,8 +707,6 @@ struct Client {
     #[serde(skip)]
     status: Status,
     #[serde(skip)]
-    strings: HashMap<String, String>,
-    #[serde(skip)]
     texts: VecDeque<String>,
     #[serde(skip)]
     texts_game: VecDeque<String>,
@@ -866,14 +794,14 @@ impl<'a> Client {
         }
 
         columns = columns.push(row![
-            button(text!("{} (6)", self.strings["Reset Email"])).on_press(Message::EmailReset)
+            button(text!("{} (6)", t!("Reset Email"))).on_press(Message::EmailReset)
         ]);
 
         if let Some(error) = &self.error_email {
             columns = columns.push(row![text!("error: {error}").style(text::danger)]);
         }
 
-        let mut change_password_button = button(text!("{} (7)", self.strings["Change Password"]));
+        let mut change_password_button = button(text!("{} (7)", t!("Change Password")));
 
         if !self.password_ends_with_whitespace {
             change_password_button = change_password_button.on_press(Message::TextSend);
@@ -900,18 +828,16 @@ impl<'a> Client {
 
         if self.delete_account {
             columns = columns.push(
-                button(text!("{} (9)", self.strings["REALLY DELETE ACCOUNT"]))
+                button(text!("{} (9)", t!("REALLY DELETE ACCOUNT")))
                     .on_press(Message::DeleteAccount),
             );
         } else {
             columns = columns.push(
-                button(text!("{} (9)", self.strings["Delete Account"]))
-                    .on_press(Message::DeleteAccount),
+                button(text!("{} (9)", t!("Delete Account"))).on_press(Message::DeleteAccount),
             );
         }
 
-        columns =
-            columns.push(button(text!("{} (Esc)", self.strings["Quit"])).on_press(Message::Leave));
+        columns = columns.push(button(text!("{} (Esc)", t!("Quit"))).on_press(Message::Leave));
 
         columns
     }
@@ -1399,12 +1325,12 @@ impl<'a> Client {
             .spacing(SPACING),
         );
 
-        let mut new_game = button(text!("{} (Enter)", self.strings["New Game"]));
+        let mut new_game = button(text!("{} (Enter)", t!("New Game")));
         if self.game_settings.role_selected.is_some() && self.game_settings.time.is_some() {
             new_game = new_game.on_press(Message::GameSubmit);
         }
 
-        let leave = button(text!("{} (Esc)", self.strings["Quit"])).on_press(Message::Leave);
+        let leave = button(text!("{} (Esc)", t!("Quit"))).on_press(Message::Leave);
 
         let size_11x11 = radio(
             "11x11 (9)",
@@ -1910,10 +1836,8 @@ impl<'a> Client {
             spectators = spectators.push(text(spectator));
         }
 
-        let resign = button(text!("{} (p)", self.strings["Resign"])).on_press(Message::PlayResign);
-
-        let request_draw =
-            button(text!("{} (q)", self.strings["Request Draw"])).on_press(Message::PlayDraw);
+        let resign = button(text!("{} (p)", t!("Resign"))).on_press(Message::PlayResign);
+        let request_draw = button(text!("{} (q)", t!("Request Draw"))).on_press(Message::PlayDraw);
 
         if !watching {
             if self.my_turn {
@@ -1922,7 +1846,7 @@ impl<'a> Client {
                 let row = if self.request_draw {
                     column![
                         row![
-                            button(text!("{} (r)", self.strings["Accept Draw"]))
+                            button(text!("{} (r)", t!("Accept Draw")))
                                 .on_press(Message::PlayDrawDecision(Draw::Accept)),
                         ]
                         .spacing(SPACING)
@@ -1950,7 +1874,7 @@ impl<'a> Client {
         .spacing(SPACING);
         user_area = user_area.push(volume);
 
-        let leave = button(text!("{} (Esc)", self.strings["Leave"])).on_press(Message::Leave);
+        let leave = button(text!("{} (Esc)", t!("Leave"))).on_press(Message::Leave);
 
         match status {
             Status::AttackerWins => {
@@ -1971,7 +1895,7 @@ impl<'a> Client {
                 heat_map = heat_map.on_toggle(Message::HeatMap);
             }
 
-            let mut heat_map_button = button(text!("{} (p) (q)", self.strings["Heat Map"]));
+            let mut heat_map_button = button(text!("{} (p) (q)", t!("Heat Map")));
 
             if !self.estimate_score && *status == Status::Ongoing {
                 heat_map_button = heat_map_button.on_press(Message::EstimateScore);
@@ -2293,12 +2217,6 @@ impl<'a> Client {
             Message::LeaveSoft => self.leave(),
             Message::LocaleSelected(locale) => {
                 rust_i18n::set_locale(&locale.txt());
-
-                let string_keys: Vec<_> = self.strings.keys().cloned().collect();
-                for string in string_keys {
-                    self.strings.insert(string.clone(), t!(string).to_string());
-                }
-
                 self.locale_selected = Some(locale);
                 handle_error(self.save_client_ron());
             }
@@ -2717,8 +2635,18 @@ impl<'a> Client {
                     self.volume.0 = self.volume.0.saturating_add(1);
                 }
             },
+            Message::RatingMaximum => {
+                self.rating_max();
+                self.games_filtered();
+                handle_error(self.save_client_ron());
+            }
             Message::RatingMaximumChanged(rating) => {
                 self.rating_maximum = rating;
+                self.games_filtered();
+                handle_error(self.save_client_ron());
+            }
+            Message::RatingMinimum => {
+                self.rating_min();
                 self.games_filtered();
                 handle_error(self.save_client_ron());
             }
@@ -2727,21 +2655,6 @@ impl<'a> Client {
                 self.games_filtered();
                 handle_error(self.save_client_ron());
             }
-            Message::ServerShutdown => {
-                self.error_persistent
-                    .push(t!("The server was shut down.").to_string());
-            }
-            Message::SoundMuted(_muted) => self.sound_muted(),
-            Message::StreamConnected(tx) => self.tx = Some(tx),
-            Message::TcpConnectFailed => {
-                self.error_persistent
-                    .push(t!("The TCP connection failed.").to_string());
-            }
-            Message::TabSelected(tab) => self.active_tab = tab,
-            Message::TcpDisconnect => self.connected_tcp = false,
-            Message::TournamentJoin => self.send("join_tournament\n"),
-            Message::TournamentLeave => self.send("leave_tournament\n"),
-            Message::TournamentStart => self.send("tournament_start\n"),
             Message::RatedSelected(rated) => self.game_settings.rated = rated.into(),
             Message::ResetPassword => self.reset_password(),
             Message::ReviewGame => self.review_game(),
@@ -2782,6 +2695,21 @@ impl<'a> Client {
                 }
             }
             Message::RoleSelected(role) => self.game_settings.role_selected = Some(role),
+            Message::ServerShutdown => {
+                self.error_persistent
+                    .push(t!("The server was shut down.").to_string());
+            }
+            Message::SoundMuted(_muted) => self.sound_muted(),
+            Message::StreamConnected(tx) => self.tx = Some(tx),
+            Message::TcpConnectFailed => {
+                self.error_persistent
+                    .push(t!("The TCP connection failed.").to_string());
+            }
+            Message::TabSelected(tab) => self.active_tab = tab,
+            Message::TcpDisconnect => self.connected_tcp = false,
+            Message::TournamentJoin => self.send("join_tournament\n"),
+            Message::TournamentLeave => self.send("leave_tournament\n"),
+            Message::TournamentStart => self.send("tournament_start\n"),
             Message::TextChanged(string) => {
                 if self.screen == Screen::Login {
                     let string: Vec<_> = string.split_whitespace().collect();
@@ -3458,28 +3386,22 @@ impl<'a> Client {
             match self.join_game(game) {
                 JoinGame::Cancel => {
                     buttons_row = buttons_row.push(
-                        button(text!("{}{i}", self.strings["Cancel"]))
-                            .on_press(Message::GameCancel(id)),
+                        button(text!("{}{i}", t!("Cancel"))).on_press(Message::GameCancel(id)),
                     );
                 }
                 JoinGame::Join => {
-                    buttons_row = buttons_row.push(
-                        button(text!("{}{i}", self.strings["Join"]))
-                            .on_press(Message::GameJoin(id)),
-                    );
+                    buttons_row = buttons_row
+                        .push(button(text!("{}{i}", t!("Join"))).on_press(Message::GameJoin(id)));
                 }
                 JoinGame::None => {}
                 JoinGame::Resume => {
                     buttons_row = buttons_row.push(
-                        button(text!("{}{i}", self.strings["Resume"]))
-                            .on_press(Message::GameResume(id)),
+                        button(text!("{}{i}", t!("Resume"))).on_press(Message::GameResume(id)),
                     );
                 }
                 JoinGame::Watch => {
-                    buttons_row = buttons_row.push(
-                        button(text!("{}{i}", self.strings["Watch"]))
-                            .on_press(Message::GameWatch(id)),
-                    );
+                    buttons_row = buttons_row
+                        .push(button(text!("{}{i}", t!("Watch"))).on_press(Message::GameWatch(id)));
                 }
             }
 
@@ -3487,22 +3409,16 @@ impl<'a> Client {
                 State::Challenger | State::Spectator => {}
                 State::Creator => {
                     buttons_row = buttons_row.push(
-                        button(text!("{}{i}", self.strings["Accept"]))
-                            .on_press(Message::GameAccept(id)),
+                        button(text!("{}{i}", t!("Accept"))).on_press(Message::GameAccept(id)),
                     );
                     buttons_row = buttons_row.push(
-                        button(text!(
-                            "{}{}",
-                            self.strings["Decline"],
-                            i.to_ascii_uppercase()
-                        ))
-                        .on_press(Message::GameDecline(id)),
+                        button(text!("{}{}", t!("Decline"), i.to_ascii_uppercase()))
+                            .on_press(Message::GameDecline(id)),
                     );
                 }
                 State::CreatorOnly => {
                     buttons_row = buttons_row.push(
-                        button(text!("{}{i}", self.strings["Cancel"]))
-                            .on_press(Message::CancelGame(id)),
+                        button(text!("{}{i}", t!("Cancel"))).on_press(Message::CancelGame(id)),
                     );
                 }
             }
@@ -3567,10 +3483,10 @@ impl<'a> Client {
 
         let my_games_text = text!("{} (8)", t!("My Games Only")).center();
         let my_games = checkbox(self.my_games_only).on_toggle(Message::MyGamesOnly);
-        let get_archived_games = button(text!("{} (6)", self.strings["Get Archived Games"]))
-            .on_press(Message::ArchivedGamesGet);
+        let get_archived_games =
+            button(text!("{} (6)", t!("Get Archived Games"))).on_press(Message::ArchivedGamesGet);
 
-        let quit = button(text!("{} (Esc)", self.strings["Quit"])).on_press(Message::Leave);
+        let quit = button(text!("{} (Esc)", t!("Quit"))).on_press(Message::Leave);
 
         let mut middle = row![get_archived_games, quit].spacing(SPACING);
 
@@ -4023,8 +3939,7 @@ impl<'a> Client {
                     .on_action(Message::TextEdit);
 
                 let send_emails = button("Send Emails").on_press(Message::TextSend);
-                let leave =
-                    button(text!("{} (Esc)", self.strings["Quit"])).on_press(Message::Leave);
+                let leave = button(text!("{} (Esc)", t!("Quit"))).on_press(Message::Leave);
                 let mut column = column![
                     subject,
                     text("From: Hnefatafl Org <noreply@hnefatafl.org>"),
@@ -4055,24 +3970,24 @@ impl<'a> Client {
                 )
                 .push(
                     TabId::GameNew,
-                    iced_aw::TabLabel::Text(format!("{} (2)", self.strings["Create Game"])),
+                    iced_aw::TabLabel::Text(format!("{} (2)", t!("Create Game"))),
                     self.game_new_view(),
                 )
                 .push(
                     TabId::Tournament,
-                    iced_aw::TabLabel::Text(format!("{} (3)", self.strings["Tournament"])),
+                    iced_aw::TabLabel::Text(format!("{} (3)", t!("Tournament"))),
                     self.tournament_view(),
                 )
                 .push(
                     TabId::AccountSettings,
-                    iced_aw::TabLabel::Text(format!("{} (4)", self.strings["Account Settings"])),
+                    iced_aw::TabLabel::Text(format!("{} (4)", t!("Account Settings"))),
                     self.account_settings_view(),
                 )
                 .push(
                     TabId::Users,
-                    iced_aw::TabLabel::Text(format!("{} (5)", self.strings["Users"])),
+                    iced_aw::TabLabel::Text(format!("{} (5)", t!("Users"))),
                     column![
-                        button(text!("{} (Esc)", self.strings["Quit"])).on_press(Message::Leave),
+                        button(text!("{} (Esc)", t!("Quit"))).on_press(Message::Leave),
                         self.users(true)
                     ]
                     .padding(PADDING)
@@ -4114,17 +4029,17 @@ impl<'a> Client {
                 let save_password_text = text!("{} (2)", t!("save password"));
                 let save_password = checkbox(self.password_save).on_toggle(Message::PasswordSave);
 
-                let mut login = button(text!("{} (Enter)", self.strings["Login"]));
+                let mut login = button(text!("{} (Enter)", t!("Login")));
                 if !self.password_ends_with_whitespace {
                     login = login.on_press(Message::TextSendLogin);
                 }
 
-                let mut create_account = button(text!("{} (4)", self.strings["Create Account"]));
+                let mut create_account = button(text!("{} (4)", t!("Create Account")));
                 if !self.text_input.is_empty() && !self.password_ends_with_whitespace {
                     create_account = create_account.on_press(Message::TextSendCreateAccount);
                 }
 
-                let mut reset_password = button(text!("{} (5)", self.strings["Reset Password"]));
+                let mut reset_password = button(text!("{} (5)", t!("Reset Password")));
                 if !self.text_input.is_empty() {
                     reset_password = reset_password.on_press(Message::ResetPassword);
                 }
@@ -4151,16 +4066,16 @@ impl<'a> Client {
                     Message::RatingMaximumChanged,
                 );
 
-                let mut review_game = button(text!("{} (a)", self.strings["Review Game"]));
+                let mut review_game = button(text!("{} (a)", t!("Review Game")));
                 if self.archived_game_selected.is_some() {
                     review_game = review_game.on_press(Message::ReviewGame);
                 }
 
                 let review_game = row![
                     review_game,
-                    text(t!("Minimum Rating")),
+                    button(text!("{}", t!("Minimum Rating"))).on_press(Message::RatingMinimum),
                     minimum_rating,
-                    text(t!("Maximum Rating")),
+                    button(text!("{}", t!("Maximum Rating"))).on_press(Message::RatingMaximum),
                     maximum_rating
                 ]
                 .spacing(SPACING);
@@ -4173,7 +4088,7 @@ impl<'a> Client {
 
                 let my_games_text = text!("{} (3)", t!("My Games Only"));
                 let my_games = checkbox(self.my_games_only).on_toggle(Message::MyGamesOnly);
-                let quit = button(text!("{} (Esc)", self.strings["Quit"])).on_press(Message::Leave);
+                let quit = button(text!("{} (Esc)", t!("Quit"))).on_press(Message::Leave);
 
                 let buttons_1 = row![login, create_account, reset_password, quit].spacing(SPACING);
 
@@ -4209,25 +4124,25 @@ impl<'a> Client {
 
                 let theme = if self.theme == Theme::Light {
                     row![
-                        button(text!("{} (6)", self.strings["Dark"]))
+                        button(text!("{} (6)", t!("Dark")))
                             .on_press(Message::ChangeTheme(Theme::Dark)),
-                        button(text!("{} (7)", self.strings["Light"])),
+                        button(text!("{} (7)", t!("Light"))),
                         button(text("Tol (8)")).on_press(Message::ChangeTheme(Theme::Tol)),
                     ]
                     .spacing(SPACING)
                 } else if self.theme == Theme::Dark {
                     row![
-                        button(text!("{} (6)", self.strings["Dark"])),
-                        button(text!("{} (7)", self.strings["Light"]))
+                        button(text!("{} (6)", t!("Dark"))),
+                        button(text!("{} (7)", t!("Light")))
                             .on_press(Message::ChangeTheme(Theme::Light)),
                         button(text("Tol (8)")).on_press(Message::ChangeTheme(Theme::Tol)),
                     ]
                     .spacing(SPACING)
                 } else {
                     row![
-                        button(text!("{} (6)", self.strings["Dark"]))
+                        button(text!("{} (6)", t!("Dark")))
                             .on_press(Message::ChangeTheme(Theme::Dark)),
-                        button(text!("{} (7)", self.strings["Light"]))
+                        button(text!("{} (7)", t!("Light")))
                             .on_press(Message::ChangeTheme(Theme::Light)),
                         button(text("Tol (8)")),
                     ]
@@ -4239,9 +4154,9 @@ impl<'a> Client {
                     "https://discord.gg/h56CAHEBXd".to_string(),
                 ));
 
-                let website = button(text!("{} (0)", self.strings["Rules"])).on_press(
-                    Message::OpenUrl("https://hnefatafl.org/rules.html".to_string()),
-                );
+                let website = button(text!("{} (0)", t!("Rules"))).on_press(Message::OpenUrl(
+                    "https://hnefatafl.org/rules.html".to_string(),
+                ));
 
                 let websites = row![discord, website].spacing(SPACING);
                 let websites = LabeledFrame::new(text(t!("Websites")), websites);
@@ -4424,8 +4339,7 @@ impl<'a> Client {
 
         let Some(tournament) = &self.tournament else {
             column = column.push(text(t!("There is no tournament.")));
-            column = column
-                .push(button(text!("{} (Esc)", self.strings["Quit"])).on_press(Message::Leave));
+            column = column.push(button(text!("{} (Esc)", t!("Quit"))).on_press(Message::Leave));
 
             return scrollable(column).spacing(SPACING);
         };
@@ -4437,11 +4351,11 @@ impl<'a> Client {
             tournament.date.strftime("%F %T UTC")
         ));
 
-        let button_0 = button(text!("{} (6)", self.strings["Tournaments Described"]))
-            .on_press(Message::Tournaments);
+        let button_0 =
+            button(text!("{} (6)", t!("Tournaments Described"))).on_press(Message::Tournaments);
 
-        let mut button_1 = button(text!("{} (7)", self.strings["Join Tournament"]));
-        let mut button_2 = button(text!("{} (8)", self.strings["Leave Tournament"]));
+        let mut button_1 = button(text!("{} (7)", t!("Join Tournament")));
+        let mut button_2 = button(text!("{} (8)", t!("Leave Tournament")));
 
         if tournament.players.contains(&self.username) {
             button_2 = button_2.on_press(Message::TournamentLeave);
@@ -4453,7 +4367,7 @@ impl<'a> Client {
             button_0,
             button_1,
             button_2,
-            button(text!("{} (Esc)", self.strings["Quit"])).on_press(Message::Leave),
+            button(text!("{} (Esc)", t!("Quit"))).on_press(Message::Leave),
         ]
         .spacing(SPACING);
 
