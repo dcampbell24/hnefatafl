@@ -339,9 +339,8 @@ fn init_client() -> Client {
         letters.insert(ch, false);
     }
 
-    if client.rating_maximum == 0.0 {
-        client.rating_maximum = MAX_RATING;
-    }
+    client.rating_max();
+    client.rating_min();
 
     client
 }
@@ -1479,8 +1478,10 @@ impl<'a> Client {
 
     fn games_filtered(&mut self) {
         let filtered_games = self.archived_games.iter().filter(|game| {
-            let rating = f64::max(game.attacker_rating.rating, game.defender_rating.rating);
-            rating >= self.rating_minimum && rating <= self.rating_maximum
+            let max_rating = f64::max(game.attacker_rating.rating, game.defender_rating.rating);
+            let min_rating = f64::min(game.attacker_rating.rating, game.defender_rating.rating);
+
+            min_rating >= self.rating_minimum && max_rating <= self.rating_maximum
         });
 
         if self.my_games_only {
@@ -3633,6 +3634,48 @@ impl<'a> Client {
             stream.log_on_drop(false);
             Ok::<(), anyhow::Error>(())
         });
+    }
+
+    fn rating_max(&mut self) {
+        if 0.0 == self.rating_maximum {
+            let mut max_rating = 0.0;
+
+            for game in &self.archived_games {
+                let new_max_rating =
+                    f64::max(game.attacker_rating.rating, game.defender_rating.rating);
+
+                if new_max_rating > max_rating {
+                    max_rating = new_max_rating;
+                }
+            }
+
+            if max_rating == 0.0 {
+                self.rating_maximum = MAX_RATING;
+            } else {
+                self.rating_maximum = max_rating.round_ties_even() + 1.0;
+            }
+        }
+    }
+
+    fn rating_min(&mut self) {
+        if 0.0 == self.rating_minimum {
+            let mut min_rating = MAX_RATING;
+
+            for game in &self.archived_games {
+                let new_min_rating =
+                    f64::min(game.attacker_rating.rating, game.defender_rating.rating);
+
+                if new_min_rating < min_rating {
+                    min_rating = new_min_rating;
+                }
+            }
+
+            if min_rating == MAX_RATING {
+                self.rating_minimum = 0.0;
+            } else {
+                self.rating_minimum = min_rating.round_ties_even() - 1.0;
+            }
+        }
     }
 
     fn resign(&mut self) {
