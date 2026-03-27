@@ -342,10 +342,10 @@ fn init_client() -> Client {
     if client.rating_maximum == 0.0 {
         client.rating_max();
     }
-
     if client.rating_minimum == 0.0 {
         client.rating_min();
     }
+    client.games_filtered();
 
     client
 }
