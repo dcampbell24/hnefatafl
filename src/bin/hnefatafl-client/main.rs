@@ -339,8 +339,13 @@ fn init_client() -> Client {
         letters.insert(ch, false);
     }
 
-    client.rating_max();
-    client.rating_min();
+    if client.rating_maximum == 0.0 {
+        client.rating_max();
+    }
+
+    if client.rating_minimum == 0.0 {
+        client.rating_min();
+    }
 
     client
 }
@@ -3637,44 +3642,38 @@ impl<'a> Client {
     }
 
     fn rating_max(&mut self) {
-        if 0.0 == self.rating_maximum {
-            let mut max_rating = 0.0;
+        let mut max_rating = 0.0;
 
-            for game in &self.archived_games {
-                let new_max_rating =
-                    f64::max(game.attacker_rating.rating, game.defender_rating.rating);
+        for game in &self.archived_games {
+            let new_max_rating = f64::max(game.attacker_rating.rating, game.defender_rating.rating);
 
-                if new_max_rating > max_rating {
-                    max_rating = new_max_rating;
-                }
+            if new_max_rating > max_rating {
+                max_rating = new_max_rating;
             }
+        }
 
-            if max_rating == 0.0 {
-                self.rating_maximum = MAX_RATING;
-            } else {
-                self.rating_maximum = max_rating.round_ties_even() + 1.0;
-            }
+        if max_rating == 0.0 {
+            self.rating_maximum = MAX_RATING;
+        } else {
+            self.rating_maximum = max_rating.round_ties_even() + 1.0;
         }
     }
 
     fn rating_min(&mut self) {
-        if 0.0 == self.rating_minimum {
-            let mut min_rating = MAX_RATING;
+        let mut min_rating = MAX_RATING;
 
-            for game in &self.archived_games {
-                let new_min_rating =
-                    f64::min(game.attacker_rating.rating, game.defender_rating.rating);
+        for game in &self.archived_games {
+            let new_min_rating = f64::min(game.attacker_rating.rating, game.defender_rating.rating);
 
-                if new_min_rating < min_rating {
-                    min_rating = new_min_rating;
-                }
+            if new_min_rating < min_rating {
+                min_rating = new_min_rating;
             }
+        }
 
-            if min_rating == MAX_RATING {
-                self.rating_minimum = 0.0;
-            } else {
-                self.rating_minimum = min_rating.round_ties_even() - 1.0;
-            }
+        if min_rating == MAX_RATING {
+            self.rating_minimum = 0.0;
+        } else {
+            self.rating_minimum = min_rating.round_ties_even() - 1.0;
         }
     }
 
