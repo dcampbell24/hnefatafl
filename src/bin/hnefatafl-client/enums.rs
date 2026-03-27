@@ -164,6 +164,8 @@ pub(crate) enum Message {
     PressPlus,
     SoundMuted(bool),
     RatedSelected(bool),
+    RatingMinimumChanged(f64),
+    RatingMaximumChanged(f64),
     ResetPassword,
     ReviewGame,
     ReviewGameBackward,

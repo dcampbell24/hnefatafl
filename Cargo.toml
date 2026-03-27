@@ -57,7 +57,7 @@ serde = { version = "1", features = ["derive", "rc"] }
 thiserror = "2"
 
 # client
-iced_aw = { version = "0.13", default-features = false, features = ["date_picker", "labeled_frame", "tabs"], optional = true }
+iced_aw = { version = "0.13", default-features = false, features = ["date_picker", "labeled_frame", "number_input", "tabs"], optional = true }
 image = { version = "0.25", default-features = false, features = ["png"], optional = true }
 rodio = { version = "0.22", default-features = false, features = ["playback", "vorbis"], optional = true }
 smol_str = { version = "0.3", optional = true }
