@@ -2272,7 +2272,12 @@ impl<'a> Client {
                 Screen::Games if self.active_tab == TabId::GameNew => {
                     self.game_settings.time = Some(TimeEnum::Classical);
                 }
-                Screen::EmailEveryone | Screen::Games | Screen::Login => {}
+                Screen::EmailEveryone | Screen::Games => {}
+                Screen::Login => {
+                    self.rating_min();
+                    self.games_filtered();
+                    handle_error(self.save_client_ron());
+                }
             },
             Message::PressC(shift) => match self.screen {
                 Screen::Game | Screen::GameReview => {
@@ -2283,7 +2288,12 @@ impl<'a> Client {
                 Screen::Games if self.active_tab == TabId::GameNew => {
                     self.game_settings.time = Some(TimeEnum::Long);
                 }
-                Screen::EmailEveryone | Screen::Games | Screen::Login => {}
+                Screen::EmailEveryone | Screen::Games => {}
+                Screen::Login => {
+                    self.rating_max();
+                    self.games_filtered();
+                    handle_error(self.save_client_ron());
+                }
             },
             Message::PressD(shift) => match self.screen {
                 Screen::Game | Screen::GameReview => {
@@ -4073,9 +4083,9 @@ impl<'a> Client {
 
                 let review_game = row![
                     review_game,
-                    button(text!("{}", t!("Minimum Rating"))).on_press(Message::RatingMinimum),
+                    button(text!("{} (b)", t!("Minimum Rating"))).on_press(Message::RatingMinimum),
                     minimum_rating,
-                    button(text!("{}", t!("Maximum Rating"))).on_press(Message::RatingMaximum),
+                    button(text!("{} (c)", t!("Maximum Rating"))).on_press(Message::RatingMaximum),
                     maximum_rating
                 ]
                 .spacing(SPACING);
