@@ -2100,13 +2100,11 @@ impl Server {
                 Some(((tx), false, (*command).to_string()))
             // The username is in the database, but not logged in yet.
             } else {
-                println!("password: {password_1}");
-
                 let hash_2 = PasswordHash::try_from(account.password.as_str()).ok()?;
                 if let Err(error) =
                     Argon2::default().verify_password(password_1.as_bytes(), &hash_2)
                 {
-                    println!("{index_supplied} {username} provided the wrong password: {error}");
+                    error!("{index_supplied} {username} provided the wrong password: {error}");
                     return Some((tx, false, (*command).to_string()));
                 }
 
