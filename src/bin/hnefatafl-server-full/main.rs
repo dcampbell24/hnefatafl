@@ -2095,7 +2095,7 @@ impl Server {
         if let Some(account) = self.accounts.0.get_mut(username) {
             // The username is in the database and already logged in.
             if let Some(index_database) = account.logged_in {
-                info!("{index_supplied} {username} login failed, {index_database} is logged in");
+                error!("{index_supplied} {username} login failed, {index_database} is logged in");
 
                 Some(((tx), false, (*command).to_string()))
             // The username is in the database, but not logged in yet.
@@ -2118,9 +2118,8 @@ impl Server {
                     (*command).to_string(),
                 ))
             }
-        // The username is not in the database.
         } else {
-            info!("{index_supplied} {username} is not in the database");
+            error!("{index_supplied} {username} is not in the database");
             Some((tx, false, (*command).to_string()))
         }
     }
