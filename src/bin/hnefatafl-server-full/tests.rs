@@ -230,7 +230,7 @@ fn many_clients() -> anyhow::Result<()> {
 
 fn create_account(server: &mut ServerFull, tx: Sender<String>) -> anyhow::Result<()> {
     if let Some((_, bool, message)) =
-        server.handle_messages_internal("0 david create_account david PASSWORD", Some(tx))
+        server.handle_messages_internal("0 david create_account PASSWORD", Some(tx))
     {
         assert!(bool);
         assert_eq!(message, "create_account");
@@ -243,7 +243,7 @@ fn create_account(server: &mut ServerFull, tx: Sender<String>) -> anyhow::Result
 
 fn login(server: &mut ServerFull, tx: Sender<String>, password: &str) -> anyhow::Result<()> {
     if let Some((_, bool, message)) =
-        server.handle_messages_internal(&format!("0 david login david {password}"), Some(tx))
+        server.handle_messages_internal(&format!("0 david login {password}"), Some(tx))
     {
         assert!(bool);
         assert_eq!(message, "login");
@@ -328,7 +328,6 @@ fn archived_games() -> anyhow::Result<()> {
 }
 
 #[test]
-#[ignore = "broken"]
 fn change_password() -> anyhow::Result<()> {
     let (tx, _rx) = mpsc::channel();
     let mut server = ServerFull {
@@ -345,7 +344,6 @@ fn change_password() -> anyhow::Result<()> {
     }
 
     server.handle_messages_internal("0 david logout", None);
-
     login(&mut server, tx, "password")?;
 
     Ok(())
