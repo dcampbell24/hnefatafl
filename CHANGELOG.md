@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - hnefatafl-client: maximum and minimum rating for archived games.
 
+### Fixed
+
+- hnefatafl-client: change the password when you click "Change Password".
+
 ## 5.4.2 - 2026-03-22
 
 ### Changed

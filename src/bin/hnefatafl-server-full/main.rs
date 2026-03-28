@@ -577,8 +577,7 @@ impl Server {
             ));
         }
 
-        let hash = hash_password(&password)?;
-        account.password = hash;
+        account.password = hash_password(&password)?;
 
         Some((
             self.clients.get(&index_supplied)?.clone(),
@@ -2102,10 +2101,10 @@ impl Server {
             // The username is in the database, but not logged in yet.
             } else {
                 let hash_2 = PasswordHash::try_from(account.password.as_str()).ok()?;
-                if let Err(_error) =
+                if let Err(error) =
                     Argon2::default().verify_password(password_1.as_bytes(), &hash_2)
                 {
-                    info!("{index_supplied} {username} provided the wrong password");
+                    error!("{index_supplied} {username} provided the wrong password: {error}");
                     return Some((tx, false, (*command).to_string()));
                 }
 

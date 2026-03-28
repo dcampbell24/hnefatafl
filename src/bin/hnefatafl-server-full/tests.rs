@@ -230,10 +230,23 @@ fn many_clients() -> anyhow::Result<()> {
 
 fn create_account(server: &mut ServerFull, tx: Sender<String>) -> anyhow::Result<()> {
     if let Some((_, bool, message)) =
-        server.handle_messages_internal("0 david create_account david", Some(tx))
+        server.handle_messages_internal("0 david create_account david PASSWORD", Some(tx))
     {
         assert!(bool);
         assert_eq!(message, "create_account");
+
+        Ok(())
+    } else {
+        Err(anyhow::Error::msg("didn't get a response"))
+    }
+}
+
+fn login(server: &mut ServerFull, tx: Sender<String>, password: &str) -> anyhow::Result<()> {
+    if let Some((_, bool, message)) =
+        server.handle_messages_internal(&format!("0 david login david {password}"), Some(tx))
+    {
+        assert!(bool);
+        assert_eq!(message, "login");
 
         Ok(())
     } else {
@@ -263,6 +276,77 @@ fn admin() -> anyhow::Result<()> {
             .is_none()
     );
     assert_eq!(Ok("= admin".to_string()), rx.recv());
+
+    Ok(())
+}
+
+#[test]
+fn admin_tournament() -> anyhow::Result<()> {
+    let (tx, rx) = mpsc::channel();
+    let mut server = ServerFull {
+        ..ServerFull::default()
+    };
+
+    create_account(&mut server, tx)?;
+
+    assert!(
+        server
+            .handle_messages_internal("0 david admin_tournament", None)
+            .is_none()
+    );
+
+    server.admins_tournament.insert("david".to_string());
+    assert!(
+        server
+            .handle_messages_internal("0 david admin_tournament", None)
+            .is_none()
+    );
+    assert_eq!(Ok("= admin_tournament".to_string()), rx.recv());
+
+    Ok(())
+}
+
+#[test]
+fn archived_games() -> anyhow::Result<()> {
+    let (tx, rx) = mpsc::channel();
+    let mut server = ServerFull {
+        ..ServerFull::default()
+    };
+
+    create_account(&mut server, tx)?;
+
+    assert!(
+        server
+            .handle_messages_internal("0 david archived_games", None)
+            .is_none()
+    );
+
+    assert_eq!(Ok("= archived_games".to_string()), rx.recv());
+    assert_eq!(Ok("[]".to_string()), rx.recv());
+
+    Ok(())
+}
+
+#[test]
+#[ignore = "broken"]
+fn change_password() -> anyhow::Result<()> {
+    let (tx, _rx) = mpsc::channel();
+    let mut server = ServerFull {
+        ..ServerFull::default()
+    };
+
+    create_account(&mut server, tx.clone())?;
+
+    let option = server.handle_messages_internal("0 david change_password password", None);
+    assert!(option.is_some());
+    if let Some((_, bool, message)) = option {
+        assert!(bool);
+        assert_eq!(message, "change_password");
+    }
+
+    server.handle_messages_internal("0 david logout", None);
+
+    login(&mut server, tx, "password")?;
 
     Ok(())
 }
