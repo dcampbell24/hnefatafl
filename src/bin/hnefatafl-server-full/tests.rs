@@ -19,6 +19,8 @@
 #![allow(clippy::unwrap_used)]
 #![cfg(test)]
 
+use crate::Server as ServerFull;
+
 use argon2::{PasswordHash, PasswordVerifier};
 
 use hnefatafl_copenhagen::accounts::{Account, Accounts};
@@ -222,6 +224,45 @@ fn many_clients() -> anyhow::Result<()> {
 
     let t1 = Instant::now();
     println!("many clients: {:?}", t1 - t0);
+
+    Ok(())
+}
+
+fn create_account(server: &mut ServerFull, tx: Sender<String>) -> anyhow::Result<()> {
+    if let Some((_, bool, message)) =
+        server.handle_messages_internal("0 david create_account david", Some(tx))
+    {
+        assert!(bool);
+        assert_eq!(message, "create_account");
+
+        Ok(())
+    } else {
+        Err(anyhow::Error::msg("didn't get a response"))
+    }
+}
+
+#[test]
+fn admin() -> anyhow::Result<()> {
+    let (tx, rx) = mpsc::channel();
+    let mut server = ServerFull {
+        ..ServerFull::default()
+    };
+
+    create_account(&mut server, tx)?;
+
+    assert!(
+        server
+            .handle_messages_internal("0 david admin", None)
+            .is_none()
+    );
+
+    server.admins.insert("david".to_string());
+    assert!(
+        server
+            .handle_messages_internal("0 david admin", None)
+            .is_none()
+    );
+    assert_eq!(Ok("= admin".to_string()), rx.recv());
 
     Ok(())
 }

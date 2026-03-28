@@ -1325,7 +1325,9 @@ impl Server {
         rx: &mpsc::Receiver<(String, Option<mpsc::Sender<String>>)>,
     ) -> anyhow::Result<()> {
         loop {
-            if let Some((tx, ok, command)) = self.handle_messages_internal(rx) {
+            let (message, option_tx) = rx.recv()?;
+
+            if let Some((tx, ok, command)) = self.handle_messages_internal(&message, option_tx) {
                 if ok {
                     tx.send(format!("= {command}"))?;
                 } else {
@@ -1338,11 +1340,10 @@ impl Server {
     #[allow(clippy::too_many_lines)]
     fn handle_messages_internal(
         &mut self,
-        rx: &mpsc::Receiver<(String, Option<mpsc::Sender<String>>)>,
+        message: &str,
+        option_tx: Option<Sender<String>>,
     ) -> Option<(mpsc::Sender<String>, bool, String)> {
         let args = Args::parse();
-
-        let (message, option_tx) = rx.recv().ok()?;
         let index_username_command: Vec<_> = message.split_ascii_whitespace().collect();
 
         if let (Some(index_supplied), Some(username), Some(command)) = (
