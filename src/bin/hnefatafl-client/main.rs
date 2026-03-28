@@ -3153,12 +3153,16 @@ impl<'a> Client {
                             self.send(&format!("text_game {} {}", self.game_id, self.text_input));
                         }
                     }
-                    Screen::Games => {
-                        if !self.text_input.trim().is_empty() {
+                    Screen::Games => match self.active_tab {
+                        TabId::Games if !self.text_input.trim().is_empty() => {
                             self.text_input.push('\n');
                             self.send(&format!("text {}", self.text_input));
                         }
-                    }
+                        TabId::AccountSettings => {
+                            self.send(&format!("change_password {}\n", self.password));
+                        }
+                        _ => {}
+                    },
                     Screen::GameReview | Screen::Login => {}
                 }
 
