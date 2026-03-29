@@ -3,6 +3,7 @@
 
 /docs
 /packages/debian/apt
+/pkg
 /profile.json
 /profile.json.gz
 /ssl
