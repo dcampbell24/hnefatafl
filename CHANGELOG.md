@@ -20,6 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - hnefatafl-client: change the password when you click "Change Password".
 
+### Breaking
+
+- hnefatafl-server-full: switch ran_update_rd from an i64 to a Timestamp.
+
 ## 5.4.2 - 2026-03-22
 
 ### Changed
