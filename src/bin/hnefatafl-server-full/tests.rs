@@ -364,11 +364,9 @@ fn check_update_rd() -> anyhow::Result<()> {
     }
 
     assert!(!server.check_update_rd());
-
-    let two_months = (30 * 2 * 24.hour()).checked_add(24.hour())?;
-    server.ran_update_rd = UnixTimestamp((Timestamp::now() - two_months).as_second());
-
+    server.ran_update_rd = UnixTimestamp((Timestamp::now() - TWO_MONTHS.seconds()).as_second());
     assert!(server.check_update_rd());
+
     if let Some(account) = server.accounts.0.get_mut("david") {
         assert_eq!(118.0, account.rating.rd.round_ties_even());
     }
