@@ -89,8 +89,8 @@ const HOUR_IN_SECONDS: u64 = 60 * 60;
 const DAY_IN_SECONDS: u64 = HOUR_IN_SECONDS * 24;
 const DAYS_FOR_INACTIVE_ACCOUNT: i64 = 14;
 
-/// Seconds in two months: `60.0 * 60.0 * 24.0 * 30.417 * 2.0 = 5_256_057.6`
-const TWO_MONTHS: i64 = 5_256_058;
+/// Seconds in two months:
+const TWO_MONTHS: f64 = 60.0 * 60.0 * 24.0 * 30.436_875 * 2.0;
 const SEVEN_DAYS: i64 = 1_000 * 60 * 60 * 24 * 7;
 const USERS_FILE: &str = "users.ron";
 
@@ -594,10 +594,11 @@ impl Server {
     ///
     /// This assumes 30 2 month periods must pass before one's rating
     /// deviation is the same as a new player and that a typical RD is 50.
+    #[allow(clippy::cast_possible_truncation)]
     #[must_use]
     fn check_update_rd(&mut self) -> bool {
         let now = Timestamp::now().as_second();
-        if now - self.ran_update_rd.0 >= TWO_MONTHS {
+        if now - self.ran_update_rd.0 >= TWO_MONTHS.round_ties_even() as i64 {
             for account in self.accounts.0.values_mut() {
                 account.rating.update_rd();
             }
