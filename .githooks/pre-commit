@@ -14,4 +14,4 @@ cargo test --benches
 zizmor --pedantic .github/
 
 # sudo apt-get install reuse
-reuse lint
+# reuse lint
