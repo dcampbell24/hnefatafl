@@ -345,7 +345,7 @@ impl From<&ServerGameSerialized> for ServerGameLight {
             spectators: HashMap::new(),
             challenge_accepted: true,
             game_over: false,
-            turn: Role::Attacker,
+            turn: game.game.turn,
         }
     }
 }
