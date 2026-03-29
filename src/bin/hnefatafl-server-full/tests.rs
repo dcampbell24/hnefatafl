@@ -256,11 +256,11 @@ fn login(server: &mut ServerFull, tx: Sender<String>, password: &str) -> anyhow:
 
 #[test]
 fn admin() -> anyhow::Result<()> {
-    let (tx, rx) = mpsc::channel();
     let mut server = ServerFull {
         ..ServerFull::default()
     };
 
+    let (tx, rx) = mpsc::channel();
     create_account(&mut server, tx)?;
 
     assert!(
@@ -282,11 +282,11 @@ fn admin() -> anyhow::Result<()> {
 
 #[test]
 fn admin_tournament() -> anyhow::Result<()> {
-    let (tx, rx) = mpsc::channel();
     let mut server = ServerFull {
         ..ServerFull::default()
     };
 
+    let (tx, rx) = mpsc::channel();
     create_account(&mut server, tx)?;
 
     assert!(
@@ -308,11 +308,11 @@ fn admin_tournament() -> anyhow::Result<()> {
 
 #[test]
 fn archived_games() -> anyhow::Result<()> {
-    let (tx, rx) = mpsc::channel();
     let mut server = ServerFull {
         ..ServerFull::default()
     };
 
+    let (tx, rx) = mpsc::channel();
     create_account(&mut server, tx)?;
 
     assert!(
@@ -329,11 +329,11 @@ fn archived_games() -> anyhow::Result<()> {
 
 #[test]
 fn change_password() -> anyhow::Result<()> {
-    let (tx, _rx) = mpsc::channel();
     let mut server = ServerFull {
         ..ServerFull::default()
     };
 
+    let (tx, _rx) = mpsc::channel();
     create_account(&mut server, tx.clone())?;
 
     let option = server.handle_messages_internal("0 david change_password password", None);
@@ -345,6 +345,38 @@ fn change_password() -> anyhow::Result<()> {
 
     server.handle_messages_internal("0 david logout", None);
     login(&mut server, tx, "password")?;
+
+    Ok(())
+}
+
+#[test]
+#[allow(clippy::float_cmp)]
+fn check_update_rd() -> anyhow::Result<()> {
+    let mut server = ServerFull {
+        ..ServerFull::default()
+    };
+
+    let (tx, _rx) = mpsc::channel();
+    create_account(&mut server, tx)?;
+
+    if let Some(account) = server.accounts.0.get_mut("david") {
+        account.rating.rd = 100.0;
+    }
+
+    assert!(!server.check_update_rd());
+
+    if let Some(account) = server.accounts.0.get_mut("david") {
+        account.rating.rd = 100.0;
+    }
+
+    let two_months = (30 * 2 * 24.hour()).checked_add(24.hour())?;
+    let two_month_ago = (Timestamp::now() - two_months).as_second();
+    server.ran_update_rd = UnixTimestamp(two_month_ago);
+
+    assert!(server.check_update_rd());
+    if let Some(account) = server.accounts.0.get_mut("david") {
+        assert_eq!(118.0, account.rating.rd.round_ties_even());
+    }
 
     Ok(())
 }
