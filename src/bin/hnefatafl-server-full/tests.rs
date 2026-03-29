@@ -365,13 +365,8 @@ fn check_update_rd() -> anyhow::Result<()> {
 
     assert!(!server.check_update_rd());
 
-    if let Some(account) = server.accounts.0.get_mut("david") {
-        account.rating.rd = 100.0;
-    }
-
     let two_months = (30 * 2 * 24.hour()).checked_add(24.hour())?;
-    let two_month_ago = (Timestamp::now() - two_months).as_second();
-    server.ran_update_rd = UnixTimestamp(two_month_ago);
+    server.ran_update_rd = UnixTimestamp((Timestamp::now() - two_months).as_second());
 
     assert!(server.check_update_rd());
     if let Some(account) = server.accounts.0.get_mut("david") {
