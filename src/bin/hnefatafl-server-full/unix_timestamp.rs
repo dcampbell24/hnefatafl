@@ -21,10 +21,10 @@ use serde::{Deserialize, Serialize};
 
 /// Non-leap seconds since January 1, 1970 0:00:00 UTC.
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub(crate) struct UnixTimestamp(pub i64);
+pub(crate) struct UnixTimestamp(pub Timestamp);
 
 impl Default for UnixTimestamp {
     fn default() -> Self {
-        Self(Timestamp::now().as_second())
+        Self(Timestamp::now())
     }
 }
