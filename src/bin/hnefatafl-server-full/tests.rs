@@ -350,6 +350,7 @@ fn change_password() -> anyhow::Result<()> {
 }
 
 #[test]
+#[allow(clippy::cast_possible_truncation)]
 #[allow(clippy::float_cmp)]
 fn check_update_rd() -> anyhow::Result<()> {
     let mut server = ServerFull {
@@ -364,7 +365,9 @@ fn check_update_rd() -> anyhow::Result<()> {
     }
 
     assert!(!server.check_update_rd());
-    server.ran_update_rd = UnixTimestamp((Timestamp::now() - TWO_MONTHS.seconds()).as_second());
+    server.ran_update_rd = UnixTimestamp(
+        (Timestamp::now() - (TWO_MONTHS.round_ties_even() as i64).seconds()).as_second(),
+    );
     assert!(server.check_update_rd());
 
     if let Some(account) = server.accounts.0.get_mut("david") {
