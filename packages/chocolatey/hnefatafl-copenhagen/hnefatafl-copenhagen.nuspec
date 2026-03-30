@@ -15,7 +15,7 @@
     <projectUrl>https://hnefatafl.org</projectUrl>
     <iconUrl>https://rawcdn.githack.com/dcampbell24/hnefatafl/refs/heads/main/assets/helmet.svg</iconUrl>
     <copyright>2025-2026 Developers of the hnefatafl-copenhagen project</copyright>
-    <licenseUrl>https://raw.githubusercontent.com/dcampbell24/hnefatafl/refs/heads/main/COPYING</licenseUrl>
+    <licenseUrl>https://raw.githubusercontent.com/dcampbell24/hnefatafl/refs/heads/main/LICENSE.txt</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <projectSourceUrl>https://github.com/dcampbell24/hnefatafl/</projectSourceUrl>
     <docsUrl>https://docs.rs/hnefatafl-copenhagen/latest/hnefatafl_copenhagen/</docsUrl>

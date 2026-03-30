@@ -11,7 +11,7 @@
 
   ;Name and file
   Name "Hnefatafl"
-  OutFile "hnefatafl-copenhagen\tools\hnefatafl-client-installer-5.4.0.exe"
+  OutFile "hnefatafl-copenhagen\tools\hnefatafl-client-installer-5.5.1.exe"
   Unicode True
 
   ;Default installation folder
@@ -31,7 +31,7 @@
 ;--------------------------------
 ;Pages
 
-  !insertmacro MUI_PAGE_LICENSE "..\..\COPYING"
+  !insertmacro MUI_PAGE_LICENSE "..\..\LICENSE.txt"
   !insertmacro MUI_PAGE_COMPONENTS
   !insertmacro MUI_PAGE_DIRECTORY
   !insertmacro MUI_PAGE_INSTFILES
