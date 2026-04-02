@@ -21,7 +21,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 [![docs-rs]][docs-rs-link]&ensp;
 [![REUSE status]][reuse]&ensp;
 [![coverage]][coverage-link]&ensp;
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/L4L61R1PR0)
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/dcampbell24)
 
 [Discord]:  https://img.shields.io/badge/Discord-111111?logo=discord
 [discord-link]: https://discord.gg/h56CAHEBXd
