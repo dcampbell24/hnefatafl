@@ -48,9 +48,3 @@ what you want to do. If it is a minor change, you can just update the
 If you have any issues with the software, open an issue on [github][1].
 
 [1]: https://github.com/dcampbell24/hnefatafl/issues
-
-## Donate
-
-<a href="https://github.com/sponsors/dcampbell24">
-  <img alt="Money PNG by Vecteezy" src="images/money.png" title="Money PNG by Vecteezy">
-</a>
