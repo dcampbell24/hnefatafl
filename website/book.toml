@@ -29,4 +29,4 @@ heading-split-level = 2
 
 [preprocessor.embedify]
 footer.enable = true
-footer.message = "Copyright © 2026 [David Lawrence Campbell](https://dlc.name)"
+footer.message = "<p>Copyright © 2026 <a href=https://dlc.name>David Lawrence Campbell</a></p> <script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script><script type='text/javascript'>kofiwidget2.init('Support DLC on Ko-fi', '#72a4f2', 'L4L61R1PR0');kofiwidget2.draw();</script>"
