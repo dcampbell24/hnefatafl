@@ -38,14 +38,14 @@
     <content_attribute id="social-chat">intense</content_attribute>
   </content_rating>
 
-  <url type="bugtracker">https://github.com/dcampbell24/hnefatafl/issues</url>
+  <url type="bugtracker">https://codeberg.org/dcampbell/hnefatafl/issues</url>
   <url type="homepage">https://hnefatafl.org/</url>
-  <url type="donation">https://github.com/sponsors/dcampbell24</url>
+  <url type="donation">https://ko-fi.com/L4L61R1PR0</url>
   <url type="contact">https://dlc.name</url>
   <!-- <url type="faq">https://example.org/faq</url> -->
   <url type="translate">https://hnefatafl.org/#translate</url>
-  <url type="contribute">https://github.com/dcampbell24/hnefatafl/blob/main/CONTRIBUTING.md</url>
-  <url type="vcs-browser">https://github.com/dcampbell24/hnefatafl</url>
+  <url type="contribute">https://codeberg.org/dcampbell/hnefatafl/src/branch/main/CONTRIBUTING.md</url>
+  <url type="vcs-browser">https://codeberg.org/dcampbell/hnefatafl</url>
 
   <screenshots>
     <screenshot type="default">
