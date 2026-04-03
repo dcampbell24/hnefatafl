@@ -1,11 +1,10 @@
 Name:          hnefatafl-copenhagen
 Version:       5.5.1
-Release:       1%{?dist}
+Release:       %autorelease
 Summary:       Copenhagen Hnefatafl client, engine, server and artificial intelligence
-
 License:       AGPL-3.0-or-later
 URL:           https://hnefatafl.org
-Source0:       v%{version}-1.tar.gz
+Source:        v%{version}-1.tar.gz
 
 BuildRequires: clang
 BuildRequires: llvm
@@ -81,3 +80,6 @@ install -Dm644 "packages/hnefatafl-client.desktop" "%{buildroot}/usr/share/appli
 /usr/share/man/man1/hnefatafl-text-protocol.1.gz
 %license LICENSE.txt
 %doc README.md
+
+%changelog
+%autochangelog
