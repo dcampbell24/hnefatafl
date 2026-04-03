@@ -116,6 +116,7 @@ fn main() -> anyhow::Result<()> {
         server.load_data_files(tx.clone(), args.systemd)?;
     }
 
+    let blocked_ips = server.blocked_ips.clone();
     thread::spawn(move || handle_error(server.handle_messages(&rx)));
 
     if !args.skip_advertising_updates {
@@ -156,7 +157,16 @@ fn main() -> anyhow::Result<()> {
         };
 
         let peer_address = match stream.peer_addr() {
-            Ok(peer_address) => peer_address.ip(),
+            Ok(peer_address) => {
+                let ip = peer_address.ip();
+
+                if blocked_ips.contains(&ip) {
+                    error!("blocked IP address: {ip}");
+                    continue;
+                }
+
+                ip
+            }
             Err(error) => {
                 error!("peer_address: {error}");
                 continue;
@@ -435,6 +445,8 @@ struct Server {
     texts: VecDeque<String>,
     #[serde(skip)]
     tx: Option<mpsc::Sender<(String, Option<mpsc::Sender<String>>)>>,
+    #[serde(default)]
+    blocked_ips: HashSet<IpAddr>,
 }
 
 impl Server {
