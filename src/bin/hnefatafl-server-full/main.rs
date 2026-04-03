@@ -22,7 +22,6 @@
 #![deny(clippy::unwrap_used)]
 
 mod command_line;
-mod remove_connection;
 mod smtp;
 mod tests;
 mod unix_timestamp;
@@ -77,10 +76,7 @@ use rustrict::{Censor, Type};
 use serde::{Deserialize, Serialize};
 use std::fmt::Write as _;
 
-use crate::{
-    command_line::Args, remove_connection::RemoveConnection, smtp::Smtp,
-    unix_timestamp::UnixTimestamp,
-};
+use crate::{command_line::Args, smtp::Smtp, unix_timestamp::UnixTimestamp};
 
 const ACTIVE_GAMES_FILE: &str = "active-games.postcard";
 const ARCHIVED_GAMES_FILE: &str = "archived-games.ron";
@@ -167,33 +163,6 @@ fn main() -> anyhow::Result<()> {
             }
         };
 
-        if args.secure {
-            let (tx_close, rx_close) = mpsc::channel();
-
-            tx.send((
-                format!("0 server connection_add {peer_address}"),
-                Some(tx_close),
-            ))?;
-
-            match rx_close.recv() {
-                Ok(close) => match close.parse() {
-                    Ok(close) => {
-                        if close {
-                            continue;
-                        }
-                    }
-                    Err(error) => {
-                        error!("close 2: {error}");
-                        continue;
-                    }
-                },
-                Err(error) => {
-                    error!("close 1: {error}");
-                    continue;
-                }
-            }
-        }
-
         let tx = tx.clone();
 
         thread::spawn(move || {
@@ -214,16 +183,6 @@ fn login(
     tx: &mpsc::Sender<(String, Option<mpsc::Sender<String>>)>,
 ) -> anyhow::Result<()> {
     info!("login attempted from {peer_address}");
-
-    let args = Args::parse();
-
-    let _remove_connection;
-    if args.secure {
-        _remove_connection = RemoveConnection {
-            address: stream.peer_addr()?.ip(),
-            tx: tx.clone(),
-        };
-    }
 
     let mut reader = BufReader::new(stream.try_clone()?);
     let mut buf = String::new();
@@ -462,8 +421,6 @@ struct Server {
     archived_games: Vec<ArchivedGame>,
     #[serde(skip)]
     clients: HashMap<usize, mpsc::Sender<String>>,
-    #[serde(skip)]
-    connections: HashMap<String, u128>,
     #[serde(skip)]
     games: ServerGames,
     #[serde(skip)]
@@ -1410,42 +1367,6 @@ impl Server {
                 "check_update_rd" => {
                     let bool = self.check_update_rd();
                     info!("0 {username} check_update_rd {bool}");
-                    None
-                }
-                "connection_add" => {
-                    if let Some(address) = the_rest.first()
-                        && let Some(tx) = option_tx
-                    {
-                        if let Some(connections) = self.connections.get(*address)
-                            && *connections > 2_000
-                        {
-                            tx.send("true".to_string()).ok()?;
-                        } else {
-                            tx.send("false".to_string()).ok()?;
-
-                            let entry = self.connections.entry(address.to_string());
-                            entry.and_modify(|value| *value += 1).or_insert(1);
-                        }
-                    }
-
-                    debug!("connections: {:?}", self.connections);
-
-                    None
-                }
-                "connection_remove" => {
-                    if let Some(connection) = the_rest.first() {
-                        let entry = self.connections.entry(connection.to_string());
-                        entry.and_modify(|value| *value = value.saturating_sub(1));
-
-                        if let Some(value) = self.connections.get(*connection)
-                            && *value == 0
-                        {
-                            self.connections.remove(*connection);
-                        }
-                    }
-
-                    debug!("connections: {:?}", self.connections);
-
                     None
                 }
                 "create_account" => self.create_account(

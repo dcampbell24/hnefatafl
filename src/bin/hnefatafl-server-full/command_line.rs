@@ -48,12 +48,6 @@ pub(crate) struct Args {
     #[arg(long)]
     pub systemd: bool,
 
-    /// Add additional security checks
-    ///
-    /// - limit the number of TCP connections from a host
-    #[arg(long)]
-    pub secure: bool,
-
     /// The size of the tournament groups
     #[arg(default_value_t = 4, long)]
     pub group_size: usize,
