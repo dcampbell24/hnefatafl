@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- hnefatafl-server-full: Add message filtering and set OARS for flathub.
+
 ## [5.5.1] - 2026-03-29
 
 ### Fixed
