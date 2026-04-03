@@ -2771,7 +2771,7 @@ impl Server {
 // Fixme: censor removes the dots ä.
 fn censor(text: &str) -> String {
     if text.len() > MESSAGE_LENGTH {
-        return String::new()
+        return String::new();
     }
 
     Censor::from_str(text)
