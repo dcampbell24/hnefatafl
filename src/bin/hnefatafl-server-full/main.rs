@@ -85,6 +85,7 @@ use crate::{
 const ACTIVE_GAMES_FILE: &str = "active-games.postcard";
 const ARCHIVED_GAMES_FILE: &str = "archived-games.ron";
 const KEEP_TEXTS: usize = 100;
+const MESSAGE_LENGTH: usize = 128;
 
 const HOUR_IN_SECONDS: u64 = 60 * 60;
 const DAY_IN_SECONDS: u64 = HOUR_IN_SECONDS * 24;
@@ -1777,6 +1778,11 @@ impl Server {
                     info!("{index_supplied} {timestamp} {username} text {text}");
 
                     let text = censor(&text);
+
+                    if text.is_empty() {
+                        return None;
+                    }
+
                     let text = format!("= text {timestamp} {username}: {text}");
 
                     if self.texts.len() >= KEEP_TEXTS {
@@ -2657,6 +2663,10 @@ impl Server {
         let mut text = text.join(" ");
 
         text = censor(&text);
+        if text.is_empty() {
+            return None;
+        }
+
         text = format!("{timestamp} {username}: {text}");
         info!("{index_supplied} {username} text_game {id} {text}");
 
@@ -2760,6 +2770,10 @@ impl Server {
 
 // Fixme: censor removes the dots ä.
 fn censor(text: &str) -> String {
+    if text.len() > MESSAGE_LENGTH {
+        return String::new()
+    }
+
     Censor::from_str(text)
         .with_censor_threshold(Type::PROFANE | Type::SEXUAL)
         .with_censor_first_character_threshold(Type::ANY)
