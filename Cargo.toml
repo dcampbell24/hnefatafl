@@ -83,15 +83,33 @@ ctrlc = { version = "3", features = ["termination"], optional = true }
 itertools = { version = "0.14", optional = true }
 lettre = { version = "0.11", optional = true }
 password-hash = { version = "0.6", optional = true }
+rustrict = { version = "0.7", optional = true }
 
 [features]
 default = ["client", "server"]
-client = ["dep:iced", "dep:iced_aw", "dep:image", "dep:rodio", "dep:smol_str", "socket", "dep:sys-locale", "dep:webbrowser"]
+client = [
+    "dep:iced",
+    "dep:iced_aw",
+    "dep:image",
+    "dep:rodio",
+    "dep:smol_str",
+    "socket",
+    "dep:sys-locale",
+    "dep:webbrowser",
+]
 console = []
 debug =  ["iced?/debug"]
 js = ["dep:wasm-bindgen", "getrandom/wasm_js", "iced?/web-colors", "iced?/webgl"]
 runic = []
-server = ["dep:argon2", "dep:ctrlc", "dep:itertools", "dep:lettre", "dep:password-hash", "socket"]
+server = [
+    "dep:argon2",
+    "dep:ctrlc",
+    "dep:itertools",
+    "dep:lettre",
+    "dep:password-hash",
+    "dep:rustrict",
+    "socket",
+]
 socket = ["dep:socket2"]
 toml = ["dep:toml"]
 

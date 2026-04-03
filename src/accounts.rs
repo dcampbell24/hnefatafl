@@ -51,7 +51,7 @@ impl fmt::Display for Accounts {
     }
 }
 
-#[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct Account {
     #[serde(default)]
     pub email: Option<Email>,
@@ -79,6 +79,21 @@ pub struct Account {
     pub creation_date: DateTimeUtc,
     #[serde(default)]
     pub last_logged_in: DateTimeUtc,
+}
+
+impl PartialEq for Account {
+    fn eq(&self, other: &Self) -> bool {
+        self.email == other.email
+            && self.email_sent == other.email_sent
+            && self.logged_in == other.logged_in
+            && self.draws == other.draws
+            && self.wins == other.wins
+            && self.losses == other.losses
+            && self.rating == other.rating
+            && self.send_emails == other.send_emails
+            && self.creation_date == other.creation_date
+            && self.last_logged_in == other.last_logged_in
+    }
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
