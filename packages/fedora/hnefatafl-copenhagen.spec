@@ -15,7 +15,6 @@ BuildRequires: alsa-lib-devel
 
 Requires:      glibc
 Requires:      hicolor-icon-theme
-Requires:      alsa-lib
 Requires:      openssl
 
 %description
