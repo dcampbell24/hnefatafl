@@ -73,6 +73,7 @@ use lettre::{
 };
 use log::{debug, error, info, trace};
 use rand::random;
+use rustrict::{Censor, Type};
 use serde::{Deserialize, Serialize};
 use std::fmt::Write as _;
 
@@ -1771,10 +1772,13 @@ impl Server {
                 }
                 "text" => {
                     let timestamp = timestamp();
-                    let the_rest = the_rest.join(" ");
-                    info!("{index_supplied} {timestamp} {username} text {the_rest}");
+                    let text = the_rest.join(" ");
 
-                    let text = format!("= text {timestamp} {username}: {the_rest}");
+                    info!("{index_supplied} {timestamp} {username} text {text}");
+
+                    let text = censor(&text);
+                    let text = format!("= text {timestamp} {username}: {text}");
+
                     if self.texts.len() >= KEEP_TEXTS {
                         self.texts.pop_front();
                     }
@@ -2651,6 +2655,8 @@ impl Server {
         let timestamp = timestamp();
         let text = the_rest.split_off(1);
         let mut text = text.join(" ");
+
+        text = censor(&text);
         text = format!("{timestamp} {username}: {text}");
         info!("{index_supplied} {username} text_game {id} {text}");
 
@@ -2750,4 +2756,12 @@ impl Server {
 
         None
     }
+}
+
+// Fixme: censor removes the dots ä.
+fn censor(text: &str) -> String {
+    Censor::from_str(text)
+        .with_censor_threshold(Type::PROFANE | Type::SEXUAL)
+        .with_censor_first_character_threshold(Type::ANY)
+        .censor()
 }
