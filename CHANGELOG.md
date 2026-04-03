@@ -14,9 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- hnefatafl-server-full: remove `--secure` flag.
 - hnefatafl-server-full: allow blocking IP addresses.
-- hnefatafl-server-full: add message filtering and set OARS for flathub.
+- hnefatafl-server-full: message filtering and set OARS for flathub.
+
+### Removed
+
+- hnefatafl-server-full: `--secure` flag.
 
 ## [5.5.1] - 2026-03-29
 
