@@ -31,6 +31,7 @@ use std::{
     fmt,
     fs::{self, File, OpenOptions},
     io::{BufRead, BufReader, ErrorKind, Read, Write},
+    mem::take,
     net::{IpAddr, TcpListener, TcpStream},
     process::exit,
     str::FromStr,
@@ -308,7 +309,7 @@ fn login(
     tx.send((format!("{id} {username_proper} email_get"), None))?;
     tx.send((format!("{id} {username_proper} texts"), None))?;
     tx.send((format!("{id} {username_proper} display_games"), None))?;
-    tx.send((format!("{id} {username_proper} tournament_status_0"), None))?;
+    tx.send((format!("{id} {username_proper} tournament_status_1"), None))?;
     tx.send((format!("{id} {username_proper} admin"), None))?;
     tx.send((format!("{id} {username_proper} admin_tournament"), None))?;
 
@@ -422,7 +423,7 @@ struct Server {
     #[serde(default)]
     smtp: Smtp,
     #[serde(default)]
-    tournament: Option<Tournament>,
+    tournament: Tournament,
     #[serde(default)]
     accounts: Accounts,
     #[serde(skip)]
@@ -1155,8 +1156,8 @@ impl Server {
                 game_light.game_over = true;
             }
 
-            if let Some(tournament) = &mut self.tournament {
-                if tournament.game_over(&game) {
+            if self.tournament.is_tournament_game(&game.id) {
+                if self.tournament.game_over(&game) {
                     self.generate_round(group_size);
                 }
 
@@ -1182,41 +1183,31 @@ impl Server {
     }
 
     fn generate_round(&mut self, group_size: usize) {
-        let mut round = None;
-
-        if let Some(tournament) = &mut self.tournament {
-            let groups = tournament.generate_round(&self.accounts, group_size);
-            round = Some(groups);
-        }
-
+        let groups = self.tournament.generate_round(&self.accounts, group_size);
         let mut ids = VecDeque::new();
         let mut groups_arc_mutex = Vec::new();
 
-        if let Some(groups) = round {
-            for (i, mut group) in groups.into_iter().enumerate() {
-                for combination in group.records.iter().map(|record| record.0).combinations(2) {
-                    if let (Some(first), Some(second)) = (combination.first(), combination.get(1)) {
-                        ids.push_back((self.new_tournament_game(first, second), i));
-                        ids.push_back((self.new_tournament_game(second, first), i));
-                        group.total_games += 2;
-                    }
+        for (i, mut group) in groups.into_iter().enumerate() {
+            for combination in group.records.iter().map(|record| record.0).combinations(2) {
+                if let (Some(first), Some(second)) = (combination.first(), combination.get(1)) {
+                    ids.push_back((self.new_tournament_game(first, second), i));
+                    ids.push_back((self.new_tournament_game(second, first), i));
+                    group.total_games += 2;
                 }
-
-                groups_arc_mutex.push(Arc::new(Mutex::new(group)));
             }
+
+            groups_arc_mutex.push(Arc::new(Mutex::new(group)));
         }
 
-        if !groups_arc_mutex.is_empty()
-            && let Some(tournament) = &mut self.tournament
-        {
+        if !groups_arc_mutex.is_empty() {
             for (id, i) in ids {
                 if let Some(group) = groups_arc_mutex.get(i) {
-                    tournament.tournament_games.insert(id, group.clone());
-                    tournament.tournament_games.insert(id, group.clone());
+                    self.tournament.tournament_games.insert(id, group.clone());
+                    self.tournament.tournament_games.insert(id, group.clone());
                 }
             }
 
-            if let Some(rounds) = &mut tournament.groups {
+            if let Some(rounds) = &mut self.tournament.groups {
                 rounds.push(groups_arc_mutex);
             }
         }
@@ -1607,10 +1598,8 @@ impl Server {
                     the_rest.as_slice(),
                 ),
                 "join_tournament" => {
-                    if let Some(tournament) = &mut self.tournament {
-                        tournament.players.insert(username.to_string());
-                        self.tournament_status_all();
-                    }
+                    self.tournament.players.insert(username.to_string());
+                    self.tournament_status_all();
 
                     None
                 }
@@ -1621,10 +1610,8 @@ impl Server {
                     the_rest.as_slice(),
                 ),
                 "leave_tournament" => {
-                    if let Some(tournament) = &mut self.tournament {
-                        tournament.players.remove(username);
-                        self.tournament_status_all();
-                    }
+                    self.tournament.players.remove(username);
+                    self.tournament_status_all();
 
                     None
                 }
@@ -1742,19 +1729,16 @@ impl Server {
                 "text_game" => self.text_game(username, index_supplied, command, the_rest),
                 "tournament_delete" => {
                     if self.admins_tournament.contains(username) {
-                        self.tournament = None;
+                        self.tournament = Tournament::default();
                         self.tournament_status_all();
                     }
 
                     None
                 }
                 "tournament_groups_delete" => {
-                    if self.admins_tournament.contains(username)
-                        && let Some(tournament) = &mut self.tournament
-                    {
-                        tournament.groups = None;
-                        tournament.tournament_games = HashMap::new();
-
+                    if self.admins_tournament.contains(username) {
+                        self.tournament.groups = None;
+                        self.tournament.tournament_games = HashMap::new();
                         self.tournament_status_all();
                     }
 
@@ -1771,7 +1755,7 @@ impl Server {
 
                     None
                 }
-                "tournament_status_0" => {
+                "tournament_status_1" => {
                     trace!("tournament_status: {:#?}", self.tournament);
 
                     if args.skip_advertising_updates {
@@ -1783,20 +1767,21 @@ impl Server {
                         Some((
                             tx.clone(),
                             true,
-                            format!("tournament_status_0 {tournament}"),
+                            format!("tournament_status_1 {tournament}"),
                         ))
                     }
                 }
                 "tournament_start" => {
                     if self.admins_tournament.contains(username)
-                        && let Some(tournament) = &mut self.tournament
-                        && tournament.groups.is_none()
-                        && Timestamp::now() >= tournament.date
+                        && self.tournament.groups.is_none()
+                        && let Some(date) = self.tournament.date
+                        && Timestamp::now() >= date
                     {
                         info!("Starting tournament...");
 
-                        tournament.groups = Some(Vec::new());
-                        tournament.players_left = tournament.players.clone();
+                        self.tournament.groups = Some(Vec::new());
+                        self.tournament.players_left = take(&mut self.tournament.players);
+                        self.tournament.date = None;
 
                         self.generate_round(args.group_size);
                         self.tournament_status_all();
@@ -2066,6 +2051,7 @@ impl Server {
         }
     }
 
+    // Fixme!
     fn load_data_files(
         &mut self,
         tx: Sender<(String, Option<Sender<String>>)>,
@@ -2076,12 +2062,9 @@ impl Server {
             Ok(string) => match ron::from_str(string.as_str()) {
                 Ok(server_ron) => {
                     *self = server_ron;
+
                     self.tx = Some(tx.clone());
-
-                    if let Some(tournament) = &mut self.tournament {
-                        tournament.remove_duplicate_ids();
-                    }
-
+                    self.tournament.remove_duplicate_ids();
                     self.admins_tournament.insert("server".to_string());
                 }
                 Err(err) => {
@@ -2621,18 +2604,14 @@ impl Server {
     }
 
     fn tournament_date(&mut self, the_rest: &[&str]) -> anyhow::Result<()> {
-        let mut tournament = Tournament::default();
-
         let Some(date) = the_rest.first() else {
             return Err(anyhow::Error::msg("tournament_date: date is empty"));
         };
 
-        tournament.date = match date.parse() {
-            Ok(timestamp) => timestamp,
+        self.tournament.date = match date.parse() {
+            Ok(timestamp) => Some(timestamp),
             Err(error) => return Err(anyhow::Error::msg(format!("tournament_date: {error}"))),
         };
-
-        self.tournament = Some(tournament);
 
         Ok(())
     }
@@ -2641,7 +2620,7 @@ impl Server {
         trace!("tournament_status: {:#?}", self.tournament);
 
         if let Ok(mut tournament) = ron::ser::to_string(&self.tournament) {
-            tournament = format!("= tournament_status_0 {tournament}");
+            tournament = format!("= tournament_status_1 {tournament}");
 
             for tx in self.clients.values() {
                 let _ok = tx.send(tournament.clone());

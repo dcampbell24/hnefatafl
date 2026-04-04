@@ -32,7 +32,7 @@ pub struct Tournament {
     pub id: u64,
     pub players: HashSet<String>,
     pub players_left: HashSet<String>,
-    pub date: Timestamp,
+    pub date: Option<Timestamp>,
     pub groups: Option<Vec<Vec<Arc<Mutex<Group>>>>>,
     pub tournament_games: HashMap<Id, Arc<Mutex<Group>>>,
 }
@@ -243,6 +243,11 @@ impl Tournament {
         }
 
         groups
+    }
+
+    #[must_use]
+    pub fn is_tournament_game(&self, id: &Id) -> bool {
+        self.tournament_games.contains_key(id)
     }
 
     pub fn remove_duplicate_ids(&mut self) {

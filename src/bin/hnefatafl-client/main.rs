@@ -719,7 +719,7 @@ struct Client {
     #[serde(skip)]
     time_defender: TimeSettings,
     #[serde(skip)]
-    tournament: Option<Tournament>,
+    tournament: Tournament,
     #[serde(skip)]
     tournament_date: Date,
     #[serde(skip)]
@@ -1094,46 +1094,35 @@ impl<'a> Client {
 
     #[allow(clippy::too_many_lines)]
     fn display_tournament(&self) -> Column<'_, Message> {
-        let Some(tournament) = &self.tournament else {
-            return Column::new();
-        };
-
         let tournament_string = t!("Tournament");
         let row_1 = text(tournament_string.to_string());
         let row_2 = text("-".repeat(tournament_string.len())).font(Font::MONOSPACE);
         let column_1 = column![row_1, row_2];
-
-        let players_len = tournament.players.len();
-
-        if players_len == 0 {
-            return Column::new();
-        }
-
         let mut column_rounds = Column::new();
 
-        if let Some(round) = &tournament.groups {
+        if let Some(round) = &self.tournament.groups {
             let mut column_round = Column::new();
 
             for (i, group) in round.iter().enumerate() {
-                let round_title = if tournament.tournament_games.is_empty() && i + 1 == round.len()
-                {
-                    let winner = t!("Winner");
-                    let row_1 = text(winner.to_string());
-                    let row_2 = text!("{}", "-".repeat(winner.len())).font(Font::MONOSPACE);
+                let round_title =
+                    if self.tournament.tournament_games.is_empty() && i + 1 == round.len() {
+                        let winner = t!("Winner");
+                        let row_1 = text(winner.to_string());
+                        let row_2 = text!("{}", "-".repeat(winner.len())).font(Font::MONOSPACE);
 
-                    column![row_1, row_2]
-                } else {
-                    let round = t!("Round");
-                    let row_1 = text!("{} {}", round.to_string(), i + 1);
-                    let row_2 = text!(
-                        "{}-{}",
-                        "-".repeat(round.len()),
-                        "-".repeat((i + 1).to_string().len())
-                    )
-                    .font(Font::MONOSPACE);
+                        column![row_1, row_2]
+                    } else {
+                        let round = t!("Round");
+                        let row_1 = text!("{} {}", round.to_string(), i + 1);
+                        let row_2 = text!(
+                            "{}-{}",
+                            "-".repeat(round.len()),
+                            "-".repeat((i + 1).to_string().len())
+                        )
+                        .font(Font::MONOSPACE);
 
-                    column![row_1, row_2]
-                };
+                        column![row_1, row_2]
+                    };
 
                 column_round = column_round.push(round_title);
 
@@ -1157,7 +1146,7 @@ impl<'a> Client {
                         for (player, record) in &players.records {
                             games_count += record.games_count();
 
-                            if tournament.tournament_games.is_empty() && i + 1 == round.len() {
+                            if self.tournament.tournament_games.is_empty() && i + 1 == round.len() {
                                 column_group_vec.push(
                                     text!("{:16} {:10}", player, record.rating.to_string_rounded())
                                         .font(Font::MONOSPACE),
@@ -3028,9 +3017,9 @@ impl<'a> Client {
                             }
                             Some("text") => self.texts.push_front(text_collect(text)),
                             Some("text_game") => self.texts_game.push_front(text_collect(text)),
-                            Some("tournament_status_0") => {
+                            Some("tournament_status_1") => {
                                 if let Some(tournament) = text.next() {
-                                    let tournament: Option<Tournament> = ron::from_str(tournament)
+                                    let tournament: Tournament = ron::from_str(tournament)
                                         .expect("This is a valid tournament.");
 
                                     self.tournament = tournament;
@@ -4349,30 +4338,17 @@ impl<'a> Client {
                 Message::DateSubmit,
             );
 
-            let mut delete_button = button("Delete Tournament");
-
-            if self.tournament.is_some() {
-                delete_button = delete_button.on_press(Message::TournamentDelete);
-            }
-
-            let row = row![date_picker, delete_button].spacing(SPACING);
+            let delete_button_1 = button("Delete Tournament").on_press(Message::TournamentDelete);
+            let row = row![date_picker, delete_button_1].spacing(SPACING);
 
             column = column.push(row);
         }
 
-        let Some(tournament) = &self.tournament else {
-            column = column.push(text(t!("There is no tournament.")));
-            column = column.push(button(text!("{} (Esc)", t!("Quit"))).on_press(Message::Leave));
-
-            return scrollable(column).spacing(SPACING);
-        };
-
         let mut date = Row::new().spacing(SPACING);
         let start_date = t!("Tournament Start Date");
-        date = date.push(text!(
-            "{start_date}: {}",
-            tournament.date.strftime("%F %T UTC")
-        ));
+        if let Some(timestamp) = self.tournament.date {
+            date = date.push(text!("{start_date}: {}", timestamp.strftime("%F %T UTC")));
+        }
 
         let button_0 =
             button(text!("{} (6)", t!("Tournaments Described"))).on_press(Message::Tournaments);
@@ -4380,7 +4356,7 @@ impl<'a> Client {
         let mut button_1 = button(text!("{} (7)", t!("Join Tournament")));
         let mut button_2 = button(text!("{} (8)", t!("Leave Tournament")));
 
-        if tournament.players.contains(&self.username) {
+        if self.tournament.players.contains(&self.username) {
             button_2 = button_2.on_press(Message::TournamentLeave);
         } else {
             button_1 = button_1.on_press(Message::TournamentJoin);
@@ -4395,7 +4371,7 @@ impl<'a> Client {
         .spacing(SPACING);
 
         let mut players = Column::new();
-        let mut player_names: Vec<_> = tournament.players.iter().collect();
+        let mut player_names: Vec<_> = self.tournament.players.iter().collect();
         player_names.sort();
 
         for player in &player_names {
@@ -4407,25 +4383,19 @@ impl<'a> Client {
         column = column.push(LabeledFrame::new(text(t!("Players")), players));
 
         if self.admin_tournament {
-            let mut delete_button = button("Delete Tournament Tree");
+            let mut delete_button_2 = button("Delete Tournament Tree");
 
-            if let Some(tournament) = &self.tournament
-                && tournament.groups.is_some()
-            {
-                delete_button = delete_button.on_press(Message::TournamentTreeDelete);
+            if self.tournament.groups.is_some() {
+                delete_button_2 = delete_button_2.on_press(Message::TournamentTreeDelete);
             }
 
             let mut start_tournament = button("Start Tournament");
 
-            if let Some(tournament) = &self.tournament {
-                if tournament.groups.is_none() {
-                    start_tournament = start_tournament.on_press(Message::TournamentStart);
-                }
-            } else {
+            if self.tournament.groups.is_none() {
                 start_tournament = start_tournament.on_press(Message::TournamentStart);
             }
 
-            column = column.push(row![start_tournament, delete_button].spacing(SPACING));
+            column = column.push(row![start_tournament, delete_button_2].spacing(SPACING));
         }
 
         column = column.push(self.display_tournament());
