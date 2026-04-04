@@ -21,6 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - hnefatafl-server-full: `--secure` flag.
 
+### Fixed
+
+- hnefatafl-client: show the rating of players in games for admin.
+
 ## [5.5.1] - 2026-03-29
 
 ### Fixed
