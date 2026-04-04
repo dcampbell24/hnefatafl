@@ -1715,11 +1715,20 @@ impl<'a> Client {
                 &game_handle.game.texts,
             )
         } else {
-            if let Some(user) = self.users.get(&self.attacker) {
-                attacker_rating = user.rating.to_string_rounded();
-            }
-            if let Some(user) = self.users.get(&self.defender) {
-                defender_rating = user.rating.to_string_rounded();
+            if self.admin {
+                if let Some(account) = self.accounts.0.get(&self.attacker) {
+                    attacker_rating = account.rating.to_string_rounded();
+                }
+                if let Some(account) = self.accounts.0.get(&self.defender) {
+                    defender_rating = account.rating.to_string_rounded();
+                }
+            } else {
+                if let Some(user) = self.users.get(&self.attacker) {
+                    attacker_rating = user.rating.to_string_rounded();
+                }
+                if let Some(user) = self.users.get(&self.defender) {
+                    defender_rating = user.rating.to_string_rounded();
+                }
             }
 
             let game = self.game.as_ref().expect("we should be in a game");
