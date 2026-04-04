@@ -17,6 +17,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - hnefatafl-server-full: allow blocking IP addresses.
 - hnefatafl-server-full: message filtering and set OARS for flathub.
 
+### Breaking
+
+- Fix tournaments so that you can have one pre-start when another is being
+  played or finished and remove the players from players when starting a game.
+
 ### Removed
 
 - hnefatafl-server-full: `--secure` flag.
