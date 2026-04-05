@@ -2681,7 +2681,7 @@ impl Server {
     }
 }
 
-// Fixme: censor removes the dots ä.
+// Fixme: censor removes the dots ä, but not using censor This allows for  ͬ ͣ p (crap)
 fn censor(text: String) -> String {
     if text.len() > MESSAGE_LENGTH {
         return String::new();
