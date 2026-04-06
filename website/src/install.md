@@ -212,16 +212,13 @@ There are also at least these bugs:
 4. I think you have to restart Redox after entering the application, because
    TcpStream shutdown is not implemented.
 
-## Source [![github]][github-link] [![codeberg]][codeberg-link]
+## Source [![codeberg]][codeberg-link]
 
 First you need to install [Rust]. If running on Linux, then you need to
 install [dependencies]. Then:
 
 ```sh
-git clone https://github.com/dcampbell24/hnefatafl.git
-# or
 git clone https://codeberg.org/dcampbell/hnefatafl.git
-
 cd hnefatafl
 ```
 
@@ -249,8 +246,6 @@ cargo run --release --bin hnefatafl-client -- --host localhost
 ```
 
 [dependencies]: https://hnefatafl.org/install.html#dependencies-linux
-[github]: https://img.shields.io/badge/GitHub-111111?logo=github
-[github-link]: https://github.com/dcampbell24/hnefatafl
 [codeberg]: https://img.shields.io/badge/Codeberg-eeeeee?logo=codeberg
 [codeberg-link]: https://codeberg.org/dcampbell/hnefatafl
 [Rust]: https://rust-lang.org/learn/get-started/
