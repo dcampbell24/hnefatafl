@@ -61,6 +61,7 @@ start_sshd:
 
 [group('Operating Systems')]
 macos:
+    cargo install cargo-bundle
     cargo bundle --bin hnefatafl-client --features client --no-default-features --release
 
 remove-exif-data *args:
