@@ -1415,7 +1415,8 @@ impl Server {
                         if account.wins == 0
                             && account.losses == 0
                             && account.draws == 0
-                            && account.creation_date == account.last_logged_in
+                            && account.creation_date.0.as_second()
+                                == account.last_logged_in.0.as_second()
                             && !playing.contains(name)
                             && two_weeks_ago > account.last_logged_in.0
                         {
