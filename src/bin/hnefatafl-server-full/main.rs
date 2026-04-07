@@ -86,7 +86,7 @@ const MESSAGE_LENGTH: usize = 128;
 
 const HOUR_IN_SECONDS: u64 = 60 * 60;
 const DAY_IN_SECONDS: u64 = HOUR_IN_SECONDS * 24;
-const DAYS_FOR_INACTIVE_ACCOUNT: i64 = 14;
+const HOURS_FOR_INACTIVE_ACCOUNT: i64 = 24 * 14;
 
 const TWO_MONTHS_MICRO_SECONDS: i64 = 60 * 60 * 24 * 30_436_875 * 2;
 const SEVEN_DAYS: i64 = 1_000 * 60 * 60 * 24 * 7;
@@ -573,6 +573,7 @@ impl Server {
             for account in self.accounts.0.values_mut() {
                 account.rating.update_rd();
             }
+
             self.ran_update_rd = UnixTimestamp(now);
             true
         } else {
@@ -1390,10 +1391,16 @@ impl Server {
                     None
                 }
                 "delete_unused_accounts" => {
-                    let now = Timestamp::now();
                     let mut accounts = Vec::new();
-
                     let mut playing = HashSet::new();
+
+                    let Ok(two_weeks_ago) =
+                        Timestamp::now().checked_sub(HOURS_FOR_INACTIVE_ACCOUNT.hours())
+                    else {
+                        error!("delete_unused_account failed!: checked_sub failed!");
+                        return None;
+                    };
+
                     for game in self.games_light.0.values() {
                         if let Some(attacker) = &game.attacker {
                             playing.insert(attacker);
@@ -1408,9 +1415,9 @@ impl Server {
                         if account.wins == 0
                             && account.losses == 0
                             && account.draws == 0
-                            && let Ok(timestamp) = now.checked_sub(DAYS_FOR_INACTIVE_ACCOUNT.day())
-                            && timestamp > account.last_logged_in.0
+                            && account.creation_date == account.last_logged_in
                             && !playing.contains(name)
+                            && two_weeks_ago > account.last_logged_in.0
                         {
                             accounts.push(name.clone());
                         }
