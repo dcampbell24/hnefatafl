@@ -16,7 +16,6 @@ keywords = ["board-game", "copenhagen", "hnefatafl", "strategy", "tafl"]
 # https://crates.io/category_slugs
 categories = ["game-engines", "games", "wasm"]
 default-run = "hnefatafl-server-full"
-
 include = ["/src/**/*", "/README.md", "/CHANGELOG.md", "/LICENSE.txt"]
 
 [dev-dependencies]
