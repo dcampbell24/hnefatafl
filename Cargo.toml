@@ -13,6 +13,7 @@ homepage = "https://hnefatafl.org"
 repository = "https://codeberg.org/dcampbell/hnefatafl"
 license = "AGPL-3.0-or-later"
 keywords = ["board-game", "copenhagen", "hnefatafl", "strategy", "tafl"]
+# https://crates.io/category_slugs
 categories = ["game-engines", "games", "wasm"]
 default-run = "hnefatafl-server-full"
 
