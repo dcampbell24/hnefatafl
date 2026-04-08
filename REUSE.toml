@@ -6,12 +6,6 @@ path = "assets/header.png"
 SPDX-License-Identifier = "CC-BY-NC-ND-4.0"
 SPDX-FileCopyrightText = "2025 David Campbell <david@hnefatafl.org>"
 
-# Really proprietary, but that is not a SPDX license.
-[[annotations]]
-path = "assets/helmet.svg"
-SPDX-License-Identifier = "CC-BY-NC-ND-4.0"
-SPDX-FileCopyrightText = "2025 David Campbell <david@hnefatafl.org>"
-
 [[annotations]]
 path = "assets/hnefatafl-individual-CLA.pdf"
 SPDX-License-Identifier = "Apache-2.0"
