@@ -4391,7 +4391,11 @@ impl<'a> Client {
 
             let mut start_tournament = button("Start Tournament");
 
-            if self.tournament.groups.is_none() {
+            if self.tournament.groups.is_none()
+                && !self.tournament.players.is_empty()
+                && let Some(date) = self.tournament.date
+                && date < Timestamp::now()
+            {
                 start_tournament = start_tournament.on_press(Message::TournamentStart);
             }
 
