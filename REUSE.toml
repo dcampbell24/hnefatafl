@@ -32,8 +32,8 @@ SPDX-FileCopyrightText = "2025 David Campbell <david@hnefatafl.org>"
 # Automatically generated file.
 [[annotations]]
 path = "Cargo.lock"
-SPDX-License-Identifier = "MIT"
-SPDX-FileCopyrightText = "NONE"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+SPDX-FileCopyrightText = "2025 David Campbell <david@hnefatafl.org>"
 
 # In the Public Domain.
 [[annotations]]
