@@ -2691,13 +2691,12 @@ impl Server {
 }
 
 // Fixme: Censor::from_str removes the dots ä, but not using censor This allows for  ͬ ͣ p (crap)
-#[allow(clippy::unwrap_used)]
 fn censor(text: &str) -> String {
     if text.len() > MESSAGE_LENGTH {
         return String::new();
     }
 
-    let censored_first = badwords_rs::censor(text, MODERATE).unwrap();
+    let censored_first = badwords_rs::censor(text, MODERATE);
     let (censored_second, analysis) = Censor::from_str(&censored_first)
         .with_censor_threshold(Type::PROFANE | Type::SEXUAL)
         .with_censor_first_character_threshold(Type::ANY)

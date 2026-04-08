@@ -40,7 +40,7 @@ default-features = false
 
 [dependencies]
 anyhow = "1"
-badwords-rs = "0.1"
+badwords-rs = "0.2"
 # burn = { version = "0.16", features = ["train", "wgpu", "vision"] }
 clap = { version = "4", features = ["derive"] }
 clap_mangen = "0.3"
