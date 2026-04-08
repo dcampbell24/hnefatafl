@@ -17,7 +17,7 @@ keywords = ["board-game", "copenhagen", "hnefatafl", "strategy", "tafl"]
 categories = ["game-engines", "games", "wasm"]
 default-run = "hnefatafl-server-full"
 
-include = ["src/**/*", "README.md", "CHANGELOG.md", "LICENSE.txt"]
+include = ["src/**/*", "./README.md", "CHANGELOG.md", "./LICENSE.txt"]
 
 [dev-dependencies]
 criterion = { version = "0.8", features = ["html_reports"] }
