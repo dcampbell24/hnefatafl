@@ -4,6 +4,7 @@
         "addrs",
         "allocvec",
         "alsa",
+        "badwords",
         "bindgen",
         "devel",
         "cdylib",
