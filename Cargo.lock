@@ -515,9 +515,9 @@ dependencies = [
 
 [[package]]
 name = "badwords-rs"
-version = "0.3.0"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3621b16c477274b5e17ca7966f227bdb7a95de070ac043ba03c02305177b1ef4"
+checksum = "a6f85da69f1526a7f6655ea202d0ab4c3c9e99a53aa5467d69aba978df1b1937"
 dependencies = [
  "csv",
  "serde",
