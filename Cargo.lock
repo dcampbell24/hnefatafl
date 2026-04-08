@@ -514,6 +514,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "badwords-rs"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0c36f6bdb51ee77ba0aa27eb05076ed8728e18b9653682074d9ade86e1ff9630"
+dependencies = [
+ "anyhow",
+ "csv",
+ "serde",
+]
+
+[[package]]
 name = "base62"
 version = "2.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2195,6 +2206,7 @@ version = "5.5.1"
 dependencies = [
  "anyhow",
  "argon2",
+ "badwords-rs",
  "clap",
  "clap_mangen",
  "criterion",

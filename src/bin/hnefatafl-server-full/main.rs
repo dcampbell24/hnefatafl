@@ -44,6 +44,7 @@ use std::{
 };
 
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
+use badwords_rs::MODERATE;
 use clap::Parser;
 use hnefatafl_copenhagen::{
     Id, SERVER_PORT, VERSION_ID,
@@ -1705,7 +1706,7 @@ impl Server {
 
                     info!("{index_supplied} {timestamp} {username} text {text}");
 
-                    let text = censor(text);
+                    let text = censor(&text);
 
                     if text.is_empty() {
                         return None;
@@ -2586,7 +2587,7 @@ impl Server {
         let text = the_rest.split_off(1);
         let mut text = text.join(" ");
 
-        text = censor(text);
+        text = censor(&text);
 
         if text.is_empty() {
             return None;
@@ -2689,20 +2690,22 @@ impl Server {
     }
 }
 
-// Fixme: censor removes the dots ä, but not using censor This allows for  ͬ ͣ p (crap)
-fn censor(text: String) -> String {
+// Fixme: Censor::from_str removes the dots ä, but not using censor This allows for  ͬ ͣ p (crap)
+#[allow(clippy::unwrap_used)]
+fn censor(text: &str) -> String {
     if text.len() > MESSAGE_LENGTH {
         return String::new();
     }
 
-    let (censored, analysis) = Censor::from_str(&text)
+    let censored_first = badwords_rs::censor(text, MODERATE).unwrap();
+    let (censored_second, analysis) = Censor::from_str(&censored_first)
         .with_censor_threshold(Type::PROFANE | Type::SEXUAL)
         .with_censor_first_character_threshold(Type::ANY)
         .censor_and_analyze();
 
     if analysis == Type::NONE {
-        text
+        censored_first
     } else {
-        censored
+        censored_second
     }
 }
