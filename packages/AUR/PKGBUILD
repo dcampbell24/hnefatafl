@@ -28,11 +28,11 @@ provides=("hnefatafl-copenhagen")
 conflicts=("hnefatafl-copenhagen")
 depends=("glibc" "gcc-libs" "hicolor-icon-theme" "alsa-lib" "openssl")
 makedepends=("base-devel" "clang" "llvm" "mold" "rustup")
-source=("https://github.com/dcampbell24/hnefatafl/archive/refs/tags/v$pkgver-$real_pkgrel.tar.gz")
+source=("https://codeberg.org/dcampbell/hnefatafl/archive/v$pkgver-$real_pkgrel.tar.gz")
 sha256sums=("")
 build() {
     tar -xvzf v$pkgver-$real_pkgrel.tar.gz
-    cd "hnefatafl-$pkgver-$real_pkgrel"
+    cd "hnefatafl"
 
     cargo build --release
 
@@ -54,7 +54,7 @@ build() {
 }
 
 package() {
-    cd "hnefatafl-$pkgver-$real_pkgrel"
+    cd "hnefatafl"
     install -Dm755 "target/release/hnefatafl-ai" -t "$pkgdir/usr/bin"
     install -Dm755 "target/release/hnefatafl-client" -t "$pkgdir/usr/bin"
     install -Dm755 "target/release/hnefatafl-server" -t "$pkgdir/usr/bin"
