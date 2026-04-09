@@ -52,7 +52,7 @@ install -Dm644 "packages/hnefatafl.service" -t "%{buildroot}/usr/lib/systemd/sys
 install -Dm644 "packages/hnefatafl-ai-attacker.service" -t "%{buildroot}/usr/lib/systemd/system"
 install -Dm644 "packages/hnefatafl-ai-defender.service" -t "%{buildroot}/usr/lib/systemd/system"
 install -Dm644 "LICENSE.txt" "%{buildroot}/usr/share/licenses/$pkgname/LICENSE.txt"
-install -Dm644 "assets/helmet.svg" "%{buildroot}/usr/share/icons/hicolor/scalable/apps/org.hnefatafl.hnefatafl_client.svg"
+install -Dm644 "website/src/images/helmet.svg" "%{buildroot}/usr/share/icons/hicolor/scalable/apps/org.hnefatafl.hnefatafl_client.svg"
 install -Dm644 "hnefatafl-ai.1.gz" "%{buildroot}/usr/share/man/man1/hnefatafl-ai.1.gz"
 install -Dm644 "hnefatafl-client.1.gz" "%{buildroot}/usr/share/man/man1/hnefatafl-client.1.gz"
 install -Dm644 "hnefatafl-server.1.gz" "%{buildroot}/usr/share/man/man1/hnefatafl-server.1.gz"
