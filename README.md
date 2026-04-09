@@ -37,10 +37,10 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 An [engine] similar to the [Go Text Protocol], a [client], and a [server]. For
 help on how to use the engine see the module [documentation].
 
-[engine]: https://github.com/dcampbell24/hnefatafl/blob/main/src/bin/hnefatafl-text-protocol.rs
+[engine]: https://codeberg.org/dcampbell/hnefatafl/src/branch/main/src/bin/hnefatafl-text-protocol.rs
 [Go Text Protocol]: https://www.lysator.liu.se/~gunnar/gtp/gtp2-spec-draft2/gtp2-spec.html
-[client]: https://github.com/dcampbell24/hnefatafl/tree/main/src/bin/hnefatafl-client
-[server]: https://github.com/dcampbell24/hnefatafl/blob/main/src/bin/hnefatafl-server-full
+[client]: https://codeberg.org/dcampbell/hnefatafl/src/branch/main/src/bin/hnefatafl-client
+[server]: https://codeberg.org/dcampbell/hnefatafl/src/branch/main/src/bin/hnefatafl-server-full
 [documentation]: https://docs.rs/hnefatafl-copenhagen/latest/hnefatafl_copenhagen/message/enum.Message.html
 
 ## Building and Running
@@ -51,7 +51,7 @@ Take a look at all of the [installation options].
 
 ## License
 
-Licensed under [AGPLv3](COPYING).
+Licensed under [AGPLv3](https://www.gnu.org/licenses/agpl-3.0.en.html).
 
 ```plain
 Copyright (C) 2025-2026 Developers of the hnefatafl-copenhagen project
