@@ -18,7 +18,7 @@ modules:
     buildsystem: simple
     sources:
       - type: git
-        url: https://github.com/dcampbell24/hnefatafl.git
+        url: https://codeberg.org/dcampbell/hnefatafl.git
         tag: v5.6.1-1
       - cargo-sources.json
     build-options:
