@@ -4,8 +4,8 @@
   <metadata>
     <!-- == PACKAGE SPECIFIC SECTION == -->
     <id>hnefatafl-copenhagen</id>
-    <version>5.5.1</version>
-    <packageSourceUrl>https://github.com/dcampbell24/hnefatafl/tree/main/packages/chocolatey</packageSourceUrl>
+    <version>5.6.1</version>
+    <packageSourceUrl>https://codeberg.org/dcampbell/hnefatafl/src/branch/main/packages/chocolatey</packageSourceUrl>
     <owners>David Lawrence Campbell</owners>
     <!-- ============================== -->
 
