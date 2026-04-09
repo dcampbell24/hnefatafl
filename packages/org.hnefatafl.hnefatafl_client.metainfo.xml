@@ -34,10 +34,6 @@
     <keyword>tafl</keyword>
   </keywords>
 
-  <content_rating type="oars-1.1">
-    <content_attribute id="social-chat">intense</content_attribute>
-  </content_rating>
-
   <url type="bugtracker">https://codeberg.org/dcampbell/hnefatafl/issues</url>
   <url type="homepage">https://hnefatafl.org/</url>
   <url type="donation">https://ko-fi.com/dcampbell24</url>
