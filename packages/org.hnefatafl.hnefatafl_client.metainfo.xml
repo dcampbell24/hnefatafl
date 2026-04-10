@@ -66,9 +66,11 @@
   </screenshots>
 
   <!-- https://hughsie.github.io/oars/generate.html -->
-  <content_rating type="oars-1.0">
+  <content_rating type="oars-1.1">
     <content_attribute id="language-profanity">mild</content_attribute>
     <content_attribute id="social-chat">moderate</content_attribute>
+    <content_attribute id="sex-nudity">none</content_attribute>
+    <content_attribute id="sex-themes">none</content_attribute>
   </content_rating>
 
   <releases>
