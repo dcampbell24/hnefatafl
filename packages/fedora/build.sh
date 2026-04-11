@@ -1,3 +1,3 @@
 #!/bin/bash
 
-RUST_MIN_STACK=16777216 rpmbuild -ba hnefatafl-copenhagen.spec
+RUST_MIN_STACK=67108864 rpmbuild -ba hnefatafl-copenhagen.spec

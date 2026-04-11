@@ -43,22 +43,23 @@ sed -i 's/games/bin/' packages/hnefatafl-ai-defender.service
 sed -i 's/games/bin/' packages/hnefatafl.service
 
 %install
-install	-Dm755 "target/release/hnefatafl-ai" -t	"%{buildroot}/%{_bindir}"
-install -Dm755 "target/release/hnefatafl-client" -t "%{buildroot}/%{_bindir}"
-install -Dm755 "target/release/hnefatafl-server" -t "%{buildroot}/%{_bindir}"
-install -Dm755 "target/release/hnefatafl-server-full" -t "%{buildroot}/%{_bindir}"
-install -Dm755 "target/release/hnefatafl-text-protocol" -t "%{buildroot}/%{_bindir}"
+install -Dm755 "target/release/hnefatafl-ai" -t "%{buildroot}%{_bindir}"
+install -Dm755 "target/release/hnefatafl-client" -t "%{buildroot}%{_bindir}"
+install -Dm755 "target/release/hnefatafl-server" -t "%{buildroot}%{_bindir}"
+install -Dm755 "target/release/hnefatafl-server-full" -t "%{buildroot}%{_bindir}"
+install -Dm755 "target/release/hnefatafl-text-protocol" -t "%{buildroot}%{_bindir}"
 install -Dm644 "packages/hnefatafl.service" -t "%{buildroot}/usr/lib/systemd/system"
 install -Dm644 "packages/hnefatafl-ai-attacker.service" -t "%{buildroot}/usr/lib/systemd/system"
 install -Dm644 "packages/hnefatafl-ai-defender.service" -t "%{buildroot}/usr/lib/systemd/system"
-install -Dm644 "LICENSE.txt" "%{buildroot}/usr/share/licenses/$pkgname/LICENSE.txt"
+install -Dm644 "LICENSE.txt" -t "%{buildroot}/usr/share/licenses/$pkgname"
 install -Dm644 "website/src/images/helmet.svg" "%{buildroot}/usr/share/icons/hicolor/scalable/apps/org.hnefatafl.hnefatafl_client.svg"
-install -Dm644 "hnefatafl-ai.1.gz" "%{buildroot}/usr/share/man/man1/hnefatafl-ai.1.gz"
-install -Dm644 "hnefatafl-client.1.gz" "%{buildroot}/usr/share/man/man1/hnefatafl-client.1.gz"
-install -Dm644 "hnefatafl-server.1.gz" "%{buildroot}/usr/share/man/man1/hnefatafl-server.1.gz"
-install -Dm644 "hnefatafl-server-full.1.gz" "%{buildroot}/usr/share/man/man1/hnefatafl-server-full.1.gz"
-install -Dm644 "hnefatafl-text-protocol.1.gz" "%{buildroot}/usr/share/man/man1/hnefatafl-text-protocol.1.gz"
-install -Dm644 "packages/hnefatafl-client.desktop" "%{buildroot}/usr/share/applications/hnefatafl-client.desktop"
+install -Dm644 "hnefatafl-ai.1.gz" -t "%{buildroot}/usr/share/man/man1"
+install -Dm644 "hnefatafl-client.1.gz" -t "%{buildroot}/usr/share/man/man1"
+install -Dm644 "hnefatafl-server.1.gz" -t "%{buildroot}/usr/share/man/man1"
+install -Dm644 "hnefatafl-server-full.1.gz" -t "%{buildroot}/usr/share/man/man1"
+install -Dm644 "hnefatafl-text-protocol.1.gz" -t "%{buildroot}/usr/share/man/man1"
+install -Dm644 "packages/hnefatafl-client.desktop" -t "%{buildroot}/usr/share/applications"
+install -Dm644 "packages/org.hnefatafl.hnefatafl_client.metainfo.xml" -t "%{buildroot}%{_metainfodir}"
 
 %files
 %{_bindir}/hnefatafl-ai
@@ -77,6 +78,7 @@ install -Dm644 "packages/hnefatafl-client.desktop" "%{buildroot}/usr/share/appli
 /usr/share/man/man1/hnefatafl-server-full.1.gz
 /usr/share/man/man1/hnefatafl-server.1.gz
 /usr/share/man/man1/hnefatafl-text-protocol.1.gz
+%{_metainfodir}/org.hnefatafl.hnefatafl_client.metainfo.xml
 %license LICENSE.txt
 %doc README.md
 
