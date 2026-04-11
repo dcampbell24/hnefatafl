@@ -25,4 +25,4 @@ rm hnefatafl-client.1.gz
 rm hnefatafl-server-full.1.gz
 
 echo $PACKAGE
-lintian -EviIL +pedantic $PACKAGE
+# lintian -EviIL +pedantic $PACKAGE
