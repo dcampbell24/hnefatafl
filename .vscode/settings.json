@@ -20,6 +20,8 @@
         "keepalive",
         "kcache",
         "lettre",
+        "libasound",
+        "libc",
         "lintian",
         "makepkg",
         "mangen",

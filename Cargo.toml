@@ -227,6 +227,7 @@ assets = [
 changelog = "packages/debian/changelog"
 revision = "1"
 section = "games"
+depends = ["libasound2t64", "libc6", "libssl3t64"]
 
 [package.metadata.bundle]
 name = "hnefatafl-copenhagen"
