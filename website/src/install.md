@@ -98,7 +98,7 @@ sudo apt update && sudo apt install hnefatafl-copenhagen
 Then under KDE go to `Application Launcher -> Games -> Hnefatafl Copenhagen`
 or in a terminal run `\usr\games\hnefatafl-client`.
 
-## Fedora COPR [![fedora]][fedora-copr]
+## Fedora COPR (Linux) [![fedora]][fedora-copr]
 
 In you terminal run:
 
