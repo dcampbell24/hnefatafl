@@ -98,6 +98,21 @@ sudo apt update && sudo apt install hnefatafl-copenhagen
 Then under KDE go to `Application Launcher -> Games -> Hnefatafl Copenhagen`
 or in a terminal run `\usr\games\hnefatafl-client`.
 
+## Fedora COPR [![fedora]][fedora-copr]
+
+In you terminal run:
+
+```sh
+sudo dnf copr enable dcampbell24/hnefatafl-copenhagen
+sudo dnf install hnefatafl-copenhagen
+```
+
+Then under KDE go to `Application Launcher -> Games -> Hnefatafl Copenhagen`
+or in a terminal run `\usr\bin\hnefatafl-client`.
+
+[fedora]: https://img.shields.io/badge/-111111?logo=fedora
+[fedora-copr]: https://copr.fedorainfracloud.org/coprs/dcampbell24/hnefatafl-copenhagen
+
 ## Flatpak (Linux) [![flathub]][flathub-link]
 
 See [flathub.org](https://flathub.org/apps/org.hnefatafl.hnefatafl_client).

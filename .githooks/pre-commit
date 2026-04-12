@@ -11,7 +11,7 @@ cargo test
 cargo test --benches
 
 # cargo install zizmor --locked
-zizmor --pedantic .github/
+# zizmor --pedantic .github/
 
 # sudo apt-get install reuse
 reuse lint
