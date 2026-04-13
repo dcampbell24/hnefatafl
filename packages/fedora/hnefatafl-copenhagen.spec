@@ -41,6 +41,7 @@ gzip --no-name --best hnefatafl-client.1
 sed -i 's/games/bin/' packages/hnefatafl-ai-attacker.service
 sed -i 's/games/bin/' packages/hnefatafl-ai-defender.service
 sed -i 's/games/bin/' packages/hnefatafl.service
+sed -i 's/Exec=hnefatafl-client/Exec=hnefatafl-client --ascii/' packages/hnefatafl-client.desktop
 
 %install
 install -Dm755 "target/release/hnefatafl-ai" -t "%{buildroot}%{_bindir}"
