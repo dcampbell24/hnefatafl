@@ -71,6 +71,13 @@
     <content_attribute id="social-chat">moderate</content_attribute>
     <content_attribute id="sex-nudity">none</content_attribute>
     <content_attribute id="sex-themes">none</content_attribute>
+    <content_attribute id="violence-cartoon">none</content_attribute>
+    <content_attribute id="violence-fantasy">none</content_attribute>
+    <content_attribute id="violence-realistic">none</content_attribute>
+    <content_attribute id="violence-bloodshed">none</content_attribute>
+    <content_attribute id="violence-sexual">none</content_attribute>
+    <content_attribute id="violence-desecration">none</content_attribute>
+    <content_attribute id="violence-slavery">none</content_attribute>
   </content_rating>
 
   <releases>
