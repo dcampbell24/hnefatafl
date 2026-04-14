@@ -1387,7 +1387,7 @@ impl<'a> Client {
         let row_3 = row![infinity].spacing(SPACING);
 
         let row_time = LabeledFrame::new(
-            text(t!("time")),
+            text(format!("fischer {}", t!("time"))),
             column![row_1, row_2, row_3].padding(PADDING).spacing(3),
         );
 
@@ -3465,9 +3465,9 @@ impl<'a> Client {
             ratings
         ]
         .padding(PADDING);
-        let timed = t!("time");
+        let timed = format!("fischer {}", t!("time"));
         let timings = column![
-            text(timed.to_string()),
+            text(timed.clone()),
             text("-".repeat(timed.chars().count())).font(Font::MONOSPACE),
             timings
         ]
