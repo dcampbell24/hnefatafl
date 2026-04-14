@@ -53,7 +53,7 @@ rand = "0.10"
 rayon = "1"
 ron = { version = "0.12", features = ["integer128"] }
 rustc-hash = "2"
-rust-i18n = "3"
+rust-i18n = "4"
 serde = { version = "1", features = ["derive", "rc"] }
 thiserror = "2"
 
@@ -182,8 +182,6 @@ pedantic = "deny"
 perf = "deny"
 style = "deny"
 suspicious = "deny"
-
-multiple_crate_versions = { level = "allow", priority = 1 }
 
 # To update the icon cache: rm ~/.cache/icon-cache.kcache
 # Then log out and in.
