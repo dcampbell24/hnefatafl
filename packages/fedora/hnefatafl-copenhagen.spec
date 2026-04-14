@@ -1,6 +1,6 @@
 Name:          hnefatafl-copenhagen
 Version:       5.6.1
-Release:       %autorelease
+Release:       2%{?dist}
 Summary:       Copenhagen Hnefatafl client, engine, server and artificial intelligence
 License:       AGPL-3.0-or-later
 URL:           https://hnefatafl.org
