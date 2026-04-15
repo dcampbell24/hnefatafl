@@ -23,7 +23,7 @@ Codename: stable
 Version: 5.6.1-1
 Architectures: amd64
 Components: main
-Description: A software repository containing Hnefatafl Copenhagen. Discord: https://discord.gg/h56CAHEBXd
+Description: Copenhagen Hnefatafl client, engine, server and artificial intelligence
 Date: $(date -Ru)
 EOF
 
