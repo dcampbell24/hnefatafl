@@ -35,7 +35,6 @@
 //!
 //! [message protocol]: https://docs.rs/hnefatafl-copenhagen/latest/hnefatafl_copenhagen/message/enum.Message.html
 
-#![allow(clippy::multiple_crate_versions)]
 #![deny(clippy::panic)]
 #![deny(clippy::unwrap_used)]
 

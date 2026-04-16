@@ -182,6 +182,7 @@ pedantic = "deny"
 perf = "deny"
 style = "deny"
 suspicious = "deny"
+multiple_crate_versions = { level = "allow", priority = 1 }
 
 # To update the icon cache: rm ~/.cache/icon-cache.kcache
 # Then log out and in.
