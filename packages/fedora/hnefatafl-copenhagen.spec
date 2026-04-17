@@ -1,6 +1,6 @@
 Name:          hnefatafl-copenhagen
 Version:       5.6.1
-Release:       2%{?dist}
+Release:       3%{?dist}
 Summary:       Copenhagen Hnefatafl client, engine, server and artificial intelligence
 License:       AGPL-3.0-or-later
 URL:           https://hnefatafl.org
@@ -18,7 +18,8 @@ Requires:      hicolor-icon-theme
 Requires:      openssl
 
 %global _description %{expand:
-This package contains an engine, server, client, artificial intelligence and systemd services to run them.
+This package contains an engine, server, client, artificial intelligence and
+systemd services to run them.
 
 Their are two server binaries. One which is the full version and another just
 for running hnefatafl text protocol clients. The pack includes a systemd
@@ -29,8 +30,8 @@ and as a defender. When you run the service, the player will repeatedly create
 a game and wait for a challenger.
 
 The hnefatafl-text-protocol can be piped to the server or run as a standalone
-binary. It has various options such as running a simulation with --ai and
-displaying the game with --display-game for a user friendly interface.
+binary. It has various options such as displaying the game with
+`--display-game` for a user friendly interface.
 
 The client is a graphical user interface that connects to the server-full. By
 default it connects to the server running at hnefatafl.org.}

@@ -189,7 +189,9 @@ multiple_crate_versions = { level = "allow", priority = 1 }
 [package.metadata.deb]
 copyright = "2025-2026 Developers of the hnefatafl-copenhagen project"
 maintainer = "David Campbell <david@hnefatafl.org>"
-extended-description = """This package contains an engine, server, client, artificial intelligence and systemd services to run them.
+extended-description = """\
+This package contains an engine, server, client, artificial intelligence and
+systemd services to run them.
 
 Their are two server binaries. One which is the full version and another just
 for running hnefatafl text protocol clients. The pack includes a systemd
@@ -200,8 +202,8 @@ and as a defender. When you run the service, the player will repeatedly create
 a game and wait for a challenger.
 
 The hnefatafl-text-protocol can be piped to the server or run as a standalone
-binary. It has various options such as running a simulation with --ai and
-displaying the game with --display-game for a user friendly interface.
+binary. It has various options such as displaying the game with
+`--display-game` for a user friendly interface.
 
 The client is a graphical user interface that connects to the server-full. By
 default it connects to the server running at hnefatafl.org.
