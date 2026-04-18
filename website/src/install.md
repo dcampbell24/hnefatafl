@@ -18,7 +18,7 @@ yay --sync hnefatafl-copenhagen
 ```
 
 Then under KDE go to `Application Launcher -> Games -> Hnefatafl Copenhagen`
-or in a terminal run `\usr\bin\hnefatafl-client`.
+or in a terminal run `/usr/bin/hnefatafl-client`.
 
 [AUR]: https://img.shields.io/aur/version/hnefatafl-copenhagen?logo=archlinux
 [aur-link]: https://aur.archlinux.org/packages/hnefatafl-copenhagen
@@ -96,7 +96,7 @@ sudo apt update && sudo apt install hnefatafl-copenhagen
 [1]: packages.hnefatafl.org.asc
 
 Then under KDE go to `Application Launcher -> Games -> Hnefatafl Copenhagen`
-or in a terminal run `\usr\games\hnefatafl-client`.
+or in a terminal run `/usr/games/hnefatafl-client`.
 
 ## Fedora COPR (Linux) [![fedora]][fedora-copr]
 
@@ -108,7 +108,7 @@ sudo dnf install hnefatafl-copenhagen
 ```
 
 Then under KDE go to `Application Launcher -> Games -> Hnefatafl Copenhagen`
-or in a terminal run `\usr\bin\hnefatafl-client`.
+or in a terminal run `/usr/bin/hnefatafl-client --ascii`.
 
 [fedora]: https://img.shields.io/badge/-111111?logo=fedora
 [fedora-copr]: https://copr.fedorainfracloud.org/coprs/dcampbell24/hnefatafl-copenhagen
