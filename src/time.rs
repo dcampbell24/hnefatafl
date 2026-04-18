@@ -62,12 +62,12 @@ impl fmt::Display for Time {
         if days == 0 {
             write!(
                 f,
-                "{hours:02}:{minutes:02}:{seconds:02} +{add_hours:02}:{add_minutes:02}:{add_seconds:02}"
+                "{hours:02}:{minutes:02}:{seconds:02} + {add_hours:02}:{add_minutes:02}:{add_seconds:02}"
             )
         } else {
             write!(
                 f,
-                "{days} {hours:02}:{minutes:02}:{seconds:02} +{add_hours:02}:{add_minutes:02}:{add_seconds:02}"
+                "{days} {hours:02}:{minutes:02}:{seconds:02} + {add_hours:02}:{add_minutes:02}:{add_seconds:02}"
             )
         }
     }
@@ -250,11 +250,11 @@ impl From<TimeEnum> for TimeSettings {
 impl fmt::Display for TimeEnum {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Classical => write!(f, "00:30:00 +00:00:20"),
+            Self::Classical => write!(f, "00:30:00 + 00:00:20"),
             Self::Infinity => write!(f, "∞"),
-            Self::Long => write!(f, "3 00:00:00 +6:00:00"),
-            Self::Rapid => write!(f, "00:15:00 +00:00:10 "),
-            Self::VeryLong => write!(f, "7 12:00:00 +15:00:00 "),
+            Self::Long => write!(f, "3 00:00:00 + 6:00:00"),
+            Self::Rapid => write!(f, "00:15:00 + 00:00:10 "),
+            Self::VeryLong => write!(f, "7 12:00:00 + 15:00:00 "),
         }
     }
 }
