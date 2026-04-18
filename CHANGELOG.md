@@ -12,8 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- hnefatafl-client: note that we use fischer time.
-- hnefatafl-client: replace "| " with "+". 
+- hnefatafl-client: improve the time settings display. 
 - cargo update.
 
 ## [5.6.1] - 2026-04-08
