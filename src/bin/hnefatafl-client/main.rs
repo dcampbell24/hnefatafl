@@ -1347,13 +1347,13 @@ impl<'a> Client {
                 .spacing(SPACING),
         );
 
+        let real_time = text(format!("{}:", t!("Real Time")));
         let rapid = radio(
             format!("{} (a)", TimeEnum::Rapid),
             TimeEnum::Rapid,
             self.game_settings.time,
             Message::Time,
         );
-
         let classical = radio(
             format!("{} (b)", TimeEnum::Classical),
             TimeEnum::Classical,
@@ -1361,13 +1361,13 @@ impl<'a> Client {
             Message::Time,
         );
 
+        let correspondence = text(format!("{}:", t!("Correspondence")));
         let long = radio(
             format!("{} (c)", TimeEnum::Long),
             TimeEnum::Long,
             self.game_settings.time,
             Message::Time,
         );
-
         let very_long = radio(
             format!("{} (d)", TimeEnum::VeryLong),
             TimeEnum::VeryLong,
@@ -1375,6 +1375,7 @@ impl<'a> Client {
             Message::Time,
         );
 
+        let unlimited = text(format!("{}:", t!("Unlimited")));
         let infinity = radio(
             format!("{} (e)", TimeEnum::Infinity),
             TimeEnum::Infinity,
@@ -1382,13 +1383,13 @@ impl<'a> Client {
             Message::Time,
         );
 
-        let row_1 = row![rapid, classical].spacing(SPACING);
-        let row_2 = row![long, very_long].spacing(SPACING);
-        let row_3 = row![infinity].spacing(SPACING);
+        let col_1 = column![real_time, correspondence, unlimited].padding(PADDING);
+        let col_2 = column![rapid, long, infinity].padding(PADDING);
+        let col_3 = column![classical, very_long].padding(PADDING);
 
         let row_time = LabeledFrame::new(
             text(format!("fischer {}", t!("time"))),
-            column![row_1, row_2, row_3].padding(PADDING).spacing(3),
+            row![col_1, col_2, col_3],
         );
 
         let leave = row![new_game, leave].padding(PADDING).spacing(SPACING);
