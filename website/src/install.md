@@ -8,24 +8,46 @@
   }
 </script>
 
-## Arch and Derivatives (Linux) [![AUR]][aur-link]
+The binaries `hnefatafl-ai`, `hnefatafl-client`, `hnefatafl-server`,
+`hnefatafl-server-full` and `hnefatafl-text-protocol` are made available from
+the [Arch](./install.html#arch), [Cargo](./install.html#cargo),
+[Debian](./install.html#debian), and [Fedora](./install.html#fedora-copr)
+sources. The [Windows](./install.html#windows) and
+[Flathub](./install.html#flathub) sources only provide `hnefatafl-client`. The
+[NPM](./install.html#npm) source only provides something akin to
+`hnefatafl-text-protocol`.
 
-In your terminal run:
+You should run the [Flathub](./install.html#flathub) package if you want the
+client on Linux to avoid font issues.
+
+## Running the Applications
+
+You can pass `--help` to any of the following commands to get all of the
+runtime options.
+
+You can run the engine with:
 
 ```sh
-sudo pacman --sync yay
-yay --sync hnefatafl-copenhagen
+hnefatafl-text-protocol --display-game
 ```
 
-Then under KDE go to `Application Launcher -> Games -> Hnefatafl Copenhagen`
-or in a terminal run `/usr/bin/hnefatafl-client`.
+or you can start a local server:
 
-[AUR]: https://img.shields.io/aur/version/hnefatafl-copenhagen?logo=archlinux
-[aur-link]: https://aur.archlinux.org/packages/hnefatafl-copenhagen
+```sh
+hnefatafl-server-full
+```
 
-## Cargo (Linux, macOS, Windows) [![crates-io]][crates-io-link]
+and run a local client:
 
-### Dependencies (Linux)
+```sh
+hnefatafl-client --host localhost
+```
+
+## All platforms
+
+You need to install [Rust].
+
+### Linux Dependencies
 
 ALSA development files are needed to build `cpal` on Linux (`rodio` dependency,
 `hnefatafl-client` dependency). These are provided as part of the
@@ -35,35 +57,49 @@ ALSA development files are needed to build `cpal` on Linux (`rodio` dependency,
 The package uses the `mold` linker. This is provided via the `mold`
 package on Arch, Debian, Ubuntu, and Fedora.
 
-### Run
+### Cargo [![crates-io]][crates-io-link]
 
-In your terminal run the following to run the client with [Rust's] cargo:
+In your terminal run:
 
 ```sh
+# On Windows pass `--features console` to see console output.
 cargo install hnefatafl-copenhagen
-hnefatafl-client
 ```
 
 [crates-io]: https://img.shields.io/crates/v/hnefatafl-copenhagen.svg?logo=rust
 [crates-io-link]: https://crates.io/crates/hnefatafl-copenhagen
-[Rust's]: https://www.rust-lang.org/learn/get-started
 
-## Chocolatey (Windows) [![chocolatey]][choco-link]
+### Source [![codeberg]][codeberg-link]
 
-Install [Chocolatey](https://chocolatey.org/install).
+In your terminal run:
 
-Then install [hnefatafl-copenhagen](https://community.chocolatey.org/packages/hnefatafl-copenhagen/).
+```sh
+git clone https://codeberg.org/dcampbell/hnefatafl.git
+```
 
-Go to the Start menu and run Hnefatafl.
+[codeberg]: https://img.shields.io/badge/Codeberg-eeeeee?logo=codeberg
+[codeberg-link]: https://codeberg.org/dcampbell/hnefatafl
+[Rust]: https://rust-lang.org/learn/get-started/
 
-[chocolatey]: https://img.shields.io/chocolatey/v/hnefatafl-copenhagen?logo=chocolatey
-[choco-link]: https://community.chocolatey.org/packages/hnefatafl-copenhagen/
+## Linux
 
-## Debian and Derivatives (Linux) ![deb]
+### Arch [![AUR]][aur-link]
+
+In your terminal run:
+
+```sh
+sudo pacman --sync yay
+yay --sync hnefatafl-copenhagen
+```
+
+[AUR]: https://img.shields.io/aur/version/hnefatafl-copenhagen?logo=archlinux
+[aur-link]: https://aur.archlinux.org/packages/hnefatafl-copenhagen
+
+### Debian ![deb]
 
 [deb]: https://img.shields.io/badge/-111111?logo=debian
 
-Run:
+In your terminal run:
 
 ```sh
 echo 'deb [arch=amd64 signed-by=/etc/apt/keyrings/packages.hnefatafl.org.asc] https://hnefatafl.org/apt stable main' \
@@ -87,7 +123,7 @@ wget https://hnefatafl.org/packages.hnefatafl.org.asc
 sudo mv packages.hnefatafl.org.asc /etc/apt/keyrings/
 ```
 
-Then in your terminal run:
+Then:
 
 ```sh
 sudo apt update && sudo apt install hnefatafl-copenhagen
@@ -95,10 +131,7 @@ sudo apt update && sudo apt install hnefatafl-copenhagen
 
 [1]: packages.hnefatafl.org.asc
 
-Then under KDE go to `Application Launcher -> Games -> Hnefatafl Copenhagen`
-or in a terminal run `/usr/games/hnefatafl-client`.
-
-## Fedora COPR (Linux) [![fedora]][fedora-copr]
+### Fedora COPR [![fedora]][fedora-copr]
 
 In you terminal run:
 
@@ -107,13 +140,10 @@ sudo dnf copr enable dcampbell24/hnefatafl-copenhagen
 sudo dnf install hnefatafl-copenhagen
 ```
 
-Then under KDE go to `Application Launcher -> Games -> Hnefatafl Copenhagen`
-or in a terminal run `/usr/bin/hnefatafl-client --ascii`.
-
 [fedora]: https://img.shields.io/badge/-111111?logo=fedora
 [fedora-copr]: https://copr.fedorainfracloud.org/coprs/dcampbell24/hnefatafl-copenhagen
 
-## Flatpak (Linux) [![flathub]][flathub-link]
+### Flathub [![flathub]][flathub-link]
 
 See [flathub.org](https://flathub.org/apps/org.hnefatafl.hnefatafl_client).
 
@@ -123,7 +153,22 @@ Or after installing the application under KDE go to
 [flathub]: https://img.shields.io/flathub/v/org.hnefatafl.hnefatafl_client?logo=flathub
 [flathub-link]: https://flathub.org/apps/org.hnefatafl.hnefatafl_client
 
-## F-Droid (Android)
+## Windows
+
+### Chocolatey [![chocolatey]][choco-link]
+
+Install [Chocolatey](https://chocolatey.org/install).
+
+Then install [hnefatafl-copenhagen](https://community.chocolatey.org/packages/hnefatafl-copenhagen/).
+
+Go to the Start menu and run Hnefatafl.
+
+[chocolatey]: https://img.shields.io/chocolatey/v/hnefatafl-copenhagen?logo=chocolatey
+[choco-link]: https://community.chocolatey.org/packages/hnefatafl-copenhagen/
+
+## Android
+
+### F-Droid
 
 1. Go to [Google](https://myaccount.google.com/security). Scroll down to `Enhanced
    Safe Browsing for your account`. If it is on, turn it off.
@@ -226,41 +271,3 @@ There are also at least these bugs:
 3. Backspace does not work.
 4. I think you have to restart Redox after entering the application, because
    TcpStream shutdown is not implemented.
-
-## Source [![codeberg]][codeberg-link]
-
-First you need to install [Rust]. If running on Linux, then you need to
-install [dependencies]. Then:
-
-```sh
-git clone https://codeberg.org/dcampbell/hnefatafl.git
-cd hnefatafl
-```
-
-You can pass `-- --help` to any of the following commands to get all of the
-runtime options.
-
-Then you can run the engine with:
-
-```sh
-cargo run --release --bin hnefatafl-text-protocol -- --display-game
-```
-
-or you can start a local server:
-
-```sh
-cargo run --release
-```
-
-and run a local client:
-
-```sh
-# On Windows pass to cargo `--features console` to see console output.
-# Pass to cargo `--features debug` to enable iced debugging.
-cargo run --release --bin hnefatafl-client -- --host localhost
-```
-
-[dependencies]: https://hnefatafl.org/install.html#dependencies-linux
-[codeberg]: https://img.shields.io/badge/Codeberg-eeeeee?logo=codeberg
-[codeberg-link]: https://codeberg.org/dcampbell/hnefatafl
-[Rust]: https://rust-lang.org/learn/get-started/
