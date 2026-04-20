@@ -152,7 +152,7 @@ flatpak install flathub org.hnefatafl.hnefatafl_client
 flatpak run org.hnefatafl.hnefatafl_client
 ```
 
-or the see all your option run:
+or to see all your options run:
 
 ```sh
 flatpak run org.hnefatafl.hnefatafl_client --help
