@@ -17,8 +17,8 @@ sources. The [Windows](./install.html#windows) and
 [NPM](./install.html#npm) source only provides something akin to
 `hnefatafl-text-protocol`.
 
-You should run the [Flathub](./install.html#flathub) package if you want the
-client on Linux to avoid font issues.
+On Linux you should run the [Flathub](./install.html#flathub) client to avoid
+font issues.
 
 ## Running the Applications
 
