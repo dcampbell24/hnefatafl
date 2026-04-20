@@ -145,10 +145,24 @@ sudo dnf install hnefatafl-copenhagen
 
 ### Flathub [![flathub]][flathub-link]
 
-See [flathub.org](https://flathub.org/apps/org.hnefatafl.hnefatafl_client).
+In your terminal run:
 
-Or after installing the application under KDE go to
-`Application Launcher -> Games -> Hnefatafl Copenhagen`
+```sh
+flatpak install flathub org.hnefatafl.hnefatafl_client
+flatpak run org.hnefatafl.hnefatafl_client
+```
+
+or the see all your option run:
+
+```sh
+flatpak run org.hnefatafl.hnefatafl_client --help
+```
+
+or under KDE go to:
+
+```sh
+Application Launcher -> Games -> Hnefatafl Copenhagen
+```
 
 [flathub]: https://img.shields.io/flathub/v/org.hnefatafl.hnefatafl_client?logo=flathub
 [flathub-link]: https://flathub.org/apps/org.hnefatafl.hnefatafl_client
