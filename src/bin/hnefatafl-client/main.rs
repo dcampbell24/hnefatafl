@@ -316,8 +316,8 @@ fn main() -> anyhow::Result<()> {
     // For screenshots.
     if args.tiny_window {
         application = application.window_size(iced::Size {
-            width: 868.0,
-            height: 541.0,
+            width: 870.0,
+            height: 542.0,
         });
     }
 
