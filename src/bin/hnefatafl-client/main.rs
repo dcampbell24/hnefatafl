@@ -3438,10 +3438,9 @@ impl<'a> Client {
             buttons = buttons.push(buttons_row);
         }
 
-        let game_id = t!("ID");
         let game_ids = column![
-            text(game_id.to_string()),
-            text("-".repeat(game_id.chars().count())).font(Font::MONOSPACE),
+            text('#'.to_string()),
+            text('-'.to_string()).font(Font::MONOSPACE),
             game_ids
         ]
         .padding(PADDING);
