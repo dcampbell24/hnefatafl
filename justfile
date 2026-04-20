@@ -45,6 +45,7 @@ ssl:
     sudo cp ssl/localhost.crt /usr/local/share/ca-certificates/
     sudo update-ca-certificates
 
+# sudo dnf install python3-aiohttp python3-toml
 cargo-deps:
     python3 ../flatpak-builder-tools/cargo/flatpak-cargo-generator.py Cargo.lock -o packages/flathub/cargo-sources.json
 
