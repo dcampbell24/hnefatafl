@@ -74,8 +74,7 @@ impl fmt::Display for ArchivedGame {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(
             f,
-            "{}: {}, {}: {} {}, {}: {} {}, {}: {}",
-            t!("ID"),
+            "# {}: {}: {} {}, {}: {} {}, {}: {}",
             self.id,
             t!("Attacker"),
             self.attacker,

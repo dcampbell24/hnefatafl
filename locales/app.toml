@@ -377,23 +377,6 @@ ru = "Тепловая карта"
 sv-SE = "Värmekarta"
 zh-CN = "热图"
 
-[ID]
-ar = "بطاقة تعريف"
-de = "AUSWEIS"
-en-US = "ID"
-es = "IDENTIFICACIÓN"
-fr = "IDENTIFIANT"
-id = "PENGENAL"
-is-IS = "Auðkenni"
-is-RU = "ᛆᚢᚧᚴᛂᚿᚿᛁ"
-ja = "ID"
-ko = "ID"
-pt-BR = "EU IA"
-pt-PT = "EU IA"
-ru = "ИДЕНТИФИКАТОР"
-sv-SE = "ID"
-zh-CN = "ID"
-
 ["It's a draw."]
 ar = "إنها تعادل."
 de = "Es ist unentschieden."
