@@ -133,7 +133,7 @@ sudo apt update && sudo apt install hnefatafl-copenhagen
 
 ### Fedora COPR [![fedora]][fedora-copr]
 
-In you terminal run:
+In your terminal run:
 
 ```sh
 sudo dnf copr enable dcampbell24/hnefatafl-copenhagen
