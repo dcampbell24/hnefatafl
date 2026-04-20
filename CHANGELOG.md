@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [5.7.0] - 2026-04-30
 
+- hnefatafl-client: replace ID with #.
 - hnefatafl-client: set the OARS sex and violence to none.
 - hnefatafl-client: improve the time settings display.
 - cargo update.
