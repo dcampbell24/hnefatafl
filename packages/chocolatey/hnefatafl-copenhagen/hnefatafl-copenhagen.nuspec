@@ -4,7 +4,7 @@
   <metadata>
     <!-- == PACKAGE SPECIFIC SECTION == -->
     <id>hnefatafl-copenhagen</id>
-    <version>5.6.1</version>
+    <version>5.7.0</version>
     <packageSourceUrl>https://codeberg.org/dcampbell/hnefatafl/src/branch/main/packages/chocolatey</packageSourceUrl>
     <owners>David Lawrence Campbell</owners>
     <!-- ============================== -->
@@ -13,7 +13,7 @@
     <title>Hnefatafl Copenhagen</title>
     <authors>David Lawrence Campbell</authors>
     <projectUrl>https://hnefatafl.org</projectUrl>
-    <iconUrl>https://rawcdn.githack.com/dcampbell24/hnefatafl/refs/heads/main/assets/helmet.svg</iconUrl>
+    <iconUrl>https://codeberg.org/dcampbell/hnefatafl/raw/commit/56621f919a68412cd66413b7a5b5b36f1f3bc538/website/src/images/helmet.svg</iconUrl>
     <copyright>2025-2026 Developers of the hnefatafl-copenhagen project</copyright>
     <licenseUrl>https://codeberg.org/dcampbell/hnefatafl/raw/branch/main/LICENSE.txt</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
@@ -25,7 +25,8 @@
     <releaseNotes>https://codeberg.org/dcampbell/hnefatafl/src/branch/main/CHANGELOG.md</releaseNotes>
     <summary>Copenhagen Hnefatafl</summary>
     <description>
-      Copenhagen Hnefatafl client that connects to a server. Discord: https://discord.gg/h56CAHEBXd
+      Copenhagen Hnefatafl client that connects to a server.
+      Discord: https://discord.gg/h56CAHEBXd
     </description>
     <!-- =============================== -->
 
