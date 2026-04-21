@@ -17,9 +17,9 @@
 # OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 pkgname=hnefatafl-copenhagen
-pkgver=5.6.1
+pkgver=5.7.0
 pkgrel=1
-real_pkgrel=2
+real_pkgrel=3
 pkgdesc="Copenhagen Hnefatafl client, engine, server and artificial intelligence"
 url="https://hnefatafl.org"
 license=("AGPL-3.0-or-later")
