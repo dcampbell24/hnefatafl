@@ -13,7 +13,7 @@
     <title>Hnefatafl Copenhagen</title>
     <authors>David Lawrence Campbell</authors>
     <projectUrl>https://hnefatafl.org</projectUrl>
-    <iconUrl>https://codeberg.org/dcampbell/hnefatafl/raw/commit/56621f919a68412cd66413b7a5b5b36f1f3bc538/website/src/images/helmet.svg</iconUrl>
+    <iconUrl>https://codeberg.org/dcampbell/hnefatafl/raw/branch/main/src/bin/hnefatafl-client/assets/helmet.png</iconUrl>
     <copyright>2025-2026 Developers of the hnefatafl-copenhagen project</copyright>
     <licenseUrl>https://codeberg.org/dcampbell/hnefatafl/raw/branch/main/LICENSE.txt</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
