@@ -32,7 +32,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 [coverage]: https://img.shields.io/badge/coverage-34.43%25-red
 [coverage-link]: https://dlc.name/hnefatafl
 
-![Opening Game](https://codeberg.org/dcampbell/hnefatafl/raw/commit/95950104bcd0d7b52dd1d4c93b887de5051f1530/website/src/screenshots/opening_game.png)
+![Opening Game](https://codeberg.org/dcampbell/hnefatafl/src/branch/main/website/src/screenshots/opening_game.png)
 
 An [engine] similar to the [Go Text Protocol], a [client], and a [server]. For
 help on how to use the engine see the module [documentation].
