@@ -7,7 +7,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
   <table style="border: none !important;"><tr>
   <td valign="center"><a href="https://www.freelancer.com/u/marvintubat123"><img
     alt="Helmet"
-    src="https://codeberg.org/dcampbell/hnefatafl/raw/commit/5c1b4558d2f1d8c5971b8a523b3a886ca3fe534e/website/src/images/helmet.svg"
+    src="https://codeberg.org/dcampbell/hnefatafl/raw/branch/main/website/src/images/helmet.svg"
     title="Derived from an image by Marvin Tubat"
     width="100"
   ></a></td>
@@ -32,7 +32,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 [coverage]: https://img.shields.io/badge/coverage-34.43%25-red
 [coverage-link]: https://dlc.name/hnefatafl
 
-![Opening Game](https://codeberg.org/dcampbell/hnefatafl/raw/commit/71ad4384f01370de4911c0b77fcbbc25c877384e/website/src/screenshots/opening_game.png)
+![Opening Game](https://codeberg.org/dcampbell/hnefatafl/raw/branch/main/website/src/screenshots/opening_game.png)
 
 An [engine] similar to the [Go Text Protocol], a [client], and a [server]. For
 help on how to use the engine see the module [documentation].
