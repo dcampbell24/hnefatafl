@@ -1,13 +1,5 @@
 ![Login](screenshots/runic_login.png)
 
-<div id="google_translate_element"></div>
-<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-<script type="text/javascript">
-  function googleTranslateElementInit() {
-    new google.translate.TranslateElement({pageLanguage: 'en'}, 'google_translate_element');
-  }
-</script>
-
 The binaries `hnefatafl-ai`, `hnefatafl-client`, `hnefatafl-server`,
 `hnefatafl-server-full` and `hnefatafl-text-protocol` are made available from
 the [Arch](./install.html#arch), [Cargo](./install.html#cargo),
