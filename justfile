@@ -58,7 +58,7 @@ html-client:
     sudo cp -r pkg /var/www/html
 
 start_sshd:
-    sudo service ssh start
+    sudo systemctl start sshd
 
 [group('Operating Systems')]
 macos:
