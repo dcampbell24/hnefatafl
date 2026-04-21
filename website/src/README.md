@@ -32,7 +32,7 @@ what you want to do. If it is a minor change, you can just update the
 
 ## Help Me
 
-If you have any issues with the software, open an issue on [github][1].
+If you have any issues with the software, open an issue on [codeberg][1].
 
 [1]: https://codeberg.org/dcampbell/hnefatafl/issues
 [3]: https://codeberg.org/dcampbell/hnefatafl/src/branch/main/locales/app.toml
