@@ -8,8 +8,6 @@
   }
 </script>
 
-## Discord
-
 [![Discord]](https://discord.gg/h56CAHEBXd)
 
 [Discord]: images/Discord-Logo-Blurple.png
