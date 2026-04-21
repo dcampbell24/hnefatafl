@@ -4,7 +4,7 @@ Release:       1%{?dist}
 Summary:       Copenhagen Hnefatafl client, engine, server and artificial intelligence
 License:       AGPL-3.0-or-later
 URL:           https://hnefatafl.org
-Source:        https://codeberg.org/dcampbell/hnefatafl/archive/v%{version}-2.tar.gz
+Source:        https://codeberg.org/dcampbell/hnefatafl/archive/v%{version}-3.tar.gz
 
 BuildRequires: clang
 BuildRequires: llvm
