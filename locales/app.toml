@@ -1516,23 +1516,6 @@ ru = "нет"
 sv-SE = "inga"
 zh-CN = "不"
 
-[none]
-ar = "لا أحد"
-de = "keiner"
-en-US = "none"
-es = "ninguno"
-fr = "aucun"
-id = "tidak ada"
-is-IS = "enginn"
-is-RU = "ᛂᚿᚵᛁᚿᚿ"
-ja = "なし"
-ko = "없음"
-pt-BR = "nenhum"
-pt-PT = "nenhum"
-ru = "никто"
-sv-SE = "ingen"
-zh-CN = "没有任何"
-
 [password]
 ar = "كلمة المرور"
 de = "Passwort"

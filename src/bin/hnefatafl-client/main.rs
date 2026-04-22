@@ -3351,7 +3351,7 @@ impl<'a> Client {
 
                 attackers.push(attacker)
             } else {
-                attackers.push(text(t!("none")))
+                attackers.push(text(""))
             };
 
             defenders = if let Some(defender_str) = &game.defender {
@@ -3378,7 +3378,7 @@ impl<'a> Client {
 
                 defenders.push(defender)
             } else {
-                defenders.push(text(t!("none")))
+                defenders.push(text(""))
             };
 
             let rating: bool = game.rated.into();
