@@ -107,7 +107,7 @@ impl fmt::Display for Board {
         writeln!(f, "\n{letters}\n  ┌{bar}┐")?;
         for y in 0..board_size {
             let y_label = board_size - y;
-            write!(f, "{y_label:2}│",)?;
+            write!(f, "{y_label:2}│")?;
 
             for x in 0..board_size {
                 if (((y, x) == (0, 0)

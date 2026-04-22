@@ -399,37 +399,6 @@ impl fmt::Debug for ServerGameLight {
     }
 }
 
-impl fmt::Display for ServerGameLight {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let attacker = t!("attacker");
-        let defender = t!("defender");
-        let rated = t!(self.rated.to_string());
-        let none = t!("none");
-
-        let attacker = if let Some(name) = &self.attacker {
-            &format!("{attacker}: {name}")
-        } else {
-            &format!("{attacker}: {none}")
-        };
-
-        let defender = if let Some(name) = &self.defender {
-            &format!("{defender}: {name}")
-        } else {
-            &format!("{defender}: {none}")
-        };
-
-        write!(
-            f,
-            "# {}\n{attacker}, {defender}, {rated}\n{}: {}, {}: {}",
-            self.id,
-            t!("time"),
-            self.timed,
-            t!("board size"),
-            self.board_size,
-        )
-    }
-}
-
 impl TryFrom<&[&str; 12]> for ServerGameLight {
     type Error = anyhow::Error;
 
