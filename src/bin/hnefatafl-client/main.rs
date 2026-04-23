@@ -740,12 +740,12 @@ impl<'a> Client {
     fn settings_view(&self) -> Column<'_, Message> {
         let mut columns = column![
             text!(
-                "{} {} {} TCP",
-                t!("connected to"),
+                "{} {} {} {} TCP",
+                &self.username,
+                t!("is connected to"),
                 &self.connected_to,
                 t!("via")
             ),
-            text!("{}: {}", t!("username"), &self.username),
             self.theme_selection(),
             self.locale_selection(),
         ]
