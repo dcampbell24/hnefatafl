@@ -8,8 +8,8 @@ CANONICAL="<!-- Custom HTML head -->\n        <link rel=\"canonical\" href=\"htt
 HISTORY="Get the history of Hnefatafl. It is a part of the games known Tafl games. \
 Other related games are Alea evangelii, Ard Rí, Brandubh, Tablut, and Tawlbwrdd"
 
-INSTALL="Determine how to install Copenhagen Hnefatafl. Install using the Arch User \
-Repository, Chocolatey, a Debian package, a flathub package, or Rust's cargo."
+INSTALL="Install Copenhagen Hnefatafl using the Arch User Repository, Chocolatey, \
+a Debian package, Fedora's COPR, a Flathub package, Rust's cargo, or the source."
 
 RULES="Learn the rules to the game of Copenhagen Hnefatafl. Move your pieces until \
 you achieve victory or lose. Try not to get surrounded as the defenders and escape."
