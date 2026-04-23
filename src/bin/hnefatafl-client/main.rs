@@ -795,9 +795,11 @@ impl<'a> Client {
             columns = columns.push(row![text!("{}: ", t!("email code"))]);
         }
 
-        columns = columns.push(row![
-            button(text!("{} (9)", t!("Reset Email"))).on_press(Message::EmailReset)
-        ]);
+        let mut reset_email = button(text!("{} (9)", t!("Reset Email")));
+        if self.email.is_some() {
+            reset_email = reset_email.on_press(Message::EmailReset);
+        }
+        columns = columns.push(row![reset_email]);
 
         if let Some(error) = &self.error_email {
             columns = columns.push(row![text!("error: {error}").style(text::danger)]);
