@@ -37,23 +37,6 @@ ru = "Принять ничью"
 sv-SE = "Acceptera oavgjort"
 zh-CN = "接受抽签"
 
-["Account Settings"]
-ar = "إعدادات الحساب"
-de = "Kontoeinstellungen"
-en-US = "Account Settings"
-es = "Configuraciones de la cuenta"
-fr = "Paramètres du Compte"
-id = "Pengaturan Akun"
-is-IS = "Reikningsstillingar"
-is-RU = "ᚱᛂᛁᚴᚿᛁᚿᚵᛋᛋᛐᛁᛚᛚᛁᚿᚵᛆᚱ"
-ja = "アカウント設定"
-ko = "계정 설정"
-pt-BR = "Configurações de Conta"
-pt-PT = "Criar jogo"
-ru = "Настройки учетной записи"
-sv-SE = "Kontoinställningar"
-zh-CN = "帐户设置"
-
 ["Account already exists."]
 ar = "الحساب موجود بالفعل."
 de = "Das Konto existiert bereits."
@@ -818,6 +801,23 @@ pt-PT = "Um e-mail para redefinir a senha será enviado caso exista um endereço
 ru = "Если для этой учетной записи существует подтвержденный адрес электронной почты и с момента последнего сброса пароля прошло более суток, будет отправлено электронное письмо со ссылкой для сброса пароля."
 sv-SE = "Skickade ett e-postmeddelande för återställning av lösenord om det finns en verifierad e-postadress för det här kontot och den senaste lösenordsåterställningen gjordes för mer än en dag sedan."
 zh-CN = "如果该帐户存在已验证的电子邮件地址，并且上次重置密码的时间已超过一天，则会发送密码重置电子邮件。"
+
+[Settings]
+ar = "إعدادات"
+de = "Einstellungen"
+en-US = "Settings"
+es = "Ajustes"
+fr = "Paramètres"
+id = "Pengaturan"
+is-IS = "Stillingar"
+is-RU = "ᛋᛐᛁᛚᛚᛁᚿᚵᛆᚱ"
+ja = "設定"
+ko = "설정"
+pt-BR = "Configurações"
+pt-PT = "Configurações"
+ru = "Настройки"
+sv-SE = "Inställningar"
+zh-CN = "设置"
 
 [Size]
 ar = "مقاس"

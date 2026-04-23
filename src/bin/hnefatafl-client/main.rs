@@ -737,7 +737,7 @@ struct Client {
 }
 
 impl<'a> Client {
-    fn account_settings_view(&self) -> Column<'_, Message> {
+    fn settings_view(&self) -> Column<'_, Message> {
         let mut columns = column![
             text!(
                 "{} {} {} TCP",
@@ -746,6 +746,8 @@ impl<'a> Client {
                 t!("via")
             ),
             text!("{}: {}", t!("username"), &self.username),
+            self.theme_selection(),
+            self.locale_selection(),
         ]
         .padding(PADDING)
         .spacing(SPACING);
@@ -794,14 +796,14 @@ impl<'a> Client {
         }
 
         columns = columns.push(row![
-            button(text!("{} (6)", t!("Reset Email"))).on_press(Message::EmailReset)
+            button(text!("{} (9)", t!("Reset Email"))).on_press(Message::EmailReset)
         ]);
 
         if let Some(error) = &self.error_email {
             columns = columns.push(row![text!("error: {error}").style(text::danger)]);
         }
 
-        let mut change_password_button = button(text!("{} (7)", t!("Change Password")));
+        let mut change_password_button = button(text!("{} (0)", t!("Change Password")));
 
         if !self.password_ends_with_whitespace {
             change_password_button = change_password_button.on_press(Message::TextSend);
@@ -821,19 +823,19 @@ impl<'a> Client {
         columns = columns.push(
             row![
                 checkbox(self.password_show).on_toggle(Message::PasswordShow),
-                text!("{} (8)", t!("show password")),
+                text!("{} (a)", t!("show password")),
             ]
             .spacing(SPACING),
         );
 
         if self.delete_account {
             columns = columns.push(
-                button(text!("{} (9)", t!("REALLY DELETE ACCOUNT")))
+                button(text!("{} (b)", t!("REALLY DELETE ACCOUNT")))
                     .on_press(Message::DeleteAccount),
             );
         } else {
             columns = columns.push(
-                button(text!("{} (9)", t!("Delete Account"))).on_press(Message::DeleteAccount),
+                button(text!("{} (b)", t!("Delete Account"))).on_press(Message::DeleteAccount),
             );
         }
 
@@ -2012,6 +2014,31 @@ impl<'a> Client {
         }
     }
 
+    fn locale_selection(&self) -> Row<'_, Message> {
+        let locale = [
+            Locale::English,
+            Locale::Chinese,
+            Locale::Spanish,
+            Locale::Arabic,
+            Locale::Indonesian,
+            Locale::PortugueseBr,
+            Locale::PortuguesePt,
+            Locale::French,
+            Locale::Japanese,
+            Locale::Russian,
+            Locale::German,
+            Locale::Icelandic,
+            Locale::IcelandicRunic,
+            Locale::Swedish,
+            Locale::Korean,
+        ];
+
+        row![
+            text!("{}: ", t!("locale")).size(20),
+            pick_list(locale, self.locale_selected, Message::LocaleSelected),
+        ]
+    }
+
     fn my_games_only(&mut self) {
         self.my_games_only = !self.my_games_only;
         self.games_filtered();
@@ -2147,6 +2174,33 @@ impl<'a> Client {
         }
     }
 
+    fn theme_selection(&self) -> Row<'_, Message> {
+        let theme = if self.theme == Theme::Light {
+            row![
+                button(text!("{} (6)", t!("Dark"))).on_press(Message::ChangeTheme(Theme::Dark)),
+                button(text!("{} (7)", t!("Light"))),
+                button(text("Tol (8)")).on_press(Message::ChangeTheme(Theme::Tol)),
+            ]
+            .spacing(SPACING)
+        } else if self.theme == Theme::Dark {
+            row![
+                button(text!("{} (6)", t!("Dark"))),
+                button(text!("{} (7)", t!("Light"))).on_press(Message::ChangeTheme(Theme::Light)),
+                button(text("Tol (8)")).on_press(Message::ChangeTheme(Theme::Tol)),
+            ]
+            .spacing(SPACING)
+        } else {
+            row![
+                button(text!("{} (6)", t!("Dark"))).on_press(Message::ChangeTheme(Theme::Dark)),
+                button(text!("{} (7)", t!("Light"))).on_press(Message::ChangeTheme(Theme::Light)),
+                button(text("Tol (8)")),
+            ]
+            .spacing(SPACING)
+        };
+
+        row![LabeledFrame::new(text(t!("Theme")), theme)]
+    }
+
     #[allow(clippy::too_many_lines)]
     pub fn update(&mut self, message: Message) -> Task<Message> {
         self.error = None;
@@ -2256,22 +2310,28 @@ impl<'a> Client {
                     self.press_letter_and_number();
                 }
                 Screen::Games if self.active_tab == TabId::Games => self.join_game_press(0, shift),
-                Screen::Games if self.active_tab == TabId::GameNew => {
-                    self.game_settings.time = Some(TimeEnum::Rapid);
-                }
+                Screen::Games => match self.active_tab {
+                    TabId::AccountSettings => self.toggle_show_password(),
+                    TabId::GameNew => self.game_settings.time = Some(TimeEnum::Rapid),
+                    _ => {}
+                },
                 Screen::Login => self.review_game(),
-                Screen::EmailEveryone | Screen::Games => {}
+                Screen::EmailEveryone => {}
             },
             Message::PressB(shift) => match self.screen {
                 Screen::Game | Screen::GameReview => {
                     self.press_letter('b');
                     self.press_letter_and_number();
                 }
-                Screen::Games if self.active_tab == TabId::Games => self.join_game_press(1, shift),
-                Screen::Games if self.active_tab == TabId::GameNew => {
-                    self.game_settings.time = Some(TimeEnum::Classical);
-                }
-                Screen::EmailEveryone | Screen::Games => {}
+                Screen::Games => match self.active_tab {
+                    TabId::AccountSettings => self.delete_account(),
+                    TabId::Games => self.join_game_press(1, shift),
+                    TabId::GameNew => {
+                        self.game_settings.time = Some(TimeEnum::Classical);
+                    }
+                    _ => {}
+                },
+                Screen::EmailEveryone => {}
                 Screen::Login => {
                     self.rating_min();
                     self.games_filtered();
@@ -2555,7 +2615,7 @@ impl<'a> Client {
             Message::Press6 => match self.screen {
                 Screen::EmailEveryone => {}
                 Screen::Games => match self.active_tab {
-                    TabId::AccountSettings => self.reset_email(),
+                    TabId::AccountSettings => self.change_theme(Theme::Dark),
                     TabId::GameNew => self.game_settings.rated = !self.game_settings.rated,
                     TabId::Games => self.send("archived_games\n"),
                     TabId::Tournament => open_url("https://hnefatafl.org/tournaments.html"),
@@ -2573,9 +2633,7 @@ impl<'a> Client {
             Message::Press7 => match self.screen {
                 Screen::EmailEveryone => {}
                 Screen::Games => match self.active_tab {
-                    TabId::AccountSettings => {
-                        self.send(&format!("change_password {}\n", self.password));
-                    }
+                    TabId::AccountSettings => self.change_theme(Theme::Light),
                     TabId::GameNew => self.game_settings.role_selected = Some(Role::Attacker),
                     TabId::Games | TabId::Users => {}
                     TabId::Tournament => self.send("join_tournament\n"),
@@ -2590,7 +2648,7 @@ impl<'a> Client {
             Message::Press8 => match self.screen {
                 Screen::EmailEveryone => {}
                 Screen::Games => match self.active_tab {
-                    TabId::AccountSettings => self.toggle_show_password(),
+                    TabId::AccountSettings => self.change_theme(Theme::Tol),
                     TabId::GameNew => self.game_settings.role_selected = Some(Role::Defender),
                     TabId::Games => self.my_games_only(),
                     TabId::Tournament => self.send("leave_tournament\n"),
@@ -2606,7 +2664,7 @@ impl<'a> Client {
             Message::Press9 => match self.screen {
                 Screen::EmailEveryone => {}
                 Screen::Games => match self.active_tab {
-                    TabId::AccountSettings => self.delete_account(),
+                    TabId::AccountSettings => self.reset_email(),
                     TabId::GameNew => self.game_settings.board_size = BoardSize::_11,
                     TabId::Games | TabId::Users => self.users_sort_by = SortBy::Rating,
                     TabId::Tournament => {}
@@ -2621,7 +2679,10 @@ impl<'a> Client {
             Message::Press0 => match self.screen {
                 Screen::EmailEveryone => {}
                 Screen::Games => match self.active_tab {
-                    TabId::AccountSettings | TabId::Tournament => {}
+                    TabId::AccountSettings => {
+                        self.send(&format!("change_password {}\n", self.password));
+                    }
+                    TabId::Tournament => {}
                     TabId::GameNew => self.game_settings.board_size = BoardSize::_13,
                     TabId::Games | TabId::Users => self.users_sort_by = SortBy::Name,
                 },
@@ -3992,8 +4053,8 @@ impl<'a> Client {
                 )
                 .push(
                     TabId::AccountSettings,
-                    iced_aw::TabLabel::Text(format!("{} (4)", t!("Account Settings"))),
-                    self.account_settings_view(),
+                    iced_aw::TabLabel::Text(format!("{} (4)", t!("Settings"))),
+                    self.settings_view(),
                 )
                 .push(
                     TabId::Users,
@@ -4111,57 +4172,8 @@ impl<'a> Client {
                 )
                 .placeholder(t!("Archived Games"));
 
-                let locale = [
-                    Locale::English,
-                    Locale::Chinese,
-                    Locale::Spanish,
-                    Locale::Arabic,
-                    Locale::Indonesian,
-                    Locale::PortugueseBr,
-                    Locale::PortuguesePt,
-                    Locale::French,
-                    Locale::Japanese,
-                    Locale::Russian,
-                    Locale::German,
-                    Locale::Icelandic,
-                    Locale::IcelandicRunic,
-                    Locale::Swedish,
-                    Locale::Korean,
-                ];
-
-                let locale = row![
-                    text!("{}: ", t!("locale")).size(20),
-                    pick_list(locale, self.locale_selected, Message::LocaleSelected),
-                ];
-
-                let theme = if self.theme == Theme::Light {
-                    row![
-                        button(text!("{} (6)", t!("Dark")))
-                            .on_press(Message::ChangeTheme(Theme::Dark)),
-                        button(text!("{} (7)", t!("Light"))),
-                        button(text("Tol (8)")).on_press(Message::ChangeTheme(Theme::Tol)),
-                    ]
-                    .spacing(SPACING)
-                } else if self.theme == Theme::Dark {
-                    row![
-                        button(text!("{} (6)", t!("Dark"))),
-                        button(text!("{} (7)", t!("Light")))
-                            .on_press(Message::ChangeTheme(Theme::Light)),
-                        button(text("Tol (8)")).on_press(Message::ChangeTheme(Theme::Tol)),
-                    ]
-                    .spacing(SPACING)
-                } else {
-                    row![
-                        button(text!("{} (6)", t!("Dark")))
-                            .on_press(Message::ChangeTheme(Theme::Dark)),
-                        button(text!("{} (7)", t!("Light")))
-                            .on_press(Message::ChangeTheme(Theme::Light)),
-                        button(text("Tol (8)")),
-                    ]
-                    .spacing(SPACING)
-                };
-
-                let theme = LabeledFrame::new(text(t!("Theme")), theme);
+                let locale = self.locale_selection();
+                let theme = self.theme_selection();
                 let discord = button(text!("Discord (9)")).on_press(Message::OpenUrl(
                     "https://discord.gg/h56CAHEBXd".to_string(),
                 ));

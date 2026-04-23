@@ -12,7 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- hnefatafl-client: replace none with nothing.
+- hnefatafl-client: add locale and Theme to settings.
+- hnefatafl-client: "Account Settings" -> "Settings"
+- hnefatafl-client: "none" -> ""
 
 ## [5.7.0] - 2026-04-20
 
