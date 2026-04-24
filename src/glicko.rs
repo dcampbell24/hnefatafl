@@ -51,11 +51,6 @@ impl Rating {
         )
     }
 
-    #[must_use]
-    pub fn to_string_rounded_short(&self) -> String {
-        format!("{}", self.rating.round())
-    }
-
     /// This assumes 30 2 month periods must pass before one's rating
     /// deviation is the same as a new player and that a typical RD is 50.
     pub fn update_rd(&mut self) {
