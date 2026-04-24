@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [5.8.0] - 2026-04-24
 
+### Changed
+
 - cargo update
 - hnefatafl-client: allow scrolling horizontally when needed.
 - hnefatafl-client: add locale and Theme to settings.
@@ -21,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - hnefatafl-client: "none" -> ""
 
 ## [5.7.0] - 2026-04-20
+
+### Changed
 
 - hnefatafl-client: replace ID with #.
 - hnefatafl-client: set the OARS sex and violence to none.
