@@ -3393,16 +3393,13 @@ impl<'a> Client {
             attackers = if let Some(attacker_str) = &game.attacker {
                 let mut attacker = if self.admin {
                     if let Some(account) = self.accounts.0.get(attacker_str) {
-                        text!(
-                            "{attacker_str} ({})",
-                            account.rating.to_string_rounded_short(),
-                        )
+                        text!("{attacker_str} ({})", account.rating.to_string_rounded(),)
                     } else {
                         text(attacker_str)
                     }
                 } else {
                     if let Some(user) = self.users.get(attacker_str) {
-                        text!("{attacker_str} ({})", user.rating.to_string_rounded_short())
+                        text!("{attacker_str} ({})", user.rating.to_string_rounded())
                     } else {
                         text(attacker_str)
                     }
@@ -3423,16 +3420,13 @@ impl<'a> Client {
             defenders = if let Some(defender_str) = &game.defender {
                 let mut defender = if self.admin {
                     if let Some(account) = self.accounts.0.get(defender_str) {
-                        text!(
-                            "{defender_str} ({})",
-                            account.rating.to_string_rounded_short(),
-                        )
+                        text!("{defender_str} ({})", account.rating.to_string_rounded(),)
                     } else {
                         text(defender_str)
                     }
                 } else {
                     if let Some(user) = self.users.get(defender_str) {
-                        text!("{defender_str} ({})", user.rating.to_string_rounded_short())
+                        text!("{defender_str} ({})", user.rating.to_string_rounded())
                     } else {
                         text(defender_str)
                     }
@@ -3553,6 +3547,10 @@ impl<'a> Client {
         scrollable(row![
             game_ids, attackers, defenders, ratings, timings, sizes, buttons
         ])
+        .direction(scrollable::Direction::Both {
+            vertical: scrollable::Scrollbar::new(),
+            horizontal: scrollable::Scrollbar::new(),
+        })
     }
 
     fn games_view(&self) -> Column<'_, Message> {
@@ -3872,7 +3870,12 @@ impl<'a> Client {
                 rows = rows.push(last_logged_in);
             }
 
-            scrollable(rows).spacing(SPACING)
+            scrollable(rows)
+                .spacing(SPACING)
+                .direction(scrollable::Direction::Both {
+                    vertical: scrollable::Scrollbar::new(),
+                    horizontal: scrollable::Scrollbar::new(),
+                })
         } else {
             let mut ratings = Column::new();
             let mut usernames = Column::new();
@@ -4382,14 +4385,7 @@ impl<'a> Client {
             button_1 = button_1.on_press(Message::TournamentJoin);
         }
 
-        let buttons = row![
-            button_0,
-            button_1,
-            button_2,
-            button(text!("{} (Esc)", t!("Quit"))).on_press(Message::Leave),
-        ]
-        .spacing(SPACING);
-
+        let buttons = row![button_1, button_2,].spacing(SPACING);
         let mut players = Column::new();
         let mut player_names: Vec<_> = self.tournament.players.iter().collect();
         player_names.sort();
@@ -4399,7 +4395,13 @@ impl<'a> Client {
         }
 
         column = column.push(date);
+        column = column.push(button_0);
         column = column.push(buttons);
+
+        column = column.push(
+            row![button(text!("{} (Esc)", t!("Quit"))).on_press(Message::Leave),].spacing(SPACING),
+        );
+
         column = column.push(LabeledFrame::new(text(t!("Players")), players));
 
         if self.admin_tournament {
