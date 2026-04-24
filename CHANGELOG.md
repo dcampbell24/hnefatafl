@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- hnefatafl-client: display shortened rating for games.
 - hnefatafl-client: add locale and Theme to settings.
 - hnefatafl-client: "Account Settings" -> "Settings"
 - hnefatafl-client: "none" -> ""
