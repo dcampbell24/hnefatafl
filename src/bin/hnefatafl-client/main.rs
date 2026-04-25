@@ -323,8 +323,8 @@ fn main() -> anyhow::Result<()> {
 
     if args.social_preview {
         application = application.window_size(iced::Size {
-            width: 1148.0,
-            height: 481.0,
+            width: 1150.0,
+            height: 482.0,
         });
     }
 
