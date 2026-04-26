@@ -1154,9 +1154,20 @@ impl Server {
                 unreachable!()
             };
 
+            let timestamp = Timestamp::now().strftime("𓇳 %F %T %z");
+            let timestamp = format!("{timestamp}");
+
             if let Some(game_light) = self.games_light.0.get_mut(&index) {
+                for id in game_light.spectators.values() {
+                    if let Some(sender) = self.clients.get(id) {
+                        let _ok = sender.send(format!("= text_game {timestamp}"));
+                    }
+                }
+
                 game_light.game_over = true;
             }
+
+            game.texts.push_back(timestamp);
 
             if self.tournament.is_tournament_game(&game.id) {
                 if self.tournament.game_over(&game) {
@@ -1167,9 +1178,6 @@ impl Server {
             }
 
             if !self.skip_the_data_files {
-                let timestamp = Timestamp::now().strftime("𓇳 %F %T %z");
-                game.texts.push_back(format!("{timestamp}"));
-
                 self.append_archived_game(game)
                     .map_err(|err| {
                         error!("append_archived_game: {err}");
