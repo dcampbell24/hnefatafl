@@ -309,6 +309,23 @@ ru = "Ошибка открытия файла"
 sv-SE = "Det gick inte att öppna filen"
 zh-CN = "打开文件时出错"
 
+["Export PGN File"]
+ar = "تصدير ملف PGN"
+de = "PGN-Datei exportieren"
+en-US = "Export PGN File"
+es = "Exportar archivo PGN"
+fr = "Exporter le fichier PGN"
+id = "Ekspor Berkas PGN"
+is-IS = "Flytja út PGN skrá"
+is-RU = "ᚠᛚᛣᛐᛃᛆ ᚤᛐ PGN ᛋᚴᚱᚨ"
+ja = "PGNファイルのエクスポート"
+ko = "PGN 파일 내보내기"
+pt-BR = "Exportar arquivo PGN"
+pt-PT = "Exportar ficheiro PGN"
+ru = "Экспортировать файл PGN"
+sv-SE = "Exportera PGN-fil"
+zh-CN = "导出 PGN 文件"
+
 ["Games"]
 ar = "ألعاب"
 de = "Spiele"

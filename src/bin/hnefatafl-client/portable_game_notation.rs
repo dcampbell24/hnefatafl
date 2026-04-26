@@ -153,7 +153,7 @@ pub fn write_portable_game_notation(archived_game: &ArchivedGame) -> anyhow::Res
         .ok_or(anyhow::Error::msg("failed to get document directory"))?;
 
     let path = FileDialog::new()
-        .add_filter("*", &["pgn"])
+        .set_file_name("game.pgn")
         .set_directory(dir)
         .save_file()
         .ok_or(anyhow::Error::msg("failed to save file"))?;

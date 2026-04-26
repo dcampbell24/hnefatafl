@@ -1011,6 +1011,14 @@ impl<'a> Client {
         }
     }
 
+    fn export_pgn(&self) {
+        if let Some(game) = &self.archived_game_selected
+            && let Err(error) = write_portable_game_notation(game)
+        {
+            error!("ExportPGN: {error}");
+        }
+    }
+
     fn game_state(&self, game_id: u128) -> State {
         if let Some(game) = self.games_light.0.get(&game_id) {
             if game.challenge_accepted {
@@ -2265,13 +2273,7 @@ impl<'a> Client {
                 self.estimate_score = false;
             }
             Message::Exit => return iced::exit(),
-            Message::ExportPGN => {
-                if let Some(game) = &self.archived_game_selected
-                    && let Err(error) = write_portable_game_notation(game)
-                {
-                    error!("ExportPGN: {error}");
-                }
-            }
+            Message::ExportPGN => self.export_pgn(),
             Message::FocusNext => return focus_next(),
             Message::FocusPrevious => return focus_previous(),
             Message::GameCancel(id) => self.send(&format!("decline_game {id} switch\n")),
@@ -2488,12 +2490,13 @@ impl<'a> Client {
                 Screen::GameReview => self.heat_map_display = !self.heat_map_display,
             },
             Message::PressR(shift) => match self.screen {
-                Screen::EmailEveryone | Screen::GameReview | Screen::Login => {}
+                Screen::EmailEveryone | Screen::Login => {}
                 Screen::Game => {
                     if self.request_draw {
                         self.send(&format!("draw {} {}\n", self.game_id, Draw::Accept));
                     }
                 }
+                Screen::GameReview => self.export_pgn(),
                 Screen::Games => self.join_game_press(17, shift),
             },
             Message::PressS(shift) => match self.screen {
