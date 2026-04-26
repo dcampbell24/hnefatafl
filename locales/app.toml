@@ -360,6 +360,23 @@ ru = "Тепловая карта"
 sv-SE = "Värmekarta"
 zh-CN = "热图"
 
+["Import Portable Game Notation File"]
+ar = "استيراد ملف تدوين الألعاب المحمول"
+de = "Portable Game Notation-Datei importieren"
+en-US = "Import Portable Game Notation File"
+es = "Importar archivo de notación de partidas portátil"
+fr = "Importer un fichier Portable Game Notation"
+id = "Impor Berkas Portable Game Notation"
+is-IS = "Flytja inn færanlegan leikjanótunarskrá"
+is-RU = "ᚠᛚᛣᛐᛃᛆ ᛁᚿᚿ ᚠᛅᚱᛆᚿᛚᛂᚵᛆᚿ ᛚᛂᛁᚴᛃᛆᚿᛟᛐᚢᚿᛆᚱᛋᚴᚱᚨ"
+ja = "Portable Game Notation ファイルをインポート"
+ko = "휴대용 게임 표기법 파일 가져오기"
+pt-BR = "Importar arquivo Portable Game Notation"
+pt-PT = "Importar ficheiro Portable Game Notation"
+ru = "Импортировать файл Portable Game Notation"
+sv-SE = "Importera bärbar spelnotationsfil"
+zh-CN = "导入便携式对局记谱文件"
+
 ["It's a draw."]
 ar = "إنها تعادل."
 de = "Es ist unentschieden."

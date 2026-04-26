@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- hnefatafl-client: support reading a portable game notation file.
+
 ## [5.8.0] - 2026-04-24
 
 ### Changed

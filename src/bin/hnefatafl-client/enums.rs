@@ -109,6 +109,7 @@ pub(crate) enum Message {
     GameSubmit,
     GameWatch(Id),
     HeatMap(bool),
+    ImportPGN,
     Leave,
     LeaveSoft,
     LocaleSelected(Locale),

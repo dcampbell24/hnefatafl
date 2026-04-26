@@ -59,6 +59,7 @@ thiserror = "2"
 # client
 iced_aw = { version = "0.13", default-features = false, features = ["date_picker", "labeled_frame", "number_input", "tabs"], optional = true }
 image = { version = "0.25", default-features = false, features = ["png"], optional = true }
+rfd = { version ="0.17", features = ["xdg-portal"], optional = true }
 rodio = { version = "0.22", default-features = false, features = ["playback", "vorbis"], optional = true }
 smol_str = { version = "0.3", optional = true }
 sys-locale = { version = "0.3", optional = true }
@@ -92,6 +93,7 @@ client = [
     "dep:iced",
     "dep:iced_aw",
     "dep:image",
+    "dep:rfd",
     "dep:rodio",
     "dep:smol_str",
     "socket",

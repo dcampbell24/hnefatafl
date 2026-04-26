@@ -25,6 +25,7 @@ mod command_line;
 mod dimensions;
 mod enums;
 mod new_game_settings;
+mod portable_game_notation;
 mod tabs;
 mod user;
 mod volume;
@@ -101,6 +102,7 @@ use crate::{
     dimensions::Dimensions,
     enums::{Coordinates, JoinGame, Message, Move, Screen, Size, SortBy, State, Theme},
     new_game_settings::NewGameSettings,
+    portable_game_notation::read_portable_game_notation,
     tabs::TabId,
     user::User,
     volume::{MAX_VOLUME, Volume},
@@ -2016,6 +2018,16 @@ impl<'a> Client {
         }
     }
 
+    fn import_portable_game_notation(&mut self) {
+        match read_portable_game_notation() {
+            Ok(game) => {
+                self.archived_game_selected = Some(game);
+                self.review_game();
+            }
+            Err(error) => error!("ImportPGN: {error}"),
+        }
+    }
+
     fn locale_selection(&self) -> Row<'_, Message> {
         let locale = [
             Locale::English,
@@ -2262,6 +2274,7 @@ impl<'a> Client {
             Message::GameJoin(id) => self.join(id),
             Message::GameWatch(id) => self.watch(id),
             Message::HeatMap(_display) => self.heat_map_display = !self.heat_map_display,
+            Message::ImportPGN => self.import_portable_game_notation(),
             Message::Leave => {
                 if self.screen == Screen::Login {
                     return iced::exit();
@@ -2365,7 +2378,8 @@ impl<'a> Client {
                 Screen::Games if self.active_tab == TabId::GameNew => {
                     self.game_settings.time = Some(TimeEnum::VeryLong);
                 }
-                Screen::EmailEveryone | Screen::Games | Screen::Login => {}
+                Screen::Login => self.import_portable_game_notation(),
+                Screen::EmailEveryone | Screen::Games => {}
             },
             Message::PressE(shift) => match self.screen {
                 Screen::Game | Screen::GameReview => {
@@ -4170,6 +4184,9 @@ impl<'a> Client {
                     self.archived_games.clone()
                 };
 
+                let import_pgn = button(text!("{} (d)", t!("Import Portable Game Notation File")))
+                    .on_press(Message::ImportPGN);
+
                 let my_games_text = text!("{} (3)", t!("My Games Only"));
                 let my_games = checkbox(self.my_games_only).on_toggle(Message::MyGamesOnly);
                 let quit = button(text!("{} (Esc)", t!("Quit"))).on_press(Message::Leave);
@@ -4232,6 +4249,7 @@ impl<'a> Client {
                     locale,
                     review_game,
                     review_game_pick,
+                    import_pgn,
                     help_text,
                     help_text_2,
                     help_text_3,
