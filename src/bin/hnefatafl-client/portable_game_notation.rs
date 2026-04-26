@@ -19,7 +19,7 @@
 use std::{
     collections::{HashMap, VecDeque},
     fs::File,
-    io::Read,
+    io::{Read, Write},
     str::FromStr,
 };
 
@@ -27,12 +27,13 @@ use hnefatafl_copenhagen::{
     board::BoardSize,
     game::Game,
     glicko::Rating,
-    play::{Plae, Play, Vertex},
+    play::{Plae, Play, Plays, Vertex},
     rating::Rated,
     role::Role,
     server_game::{ArchivedGame, ServerGame, ServerGameSerialized},
     time::TimeSettings,
 };
+use jiff::Timestamp;
 use rfd::FileDialog;
 
 pub fn read_portable_game_notation() -> anyhow::Result<ArchivedGame> {
@@ -43,13 +44,13 @@ pub fn read_portable_game_notation() -> anyhow::Result<ArchivedGame> {
         .document_dir()
         .ok_or(anyhow::Error::msg("failed to get document directory"))?;
 
-    let file = FileDialog::new()
+    let path = FileDialog::new()
         .add_filter("*", &["pgn"])
         .set_directory(dir)
         .pick_file()
         .ok_or(anyhow::Error::msg("failed to pick a file"))?;
 
-    let file = File::open(file)?;
+    let file = File::open(path)?;
     archived_game_from_pgn(file)
 }
 
@@ -141,4 +142,87 @@ fn archived_game_from_pgn(mut file: File) -> anyhow::Result<ArchivedGame> {
         Rating::default(),
         Rating::default(),
     ))
+}
+
+pub fn write_portable_game_notation(archived_game: &ArchivedGame) -> anyhow::Result<()> {
+    let dirs =
+        directories::UserDirs::new().ok_or(anyhow::Error::msg("failed to get user directories"))?;
+
+    let dir = dirs
+        .document_dir()
+        .ok_or(anyhow::Error::msg("failed to get document directory"))?;
+
+    let path = FileDialog::new()
+        .add_filter("*", &["pgn"])
+        .set_directory(dir)
+        .save_file()
+        .ok_or(anyhow::Error::msg("failed to save file"))?;
+
+    let string = portable_game_notation_from_archived_game(archived_game);
+
+    let mut file = File::create(path)?;
+    file.write_all(string.as_bytes())?;
+
+    Ok(())
+}
+
+#[must_use]
+fn portable_game_notation_from_archived_game(archived_game: &ArchivedGame) -> String {
+    let date = if let Some(text) = archived_game.texts.back() {
+        match Timestamp::strptime("𓇳 %F %T %z", text) {
+            Ok(time) => time.strftime("[Date \"%F %T %z\"]\n").to_string(),
+            Err(error) => {
+                println!("error: {error}");
+                String::new()
+            }
+        }
+    } else {
+        String::new()
+    };
+
+    let plays = match &archived_game.plays {
+        Plays::PlayRecordsTimed(plays) => {
+            let mut vec = Vec::new();
+            for play in plays {
+                vec.push(play.play.clone());
+            }
+            vec
+        }
+        Plays::PlayRecords(plays) => plays.clone(),
+    };
+
+    let plays_1: Vec<_> = plays
+        .into_iter()
+        .filter_map(|play| {
+            if let Some(Plae::Play(play)) = play {
+                Some(format!("{}{}", play.from, play.to))
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    let mut plays_2 = Vec::new();
+
+    for (count, play) in plays_1.into_iter().enumerate() {
+        if count % 2 == 0 {
+            plays_2.push(format!("{}.", count / 2 + 1));
+        }
+
+        plays_2.push(play);
+    }
+
+    let plays = plays_2.join(" ");
+
+    let string = format!(
+        "\
+[Event \"Game {}\"]
+[Site \"hnefatafl.org\"]
+{date}
+{plays}
+",
+        archived_game.id,
+    );
+
+    string
 }

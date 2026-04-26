@@ -99,6 +99,7 @@ pub(crate) enum Message {
     EstimateScoreConnected(mpsc::Sender<Tree>),
     EstimateScoreDisplay((Node, GenerateMove)),
     Exit,
+    ExportPGN,
     FocusPrevious,
     FocusNext,
     GameAccept(Id),

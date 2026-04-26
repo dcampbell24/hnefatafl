@@ -102,7 +102,7 @@ use crate::{
     dimensions::Dimensions,
     enums::{Coordinates, JoinGame, Message, Move, Screen, Size, SortBy, State, Theme},
     new_game_settings::NewGameSettings,
-    portable_game_notation::read_portable_game_notation,
+    portable_game_notation::{read_portable_game_notation, write_portable_game_notation},
     tabs::TabId,
     user::User,
     volume::{MAX_VOLUME, Volume},
@@ -1944,6 +1944,8 @@ impl<'a> Client {
             }
 
             user_area = user_area.push(row![left_all, left, right, right_all].spacing(SPACING));
+            user_area = user_area
+                .push(button(text!("{} (r)", t!("Export PGN File"))).on_press(Message::ExportPGN));
         } else {
             user_area = user_area.push(leave);
 
@@ -2263,6 +2265,13 @@ impl<'a> Client {
                 self.estimate_score = false;
             }
             Message::Exit => return iced::exit(),
+            Message::ExportPGN => {
+                if let Some(game) = &self.archived_game_selected
+                    && let Err(error) = write_portable_game_notation(game)
+                {
+                    error!("ExportPGN: {error}");
+                }
+            }
             Message::FocusNext => return focus_next(),
             Message::FocusPrevious => return focus_previous(),
             Message::GameCancel(id) => self.send(&format!("decline_game {id} switch\n")),
