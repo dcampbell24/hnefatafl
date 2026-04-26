@@ -408,7 +408,7 @@ fn hash_password(password: &str) -> Option<String> {
 }
 
 fn timestamp() -> String {
-    Timestamp::now().strftime("[%F %T UTC]").to_string()
+    Timestamp::now().strftime("[%m-%d %T UTC]").to_string()
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
@@ -1150,7 +1150,7 @@ impl Server {
         }
 
         if game_over {
-            let Some(game) = self.games.0.remove(&index) else {
+            let Some(mut game) = self.games.0.remove(&index) else {
                 unreachable!()
             };
 
@@ -1167,6 +1167,9 @@ impl Server {
             }
 
             if !self.skip_the_data_files {
+                let timestamp = Timestamp::now().strftime("𓇳 %F %T %z");
+                game.texts.push_back(format!("{timestamp}"));
+
                 self.append_archived_game(game)
                     .map_err(|err| {
                         error!("append_archived_game: {err}");
