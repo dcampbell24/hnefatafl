@@ -26,4 +26,4 @@ tar -czvf hnefatafl-copenhagen.tar.gz hnefatafl-copenhagen.app
 
 sha256sum hnefatafl-copenhagen.tar.gz
 
-scp  hnefatafl-copenhagen.tar.gz david@david@192.168.1.141:~
+scp  hnefatafl-copenhagen.tar.gz david@192.168.1.141:~
