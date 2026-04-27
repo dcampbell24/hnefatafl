@@ -1,8 +1,5 @@
 #! /bin/bash -e
 
-cargo install cargo-bundle
-cargo bundle --bin hnefatafl-client --features client --no-default-features --release
-
 mkdir shortcut.iconset
 sips -z 16 16     helmet_1024.png --out shortcut.iconset/icon_16x16.png
 sips -z 32 32     helmet_1024.png --out shortcut.iconset/icon_16x16@2x.png
@@ -17,10 +14,14 @@ cp helmet_1024.png shortcut.iconset/icon_512x512@2x.png
 iconutil -c shortcut.icns shortcut.iconset
 rm -R shortcut.iconset
 
-mkdir ../../target/release/bundle/osx/hnefatafl-copenhagen.app/Contents/Resources
-mv shortcut.icns ../../target/release/bundle/osx/hnefatafl-copenhagen.app/Contents/Resources
+cd ../..
+cargo install cargo-bundle
+cargo bundle --bin hnefatafl-client --features client --no-default-features --release
 
-cd ../../target/release/bundle/osx/
+mkdir target/release/bundle/osx/hnefatafl-copenhagen.app/Contents/Resources
+mv packages/chocolatey/shortcut.icns target/release/bundle/osx/hnefatafl-copenhagen.app/Contents/Resources
+
+cd target/release/bundle/osx/
 tar -czvf hnefatafl-copenhagen.tar.gz hnefatafl-copenhagen.app
 
 sha256sum hnefatafl-copenhagen.tar.gz
