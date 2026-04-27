@@ -1,16 +1,11 @@
 cask "hnefatafl-copenhagen" do
   version "5.8.0"
-  # Probably the output of a program named sha256 or
-  # something similar with argument of v5.8.0-1.zip
-  sha256 "fill me in"
-
-  url "https://codeberg.org/dcampbell/hnefatafl/archive/v5.8.0-1.zip"
+  url "https://hnefatafl.org/homebrew/hnefatafl-copenhagen.tar.gz"
+  sha256 "05bfc820cdb8821a77728b5641699174b53a86796b5e9600e2954766bf9cced8"
   name "hnefatafl-copenhagen"
   desc "Client that connects to a server"
   homepage "https://hnefatafl.org"
-  manpage "hnefatafl-client.1.gz"
+  # manpage "hnefatafl-client.1.gz"
 
-  # Or something similar, whatever you get as output from "just macos" in
-  # the hnefatafl directory.
   app "hnefatafl-copenhagen.app"
 end
