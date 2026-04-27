@@ -19,7 +19,7 @@ cargo install cargo-bundle
 cargo bundle --bin hnefatafl-client --features client --no-default-features --release
 
 mkdir target/release/bundle/osx/hnefatafl-copenhagen.app/Contents/Resources
-mv packages/chocolatey/shortcut.icns target/release/bundle/osx/hnefatafl-copenhagen.app/Contents/Resources
+mv packages/homebrew/shortcut.icns target/release/bundle/osx/hnefatafl-copenhagen.app/Contents/Resources
 
 cd target/release/bundle/osx/
 tar -czvf hnefatafl-copenhagen.tar.gz hnefatafl-copenhagen.app
