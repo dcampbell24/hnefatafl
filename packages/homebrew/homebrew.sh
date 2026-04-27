@@ -27,7 +27,7 @@ mkdir target/release/bundle/osx/hnefatafl-copenhagen.app/Contents/Resources
 mv packages/homebrew/shortcut.icns target/release/bundle/osx/hnefatafl-copenhagen.app/Contents/Resources
 
 cd target/release/bundle/osx/
-rg --passthru --multiline --replace "$INSERT" '<\/dict>' hnefatafl-copenhagen.app/Contents/packages/Info.plist
+rg --passthru --multiline --replace "$INSERT" '<\/dict>' hnefatafl-copenhagen.app/Contents/Info.plist
 tar -czvf hnefatafl-copenhagen.tar.gz hnefatafl-copenhagen.app
 sha256sum hnefatafl-copenhagen.tar.gz
 scp  hnefatafl-copenhagen.tar.gz david@192.168.1.141:~
