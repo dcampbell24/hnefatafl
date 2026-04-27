@@ -16,6 +16,7 @@ EOF
 mkdir --parents /var/www/html/binaries/nsis/
 cp ../../www/hnefatafl-client-installer-*.exe /var/www/html/binaries/nsis/
 cp -r ../../www/apt/ /var/www/html/
+cp -r ../../www/homebrew/ /var/www/html/
 
 sscli -b https://hnefatafl.org -r /var/www/html/
 
