@@ -11,7 +11,7 @@ sips -z 256 256   helmet_1024.png --out shortcut.iconset/icon_256x256.png
 sips -z 512 512   helmet_1024.png --out shortcut.iconset/icon_256x256@2x.png
 sips -z 512 512   helmet_1024.png --out shortcut.iconset/icon_512x512.png
 cp helmet_1024.png shortcut.iconset/icon_512x512@2x.png
-iconutil -c shortcut.icns shortcut.iconset
+iconutil -c icns shortcut.iconset
 rm -R shortcut.iconset
 
 cd ../..
