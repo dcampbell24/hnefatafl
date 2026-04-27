@@ -1,5 +1,10 @@
 #! /bin/bash -e
 
+INSERT="\
+<key>CFBundleIconFile<\/key>
+<string>shortcut.icns<\/string>
+<\/dict>"
+
 mkdir shortcut.iconset
 sips -z 16 16     helmet_1024.png --out shortcut.iconset/icon_16x16.png
 sips -z 32 32     helmet_1024.png --out shortcut.iconset/icon_16x16@2x.png
@@ -22,8 +27,7 @@ mkdir target/release/bundle/osx/hnefatafl-copenhagen.app/Contents/Resources
 mv packages/homebrew/shortcut.icns target/release/bundle/osx/hnefatafl-copenhagen.app/Contents/Resources
 
 cd target/release/bundle/osx/
+sed -i "s/<\/dict>/$INSERT/" hnefatafl-copenhagen.app/Contents/packages/Info.plist
 tar -czvf hnefatafl-copenhagen.tar.gz hnefatafl-copenhagen.app
-
 sha256sum hnefatafl-copenhagen.tar.gz
-
 scp  hnefatafl-copenhagen.tar.gz david@192.168.1.141:~
