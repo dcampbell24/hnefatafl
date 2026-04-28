@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 - hnefatafl-server-full: timestamp games when finished.
+- hnefatafl-client: fix the order of text messages.
 - hnefatafl-client: support reading and writing portable game notation file.
 
 ## [5.8.0] - 2026-04-24

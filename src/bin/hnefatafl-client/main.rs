@@ -2168,6 +2168,15 @@ impl<'a> Client {
         messages: &'a VecDeque<String>,
         enable_texting: bool,
     ) -> Container<'a, Message> {
+        let mut text_box = Column::new().spacing(SPACING).padding(PADDING_SMALL);
+        let mut texts = Column::new();
+
+        for message in messages.iter().rev() {
+            texts = texts.push(text(message));
+        }
+
+        text_box = text_box.push(texts);
+
         let text_input = if enable_texting {
             iced::widget::text_input(&format!("{}…", t!("message")), &self.text_input)
                 .on_input(Message::TextChanged)
@@ -2177,15 +2186,9 @@ impl<'a> Client {
             iced::widget::text_input(&format!("{}…", t!("message")), "")
         };
 
-        let mut text_box = column![text_input].spacing(SPACING);
+        text_box = text_box.push(text_input);
 
-        let mut texting = Column::new();
-        for message in messages {
-            texting = texting.push(text(message));
-        }
-        text_box = text_box.push(scrollable(texting));
-
-        container(text_box)
+        container(scrollable(text_box).anchor_bottom())
             .padding(PADDING)
             .style(container::bordered_box)
     }
@@ -4008,11 +4011,11 @@ impl<'a> Client {
         };
 
         let games = self.games();
-        let texting = self.texting(texts, true).padding(PADDING);
         let users = self.users(false);
+        let texting = self.texting(texts, true).padding(PADDING);
 
-        let user_area = scrollable(column![games, users, texting]);
-        container(user_area)
+        let user_area = column![games, users, texting].padding(PADDING);
+        container(scrollable(user_area))
             .padding(PADDING)
             .style(container::bordered_box)
     }
