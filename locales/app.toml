@@ -139,6 +139,23 @@ ru = "Изменить пароль"
 sv-SE = "Ändra lösenord"
 zh-CN = "更改密码"
 
+[Chat]
+ar = "محادثة"
+de = "Chat"
+en-US = "Chat"
+es = "Charlar"
+fr = "Chat"
+id = "Mengobrol"
+is-IS = "Spjall"
+is-RU = "ᛋᛔᛃᛆᛚᛚ"
+ja = "チャット"
+ko = "채팅"
+pt-BR = "Bater papo"
+pt-PT = "Conversa"
+ru = "Чат"
+sv-SE = "Chatta"
+zh-CN = "聊天"
+
 [Coordinates]
 ar = "الإحداثيات"
 de = "Koordinaten"
