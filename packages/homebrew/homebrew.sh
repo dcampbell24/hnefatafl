@@ -29,7 +29,7 @@ mv packages/homebrew/shortcut.icns target/release/bundle/osx/hnefatafl-copenhage
 cd target/release/bundle/osx/
 
 cd hnefatafl-copenhagen.app/Contents
-while read -r line; do
+while IFS= read -r line; do
     if [[ $line == '</dict>' ]]; then
         echo "$INSERT"
     else
