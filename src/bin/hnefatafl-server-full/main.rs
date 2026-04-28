@@ -407,10 +407,6 @@ fn hash_password(password: &str) -> Option<String> {
     Some(ctx.hash_password(password.as_bytes()).ok()?.to_string())
 }
 
-fn timestamp() -> String {
-    Timestamp::now().strftime("[%m-%d %H:%M UTC]").to_string()
-}
-
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 struct Server {
     #[serde(default)]
@@ -1712,7 +1708,7 @@ impl Server {
                     None
                 }
                 "text" => {
-                    let timestamp = timestamp();
+                    let timestamp = Timestamp::now().strftime("%Y-%m-%d %H:%M:%S UTC");
                     let text = the_rest.join(" ");
 
                     info!("{index_supplied} {timestamp} {username} text {text}");
@@ -1723,7 +1719,7 @@ impl Server {
                         return None;
                     }
 
-                    let text = format!("= text {timestamp} {username}: {text}");
+                    let text = format!("= text {username} {timestamp}:: {text}");
 
                     if self.texts.len() >= KEEP_TEXTS {
                         self.texts.pop_front();
@@ -2594,7 +2590,7 @@ impl Server {
             ));
         };
 
-        let timestamp = timestamp();
+        let timestamp = Timestamp::now().strftime("%m-%d %H:%M UTC");
         let text = the_rest.split_off(1);
         let mut text = text.join(" ");
 
@@ -2604,7 +2600,7 @@ impl Server {
             return None;
         }
 
-        text = format!("{timestamp} {username}: {text}");
+        text = format!("{username} {timestamp}:: {text}");
         info!("{index_supplied} {username} text_game {id} {text}");
 
         if let Some(game) = self.games.0.get_mut(&id) {
