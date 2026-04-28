@@ -408,7 +408,7 @@ fn hash_password(password: &str) -> Option<String> {
 }
 
 fn timestamp() -> String {
-    Timestamp::now().strftime("[%m-%d %T UTC]").to_string()
+    Timestamp::now().strftime("[%m-%d %H:%M UTC]").to_string()
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
