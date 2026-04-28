@@ -73,6 +73,7 @@ use iced::{
     Color, Element, Event, Font, Length, Pixels, Subscription, Task,
     alignment::{Horizontal, Vertical},
     color, event,
+    font::Weight,
     futures::{SinkExt, Stream, executor},
     keyboard::{self, Key, key::Named},
     stream,
@@ -86,7 +87,7 @@ use iced::{
 };
 use iced_aw::{
     ICED_AW_FONT_BYTES, Tabs, date_picker::Date, helpers::date_picker, number_input,
-    widget::LabeledFrame,
+    style::colors::GREY, widget::LabeledFrame,
 };
 use image::ImageFormat;
 use jiff::Timestamp;
@@ -797,7 +798,7 @@ impl<'a> Client {
             columns = columns.push(row![text!("{}: ", t!("email code"))]);
         }
 
-        let mut reset_email = button(text!("{} (9)", t!("Reset Email")));
+        let mut reset_email = button(text!("{} (0)", t!("Reset Email")));
         if self.email.is_some() {
             reset_email = reset_email.on_press(Message::EmailReset);
         }
@@ -807,7 +808,7 @@ impl<'a> Client {
             columns = columns.push(row![text!("error: {error}").style(text::danger)]);
         }
 
-        let mut change_password_button = button(text!("{} (0)", t!("Change Password")));
+        let mut change_password_button = button(text!("{} (a)", t!("Change Password")));
 
         if !self.password_ends_with_whitespace {
             change_password_button = change_password_button.on_press(Message::TextSend);
@@ -827,19 +828,19 @@ impl<'a> Client {
         columns = columns.push(
             row![
                 checkbox(self.password_show).on_toggle(Message::PasswordShow),
-                text!("{} (a)", t!("show password")),
+                text!("{} (b)", t!("show password")),
             ]
             .spacing(SPACING),
         );
 
         if self.delete_account {
             columns = columns.push(
-                button(text!("{} (b)", t!("REALLY DELETE ACCOUNT")))
+                button(text!("{} (c)", t!("REALLY DELETE ACCOUNT")))
                     .on_press(Message::DeleteAccount),
             );
         } else {
             columns = columns.push(
-                button(text!("{} (b)", t!("Delete Account"))).on_press(Message::DeleteAccount),
+                button(text!("{} (c)", t!("Delete Account"))).on_press(Message::DeleteAccount),
             );
         }
 
@@ -1009,6 +1010,10 @@ impl<'a> Client {
 
             (game.board.clone(), None)
         }
+    }
+
+    fn chat_view(&self) -> Column<'_, Message> {
+        column![self.texting(&self.texts, true)]
     }
 
     fn export_pgn(&self) {
@@ -1305,14 +1310,14 @@ impl<'a> Client {
 
     fn game_new_view(&self) -> Column<'_, Message> {
         let attacker = radio(
-            format!("{} (7)", t!("attacker")),
+            format!("{} (8)", t!("attacker")),
             Role::Attacker,
             self.game_settings.role_selected,
             Message::RoleSelected,
         );
 
         let defender = radio(
-            format!("{} (8)", t!("defender")),
+            format!("{} (9)", t!("defender")),
             Role::Defender,
             self.game_settings.role_selected,
             Message::RoleSelected,
@@ -1321,7 +1326,7 @@ impl<'a> Client {
         let rated = LabeledFrame::new(
             text(t!("rated")),
             row![
-                text!("(6)"),
+                text!("(7)"),
                 checkbox(self.game_settings.rated.into()).on_toggle(Message::RatedSelected)
             ]
             .padding(PADDING)
@@ -1336,14 +1341,14 @@ impl<'a> Client {
         let leave = button(text!("{} (Esc)", t!("Quit"))).on_press(Message::Leave);
 
         let size_11x11 = radio(
-            "11x11 (9)",
+            "11x11 (0)",
             BoardSize::_11,
             Some(self.game_settings.board_size),
             Message::BoardSizeSelected,
         );
 
         let size_13x13 = radio(
-            "13x13 (0)",
+            "13x13 (a)",
             BoardSize::_13,
             Some(self.game_settings.board_size),
             Message::BoardSizeSelected,
@@ -1363,13 +1368,13 @@ impl<'a> Client {
 
         let real_time = text(format!("{}:", t!("Real Time")));
         let rapid = radio(
-            format!("{} (a)", TimeEnum::Rapid),
+            format!("{} (b)", TimeEnum::Rapid),
             TimeEnum::Rapid,
             self.game_settings.time,
             Message::Time,
         );
         let classical = radio(
-            format!("{} (b)", TimeEnum::Classical),
+            format!("{} (c)", TimeEnum::Classical),
             TimeEnum::Classical,
             self.game_settings.time,
             Message::Time,
@@ -1377,13 +1382,13 @@ impl<'a> Client {
 
         let correspondence = text(format!("{}:", t!("Correspondence")));
         let long = radio(
-            format!("{} (c)", TimeEnum::Long),
+            format!("{} (d)", TimeEnum::Long),
             TimeEnum::Long,
             self.game_settings.time,
             Message::Time,
         );
         let very_long = radio(
-            format!("{} (d)", TimeEnum::VeryLong),
+            format!("{} (e)", TimeEnum::VeryLong),
             TimeEnum::VeryLong,
             self.game_settings.time,
             Message::Time,
@@ -1391,7 +1396,7 @@ impl<'a> Client {
 
         let unlimited = text(format!("{}:", t!("Unlimited")));
         let infinity = radio(
-            format!("{} (e)", TimeEnum::Infinity),
+            format!("{} (f)", TimeEnum::Infinity),
             TimeEnum::Infinity,
             self.game_settings.time,
             Message::Time,
@@ -2172,7 +2177,27 @@ impl<'a> Client {
         let mut texts = Column::new();
 
         for message in messages.iter().rev() {
-            texts = texts.push(text(message));
+            match message.split_once("::") {
+                Some((header, message)) => {
+                    if let Some((name, date)) = header.split_once(' ') {
+                        texts = texts.push(
+                            row![
+                                text(name).font(Font {
+                                    weight: Weight::Bold,
+                                    ..Font::DEFAULT
+                                }),
+                                text(date).color(GREY)
+                            ]
+                            .spacing(SPACING),
+                        );
+                    } else {
+                        texts = texts.push(text(header));
+                    }
+
+                    texts = texts.push(text(message.trim()));
+                }
+                None => texts = texts.push(text(message)),
+            }
         }
 
         text_box = text_box.push(texts);
@@ -2202,25 +2227,29 @@ impl<'a> Client {
     }
 
     fn theme_selection(&self) -> Row<'_, Message> {
+        let i = if self.screen == Screen::Login { 6 } else { 7 };
+
         let theme = if self.theme == Theme::Light {
             row![
-                button(text!("{} (6)", t!("Dark"))).on_press(Message::ChangeTheme(Theme::Dark)),
-                button(text!("{} (7)", t!("Light"))),
-                button(text("Tol (8)")).on_press(Message::ChangeTheme(Theme::Tol)),
+                button(text!("{} ({})", t!("Dark"), i)).on_press(Message::ChangeTheme(Theme::Dark)),
+                button(text!("{} ({})", t!("Light"), i + 1)),
+                button(text!("Tol ({})", i + 2)).on_press(Message::ChangeTheme(Theme::Tol)),
             ]
             .spacing(SPACING)
         } else if self.theme == Theme::Dark {
             row![
-                button(text!("{} (6)", t!("Dark"))),
-                button(text!("{} (7)", t!("Light"))).on_press(Message::ChangeTheme(Theme::Light)),
-                button(text("Tol (8)")).on_press(Message::ChangeTheme(Theme::Tol)),
+                button(text!("{} ({})", t!("Dark"), i)),
+                button(text!("{} ({})", t!("Light"), i + 1))
+                    .on_press(Message::ChangeTheme(Theme::Light)),
+                button(text!("Tol ({})", i + 2)).on_press(Message::ChangeTheme(Theme::Tol)),
             ]
             .spacing(SPACING)
         } else {
             row![
-                button(text!("{} (6)", t!("Dark"))).on_press(Message::ChangeTheme(Theme::Dark)),
-                button(text!("{} (7)", t!("Light"))).on_press(Message::ChangeTheme(Theme::Light)),
-                button(text("Tol (8)")),
+                button(text!("{} ({})", t!("Dark"), i)).on_press(Message::ChangeTheme(Theme::Dark)),
+                button(text!("{} ({})", t!("Light"), i + 1))
+                    .on_press(Message::ChangeTheme(Theme::Light)),
+                button(text!("Tol ({})", i + 2)),
             ]
             .spacing(SPACING)
         };
@@ -2338,10 +2367,12 @@ impl<'a> Client {
                     self.press_letter('a');
                     self.press_letter_and_number();
                 }
-                Screen::Games if self.active_tab == TabId::Games => self.join_game_press(0, shift),
                 Screen::Games => match self.active_tab {
-                    TabId::AccountSettings => self.toggle_show_password(),
-                    TabId::GameNew => self.game_settings.time = Some(TimeEnum::Rapid),
+                    TabId::AccountSettings => {
+                        self.send(&format!("change_password {}\n", self.password));
+                    }
+                    TabId::GameNew => self.game_settings.board_size = BoardSize::_13,
+                    TabId::Games => self.join_game_press(0, shift),
                     _ => {}
                 },
                 Screen::Login => self.review_game(),
@@ -2353,11 +2384,9 @@ impl<'a> Client {
                     self.press_letter_and_number();
                 }
                 Screen::Games => match self.active_tab {
-                    TabId::AccountSettings => self.delete_account(),
+                    TabId::AccountSettings => self.toggle_show_password(),
+                    TabId::GameNew => self.game_settings.time = Some(TimeEnum::Rapid),
                     TabId::Games => self.join_game_press(1, shift),
-                    TabId::GameNew => {
-                        self.game_settings.time = Some(TimeEnum::Classical);
-                    }
                     _ => {}
                 },
                 Screen::EmailEveryone => {}
@@ -2372,11 +2401,15 @@ impl<'a> Client {
                     self.press_letter('c');
                     self.press_letter_and_number();
                 }
-                Screen::Games if self.active_tab == TabId::Games => self.join_game_press(2, shift),
-                Screen::Games if self.active_tab == TabId::GameNew => {
-                    self.game_settings.time = Some(TimeEnum::Long);
-                }
-                Screen::EmailEveryone | Screen::Games => {}
+                Screen::Games => match self.active_tab {
+                    TabId::AccountSettings => self.delete_account(),
+                    TabId::GameNew => {
+                        self.game_settings.time = Some(TimeEnum::Classical);
+                    }
+                    TabId::Games => self.join_game_press(2, shift),
+                    _ => {}
+                },
+                Screen::EmailEveryone => {}
                 Screen::Login => {
                     self.rating_max();
                     self.games_filtered();
@@ -2388,23 +2421,29 @@ impl<'a> Client {
                     self.press_letter('d');
                     self.press_letter_and_number();
                 }
-                Screen::Games if self.active_tab == TabId::Games => self.join_game_press(3, shift),
-                Screen::Games if self.active_tab == TabId::GameNew => {
-                    self.game_settings.time = Some(TimeEnum::VeryLong);
-                }
+                Screen::Games => match self.active_tab {
+                    TabId::Games => self.join_game_press(3, shift),
+                    TabId::GameNew => {
+                        self.game_settings.time = Some(TimeEnum::Long);
+                    }
+                    _ => {}
+                },
                 Screen::Login => self.import_portable_game_notation(),
-                Screen::EmailEveryone | Screen::Games => {}
+                Screen::EmailEveryone => {}
             },
             Message::PressE(shift) => match self.screen {
                 Screen::Game | Screen::GameReview => {
                     self.press_letter('e');
                     self.press_letter_and_number();
                 }
-                Screen::Games if self.active_tab == TabId::Games => self.join_game_press(4, shift),
-                Screen::Games if self.active_tab == TabId::GameNew => {
-                    self.game_settings.time = Some(TimeEnum::Infinity);
-                }
-                Screen::EmailEveryone | Screen::Games | Screen::Login => {}
+                Screen::Games => match self.active_tab {
+                    TabId::Games => self.join_game_press(4, shift),
+                    TabId::GameNew => {
+                        self.game_settings.time = Some(TimeEnum::VeryLong);
+                    }
+                    _ => {}
+                },
+                Screen::EmailEveryone | Screen::Login => {}
             },
             Message::PressF(shift) => match self.screen {
                 Screen::EmailEveryone | Screen::Login => {}
@@ -2412,7 +2451,13 @@ impl<'a> Client {
                     self.press_letter('f');
                     self.press_letter_and_number();
                 }
-                Screen::Games => self.join_game_press(5, shift),
+                Screen::Games => match self.active_tab {
+                    TabId::Games => self.join_game_press(5, shift),
+                    TabId::GameNew => {
+                        self.game_settings.time = Some(TimeEnum::Infinity);
+                    }
+                    _ => {}
+                },
             },
             Message::PressG(shift) => match self.screen {
                 Screen::EmailEveryone | Screen::Login => {}
@@ -2559,7 +2604,7 @@ impl<'a> Client {
             },
             Message::Press2 => match self.screen {
                 Screen::EmailEveryone => {}
-                Screen::Games => self.active_tab = TabId::GameNew,
+                Screen::Games => self.active_tab = TabId::Chat,
                 Screen::Game | Screen::GameReview => {
                     let (board, _) = self.board_and_heatmap();
                     match board.size() {
@@ -2592,7 +2637,7 @@ impl<'a> Client {
             },
             Message::Press3 => match self.screen {
                 Screen::EmailEveryone => {}
-                Screen::Games => self.active_tab = TabId::Tournament,
+                Screen::Games => self.active_tab = TabId::GameNew,
                 Screen::Login => self.my_games_only(),
                 Screen::Game | Screen::GameReview => {
                     let (board, _) = self.board_and_heatmap();
@@ -2625,7 +2670,7 @@ impl<'a> Client {
             },
             Message::Press4 => match self.screen {
                 Screen::EmailEveryone => {}
-                Screen::Games => self.active_tab = TabId::AccountSettings,
+                Screen::Games => self.active_tab = TabId::Tournament,
                 Screen::Login => self.create_account(),
                 Screen::Game | Screen::GameReview => {
                     self.clear_numbers_except(4);
@@ -2635,7 +2680,7 @@ impl<'a> Client {
             },
             Message::Press5 => match self.screen {
                 Screen::EmailEveryone => {}
-                Screen::Games => self.active_tab = TabId::Users,
+                Screen::Games => self.active_tab = TabId::AccountSettings,
                 Screen::Login => self.reset_password(),
                 Screen::Game | Screen::GameReview => {
                     self.clear_numbers_except(5);
@@ -2645,13 +2690,7 @@ impl<'a> Client {
             },
             Message::Press6 => match self.screen {
                 Screen::EmailEveryone => {}
-                Screen::Games => match self.active_tab {
-                    TabId::AccountSettings => self.change_theme(Theme::Dark),
-                    TabId::GameNew => self.game_settings.rated = !self.game_settings.rated,
-                    TabId::Games => self.send("archived_games\n"),
-                    TabId::Tournament => open_url("https://hnefatafl.org/tournaments.html"),
-                    TabId::Users => {}
-                },
+                Screen::Games => self.active_tab = TabId::Users,
                 Screen::Login => self.change_theme(Theme::Dark),
                 Screen::Game | Screen::GameReview => {
                     if self.screen == Screen::Game || self.screen == Screen::GameReview {
@@ -2664,10 +2703,11 @@ impl<'a> Client {
             Message::Press7 => match self.screen {
                 Screen::EmailEveryone => {}
                 Screen::Games => match self.active_tab {
-                    TabId::AccountSettings => self.change_theme(Theme::Light),
-                    TabId::GameNew => self.game_settings.role_selected = Some(Role::Attacker),
-                    TabId::Games | TabId::Users => {}
-                    TabId::Tournament => self.send("join_tournament\n"),
+                    TabId::AccountSettings => self.change_theme(Theme::Dark),
+                    TabId::GameNew => self.game_settings.rated = !self.game_settings.rated,
+                    TabId::Games => self.send("archived_games\n"),
+                    TabId::Tournament => open_url("https://hnefatafl.org/tournaments.html"),
+                    _ => {}
                 },
                 Screen::Login => self.change_theme(Theme::Light),
                 Screen::Game | Screen::GameReview => {
@@ -2679,11 +2719,11 @@ impl<'a> Client {
             Message::Press8 => match self.screen {
                 Screen::EmailEveryone => {}
                 Screen::Games => match self.active_tab {
-                    TabId::AccountSettings => self.change_theme(Theme::Tol),
-                    TabId::GameNew => self.game_settings.role_selected = Some(Role::Defender),
+                    TabId::AccountSettings => self.change_theme(Theme::Light),
                     TabId::Games => self.my_games_only(),
-                    TabId::Tournament => self.send("leave_tournament\n"),
-                    TabId::Users => {}
+                    TabId::GameNew => self.game_settings.role_selected = Some(Role::Attacker),
+                    TabId::Tournament => self.send("join_tournament\n"),
+                    _ => {}
                 },
                 Screen::Login => self.change_theme(Theme::Tol),
                 Screen::Game | Screen::GameReview => {
@@ -2695,10 +2735,11 @@ impl<'a> Client {
             Message::Press9 => match self.screen {
                 Screen::EmailEveryone => {}
                 Screen::Games => match self.active_tab {
-                    TabId::AccountSettings => self.reset_email(),
-                    TabId::GameNew => self.game_settings.board_size = BoardSize::_11,
+                    TabId::AccountSettings => self.change_theme(Theme::Tol),
+                    TabId::GameNew => self.game_settings.role_selected = Some(Role::Defender),
                     TabId::Games | TabId::Users => self.users_sort_by = SortBy::Rating,
-                    TabId::Tournament => {}
+                    TabId::Tournament => self.send("leave_tournament\n"),
+                    TabId::Chat => {}
                 },
                 Screen::Login => open_url("https://discord.gg/h56CAHEBXd"),
                 Screen::Game | Screen::GameReview => {
@@ -2710,12 +2751,10 @@ impl<'a> Client {
             Message::Press0 => match self.screen {
                 Screen::EmailEveryone => {}
                 Screen::Games => match self.active_tab {
-                    TabId::AccountSettings => {
-                        self.send(&format!("change_password {}\n", self.password));
-                    }
-                    TabId::Tournament => {}
-                    TabId::GameNew => self.game_settings.board_size = BoardSize::_13,
+                    TabId::AccountSettings => self.reset_email(),
+                    TabId::GameNew => self.game_settings.board_size = BoardSize::_11,
                     TabId::Games | TabId::Users => self.users_sort_by = SortBy::Name,
+                    _ => {}
                 },
                 Screen::Login => open_url("https://hnefatafl.org"),
                 Screen::Game | Screen::GameReview => {
@@ -3245,7 +3284,7 @@ impl<'a> Client {
                         }
                     }
                     Screen::Games => match self.active_tab {
-                        TabId::Games if !self.text_input.trim().is_empty() => {
+                        TabId::Chat if !self.text_input.trim().is_empty() => {
                             self.text_input.push('\n');
                             self.send(&format!("text {}", self.text_input));
                         }
@@ -3603,7 +3642,7 @@ impl<'a> Client {
         }
 
         let username = row![username, my_games, my_games_text].spacing(SPACING);
-        let user_area = self.user_area(false);
+        let user_area = self.user_area();
 
         column![middle, username, user_area]
             .spacing(SPACING)
@@ -4003,17 +4042,10 @@ impl<'a> Client {
     }
 
     #[must_use]
-    fn user_area(&self, in_game: bool) -> Container<'_, Message> {
-        let texts = if in_game {
-            &self.texts_game
-        } else {
-            &self.texts
-        };
-
+    fn user_area(&self) -> Container<'_, Message> {
         let games = self.games();
         let users = self.users(false);
-        let texting = self.texting(texts, true).padding(PADDING).max_height(180);
-        let user_area = column![games, users, texting].padding(PADDING);
+        let user_area = column![games, users].padding(PADDING);
 
         container(scrollable(user_area))
             .padding(PADDING)
@@ -4082,23 +4114,28 @@ impl<'a> Client {
                     self.games_view(),
                 )
                 .push(
+                    TabId::Chat,
+                    iced_aw::TabLabel::Text(format!("{} (2)", t!("Chat"))),
+                    self.chat_view(),
+                )
+                .push(
                     TabId::GameNew,
-                    iced_aw::TabLabel::Text(format!("{} (2)", t!("Create Game"))),
+                    iced_aw::TabLabel::Text(format!("{} (3)", t!("Create Game"))),
                     self.game_new_view(),
                 )
                 .push(
                     TabId::Tournament,
-                    iced_aw::TabLabel::Text(format!("{} (3)", t!("Tournament"))),
+                    iced_aw::TabLabel::Text(format!("{} (4)", t!("Tournament"))),
                     self.tournament_view(),
                 )
                 .push(
                     TabId::AccountSettings,
-                    iced_aw::TabLabel::Text(format!("{} (4)", t!("Settings"))),
+                    iced_aw::TabLabel::Text(format!("{} (5)", t!("Settings"))),
                     self.settings_view(),
                 )
                 .push(
                     TabId::Users,
-                    iced_aw::TabLabel::Text(format!("{} (5)", t!("Users"))),
+                    iced_aw::TabLabel::Text(format!("{} (6)", t!("Users"))),
                     column![
                         button(text!("{} (Esc)", t!("Quit"))).on_press(Message::Leave),
                         self.users(true)
@@ -4407,10 +4444,10 @@ impl<'a> Client {
         }
 
         let button_0 =
-            button(text!("{} (6)", t!("Tournaments Described"))).on_press(Message::Tournaments);
+            button(text!("{} (7)", t!("Tournaments Described"))).on_press(Message::Tournaments);
 
-        let mut button_1 = button(text!("{} (7)", t!("Join Tournament")));
-        let mut button_2 = button(text!("{} (8)", t!("Leave Tournament")));
+        let mut button_1 = button(text!("{} (8)", t!("Join Tournament")));
+        let mut button_2 = button(text!("{} (9)", t!("Leave Tournament")));
 
         if self.tournament.players.contains(&self.username) {
             button_2 = button_2.on_press(Message::TournamentLeave);

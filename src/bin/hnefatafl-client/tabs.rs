@@ -21,6 +21,7 @@ use std::fmt;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub(crate) enum TabId {
     AccountSettings,
+    Chat,
     #[default]
     Games,
     GameNew,
@@ -32,6 +33,7 @@ impl fmt::Display for TabId {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::AccountSettings => f.write_str("Account Settings"),
+            Self::Chat => f.write_str("Chat"),
             Self::Games => f.write_str("Games"),
             Self::GameNew => f.write_str("Create Game"),
             Self::Tournament => f.write_str("Tournament"),
