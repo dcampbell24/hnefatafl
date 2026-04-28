@@ -4,7 +4,7 @@ cask "hnefatafl-copenhagen" do
   desc "Client that connects to a server"
   homepage "https://hnefatafl.org"
   url "https://hnefatafl.org/homebrew/hnefatafl-copenhagen.tar.gz"
-  sha256 "f191e0a9ce749bc028d21739fd87641046e5a9de37814acb0cb1208c89bd33d2"
+  sha256 "92f8775e3701410c8e09d55b0d62d23256109a74ac9c67466bdffdf1dbe8f1a8"
   license "AGPL-3.0-or-later"
 
   test do
