@@ -35,7 +35,8 @@ while read -r line; do
     else
         echo "$line"
     fi
-done < Info.plist > Info.plist
+done < Info.plist > NewInfo.plist
+mv NewInfo.plist Info.plist
 cd ../..
 
 tar -czvf hnefatafl-copenhagen.tar.gz hnefatafl-copenhagen.app
