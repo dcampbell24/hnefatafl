@@ -4012,7 +4012,7 @@ impl<'a> Client {
 
         let games = self.games();
         let users = self.users(false);
-        let texting = self.texting(texts, true).padding(PADDING).height(180);
+        let texting = self.texting(texts, true).padding(PADDING).max_height(180);
         let user_area = column![games, users, texting].padding(PADDING);
 
         container(scrollable(user_area))
