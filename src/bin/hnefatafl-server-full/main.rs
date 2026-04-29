@@ -82,7 +82,7 @@ use crate::{command_line::Args, smtp::Smtp, unix_timestamp::UnixTimestamp};
 
 const ACTIVE_GAMES_FILE: &str = "active-games.postcard";
 const ARCHIVED_GAMES_FILE: &str = "archived-games.ron";
-const KEEP_TEXTS: usize = 100;
+const KEEP_TEXTS: usize = 256;
 const MESSAGE_LENGTH: usize = 128;
 
 const HOUR_IN_SECONDS: u64 = 60 * 60;
