@@ -19,8 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Improve the formatting of messages.
 - hnefatafl-client: make chat its own window.
-- hnefatafl-client: improve the formatting of messages.
 - hnefatafl-client: reverse the order of text messages and fix spacing.
 
 ## [5.8.0] - 2026-04-24
