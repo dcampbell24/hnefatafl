@@ -1163,7 +1163,7 @@ impl Server {
                 game_light.game_over = true;
             }
 
-            game.texts.push_back(timestamp);
+            game.texts.push_front(timestamp);
 
             if self.tournament.is_tournament_game(&game.id) {
                 if self.tournament.game_over(&game) {
