@@ -47,7 +47,7 @@ use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use badwords_rs::MODERATE;
 use clap::Parser;
 use hnefatafl_copenhagen::{
-    Id, SERVER_PORT, SPECIAL_CHARACTERS, VERSION_ID,
+    Id, SERVER_PORT, VERSION_ID,
     accounts::{Account, Accounts, DateTimeUtc},
     board::BoardSize,
     draw::Draw,
@@ -609,10 +609,13 @@ impl Server {
             info!("{index_supplied} {username} is already in the database");
 
             Some((tx, false, (*command).to_string()))
-        } else if username.contains(SPECIAL_CHARACTERS) {
-            info!("{index_supplied} {username} contains special characters");
+        } else if !(username
+            .chars()
+            .all(|ch| ch.is_alphanumeric() || ch == '-' || ch == '_'))
+        {
+            info!("{index_supplied} {username} is not alphanumeric");
 
-            Some((tx, false, "contains_special_characters".to_string()))
+            Some((tx, false, "is_not_alphanumeric".to_string()))
         } else {
             info!("{index_supplied} {username} created user account");
 

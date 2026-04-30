@@ -72,11 +72,6 @@ pub mod tournament;
 pub mod tree;
 pub mod utils;
 
-pub const SPECIAL_CHARACTERS: [char; 30] = [
-    '`', '=', '~', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '+', '[', ']', '\\', '{', '}',
-    '|', ';', '\'', ':', '"', ',', '.', '/', '<', '>', '?',
-];
-
 pub type Id = u128;
 pub const HOME: &str = "hnefatafl-copenhagen";
 pub const SERVER_PORT: &str = ":49152";

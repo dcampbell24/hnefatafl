@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Limit the characters allowed in a username.
+- Limit the characters allowed in a username to alphanumeric or '-' or '_'.
 - hnefatafl-server-full: timestamp games when finished.
 - hnefatafl-client: support reading and writing portable game notation file.
 
