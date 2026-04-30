@@ -54,6 +54,7 @@ use hnefatafl_copenhagen::{
     email::Email,
     game::{Game, LegalMoves, TimeUnix},
     heat_map::{Heat, HeatMap},
+    invalid_username,
     locale::Locale,
     play::{BOARD_LETTERS, Plae, Plays, Vertex},
     rating::Rated,
@@ -2855,9 +2856,11 @@ impl<'a> Client {
                 if self.screen == Screen::Login {
                     let string: Vec<_> = string.split_whitespace().collect();
                     if let Some(string) = string.first() {
-                        if string.len() <= 16 {
-                            self.text_input = string.to_ascii_lowercase();
-                            self.username = self.text_input.clone();
+                        let username = string.to_ascii_lowercase();
+
+                        if username.len() <= 16 && !invalid_username(&username) {
+                            self.text_input = username.clone();
+                            self.username = username;
                         }
                     } else {
                         self.text_input = String::new();
