@@ -229,7 +229,7 @@ assets = [
     ["target/release/hnefatafl-text-protocol", "usr/games/", "755"],
 ]
 changelog = "packages/debian/changelog"
-revision = "1"
+revision = "2"
 section = "games"
 depends = ["libasound2t64", "libc6", "libssl3t64"]
 
