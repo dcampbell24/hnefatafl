@@ -3169,7 +3169,7 @@ impl<'a> Client {
                             }
                             Some("is_not_alphanumeric") => {
                                 let error = t!(
-                                    "Your username must be alphanumeric and may contain '-' or '_'."
+                                    "Your username must be alphanumeric and may seperated by '-' or '_'. Your username may not be profane or sexual."
                                 )
                                 .to_string();
 
