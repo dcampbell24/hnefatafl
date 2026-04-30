@@ -46,7 +46,7 @@ use std::{
 use ::serde::{Deserialize, Serialize};
 use clap::{CommandFactory, Parser};
 use hnefatafl_copenhagen::{
-    COPYRIGHT, Id, SERVER_PORT, VERSION_ID,
+    COPYRIGHT, Id, SERVER_PORT, SPECIAL_CHARACTERS, VERSION_ID,
     accounts::{Account, Accounts},
     board::{Board, BoardSize},
     characters::Characters,
@@ -90,6 +90,7 @@ use iced_aw::{
     style::colors::GREY, widget::LabeledFrame,
 };
 use image::ImageFormat;
+use itertools::Itertools;
 use jiff::Timestamp;
 use log::{debug, error, info, trace};
 use rust_i18n::t;
@@ -145,6 +146,7 @@ const PADDING: u16 = 8;
 const PADDING_SMALL: u16 = 2;
 const PADDING_MEDIUM: u16 = 4;
 const SPACING: Pixels = Pixels(8.0);
+const SPACING_MEDIUM: Pixels = Pixels(6.0);
 const SPACING_B: Pixels = Pixels(20.0);
 
 const HELMET: &[u8] = include_bytes!("assets/helmet.png");
@@ -3166,6 +3168,16 @@ impl<'a> Client {
                             Some("create_account") => {
                                 self.error = Some(t!("Account already exists.").to_string());
                             }
+                            Some("contains_special_characters") => {
+                                let mut error = t!(
+                                    "Your username can't contain any of the following characters:"
+                                )
+                                .to_string();
+                                error.push('\n');
+
+                                error.push_str(&SPECIAL_CHARACTERS.iter().join(" "));
+                                self.error = Some(error);
+                            }
                             // Fixme: translate.
                             Some("email") => {
                                 let text: Vec<_> = text.collect();
@@ -4284,7 +4296,9 @@ impl<'a> Client {
                     "You have at maximum a week to move, then you lose the game."
                 ));
 
-                column![
+                let help_text_2 = column![help_text_2, help_text_3, help_text_4];
+
+                let login = column![
                     username,
                     password,
                     row![
@@ -4304,14 +4318,13 @@ impl<'a> Client {
                     import_pgn,
                     help_text,
                     help_text_2,
-                    help_text_3,
-                    help_text_4,
                     error,
                     error_persistent
                 ]
                 .padding(PADDING)
-                .spacing(SPACING)
-                .into()
+                .spacing(SPACING_MEDIUM);
+
+                scrollable(login).into()
             }
         }
     }

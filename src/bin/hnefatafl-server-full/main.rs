@@ -47,7 +47,7 @@ use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use badwords_rs::MODERATE;
 use clap::Parser;
 use hnefatafl_copenhagen::{
-    Id, SERVER_PORT, VERSION_ID,
+    Id, SERVER_PORT, SPECIAL_CHARACTERS, VERSION_ID,
     accounts::{Account, Accounts, DateTimeUtc},
     board::BoardSize,
     draw::Draw,
@@ -269,7 +269,7 @@ fn login(
                 Some(client_tx.clone()),
             ))?;
 
-            let message = client_rx.recv()?;
+            let mut message = client_rx.recv()?;
             buf.clear();
             if create_account_login == "login" {
                 if "= login" == message.as_str() {
@@ -285,7 +285,8 @@ fn login(
                     break;
                 }
 
-                stream.write_all(b"? create_account\n")?;
+                message.push('\n');
+                stream.write_all(message.as_bytes())?;
                 continue;
             }
 
@@ -606,7 +607,12 @@ impl Server {
 
         if self.accounts.0.contains_key(username) || username == "server" {
             info!("{index_supplied} {username} is already in the database");
+
             Some((tx, false, (*command).to_string()))
+        } else if username.contains(SPECIAL_CHARACTERS) {
+            info!("{index_supplied} {username} contains special characters");
+
+            Some((tx, false, "contains_special_characters".to_string()))
         } else {
             info!("{index_supplied} {username} created user account");
 
