@@ -46,7 +46,7 @@ use std::{
 use ::serde::{Deserialize, Serialize};
 use clap::{CommandFactory, Parser};
 use hnefatafl_copenhagen::{
-    COPYRIGHT, Id, SERVER_PORT, SPECIAL_CHARACTERS, VERSION_ID,
+    COPYRIGHT, Id, SERVER_PORT, VERSION_ID,
     accounts::{Account, Accounts},
     board::{Board, BoardSize},
     characters::Characters,
@@ -90,7 +90,6 @@ use iced_aw::{
     style::colors::GREY, widget::LabeledFrame,
 };
 use image::ImageFormat;
-use itertools::Itertools;
 use jiff::Timestamp;
 use log::{debug, error, info, trace};
 use rust_i18n::t;
@@ -3168,14 +3167,12 @@ impl<'a> Client {
                             Some("create_account") => {
                                 self.error = Some(t!("Account already exists.").to_string());
                             }
-                            Some("contains_special_characters") => {
-                                let mut error = t!(
-                                    "Your username can't contain any of the following characters:"
+                            Some("is_not_alphanumeric") => {
+                                let error = t!(
+                                    "Your username must be alphanumeric and may contain '-' or '_'."
                                 )
                                 .to_string();
-                                error.push('\n');
 
-                                error.push_str(&SPECIAL_CHARACTERS.iter().join(" "));
                                 self.error = Some(error);
                             }
                             // Fixme: translate.
