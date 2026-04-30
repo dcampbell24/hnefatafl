@@ -602,16 +602,25 @@ impl Server {
         the_rest: &[&str],
         option_tx: Option<Sender<String>>,
     ) -> Option<(mpsc::Sender<String>, bool, String)> {
+        let username = censor(username);
         let password = the_rest.join(" ");
         let tx = option_tx?;
 
-        if self.accounts.0.contains_key(username) || username == "server" {
+        if self.accounts.0.contains_key(&username) || username == "server" {
             info!("{index_supplied} {username} is already in the database");
 
             Some((tx, false, (*command).to_string()))
         } else if !(username
             .chars()
             .all(|ch| ch.is_alphanumeric() || ch == '-' || ch == '_'))
+            || username.starts_with('-')
+            || username.starts_with('_')
+            || username.ends_with('-')
+            || username.ends_with('_')
+            || username.contains("--")
+            || username.contains("-_")
+            || username.contains("_-")
+            || username.contains("__")
         {
             info!("{index_supplied} {username} is not alphanumeric");
 
