@@ -44,16 +44,17 @@ use std::{
 };
 
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
-use badwords_rs::MODERATE;
 use clap::Parser;
 use hnefatafl_copenhagen::{
     Id, SERVER_PORT, VERSION_ID,
     accounts::{Account, Accounts, DateTimeUtc},
     board::BoardSize,
+    censor,
     draw::Draw,
     email::Email,
     game::TimeUnix,
     glicko::Outcome,
+    invalid_username,
     rating::Rated,
     role::Role,
     server_game::{
@@ -74,7 +75,6 @@ use lettre::{
 };
 use log::{debug, error, info, trace};
 use rand::random;
-use rustrict::{Censor, Type};
 use serde::{Deserialize, Serialize};
 use std::fmt::Write as _;
 
@@ -83,7 +83,6 @@ use crate::{command_line::Args, smtp::Smtp, unix_timestamp::UnixTimestamp};
 const ACTIVE_GAMES_FILE: &str = "active-games.postcard";
 const ARCHIVED_GAMES_FILE: &str = "archived-games.ron";
 const KEEP_TEXTS: usize = 256;
-const MESSAGE_LENGTH: usize = 128;
 
 const HOUR_IN_SECONDS: u64 = 60 * 60;
 const DAY_IN_SECONDS: u64 = HOUR_IN_SECONDS * 24;
@@ -602,26 +601,14 @@ impl Server {
         the_rest: &[&str],
         option_tx: Option<Sender<String>>,
     ) -> Option<(mpsc::Sender<String>, bool, String)> {
-        let username = censor(username);
         let password = the_rest.join(" ");
         let tx = option_tx?;
 
-        if self.accounts.0.contains_key(&username) || username == "server" {
+        if self.accounts.0.contains_key(username) || username == "server" {
             info!("{index_supplied} {username} is already in the database");
 
             Some((tx, false, (*command).to_string()))
-        } else if !(username
-            .chars()
-            .all(|ch| ch.is_alphanumeric() || ch == '-' || ch == '_'))
-            || username.starts_with('-')
-            || username.starts_with('_')
-            || username.ends_with('-')
-            || username.ends_with('_')
-            || username.contains("--")
-            || username.contains("-_")
-            || username.contains("_-")
-            || username.contains("__")
-        {
+        } else if invalid_username(username) {
             info!("{index_supplied} {username} is not alphanumeric");
 
             Some((tx, false, "is_not_alphanumeric".to_string()))
@@ -2712,24 +2699,5 @@ impl Server {
             .ok()?;
 
         None
-    }
-}
-
-// Fixme: Censor::from_str removes the dots ä, but not using censor This allows for  ͬ ͣ p (crap)
-fn censor(text: &str) -> String {
-    if text.len() > MESSAGE_LENGTH {
-        return String::new();
-    }
-
-    let censored_first = badwords_rs::censor(text, MODERATE);
-    let (censored_second, analysis) = Censor::from_str(&censored_first)
-        .with_censor_threshold(Type::PROFANE | Type::SEXUAL)
-        .with_censor_first_character_threshold(Type::ANY)
-        .censor_and_analyze();
-
-    if analysis == Type::NONE {
-        censored_first
-    } else {
-        censored_second
     }
 }
