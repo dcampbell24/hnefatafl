@@ -1,6 +1,7 @@
 #! /bin/bash -e
 
-PACKAGE='hnefatafl-copenhagen_5.8.0-2_amd64.deb'
+VERSION='5.9.0-1'
+PACKAGE="hnefatafl-copenhagen_${VERSION}_amd64.deb"
 
 packages/debian/deb.sh
 
@@ -20,7 +21,7 @@ Origin: Hnefatafl Org
 Label: Hnefatafl Copenhagen
 Suite: stable
 Codename: stable
-Version: 5.8.0-2
+Version: ${VERSION}
 Architectures: amd64
 Components: main
 Description: Copenhagen Hnefatafl client, engine, server and artificial intelligence
