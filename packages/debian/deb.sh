@@ -2,6 +2,7 @@
 
 export RUST_MIN_STACK=67108864
 
+sed -i 's/cargo-/debian-/' src/bin/hnefatafl-client/main.rs;
 cargo build --release
 
 ./target/release/hnefatafl-ai --man --username ""

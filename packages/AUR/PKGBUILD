@@ -34,6 +34,7 @@ build() {
     tar -xvzf v$pkgver-$real_pkgrel.tar.gz
     cd "hnefatafl"
 
+    sed -i 's/cargo-/arch-/' src/bin/hnefatafl-client/main.rs;
     cargo build --release
 
     ./target/release/hnefatafl-ai --man --username ""

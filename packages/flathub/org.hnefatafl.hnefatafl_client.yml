@@ -19,7 +19,7 @@ modules:
     sources:
       - type: git
         url: https://codeberg.org/dcampbell/hnefatafl.git
-        tag: v5.8.0-1
+        tag: v5.9.0-1
       - cargo-sources.json
     build-options:
       append-path: /usr/lib/sdk/llvm20/bin
@@ -31,6 +31,7 @@ modules:
         CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER: clang
         CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUSTFLAGS: -C link-arg=-fuse-ld=/usr/lib/sdk/rust-stable/bin/mold
     build-commands:
+      - sed -i 's/cargo-/flathub-/' src/bin/hnefatafl-client/main.rs;
       - source /usr/lib/sdk/rust-stable/enable.sh && cargo --offline fetch --manifest-path Cargo.toml
       - source /usr/lib/sdk/rust-stable/enable.sh && cargo --offline build --release --bin hnefatafl-client --features client,icon_2 --no-default-features
       - install -Dm755 target/release/hnefatafl-client /app/bin/$FLATPAK_ID
