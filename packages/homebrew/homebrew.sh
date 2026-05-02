@@ -21,6 +21,8 @@ rm -R shortcut.iconset
 
 cd ../..
 cargo install cargo-bundle
+
+sed -i 's/cargo-/homebrew-/' src/bin/hnefatafl-client/main.rs;
 cargo bundle --bin hnefatafl-client --features client --no-default-features --release
 
 mkdir target/release/bundle/osx/hnefatafl-copenhagen.app/Contents/Resources
