@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Store the software_id.
 - Don't allow profane or sexual usernames.
 - Limit the characters allowed in a username to alphanumeric or '-' or '_'.
 - hnefatafl-server-full: timestamp games when finished.
