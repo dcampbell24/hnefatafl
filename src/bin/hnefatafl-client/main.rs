@@ -110,6 +110,9 @@ use crate::{
     volume::{MAX_VOLUME, Volume},
 };
 
+/// The software package that this is.
+const SOFTWARE_ID: &str = "cargo-5.8.0";
+
 /// The Muted qualitative color scheme of [Tol]. A color scheme for the
 /// color blind.
 ///
@@ -3284,6 +3287,9 @@ impl<'a> Client {
                             self.request_draw = true;
                         }
                     }
+                    Some("software_id_send") => {
+                        self.send(&format!("software_id {SOFTWARE_ID}\n"));
+                    }
                     _ => error!("(4) unexpected text: {}", string.trim()),
                 }
             }
@@ -3789,6 +3795,7 @@ impl<'a> Client {
             let mut send_emails = Column::new();
             let mut creation_dates = Column::new();
             let mut last_logged_in = Column::new();
+            let mut software_ids = Column::new();
 
             for (name, account) in self.accounts_sorted() {
                 if show_logged_out_users || account.logged_in.is_some() {
@@ -3835,6 +3842,8 @@ impl<'a> Client {
                     } else {
                         last_logged_in.push(text(date))
                     };
+
+                    software_ids = software_ids.push(text(account.software_id));
                 }
             }
 
@@ -3944,7 +3953,16 @@ impl<'a> Client {
             ]
             .padding(PADDING);
 
-            let mut rows = row![ratings, usernames, wins, losses, draws, win_percents,];
+            let software_id = "software id".to_string();
+            let hyphens_count = software_id.chars().count();
+            let software_ids = column![
+                text(software_id),
+                text("-".repeat(hyphens_count)).font(Font::MONOSPACE),
+                software_ids
+            ]
+            .padding(PADDING);
+
+            let mut rows = row![ratings, usernames, wins, losses, draws, win_percents];
 
             if show_logged_out_users {
                 rows = rows.push(emails);
@@ -3952,6 +3970,7 @@ impl<'a> Client {
                 rows = rows.push(send_emails);
                 rows = rows.push(creation_dates);
                 rows = rows.push(last_logged_in);
+                rows = rows.push(software_ids);
             }
 
             scrollable(rows)
