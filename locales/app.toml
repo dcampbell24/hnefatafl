@@ -1142,6 +1142,23 @@ ru = "Неправильная версия, обновите пакет hnefata
 sv-SE = "Fel version, uppdatera ditt hnefatafl-copenhagen-paket."
 zh-CN = "版本错误，请更新您的 hnefatafl-copenhagen 软件包。"
 
+["Your username may not be profane or sexual."]
+ar = "يجب ألا يتضمن اسم المستخدم الخاص بك ألفاظاً بذيئة أو ذات طابع جنسي."
+de = "Ihr Benutzername darf weder vulgär noch sexuell sein."
+en-US = "Your username may not be profane or sexual."
+es = "Tu nombre de usuario no puede ser profano ni sexual."
+fr = "Votre nom d'utilisateur ne doit pas être grossier ou à caractère sexuel."
+id = "Nama pengguna Anda tidak boleh mengandung kata-kata kasar atau bersifat seksual."
+is-IS = "Notandanafnið þitt má ekki vera guðlastandi eða kynferðislegt."
+is-RU = "ᚿᚮᛐᛆᚿᛑᛆᚿᛆᚠᚿᛁᚧ ᚦᛁᛐᛐ ᛘᚨ ᛂᚴᚴᛁ ᚡᛂᚱᛆ ᚵᚢᚧᛚᛆᛋᛐᛆᚿᛑᛁ ᛂᚧᛆ ᚴᛣᚿᚠᛂᚱᚧᛁᛋᛚᛂᚵᛐ."
+ja = "ユーザー名に、冒涜的または性的な表現を含めることはできません。"
+ko = "사용자 이름은 비속어나 성적인 내용을 포함해서는 안 됩니다."
+pt-BR = "Seu nome de usuário não pode ser profano ou sexual."
+pt-PT = "O seu nome de utilizador não pode ser profano ou sexual."
+ru = "Ваше имя пользователя не должно содержать нецензурную лексику или материалы сексуального характера."
+sv-SE = "Ditt användarnamn får inte vara svordomligt eller sexuellt."
+zh-CN = "您的用户名不得包含粗俗或色情内容。"
+
 ["You can play on the board by pressing control (Ctrl) or command (⌘) and a letter then a number or vice versa."]
 ar = "يمكنك اللعب على اللوحة بالضغط على مفتاح التحكم (Ctrl) أو مفتاح الأوامر (⌘) وحرف ثم رقم أو العكس."
 de = "Sie können auf dem Spielbrett spielen, indem Sie die Steuerungstaste (Strg) oder die Befehlstaste (⌘) und anschließend einen Buchstaben und eine Zahl drücken oder umgekehrt."
