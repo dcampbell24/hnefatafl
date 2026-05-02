@@ -43,8 +43,6 @@ use std::{
     net::TcpStream,
 };
 
-use badwords_rs::MODERATE;
-use rustrict::{Censor, Type};
 #[cfg(feature = "socket")]
 use socket2::TcpKeepalive;
 
@@ -104,34 +102,12 @@ Copyright (c) 2025-2026 Developers of the hnefatafl-copenhagen project
 Licensed under the AGPLv3"
 );
 
-const MESSAGE_LENGTH: usize = 128;
-
-// Fixme: Censor::from_str removes the dots ä, but not using censor This allows for  ͬ ͣ p (crap)
-#[must_use]
-pub fn censor(text: &str) -> String {
-    if text.len() > MESSAGE_LENGTH {
-        return String::new();
-    }
-
-    let censored_first = badwords_rs::censor(text, MODERATE);
-    let (censored_second, analysis) = Censor::from_str(&censored_first)
-        .with_censor_threshold(Type::PROFANE | Type::SEXUAL)
-        .with_censor_first_character_threshold(Type::ANY)
-        .censor_and_analyze();
-
-    if analysis == Type::NONE {
-        censored_first
-    } else {
-        censored_second
-    }
-}
-
 #[must_use]
 pub fn invalid_username(username: &str) -> bool {
-    let username = censor(username);
-    !(username
-        .chars()
-        .all(|ch| ch.is_alphanumeric() || ch == '-' || ch == '_'))
+    username.len() > 16
+        || !(username
+            .chars()
+            .all(|ch| ch.is_alphanumeric() || ch == '-' || ch == '_'))
         || username.starts_with('-')
         || username.starts_with('_')
         || username.ends_with('-')
