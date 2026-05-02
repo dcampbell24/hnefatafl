@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.9.0] - 2026-05-02
+
 ### Added
 
 - Store the software_id.
@@ -791,7 +793,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - hnefatafl-client: Make users and games scrollable.
 - Make all the features dependencies.
 
-[unreleased]: https://codeberg.org/dcampbell/hnefatafl/compare/v5.8.0-1...main
+[unreleased]: https://codeberg.org/dcampbell/hnefatafl/compare/v5.9.0-1...main
+[5.9.0]: https://codeberg.org/dcampbell/hnefatafl/compare/v5.8.0-1...v5.9.0-1
 [5.8.0]: https://codeberg.org/dcampbell/hnefatafl/compare/v5.7.0-3...v5.8.0-1
 [5.7.0]: https://codeberg.org/dcampbell/hnefatafl/compare/v5.6.1-1...v5.7.0-3
 [5.6.1]: https://codeberg.org/dcampbell/hnefatafl/compare/v5.5.1-1...v5.6.1-1
