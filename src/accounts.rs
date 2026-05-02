@@ -95,6 +95,7 @@ impl PartialEq for Account {
             && self.send_emails == other.send_emails
             && self.creation_date == other.creation_date
             && self.last_logged_in == other.last_logged_in
+            && self.software_id == other.software_id
     }
 }
 
