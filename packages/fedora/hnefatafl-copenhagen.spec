@@ -61,7 +61,7 @@ sed -i 's/games/bin/' packages/hnefatafl-ai-defender.service
 sed -i 's/games/bin/' packages/hnefatafl.service
 sed -i 's/Exec=hnefatafl-client/Exec=hnefatafl-client --ascii/' packages/hnefatafl-client.desktop
 
-sed -i 's/cargo-5.8.0/fedora-5.8.0' src/bin/hnefatafl-client/main.rs;
+sed -i 's/cargo-/fedora-' src/bin/hnefatafl-client/main.rs;
 
 %install
 install -Dm755 "target/release/hnefatafl-ai" -t "%{buildroot}%{_bindir}"
