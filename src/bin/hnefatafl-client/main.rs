@@ -2858,7 +2858,7 @@ impl<'a> Client {
                     if let Some(string) = string.first() {
                         let username = string.to_ascii_lowercase();
 
-                        if username.len() <= 16 && !invalid_username(&username) {
+                        if !invalid_username(&username) {
                             self.text_input = username.clone();
                             self.username = username;
                         }
@@ -3168,15 +3168,22 @@ impl<'a> Client {
                         let text_next = text.next();
                         match text_next {
                             Some("create_account") => {
-                                self.error = Some(t!("Account already exists.").to_string());
-                            }
-                            Some("is_not_alphanumeric") => {
-                                let error = t!(
-                                    "Your username must be alphanumeric and may seperated by '-' or '_'. Your username may not be profane or sexual."
-                                )
-                                .to_string();
+                                let text_next = text.next();
+                                match text_next {
+                                    Some("already_exists") => {
+                                        self.error =
+                                            Some(t!("Account already exists.").to_string());
+                                    }
+                                    Some("profane_or_sexual") => {
+                                        let error =
+                                            t!("Your username may not be profane or sexual.")
+                                                .to_string();
 
-                                self.error = Some(error);
+                                        self.error = Some(error);
+                                    }
+                                    Some(message) => self.error = Some(message.to_string()),
+                                    None => error!("(6) unexpected text: {}", string.trim()),
+                                }
                             }
                             // Fixme: translate.
                             Some("email") => {
@@ -3205,11 +3212,8 @@ impl<'a> Client {
                                             "Wrong version, update your hnefatafl-copenhagen package.",
                                         ).to_string());
                                     }
-                                    _ => {
-                                        let text: Vec<_> = text.collect();
-                                        let text = text.join(" ");
-                                        self.error = Some(text);
-                                    }
+                                    Some(message) => self.error = Some(message.to_string()),
+                                    None => error!("(5) unexpected text: {}", string.trim()),
                                 }
                             }
                             _ => error!("(3) unexpected text: {}", string.trim()),

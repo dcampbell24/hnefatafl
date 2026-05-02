@@ -44,12 +44,12 @@ use std::{
 };
 
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
+use badwords_rs::{Censor, MODERATE};
 use clap::Parser;
 use hnefatafl_copenhagen::{
     Id, SERVER_PORT, VERSION_ID,
     accounts::{Account, Accounts, DateTimeUtc},
     board::BoardSize,
-    censor,
     draw::Draw,
     email::Email,
     game::TimeUnix,
@@ -75,6 +75,7 @@ use lettre::{
 };
 use log::{debug, error, info, trace};
 use rand::random;
+use rustrict::Type;
 use serde::{Deserialize, Serialize};
 use std::fmt::Write as _;
 
@@ -91,6 +92,7 @@ const HOURS_FOR_INACTIVE_ACCOUNT: i64 = 24 * 14;
 const TWO_MONTHS_MICRO_SECONDS: i64 = 60 * 60 * 24 * 30_436_875 * 2;
 const SEVEN_DAYS: i64 = 1_000 * 60 * 60 * 24 * 7;
 const USERS_FILE: &str = "users.ron";
+const MESSAGE_LENGTH: usize = 128;
 
 fn main() -> anyhow::Result<()> {
     // println!("{:x}", rand::random::<u32>());
@@ -284,6 +286,8 @@ fn login(
                     break;
                 }
 
+                println!("{message}");
+
                 message.push('\n');
                 stream.write_all(message.as_bytes())?;
                 continue;
@@ -409,6 +413,8 @@ fn hash_password(password: &str) -> Option<String> {
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 struct Server {
+    #[serde(skip)]
+    censor: Censor,
     #[serde(default)]
     game_id: Id,
     #[serde(default)]
@@ -520,6 +526,26 @@ impl Server {
         emails.join(" ")
     }
 
+    // Fixme: Censor::from_str removes the dots ä, but not using censor This allows for  ͬ ͣ p (crap)
+    #[must_use]
+    pub fn censor(&self, text: &str) -> String {
+        if text.len() > MESSAGE_LENGTH {
+            return String::new();
+        }
+
+        let censored_first = self.censor.censor(text, MODERATE);
+        let (censored_second, analysis) = rustrict::Censor::from_str(&censored_first)
+            .with_censor_threshold(Type::PROFANE | Type::SEXUAL)
+            .with_censor_first_character_threshold(Type::ANY)
+            .censor_and_analyze();
+
+        if analysis == Type::NONE {
+            censored_first
+        } else {
+            censored_second
+        }
+    }
+
     /// ```sh
     /// # PASSWORD can be the empty string.
     /// <- change_password PASSWORD
@@ -605,13 +631,28 @@ impl Server {
         let tx = option_tx?;
 
         if self.accounts.0.contains_key(username) || username == "server" {
-            info!("{index_supplied} {username} is already in the database");
+            let mut error = (*command).to_string();
+            error.push_str(" already_exists");
 
-            Some((tx, false, (*command).to_string()))
+            info!("{index_supplied} {username} {error}");
+
+            Some((tx, false, error))
+        } else if let censored = self.censor(username)
+            && censored != username
+        {
+            let mut error = (*command).to_string();
+            error.push_str(" profane_or_sexual");
+
+            info!("{index_supplied} {username} {error}");
+
+            Some((tx, false, error))
         } else if invalid_username(username) {
-            info!("{index_supplied} {username} is not alphanumeric");
+            let mut error = (*command).to_string();
+            error.push_str(" is_not_alphanumeric");
 
-            Some((tx, false, "is_not_alphanumeric".to_string()))
+            info!("{index_supplied} {username} {error}");
+
+            Some((tx, false, error))
         } else {
             info!("{index_supplied} {username} created user account");
 
@@ -1718,7 +1759,7 @@ impl Server {
 
                     info!("{index_supplied} {timestamp} {username} text {text}");
 
-                    let text = censor(&text);
+                    let text = self.censor(&text);
 
                     if text.is_empty() {
                         return None;
@@ -2599,7 +2640,7 @@ impl Server {
         let text = the_rest.split_off(1);
         let mut text = text.join(" ");
 
-        text = censor(&text);
+        text = self.censor(&text);
 
         if text.is_empty() {
             return None;
