@@ -79,6 +79,8 @@ pub struct Account {
     pub creation_date: DateTimeUtc,
     #[serde(default)]
     pub last_logged_in: DateTimeUtc,
+    #[serde(default)]
+    pub software_id: String,
 }
 
 impl PartialEq for Account {

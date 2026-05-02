@@ -317,6 +317,7 @@ fn login(
     tx.send((format!("{id} {username_proper} tournament_status_1"), None))?;
     tx.send((format!("{id} {username_proper} admin"), None))?;
     tx.send((format!("{id} {username_proper} admin_tournament"), None))?;
+    tx.send((format!("{id} {username_proper} software_id_send"), None))?;
 
     let mut game_id = None;
     'outer: for _ in 0..1_000_000 {
@@ -1750,6 +1751,27 @@ impl Server {
                 "save" => {
                     debug!("saving users file...");
                     self.save_server();
+
+                    None
+                }
+                "software_id_send" => {
+                    if self.skip_the_data_files {
+                        return None;
+                    }
+
+                    if let Some(tx) = self.clients.get(&index_supplied) {
+                        tx.send("software_id_send _".to_string()).ok()?;
+                    }
+
+                    None
+                }
+                "software_id" => {
+                    if let Some(software_id) = the_rest.first()
+                        && let Some(account) = self.accounts.0.get_mut(username)
+                    {
+                        account.software_id = software_id.to_string();
+                        self.save_server();
+                    }
 
                     None
                 }
