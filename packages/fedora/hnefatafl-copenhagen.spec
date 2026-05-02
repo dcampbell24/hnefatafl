@@ -42,7 +42,8 @@ default it connects to the server running at hnefatafl.org.}
 %setup -q -n hnefatafl
 
 %build
-cargo build --release
+sed -i 's/cargo-/fedora-/' src/bin/hnefatafl-client/main.rs;
+RUST_MIN_STACK=2147483648 cargo build --release
 
 ./target/release/hnefatafl-ai --man --username ""
 ./target/release/hnefatafl-client --man
@@ -60,8 +61,6 @@ sed -i 's/games/bin/' packages/hnefatafl-ai-attacker.service
 sed -i 's/games/bin/' packages/hnefatafl-ai-defender.service
 sed -i 's/games/bin/' packages/hnefatafl.service
 sed -i 's/Exec=hnefatafl-client/Exec=hnefatafl-client --ascii/' packages/hnefatafl-client.desktop
-
-sed -i 's/cargo-/fedora-' src/bin/hnefatafl-client/main.rs;
 
 %install
 install -Dm755 "target/release/hnefatafl-ai" -t "%{buildroot}%{_bindir}"
