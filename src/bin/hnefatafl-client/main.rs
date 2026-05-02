@@ -1103,6 +1103,8 @@ impl<'a> Client {
             self.text_input.clear();
             self.archived_game_reset();
             handle_error(self.save_client_ron());
+
+            self.send(&format!("software_id {SOFTWARE_ID}\n"));
         }
     }
 
@@ -1615,6 +1617,8 @@ impl<'a> Client {
         self.text_input.clear();
         self.archived_game_reset();
         handle_error(self.save_client_ron());
+
+        self.send(&format!("software_id {SOFTWARE_ID}\n"));
     }
 
     fn play_to(&mut self, to: Vertex) {
@@ -3286,9 +3290,6 @@ impl<'a> Client {
                         if id == self.game_id {
                             self.request_draw = true;
                         }
-                    }
-                    Some("software_id_send") => {
-                        self.send(&format!("software_id {SOFTWARE_ID}\n"));
                     }
                     _ => error!("(4) unexpected text: {}", string.trim()),
                 }
