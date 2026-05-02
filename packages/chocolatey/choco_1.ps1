@@ -10,4 +10,4 @@ sed -i 's/cargo-/chocolatey-/' ..\..\src\bin\hnefatafl-client\main.rs;
 cargo build --release --bin hnefatafl-client --features client --no-default-features
 & 'C:\Program Files (x86)\NSIS\Bin\makensis.exe' .\hnefatafl-client-installer.nsi
 
-checksum -t sha256 -f hnefatafl-copenhagen\tools\hnefatafl-client-installer-5.8.0.exe
+checksum -t sha256 -f hnefatafl-copenhagen\tools\hnefatafl-client-installer-5.9.0.exe
