@@ -3654,7 +3654,7 @@ impl<'a> Client {
         let my_games_text = text!("{} (8)", t!("My Games Only")).center();
         let my_games = checkbox(self.my_games_only).on_toggle(Message::MyGamesOnly);
         let get_archived_games =
-            button(text!("{} (6)", t!("Get Archived Games"))).on_press(Message::ArchivedGamesGet);
+            button(text!("{} (7)", t!("Get Archived Games"))).on_press(Message::ArchivedGamesGet);
 
         let quit = button(text!("{} (Esc)", t!("Quit"))).on_press(Message::Leave);
 
