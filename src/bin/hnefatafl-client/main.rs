@@ -746,19 +746,19 @@ struct Client {
 
 impl<'a> Client {
     fn settings_view(&self) -> Column<'_, Message> {
-        let mut columns = column![
-            text!(
-                "{} {} {} {} TCP",
-                &self.username,
-                t!("is connected to"),
-                &self.connected_to,
-                t!("via")
-            ),
-            self.theme_selection(),
-            self.locale_selection(),
-        ]
-        .padding(PADDING)
-        .spacing(SPACING);
+        let mut columns = Column::new().padding(PADDING).spacing(SPACING);
+        columns = columns.push(button(text!("{} (Esc)", t!("Quit"))).on_press(Message::Leave));
+
+        columns = columns.push(text!(
+            "{} {} {} {} TCP",
+            &self.username,
+            t!("is connected to"),
+            &self.connected_to,
+            t!("via")
+        ));
+
+        columns = columns.push(self.theme_selection());
+        columns = columns.push(self.locale_selection());
 
         if let Some(email) = &self.email {
             let mut row = Row::new();
@@ -1018,7 +1018,12 @@ impl<'a> Client {
     }
 
     fn chat_view(&self) -> Column<'_, Message> {
-        column![self.texting(&self.texts, true)]
+        column![
+            button(text!("{} (Esc)", t!("Quit"))).on_press(Message::Leave),
+            self.texting(&self.texts, true),
+        ]
+        .spacing(SPACING)
+        .padding(PADDING)
     }
 
     fn export_pgn(&self) {
@@ -1420,7 +1425,7 @@ impl<'a> Client {
 
         let leave = row![new_game, leave].padding(PADDING).spacing(SPACING);
 
-        column![rated, row_role, row_board_size, row_time, leave]
+        column![leave, rated, row_role, row_board_size, row_time]
     }
 
     fn games_filtered(&mut self) {
@@ -4480,8 +4485,13 @@ impl<'a> Client {
             date = date.push(text!("{start_date}: {}", timestamp.strftime("%F %T UTC")));
         }
 
-        let button_0 =
-            button(text!("{} (7)", t!("Tournaments Described"))).on_press(Message::Tournaments);
+        column = column.push(
+            row![
+                button(text!("{} (7)", t!("Tournaments Described"))).on_press(Message::Tournaments),
+                button(text!("{} (Esc)", t!("Quit"))).on_press(Message::Leave),
+            ]
+            .spacing(SPACING),
+        );
 
         let mut button_1 = button(text!("{} (8)", t!("Join Tournament")));
         let mut button_2 = button(text!("{} (9)", t!("Leave Tournament")));
@@ -4502,13 +4512,7 @@ impl<'a> Client {
         }
 
         column = column.push(date);
-        column = column.push(button_0);
         column = column.push(buttons);
-
-        column = column.push(
-            row![button(text!("{} (Esc)", t!("Quit"))).on_press(Message::Leave),].spacing(SPACING),
-        );
-
         column = column.push(LabeledFrame::new(text(t!("Players")), players));
 
         if self.admin_tournament {
