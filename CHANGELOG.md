@@ -17,10 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - cargo update
-- hnefatafl-server-full: don't sort accounts
 
 ### Fixed
 
+- hnefatafl-server-full: don't sort accounts
 - hnefatafl-client: replace NaN with '-'.
 - hnefatafl-client: put Quit at the end of every first row.
 - hnefatafl-client: add Quit to chat.
