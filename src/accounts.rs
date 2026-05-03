@@ -41,10 +41,11 @@ impl Accounts {
 impl fmt::Display for Accounts {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut accounts = Vec::new();
+
         for (name, account) in &self.0 {
             accounts.push(format!("{name} {account}"));
         }
-        accounts.sort_unstable();
+
         let accounts = accounts.join(" ");
 
         write!(f, "{accounts}")

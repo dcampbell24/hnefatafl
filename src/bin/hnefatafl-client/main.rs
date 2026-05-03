@@ -2935,7 +2935,7 @@ impl<'a> Client {
                             }
                             Some("display_users_admin") => {
                                 let accounts: Accounts = ron::from_str(
-                                    text.next().expect("there should be a nex value"),
+                                    text.next().expect("there should be a next value"),
                                 )
                                 .expect("we should be able to deserialize accounts");
 
