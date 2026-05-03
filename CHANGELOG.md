@@ -14,7 +14,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ###
 
+### Changed
+
 - hnefatafl-server-full: don't sort accounts
+
+### Fixed
+
+- hnefatafl-client: Get Archived Games (6) -> (7)
 
 ## [5.9.0] - 2026-05-02
 
