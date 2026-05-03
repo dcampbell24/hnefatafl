@@ -1,5 +1,7 @@
 #! /bin/bash -e
 
+VERSION='5.9.0'
+
 INSERT="\
   <key>CFBundleIconFile</key>
   <string>shortcut.icns</string>
@@ -41,6 +43,6 @@ done < Info.plist > NewInfo.plist
 mv NewInfo.plist Info.plist
 cd ../..
 
-tar -czvf hnefatafl-copenhagen.tar.gz hnefatafl-copenhagen.app
-sha256sum hnefatafl-copenhagen.tar.gz
-scp  hnefatafl-copenhagen.tar.gz david@192.168.1.141:~
+tar -czvf hnefatafl-copenhagen-${VERSION}.tar.gz hnefatafl-copenhagen.app
+sha256sum hnefatafl-copenhagen-${VERSION}.tar.gz
+scp  hnefatafl-copenhagen-${VERSION}.tar.gz david@192.168.1.141:~
