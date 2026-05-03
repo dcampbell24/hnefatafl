@@ -20,7 +20,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- hnefatafl-client: Get Archived Games (6) -> (7)
+- hnefatafl-client: put Quit at the end of every first row.
+- hnefatafl-client: add Quit to chat.
+- hnefatafl-client: get Archived Games (6) -> (7)
 
 ## [5.9.0] - 2026-05-02
 
