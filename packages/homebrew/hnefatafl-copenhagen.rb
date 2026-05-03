@@ -1,8 +1,8 @@
 cask "hnefatafl-copenhagen" do
-  version "5.8.0"
+  version "5.9.0"
   sha256 :no_check
 
-  url "https://hnefatafl.org/homebrew/hnefatafl-copenhagen.tar.gz"
+  url "https://hnefatafl.org/homebrew/hnefatafl-copenhagen-#{version}.tar.gz"
   name "Hnefatafl Copenhagen"
   desc "Client that connects to a server"
   homepage "https://hnefatafl.org/"
