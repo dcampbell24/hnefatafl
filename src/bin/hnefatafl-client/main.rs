@@ -3816,7 +3816,12 @@ impl<'a> Client {
                     wins = wins.push(text(account.wins));
                     losses = losses.push(text(account.losses));
                     draws = draws.push(text(account.draws));
-                    win_percents = win_percents.push(text!("{}", win_percentage));
+
+                    if win_percentage.is_nan() {
+                        win_percents = win_percents.push(text!("-"));
+                    } else {
+                        win_percents = win_percents.push(text!("{}", win_percentage));
+                    }
 
                     emails = if let Some(email) = &account.email {
                         emails.push(text(email.address.clone()))
@@ -4013,7 +4018,12 @@ impl<'a> Client {
                     wins = wins.push(text(user.wins));
                     losses = losses.push(text(user.losses));
                     draws = draws.push(text(user.draws));
-                    win_percents = win_percents.push(text!("{}", win_percentage));
+
+                    if win_percentage.is_nan() {
+                        win_percents = win_percents.push(text!("-"));
+                    } else {
+                        win_percents = win_percents.push(text!("{}", win_percentage));
+                    }
                 }
             }
 

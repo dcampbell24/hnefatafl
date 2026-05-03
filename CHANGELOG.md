@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- hnefatafl-client: replace NaN with '-'.
 - hnefatafl-client: put Quit at the end of every first row.
 - hnefatafl-client: add Quit to chat.
 - hnefatafl-client: get Archived Games (6) -> (7)
