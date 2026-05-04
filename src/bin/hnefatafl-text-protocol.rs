@@ -97,6 +97,10 @@ fn main() -> anyhow::Result<()> {
     if args.ascii {
         game.chars.ascii();
         game.board.display_ascii = true;
+
+        if let Some(board) = game.previous_boards.0.first_mut() {
+            board.display_ascii = true;
+        }
     }
 
     if let Some(mut address) = args.host {
