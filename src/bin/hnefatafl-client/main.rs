@@ -3788,7 +3788,7 @@ impl<'a> Client {
         clippy::too_many_lines
     )]
     #[must_use]
-    fn users(&self, show_logged_out_users: bool) -> Scrollable<'_, Message> {
+    fn users(&self, logged_in: bool) -> Row<'_, Message> {
         if self.admin {
             let mut ratings = Column::new();
             let mut usernames = Column::new();
@@ -3804,7 +3804,7 @@ impl<'a> Client {
             let mut software_ids = Column::new();
 
             for (name, account) in self.accounts_sorted() {
-                if show_logged_out_users || account.logged_in.is_some() {
+                if logged_in == account.logged_in.is_some() {
                     let wins_number = account.wins as f64;
                     let mut win_percentage = wins_number / (wins_number + account.losses as f64);
 
@@ -3848,12 +3848,7 @@ impl<'a> Client {
                         .strftime("%Y-%m-%d %H:%M:%S %z")
                         .to_string();
 
-                    last_logged_in = if account.logged_in.is_some() {
-                        last_logged_in.push(text(date).style(text::success))
-                    } else {
-                        last_logged_in.push(text(date))
-                    };
-
+                    last_logged_in = last_logged_in.push(text(date));
                     software_ids = software_ids.push(text(account.software_id));
                 }
             }
@@ -3975,21 +3970,14 @@ impl<'a> Client {
 
             let mut rows = row![ratings, usernames, wins, losses, draws, win_percents];
 
-            if show_logged_out_users {
-                rows = rows.push(emails);
-                rows = rows.push(emails_sent);
-                rows = rows.push(send_emails);
-                rows = rows.push(creation_dates);
-                rows = rows.push(last_logged_in);
-                rows = rows.push(software_ids);
-            }
+            rows = rows.push(emails);
+            rows = rows.push(emails_sent);
+            rows = rows.push(send_emails);
+            rows = rows.push(creation_dates);
+            rows = rows.push(last_logged_in);
+            rows = rows.push(software_ids);
 
-            scrollable(rows)
-                .spacing(SPACING)
-                .direction(scrollable::Direction::Both {
-                    vertical: scrollable::Scrollbar::new(),
-                    horizontal: scrollable::Scrollbar::new(),
-                })
+            rows
         } else {
             let mut ratings = Column::new();
             let mut usernames = Column::new();
@@ -3999,7 +3987,7 @@ impl<'a> Client {
             let mut win_percents = Column::new();
 
             for user in self.users_sorted() {
-                if show_logged_out_users || user.logged_in {
+                if logged_in == user.logged_in {
                     let wins_number = f64::from_str(&user.wins).expect("This is a f64.");
                     let mut win_percentage = wins_number
                         / (wins_number + f64::from_str(&user.losses).expect("This is a f64."));
@@ -4008,13 +3996,7 @@ impl<'a> Client {
                     win_percentage = win_percentage.round_ties_even();
 
                     ratings = ratings.push(text(user.rating.to_string_rounded()));
-
-                    usernames = if user.logged_in && show_logged_out_users {
-                        usernames.push(text(user.name).style(text::success))
-                    } else {
-                        usernames.push(text(user.name))
-                    };
-
+                    usernames = usernames.push(text(user.name));
                     wins = wins.push(text(user.wins));
                     losses = losses.push(text(user.losses));
                     draws = draws.push(text(user.draws));
@@ -4088,15 +4070,14 @@ impl<'a> Client {
             ]
             .padding(PADDING);
 
-            scrollable(row![ratings, usernames, wins, losses, draws, win_percents]).spacing(SPACING)
+            row![ratings, usernames, wins, losses, draws, win_percents]
         }
     }
 
     #[must_use]
     fn user_area(&self) -> Container<'_, Message> {
         let games = self.games();
-        let users = self.users(false);
-        let user_area = column![games, users].padding(PADDING);
+        let user_area = column![games].padding(PADDING);
 
         container(scrollable(user_area))
             .padding(PADDING)
@@ -4158,46 +4139,61 @@ impl<'a> Client {
                 scrollable(column).spacing(SPACING).into()
             }
             Screen::Game | Screen::GameReview => self.display_game(),
-            Screen::Games => Tabs::new(Message::TabSelected)
-                .push(
-                    TabId::Games,
-                    iced_aw::TabLabel::Text(format!("{} (1)", t!("Games"))),
-                    self.games_view(),
-                )
-                .push(
-                    TabId::Chat,
-                    iced_aw::TabLabel::Text(format!("{} (2)", t!("Chat"))),
-                    self.chat_view(),
-                )
-                .push(
-                    TabId::GameNew,
-                    iced_aw::TabLabel::Text(format!("{} (3)", t!("Create Game"))),
-                    self.game_new_view(),
-                )
-                .push(
-                    TabId::Tournament,
-                    iced_aw::TabLabel::Text(format!("{} (4)", t!("Tournament"))),
-                    self.tournament_view(),
-                )
-                .push(
-                    TabId::AccountSettings,
-                    iced_aw::TabLabel::Text(format!("{} (5)", t!("Settings"))),
-                    self.settings_view(),
-                )
-                .push(
-                    TabId::Users,
-                    iced_aw::TabLabel::Text(format!("{} (6)", t!("Users"))),
-                    column![
-                        button(text!("{} (Esc)", t!("Quit"))).on_press(Message::Leave),
-                        self.users(true)
-                    ]
-                    .padding(PADDING)
-                    .spacing(SPACING),
-                )
-                .height(Length::Shrink)
-                .width(Length::Fill)
-                .set_active_tab(&self.active_tab)
-                .into(),
+            Screen::Games => {
+                let users = column![
+                    button(text!("{} (Esc)", t!("Quit"))).on_press(Message::Leave),
+                    text!("{}", t!("Online")),
+                    self.users(true),
+                    text!("{}", t!("Offline")),
+                    self.users(false),
+                ]
+                .padding(PADDING)
+                .spacing(SPACING);
+
+                let users =
+                    scrollable(users)
+                        .spacing(SPACING)
+                        .direction(scrollable::Direction::Both {
+                            vertical: scrollable::Scrollbar::new(),
+                            horizontal: scrollable::Scrollbar::new(),
+                        });
+
+                Tabs::new(Message::TabSelected)
+                    .push(
+                        TabId::Games,
+                        iced_aw::TabLabel::Text(format!("{} (1)", t!("Games"))),
+                        self.games_view(),
+                    )
+                    .push(
+                        TabId::Chat,
+                        iced_aw::TabLabel::Text(format!("{} (2)", t!("Chat"))),
+                        self.chat_view(),
+                    )
+                    .push(
+                        TabId::GameNew,
+                        iced_aw::TabLabel::Text(format!("{} (3)", t!("Create Game"))),
+                        self.game_new_view(),
+                    )
+                    .push(
+                        TabId::Tournament,
+                        iced_aw::TabLabel::Text(format!("{} (4)", t!("Tournament"))),
+                        self.tournament_view(),
+                    )
+                    .push(
+                        TabId::AccountSettings,
+                        iced_aw::TabLabel::Text(format!("{} (5)", t!("Settings"))),
+                        self.settings_view(),
+                    )
+                    .push(
+                        TabId::Users,
+                        iced_aw::TabLabel::Text(format!("{} (6)", t!("Users"))),
+                        users,
+                    )
+                    .height(Length::Shrink)
+                    .width(Length::Fill)
+                    .set_active_tab(&self.active_tab)
+                    .into()
+            }
             Screen::Login => {
                 let username = row![
                     text!("{}:", t!("username")).size(20),
