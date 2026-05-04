@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Replace HashSet with Vec for PreviousBoards.
 - hnefatafl-client: put users only on the Users screen.
 - cargo update
 

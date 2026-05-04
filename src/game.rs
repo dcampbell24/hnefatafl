@@ -27,7 +27,7 @@ use std::{
 
 use jiff::Timestamp;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
-use rustc_hash::{FxBuildHasher, FxHashMap, FxHashSet};
+use rustc_hash::FxHashMap;
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "js")]
 use wasm_bindgen::prelude::wasm_bindgen;
@@ -86,14 +86,14 @@ pub struct Game {
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
-pub struct PreviousBoards(pub FxHashSet<Board>);
+pub struct PreviousBoards(pub Vec<Board>);
 
 impl PreviousBoards {
     #[must_use]
     pub fn new(board_size: BoardSize) -> Self {
-        let mut boards = FxHashSet::with_capacity_and_hasher(64, FxBuildHasher);
+        let mut boards = Vec::with_capacity(64);
 
-        boards.insert(Board::new(board_size));
+        boards.push(Board::new(board_size));
         Self(boards)
     }
 }
@@ -928,6 +928,7 @@ impl Game {
                     Err(anyhow::Error::msg("invalid from vertex"))
                 }
             }
+            Message::PlayUndo => Ok(Some(String::new())),
             Message::ProtocolVersion => Ok(Some("1-beta".to_string())),
             Message::Quit => exit(0),
             Message::ShowBoard => Ok(Some(self.board.to_string())),
