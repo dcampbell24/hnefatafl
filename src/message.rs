@@ -138,6 +138,11 @@ pub enum Message {
     /// Returns all the valid **TO** squares.
     PlayTo((Role, Vertex)),
 
+    /// `play_undo`
+    ///
+    /// Goes back one play.
+    PlayUndo,
+
     /// `protocol_version`
     ///
     /// Prints the version of the Hnefatafl Text Protocol.
@@ -166,7 +171,7 @@ pub enum Message {
     Version,
 }
 
-pub static COMMANDS: [&str; 14] = [
+pub static COMMANDS: [&str; 15] = [
     "board_size",
     "final_status",
     "generate_move",
@@ -176,6 +181,7 @@ pub static COMMANDS: [&str; 14] = [
     "play",
     "play_from",
     "play_to",
+    "play_undo",
     "protocol_version",
     "quit",
     "show_board",
@@ -221,6 +227,7 @@ impl FromStr for Message {
                     Err(anyhow::Error::msg("expected: play_to role vertex"))
                 }
             }
+            "play_undo" => Ok(Self::PlayUndo),
             "protocol_version" => Ok(Self::ProtocolVersion),
             "quit" => Ok(Self::Quit),
             "show_board" => Ok(Self::ShowBoard),

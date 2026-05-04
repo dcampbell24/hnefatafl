@@ -137,12 +137,12 @@ impl Tree {
         let mut previous_boards = PreviousBoards::new(node.board.size());
         let mut boards = VecDeque::new();
 
-        previous_boards.0.insert(node.board.clone());
+        previous_boards.0.push(node.board.clone());
         boards.push_front(node.board.clone());
 
         while let Some(parent) = node.parent {
             node = &self.arena[parent];
-            previous_boards.0.insert(node.board.clone());
+            previous_boards.0.push(node.board.clone());
             boards.push_front(node.board.clone());
         }
 

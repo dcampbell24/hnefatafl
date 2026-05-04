@@ -1315,7 +1315,7 @@ impl Board {
         previous_boards: &mut PreviousBoards,
     ) -> anyhow::Result<(Vec<Vertex>, Status)> {
         let (board, captures, status) = self.play_internal(play, status, turn, previous_boards)?;
-        previous_boards.0.insert(board.clone());
+        previous_boards.0.push(board.clone());
         *self = board;
 
         Ok((captures, status))
