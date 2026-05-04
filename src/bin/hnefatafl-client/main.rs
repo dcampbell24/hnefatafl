@@ -3829,11 +3829,13 @@ impl<'a> Client {
                         emails.push(text(""))
                     };
 
-                    if let Ok(timestamp) = Timestamp::from_second(account.email_sent) {
+                    if account.email_sent != 0
+                        && let Ok(timestamp) = Timestamp::from_second(account.email_sent)
+                    {
                         emails_sent =
                             emails_sent.push(text(timestamp.strftime("%Y-%m-%d").to_string()));
                     } else {
-                        emails_sent = emails_sent.push(text(""));
+                        emails_sent = emails_sent.push(text("-"));
                     }
 
                     send_emails = send_emails.push(text(account.send_emails));
