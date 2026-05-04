@@ -928,7 +928,46 @@ impl Game {
                     Err(anyhow::Error::msg("invalid from vertex"))
                 }
             }
-            Message::PlayUndo => Ok(Some(String::new())),
+            Message::PlayUndo => {
+                if self.previous_boards.0.len() > 1 && self.previous_boards.0.pop().is_some() {
+                    if let Some(board) = self.previous_boards.0.last() {
+                        self.board = board.clone();
+                    }
+
+                    self.turn = if self.plays.len().is_multiple_of(2) {
+                        Role::Defender
+                    } else {
+                        Role::Attacker
+                    };
+
+                    match &mut self.plays {
+                        Plays::PlayRecords(plays) => {
+                            plays.pop();
+                        }
+                        Plays::PlayRecordsTimed(plays) => {
+                            plays.pop();
+                        }
+                    }
+
+                    if let Plays::PlayRecordsTimed(plays) = &self.plays {
+                        let plays_new = plays
+                            .iter()
+                            .map(|play_timed| play_timed.play.clone())
+                            .collect();
+
+                        self.plays = Plays::PlayRecords(plays_new);
+                    }
+
+                    self.time = TimeUnix::UnTimed;
+                    self.attacker_time = TimeSettings::UnTimed;
+                    self.defender_time = TimeSettings::UnTimed;
+                    self.status = Status::Ongoing;
+
+                    Ok(Some(String::new()))
+                } else {
+                    Err(anyhow::Error::msg("it is the first move"))
+                }
+            }
             Message::ProtocolVersion => Ok(Some("1-beta".to_string())),
             Message::Quit => exit(0),
             Message::ShowBoard => Ok(Some(self.board.to_string())),
