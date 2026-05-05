@@ -1600,15 +1600,7 @@ impl<'a> Client {
             self.connected_tcp = true;
         }
 
-        if self.text_input.trim().is_empty() {
-            let username = format!("user-{:x}", rand::random::<u16>());
-
-            self.send(&format!(
-                "{VERSION_ID} create_account {username} {}\n",
-                self.password
-            ));
-            self.username = username;
-        } else {
+        if !self.text_input.trim().is_empty() {
             let username = self.text_input.clone();
 
             self.send(&format!(
@@ -4229,7 +4221,7 @@ impl<'a> Client {
                 let save_password = checkbox(self.password_save).on_toggle(Message::PasswordSave);
 
                 let mut login = button(text!("{} (Enter)", t!("Login")));
-                if !self.password_ends_with_whitespace {
+                if !self.password_ends_with_whitespace && !self.text_input.is_empty() {
                     login = login.on_press(Message::TextSendLogin);
                 }
 

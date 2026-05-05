@@ -16,6 +16,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - PlayUndo to Message.
 
+### Removed
+
+- hnefatafl-client: anonymous accounts.
+- hnefatafl-server-full: deleting unused accounts.
+
 ### Changed
 
 - Replace HashSet with Vec for PreviousBoards.
