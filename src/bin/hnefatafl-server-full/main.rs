@@ -67,7 +67,7 @@ use hnefatafl_copenhagen::{
     utils::{self, create_data_folder, data_file},
 };
 use itertools::Itertools;
-use jiff::{Timestamp, ToSpan, Zoned};
+use jiff::{Timestamp, Zoned};
 use lettre::{
     SmtpTransport, Transport,
     message::{Mailbox, header::ContentType},
@@ -87,7 +87,6 @@ const KEEP_TEXTS: usize = 256;
 
 const HOUR_IN_SECONDS: u64 = 60 * 60;
 const DAY_IN_SECONDS: u64 = HOUR_IN_SECONDS * 24;
-const HOURS_FOR_INACTIVE_ACCOUNT: i64 = 24 * 14;
 
 const TWO_MONTHS_MICRO_SECONDS: i64 = 60 * 60 * 24 * 30_436_875 * 2;
 const SEVEN_DAYS: i64 = 1_000 * 60 * 60 * 24 * 7;
@@ -607,8 +606,8 @@ impl Server {
     fn check_once_a_day(tx: Sender<(String, Option<Sender<String>>)>) {
         thread::spawn(move || {
             loop {
-                handle_error(tx.send(("0 server delete_unused_accounts".to_string(), None)));
                 handle_error(tx.send(("0 server check_update_rd".to_string(), None)));
+
                 thread::sleep(Duration::from_secs(DAY_IN_SECONDS));
             }
         });
@@ -1442,47 +1441,6 @@ impl Server {
                 ),
                 "delete_account" => {
                     self.delete_account(username, index_supplied);
-                    None
-                }
-                "delete_unused_accounts" => {
-                    let mut accounts = Vec::new();
-                    let mut playing = HashSet::new();
-
-                    let Ok(two_weeks_ago) =
-                        Timestamp::now().checked_sub(HOURS_FOR_INACTIVE_ACCOUNT.hours())
-                    else {
-                        error!("delete_unused_account failed!: checked_sub failed!");
-                        return None;
-                    };
-
-                    for game in self.games_light.0.values() {
-                        if let Some(attacker) = &game.attacker {
-                            playing.insert(attacker);
-                        }
-
-                        if let Some(defender) = &game.defender {
-                            playing.insert(defender);
-                        }
-                    }
-
-                    for (name, account) in &self.accounts.0 {
-                        if account.wins == 0
-                            && account.losses == 0
-                            && account.draws == 0
-                            && account.creation_date.0.as_second()
-                                == account.last_logged_in.0.as_second()
-                            && !playing.contains(name)
-                            && two_weeks_ago > account.last_logged_in.0
-                        {
-                            accounts.push(name.clone());
-                        }
-                    }
-
-                    for name in &accounts {
-                        info!("deleting {name}...");
-                        self.accounts.0.remove(name);
-                    }
-
                     None
                 }
                 "display_games" => {

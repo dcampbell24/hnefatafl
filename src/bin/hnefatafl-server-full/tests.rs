@@ -24,6 +24,7 @@ use crate::Server as ServerFull;
 use argon2::{PasswordHash, PasswordVerifier};
 
 use hnefatafl_copenhagen::accounts::{Account, Accounts};
+use jiff::ToSpan;
 
 use super::*;
 
