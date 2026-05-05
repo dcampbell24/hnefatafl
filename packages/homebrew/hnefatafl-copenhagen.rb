@@ -1,5 +1,5 @@
 cask "hnefatafl-copenhagen" do
-  version "5.9.0"
+  version "5.10.0"
   sha256 :no_check
 
   url "https://hnefatafl.org/homebrew/hnefatafl-copenhagen-#{version}.tar.gz"
