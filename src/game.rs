@@ -946,21 +946,23 @@ impl Game {
                         }
                         Plays::PlayRecordsTimed(plays) => {
                             plays.pop();
+
+                            match self.turn {
+                                Role::Attacker => {
+                                    if let TimeSettings::Timed(time) = &mut self.attacker_time {
+                                        time.milliseconds_left -= time.add_seconds * 1_000;
+                                    }
+                                }
+                                Role::Defender => {
+                                    if let TimeSettings::Timed(time) = &mut self.defender_time {
+                                        time.milliseconds_left -= time.add_seconds * 1_000;
+                                    }
+                                }
+                                Role::Roleless => unreachable!(),
+                            }
                         }
                     }
 
-                    if let Plays::PlayRecordsTimed(plays) = &self.plays {
-                        let plays_new = plays
-                            .iter()
-                            .map(|play_timed| play_timed.play.clone())
-                            .collect();
-
-                        self.plays = Plays::PlayRecords(plays_new);
-                    }
-
-                    self.time = TimeUnix::UnTimed;
-                    self.attacker_time = TimeSettings::UnTimed;
-                    self.defender_time = TimeSettings::UnTimed;
                     self.status = Status::Ongoing;
 
                     Ok(Some(String::new()))
