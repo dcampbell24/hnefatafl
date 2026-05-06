@@ -4,7 +4,7 @@ cask "hnefatafl-copenhagen" do
 
   url "https://hnefatafl.org/homebrew/hnefatafl-copenhagen-#{version}.tar.gz"
   name "Hnefatafl Copenhagen"
-  desc "Client that connects to a server"
+  desc "Copenhagen Hnefatafl client that connects to a server"
   homepage "https://hnefatafl.org/"
 
   depends_on macos: ">= :big_sur"
