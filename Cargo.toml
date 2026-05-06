@@ -12,7 +12,7 @@ readme = "README.md"
 homepage = "https://hnefatafl.org"
 repository = "https://codeberg.org/dcampbell/hnefatafl"
 license = "AGPL-3.0-or-later"
-keywords = ["strategy", "board-games", "hnefatafl", "tafl", "copenhagen"]
+keywords = ["strategy", "board-games", "hnefatafl", "tafl", "viking-chess"]
 # https://crates.io/category_slugs
 categories = ["game-engines", "games", "wasm"]
 default-run = "hnefatafl-server-full"
