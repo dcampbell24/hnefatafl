@@ -28,10 +28,11 @@
   </categories>
 
   <keywords>
-    <keyword>board-game</keyword>
-    <keyword>copenhagen</keyword>
+    <keyword>strategy</keyword>
+    <keyword>board-games</keyword>
     <keyword>hnefatafl</keyword>
     <keyword>tafl</keyword>
+    <keyword>copenhagen</keyword>
   </keywords>
 
   <url type="bugtracker">https://codeberg.org/dcampbell/hnefatafl/issues</url>
