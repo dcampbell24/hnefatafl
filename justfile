@@ -47,7 +47,7 @@ ssl:
 
 # sudo dnf install python3-aiohttp python3-toml
 cargo-deps:
-    python3 ../flatpak-builder-tools/cargo/flatpak-cargo-generator.py Cargo.lock -o packages/flathub/cargo-sources.json
+    python3 ../flatpak-builder-tools/cargo/flatpak-cargo-generator.py Cargo.lock -o cargo-sources.json
 
 js:
     wasm-pack build --target web --no-default-features --features js
