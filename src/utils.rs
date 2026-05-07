@@ -72,13 +72,15 @@ pub fn clear_screen() -> anyhow::Result<ExitStatus> {
     Ok(exit_status)
 }
 
+fn initialize_project_dirs() -> Option<ProjectDirs> {
+    ProjectDirs::from("org", "Hnefatafl Org", "hnefatafl-copenhagen")
+}
+
 /// # Errors
 ///
 /// If it fails to create the directory or the directory does not already exist.
 pub fn create_data_folder() -> anyhow::Result<()> {
-    let project_dir = ProjectDirs::from("org", "Hnefatafl Org", "hnefatafl-copenhagen");
-
-    if let Some(project_dir) = project_dir {
+    if let Some(project_dir) = initialize_project_dirs() {
         DirBuilder::new()
             .recursive(true)
             .create(project_dir.data_local_dir())?;
@@ -89,9 +91,7 @@ pub fn create_data_folder() -> anyhow::Result<()> {
 
 #[must_use]
 pub fn data_file(file: &str) -> PathBuf {
-    let project_dir = ProjectDirs::from("org", "Hnefatafl Org", "hnefatafl-copenhagen");
-
-    let mut project_dir = if let Some(project_dir) = project_dir {
+    let mut project_dir = if let Some(project_dir) = initialize_project_dirs() {
         project_dir.data_local_dir().to_path_buf()
     } else {
         PathBuf::new()
