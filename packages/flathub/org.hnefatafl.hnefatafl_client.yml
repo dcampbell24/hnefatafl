@@ -19,8 +19,13 @@ modules:
     sources:
       - type: git
         url: https://codeberg.org/dcampbell/hnefatafl.git
+        commit: bdc2d340af53c8d96293f1bc83e23ffdbebec255
         tag: v5.10.0-1
       - cargo-sources.json
+      - type: file
+        url: https://codeberg.org/dcampbell/hnefatafl/raw/branch/main/packages/org.hnefatafl.hnefatafl_client.metainfo.xml
+        sha256: bf2e396f82d014461f08c071435bc4296f30987b72d637d3b7f7e8ff0ccf42dc
+
     build-options:
       append-path: /usr/lib/sdk/llvm20/bin
       prepend-ld-library-path: /usr/lib/sdk/llvm20/lib
@@ -36,5 +41,5 @@ modules:
       - source /usr/lib/sdk/rust-stable/enable.sh && cargo --offline build --release --bin hnefatafl-client --features client,icon_2 --no-default-features
       - install -Dm755 target/release/hnefatafl-client /app/bin/$FLATPAK_ID
       - install -Dm644 website/src/images/helmet.svg /app/share/icons/hicolor/scalable/apps/$FLATPAK_ID.svg
-      - install -Dm644 packages/$FLATPAK_ID.desktop /app/share/applications/$FLATPAK_ID.desktop
-      - install -Dm644 packages/$FLATPAK_ID.metainfo.xml /app/share/metainfo/$FLATPAK_ID.metainfo.xml
+      - install -Dm644 packages/$FLATPAK_ID.desktop -t /app/share/applications
+      - install -Dm644 $FLATPAK_ID.metainfo.xml -t /app/share/metainfo
