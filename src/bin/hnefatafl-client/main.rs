@@ -146,6 +146,7 @@ const USER_CONFIG_FILE: &str = "user.ron";
 
 const MAX_RATING: f64 = 100_000.0;
 const PADDING: u16 = 8;
+const PADDING_TAB_LABEL: u16 = 2;
 const PADDING_SMALL: u16 = 2;
 const PADDING_MEDIUM: u16 = 4;
 const SPACING: Pixels = Pixels(8.0);
@@ -4152,6 +4153,7 @@ impl<'a> Client {
                             horizontal: scrollable::Scrollbar::new(),
                         });
 
+                //
                 Tabs::new(Message::TabSelected)
                     .push(
                         TabId::Games,
@@ -4183,6 +4185,7 @@ impl<'a> Client {
                         iced_aw::TabLabel::Text(format!("{} (6)", t!("Users"))),
                         users,
                     )
+                    .tab_label_padding(PADDING_TAB_LABEL)
                     .height(Length::Shrink)
                     .width(Length::Fill)
                     .set_active_tab(&self.active_tab)
