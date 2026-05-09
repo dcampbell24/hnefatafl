@@ -24,7 +24,7 @@ modules:
       - cargo-sources.json
       - type: file
         url: https://codeberg.org/dcampbell/hnefatafl/raw/branch/main/packages/org.hnefatafl.hnefatafl_client.metainfo.xml
-        sha256: ef472f4591af4bdfb61c2809c9562494d07d18db4dcdfadf42d1c7608f8d8ef4
+        sha256: 8ec4a864a0e93797838d8824a4d069f5052e968ac576e973156fc3bdeb6c29ad
 
     build-options:
       append-path: /usr/lib/sdk/llvm20/bin
