@@ -173,13 +173,14 @@ fn init_client() -> Client {
 
     let mut client: Client;
 
-    if let Ok(string) = fs::read_to_string(&user_data_file)
+    if !fs::exists(&user_config_file).expect("Exists failed!")
+        && let Ok(string) = fs::read_to_string(&user_data_file)
         && let Ok(client_data) = ron::from_str(&string)
     {
         client = client_data;
         fs::rename(&user_data_file, &user_config_file).unwrap_or_else(|_| {
             panic!(
-                "failed to rename the configuration file from {} to {}",
+                "Failed to rename the configuration file from {} to {}",
                 user_data_file.display(),
                 user_config_file.display()
             )
