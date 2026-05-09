@@ -21,7 +21,7 @@
     <docsUrl>https://docs.rs/hnefatafl-copenhagen/latest/hnefatafl_copenhagen/</docsUrl>
     <!--<mailingListUrl></mailingListUrl>-->
     <bugTrackerUrl>https://codeberg.org/dcampbell/hnefatafl/issues</bugTrackerUrl>
-    <tags>game strategy hnefatafl tafl viking-chess</tags>
+    <tags>hneftafl-copenhagen games foss cross-platform</tags>
     <releaseNotes>https://codeberg.org/dcampbell/hnefatafl/src/branch/main/CHANGELOG.md</releaseNotes>
     <summary>Copenhagen Hnefatafl</summary>
     <description>
