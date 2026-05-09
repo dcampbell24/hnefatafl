@@ -79,6 +79,19 @@ fn initialize_project_dirs() -> Option<ProjectDirs> {
 /// # Errors
 ///
 /// If it fails to create the directory or the directory does not already exist.
+pub fn create_config_folder() -> anyhow::Result<()> {
+    if let Some(project_dir) = initialize_project_dirs() {
+        DirBuilder::new()
+            .recursive(true)
+            .create(project_dir.config_local_dir())?;
+    }
+
+    Ok(())
+}
+
+/// # Errors
+///
+/// If it fails to create the directory or the directory does not already exist.
 pub fn create_data_folder() -> anyhow::Result<()> {
     if let Some(project_dir) = initialize_project_dirs() {
         DirBuilder::new()
@@ -87,6 +100,18 @@ pub fn create_data_folder() -> anyhow::Result<()> {
     }
 
     Ok(())
+}
+
+#[must_use]
+pub fn config_file(file: &str) -> PathBuf {
+    let mut project_dir = if let Some(project_dir) = initialize_project_dirs() {
+        project_dir.config_local_dir().to_path_buf()
+    } else {
+        PathBuf::new()
+    };
+
+    project_dir.push(file);
+    project_dir
 }
 
 #[must_use]

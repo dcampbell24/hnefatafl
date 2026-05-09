@@ -66,7 +66,7 @@ use hnefatafl_copenhagen::{
     time::{TimeEnum, TimeSettings},
     tournament::Tournament,
     tree::Tree,
-    utils::{self, choose_ai, create_data_folder, data_file},
+    utils::{self, choose_ai, config_file, create_config_folder, create_data_folder, data_file},
 };
 #[cfg(target_os = "linux")]
 use iced::window::settings::PlatformSpecific;
@@ -167,36 +167,52 @@ rust_i18n::i18n!();
 #[allow(clippy::too_many_lines)]
 fn init_client() -> Client {
     let archived_games_file = data_file(ARCHIVED_GAMES_FILE);
-    let user_file = data_file(USER_CONFIG_FILE);
+    let user_data_file = data_file(USER_CONFIG_FILE);
+    let user_config_file = config_file(USER_CONFIG_FILE);
     let mut error = Vec::new();
 
-    let mut client: Client = match &fs::read_to_string(&user_file) {
-        Ok(string) => match ron::from_str(string) {
-            Ok(client) => client,
+    let mut client: Client;
+
+    if let Ok(string) = fs::read_to_string(&user_data_file)
+        && let Ok(client_data) = ron::from_str(&string)
+    {
+        client = client_data;
+        fs::rename(&user_data_file, &user_config_file).unwrap_or_else(|_| {
+            panic!(
+                "failed to rename the configuration file from {} to {}",
+                user_data_file.display(),
+                user_config_file.display()
+            )
+        });
+    } else {
+        client = match &fs::read_to_string(&user_config_file) {
+            Ok(string) => match ron::from_str(string) {
+                Ok(client) => client,
+                Err(err) => {
+                    error.push(format!(
+                        "Error parsing the ron file {}: {err}",
+                        user_config_file.display()
+                    ));
+                    Client::default()
+                }
+            },
             Err(err) => {
-                error.push(format!(
-                    "Error parsing the ron file {}: {err}",
-                    user_file.display()
-                ));
-                Client::default()
-            }
-        },
-        Err(err) => {
-            if err.kind() == ErrorKind::NotFound {
-                error.push(format!(
-                    "Unable to find User Configuration file: {}",
-                    user_file.display()
-                ));
-                Client::default()
-            } else {
-                error.push(format!(
-                    "Error opening the file {}: {err}",
-                    user_file.display()
-                ));
-                Client::default()
+                if err.kind() == ErrorKind::NotFound {
+                    error.push(format!(
+                        "Unable to find User Configuration file: {}",
+                        user_config_file.display()
+                    ));
+                    Client::default()
+                } else {
+                    error.push(format!(
+                        "Error opening the file {}: {err}",
+                        user_config_file.display()
+                    ));
+                    Client::default()
+                }
             }
         }
-    };
+    }
 
     client.tournament_date = Date::today();
 
@@ -305,6 +321,7 @@ fn main() -> anyhow::Result<()> {
         return Ok(());
     }
 
+    create_config_folder()?;
     create_data_folder()?;
 
     let mut application = iced::application(init_client, Client::update, Client::view)
@@ -4418,7 +4435,7 @@ impl<'a> Client {
 
         let ron_string = ron::ser::to_string_pretty(&client, ron::ser::PrettyConfig::new())?;
         if !ron_string.is_empty() {
-            let mut file = File::create(data_file(USER_CONFIG_FILE))?;
+            let mut file = File::create(config_file(USER_CONFIG_FILE))?;
             file.write_all(ron_string.as_bytes())?;
         }
 
