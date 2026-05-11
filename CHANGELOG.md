@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- cargo update
 - hnefatafl-client: in the configuration file `locale_selected` -> `locale`.
 - Updated the keywords and tags.
 - hnefatafl-client: move the user configuration file to the config folder.
