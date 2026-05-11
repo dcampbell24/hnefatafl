@@ -25,6 +25,7 @@ modules:
       - type: file
         url: https://codeberg.org/dcampbell/hnefatafl/raw/branch/main/packages/org.hnefatafl.hnefatafl_client.metainfo.xml
         sha256: 215a0218f4fc82fba43b6e154c50b8acd23ddf2052aa281432722ecb0b0aefce
+      - cargo-sources.json
 
     build-options:
       append-path: /usr/lib/sdk/llvm20/bin
@@ -36,7 +37,7 @@ modules:
         CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER: clang
         CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUSTFLAGS: -C link-arg=-fuse-ld=/usr/lib/sdk/rust-stable/bin/mold
     build-commands:
-      - sed -i 's/cargo-/flathub-/' src/bin/hnefatafl-client/main.rs;
+      - sed -i 's/cargo-/flathub-/' src/bin/hnefatafl-client/main.rs
       - source /usr/lib/sdk/rust-stable/enable.sh && cargo --offline build --release --bin hnefatafl-client --features client,icon_2 --no-default-features
       - install -Dm755 target/release/hnefatafl-client /app/bin/$FLATPAK_ID
       - install -Dm644 website/src/images/helmet.svg /app/share/icons/hicolor/scalable/apps/$FLATPAK_ID.svg
