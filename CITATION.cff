@@ -13,8 +13,8 @@ abstract: >-
   artificial intelligence, client, engine, server
 
 type: software
-version: 5.10.0
-date-released: 2026-05-05
+version: 5.11.0
+date-released: 2026-05-11
 repository-artifact: https://crates.io/crates/hnefatafl-copenhagen
 repository-code: https://codeberg.org/dcampbell/hnefatafl
 url: https://hnefatafl.org
@@ -26,7 +26,7 @@ authors:
     alias: dcampbell24
 
 keywords:
-  - hnefatafl
-  - board-game
+  - game
   - strategy
-  - copenhagen
+  - hnefatafl
+  - viking chess
