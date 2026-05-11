@@ -199,10 +199,17 @@ fn init_client() -> Client {
                 }
             },
             Err(err) => {
-                error.push(format!(
-                    "Error reading the file {}: {err}",
-                    user_config_file.display()
-                ));
+                if err.kind() == ErrorKind::NotFound {
+                    error.push(format!(
+                        "Unable to find user configuration file: {}",
+                        user_config_file.display()
+                    ));
+                } else {
+                    error.push(format!(
+                        "Error reading the file {}: {err}",
+                        user_config_file.display()
+                    ));
+                }
             }
         }
     }
