@@ -111,7 +111,7 @@ use crate::{
 };
 
 /// The software package that this is.
-const SOFTWARE_ID: &str = concat!("cargo-", env!("CARGO_PKG_VERSION"));
+const SOFTWARE_ID: &str = concat!("debian-", env!("CARGO_PKG_VERSION"));
 
 /// The Muted qualitative color scheme of [Tol]. A color scheme for the
 /// color blind.
