@@ -1,5 +1,5 @@
 Name:          hnefatafl-copenhagen
-Version:       5.10.0
+Version:       5.11.0
 Release:       1%{?dist}
 Summary:       Copenhagen Hnefatafl client, engine, server and artificial intelligence
 License:       AGPL-3.0-or-later
