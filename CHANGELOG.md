@@ -12,6 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Addded
+
+- hnefatafl-client: client version.
+
+### Removed
+
+- hnefatafl-client: duplicated "Quit" on settingd page.
+
 ## [5.11.0] - 2026-05-11
 
 ### Changed
