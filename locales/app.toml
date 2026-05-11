@@ -1822,6 +1822,23 @@ ru = "проверено"
 sv-SE = "verifierad"
 zh-CN = "已验证"
 
+[version]
+ar = "إصدار"
+de = "Version"
+en-US = "version"
+es = "versión"
+fr = "version"
+id = "versi"
+is-IS = "útgáfu"
+is-RU = "ᚤᛐᚵᚨᚠᚢ"
+ja = "バージョン"
+ko = "버전"
+pt-BR = "versão"
+pt-PT = "versão"
+ru = "версия"
+sv-SE = "version"
+zh-CN = "版本"
+
 [via]
 ar = "عبر"
 de = "über"

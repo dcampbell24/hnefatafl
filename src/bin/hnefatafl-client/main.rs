@@ -111,7 +111,7 @@ use crate::{
 };
 
 /// The software package that this is.
-const SOFTWARE_ID: &str = concat!("debian-", env!("CARGO_PKG_VERSION"));
+const SOFTWARE_ID: &str = concat!("cargo-", env!("CARGO_PKG_VERSION"));
 
 /// The Muted qualitative color scheme of [Tol]. A color scheme for the
 /// color blind.
@@ -726,6 +726,8 @@ struct Client {
     screen: Screen,
     #[serde(skip)]
     screen_size: Size,
+    // #[serde(skip)]
+    // server_version: String,
     #[serde(default)]
     sound_muted: bool,
     #[serde(skip)]
@@ -775,6 +777,8 @@ impl<'a> Client {
             t!("via")
         ));
 
+        columns = columns.push(text!("hnefatafl-client {}: {SOFTWARE_ID}", t!("version")));
+        // Fixme: columns = columns.push(text!("hnefatafl-server {}: {}", t!("version"), self.server_version));
         columns = columns.push(self.theme_selection());
         columns = columns.push(self.locale_selection());
 
@@ -866,8 +870,6 @@ impl<'a> Client {
                 button(text!("{} (c)", t!("Delete Account"))).on_press(Message::DeleteAccount),
             );
         }
-
-        columns = columns.push(button(text!("{} (Esc)", t!("Quit"))).on_press(Message::Leave));
 
         columns
     }
