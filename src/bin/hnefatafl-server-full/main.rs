@@ -316,6 +316,7 @@ fn login(
     tx.send((format!("{id} {username_proper} tournament_status_1"), None))?;
     tx.send((format!("{id} {username_proper} admin"), None))?;
     tx.send((format!("{id} {username_proper} admin_tournament"), None))?;
+    tx.send((format!("{id} {username_proper} version"), None))?;
 
     let mut game_id = None;
     'outer: for _ in 0..1_000_000 {
@@ -1815,6 +1816,16 @@ impl Server {
 
                         self.generate_round(args.group_size);
                         self.tournament_status_all();
+                    }
+
+                    None
+                }
+                "version" => {
+                    if !args.skip_advertising_updates {
+                        self.clients
+                            .get(&index_supplied)?
+                            .send(format!("version {}", env!("CARGO_PKG_VERSION")))
+                            .ok()?;
                     }
 
                     None

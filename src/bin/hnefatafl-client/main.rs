@@ -726,8 +726,8 @@ struct Client {
     screen: Screen,
     #[serde(skip)]
     screen_size: Size,
-    // #[serde(skip)]
-    // server_version: String,
+    #[serde(skip)]
+    server_version: String,
     #[serde(default)]
     sound_muted: bool,
     #[serde(skip)]
@@ -778,7 +778,11 @@ impl<'a> Client {
         ));
 
         columns = columns.push(text!("hnefatafl-client {}: {SOFTWARE_ID}", t!("version")));
-        // Fixme: columns = columns.push(text!("hnefatafl-server {}: {}", t!("version"), self.server_version));
+        columns = columns.push(text!(
+            "hnefatafl-server {}: {}",
+            t!("version"),
+            self.server_version
+        ));
         columns = columns.push(self.theme_selection());
         columns = columns.push(self.locale_selection());
 
@@ -3306,6 +3310,11 @@ impl<'a> Client {
 
                         if id == self.game_id {
                             self.request_draw = true;
+                        }
+                    }
+                    Some("version") => {
+                        if let Some(version) = text.next() {
+                            self.server_version = version.to_string();
                         }
                     }
                     _ => error!("(4) unexpected text: {}", string.trim()),
