@@ -26,6 +26,7 @@ profile-games:
 
 profile-monte-carlo:
     echo '1' | sudo tee /proc/sys/kernel/perf_event_paranoid
+    sudo sysctl -w kernel.perf_event_mlock_kb=2048
     samply record cargo test monte_carlo_long --no-default-features --features socket --profile profiling -- --ignored
 
 logs:
