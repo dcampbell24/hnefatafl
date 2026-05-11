@@ -171,53 +171,45 @@ fn init_client() -> Client {
     let user_config_file = config_file(USER_CONFIG_FILE);
     let mut error = Vec::new();
 
-    let mut client: Client;
-
-    if !fs::exists(&user_config_file).expect("Exists failed!")
+    let mut client = Client::default();
+    if !fs::exists(&user_config_file).unwrap_or(true)
         && let Ok(string) = fs::read_to_string(&user_data_file)
-        && let Ok(client_data) = ron::from_str(&string)
     {
-        client = client_data;
-        fs::rename(&user_data_file, &user_config_file).unwrap_or_else(|_| {
-            panic!(
-                "Failed to rename the configuration file from {} to {}",
-                user_data_file.display(),
-                user_config_file.display()
-            )
-        });
-    } else {
-        client = match &fs::read_to_string(&user_config_file) {
-            Ok(string) => match ron::from_str(string) {
-                Ok(client) => client,
-                Err(err) => {
+        match ron::from_str(&string) {
+            Ok(client_data) => {
+                client = client_data;
+                if let Err(err) = fs::rename(&user_data_file, &user_config_file) {
                     error.push(format!(
-                        "Error parsing the ron file {}: {err}",
+                        "Failed to rename the configuration file from {} to {}: {err}",
+                        user_data_file.display(),
                         user_config_file.display()
                     ));
-                    Client::default()
+                }
+            }
+            Err(err) => {
+                error.push(format!("RON error: {}: {err}", user_data_file.display()));
+            }
+        }
+    } else {
+        match &fs::read_to_string(&user_config_file) {
+            Ok(string) => match ron::from_str(string) {
+                Ok(client_data) => client = client_data,
+                Err(err) => {
+                    error.push(format!("RON error: {}: {err}", user_config_file.display()));
                 }
             },
             Err(err) => {
-                if err.kind() == ErrorKind::NotFound {
-                    error.push(format!(
-                        "Unable to find User Configuration file: {}",
-                        user_config_file.display()
-                    ));
-                    Client::default()
-                } else {
-                    error.push(format!(
-                        "Error opening the file {}: {err}",
-                        user_config_file.display()
-                    ));
-                    Client::default()
-                }
+                error.push(format!(
+                    "Error reading the file {}: {err}",
+                    user_config_file.display()
+                ));
             }
         }
     }
 
     client.tournament_date = Date::today();
 
-    if let Some(locale) = &client.locale_selected {
+    if let Some(locale) = &client.locale {
         rust_i18n::set_locale(&locale.txt());
     } else {
         let mut locale_1 = None;
@@ -243,7 +235,7 @@ fn init_client() -> Client {
 
         if let Some(locale) = locale_1 {
             rust_i18n::set_locale(&locale.txt());
-            client.locale_selected = Some(locale);
+            client.locale = Some(locale);
             client
                 .save_client_ron()
                 .expect("saving user file should work");
@@ -690,7 +682,7 @@ struct Client {
     #[serde(skip)]
     heat_map_display: bool,
     #[serde(default)]
-    locale_selected: Option<Locale>,
+    locale: Option<Locale>,
     #[serde(default)]
     my_games_only: bool,
     #[serde(skip)]
@@ -2089,7 +2081,7 @@ impl<'a> Client {
 
         row![
             text!("{}: ", t!("locale")).size(20),
-            pick_list(locale, self.locale_selected, Message::LocaleSelected),
+            pick_list(locale, self.locale, Message::LocaleSelected),
         ]
     }
 
@@ -2353,7 +2345,7 @@ impl<'a> Client {
             Message::LeaveSoft => self.leave(),
             Message::LocaleSelected(locale) => {
                 rust_i18n::set_locale(&locale.txt());
-                self.locale_selected = Some(locale);
+                self.locale = Some(locale);
                 handle_error(self.save_client_ron());
             }
             Message::MyGamesOnly(_selected) => {
@@ -4421,7 +4413,7 @@ impl<'a> Client {
         let client = Client {
             archived_games: Vec::new(),
             coordinates: self.coordinates,
-            locale_selected: self.locale_selected,
+            locale: self.locale,
             my_games_only: self.my_games_only,
             password,
             password_save: self.password_save,
