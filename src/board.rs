@@ -18,7 +18,7 @@
 
 use std::{collections::HashMap, fmt, str::FromStr};
 
-use rustc_hash::{FxBuildHasher, FxHashSet};
+use rustc_hash::FxHashSet;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
@@ -637,12 +637,8 @@ impl Board {
     fn closed_off_exit(&self, exit: Vertex) -> bool {
         let size = self.size();
         let board_size_usize: usize = size.into();
-
-        let hasher = FxBuildHasher;
-        let mut already_checked =
-            FxHashSet::with_capacity_and_hasher(board_size_usize * board_size_usize, hasher);
-
-        already_checked.insert(exit);
+        let mut already_checked = vec![false; board_size_usize * board_size_usize];
+        already_checked[usize::from(&exit)] = true;
 
         let mut pre_stack = Vec::with_capacity(board_size_usize * board_size_usize);
         let up = expand_flood_fill(exit.up(), &mut already_checked, &mut pre_stack);
@@ -935,13 +931,9 @@ impl Board {
 
         match self.find_the_king() {
             Some(kings_vertex) => {
-                let hasher = FxBuildHasher;
-                let mut already_checked = FxHashSet::with_capacity_and_hasher(
-                    board_size_usize * board_size_usize,
-                    hasher,
-                );
+                let mut already_checked = vec![false; board_size_usize * board_size_usize];
+                already_checked[usize::from(&kings_vertex)] = true;
 
-                already_checked.insert(kings_vertex);
                 let mut stack = Vec::with_capacity(board_size_usize * board_size_usize);
                 stack.push(kings_vertex);
 
@@ -970,7 +962,7 @@ impl Board {
                     for x in 0..board_size_usize {
                         let vertex = Vertex { size, x, y };
                         if Role::from(self.get(&vertex)) == Role::Defender
-                            && !already_checked.contains(&vertex)
+                            && !already_checked[usize::from(&vertex)]
                         {
                             return false;
                         }
@@ -1552,13 +1544,14 @@ pub enum InvalidMove {
 #[inline]
 fn expand_flood_fill(
     vertex: Option<Vertex>,
-    already_checked: &mut FxHashSet<Vertex>,
+    already_checked: &mut [bool],
     stack: &mut Vec<Vertex>,
 ) -> bool {
     if let Some(vertex) = vertex {
-        if !already_checked.contains(&vertex) {
+        let i = usize::from(&vertex);
+        if !already_checked[i] {
             stack.push(vertex);
-            already_checked.insert(vertex);
+            already_checked[i] = true;
         }
 
         true
