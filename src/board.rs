@@ -784,17 +784,6 @@ impl Board {
         None
     }
 
-    #[must_use]
-    pub fn captured_the_king(&self) -> bool {
-        for space in &self.spaces {
-            if *space == Space::King {
-                return false;
-            }
-        }
-
-        true
-    }
-
     fn capture_the_king(
         &mut self,
         role_from: Role,
