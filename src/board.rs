@@ -296,7 +296,10 @@ impl Board {
                             to: vertex_to,
                         };
 
-                        if let Ok(_board) = self.legal_move(&play, status, turn, previous_boards) {
+                        if self
+                            .legal_move(&play, status, turn, previous_boards)
+                            .is_ok()
+                        {
                             return true;
                         }
                     }
