@@ -22,6 +22,8 @@ enable-remote-ip:
 
 profile-games:
     echo '1' | sudo tee /proc/sys/kernel/perf_event_paranoid
+    export RUST_MIN_STACK=16777216
+    sudo sysctl -w kernel.perf_event_mlock_kb=2048
     samply record cargo test hnefatafl_games --no-default-features --features socket --profile profiling
 
 profile-monte-carlo:
