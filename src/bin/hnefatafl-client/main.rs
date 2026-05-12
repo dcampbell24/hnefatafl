@@ -1445,9 +1445,9 @@ impl<'a> Client {
         );
 
         let col_1 = column![real_time, correspondence, unlimited].padding(PADDING);
-        let col_2 = column![rapid, long, infinity].padding(PADDING);
-        let col_3 = column![classical, very_long].padding(PADDING);
-        let col_4 = column![blitz].padding(PADDING);
+        let col_2 = column![blitz, long, infinity].padding(PADDING);
+        let col_3 = column![rapid, very_long].padding(PADDING);
+        let col_4 = column![classical].padding(PADDING);
 
         let row_time = LabeledFrame::new(
             text(format!("fischer {}", t!("time"))),
@@ -2422,7 +2422,7 @@ impl<'a> Client {
                 }
                 Screen::Games => match self.active_tab {
                     TabId::AccountSettings => self.toggle_show_password(),
-                    TabId::GameNew => self.game_settings.time = Some(TimeEnum::Rapid),
+                    TabId::GameNew => self.game_settings.time = Some(TimeEnum::Blitz),
                     TabId::Games => self.join_game_press(1, shift),
                     _ => {}
                 },
@@ -2441,7 +2441,7 @@ impl<'a> Client {
                 Screen::Games => match self.active_tab {
                     TabId::AccountSettings => self.delete_account(),
                     TabId::GameNew => {
-                        self.game_settings.time = Some(TimeEnum::Classical);
+                        self.game_settings.time = Some(TimeEnum::Rapid);
                     }
                     TabId::Games => self.join_game_press(2, shift),
                     _ => {}
@@ -2461,7 +2461,7 @@ impl<'a> Client {
                 Screen::Games => match self.active_tab {
                     TabId::Games => self.join_game_press(3, shift),
                     TabId::GameNew => {
-                        self.game_settings.time = Some(TimeEnum::Long);
+                        self.game_settings.time = Some(TimeEnum::Classical);
                     }
                     _ => {}
                 },
@@ -2476,7 +2476,7 @@ impl<'a> Client {
                 Screen::Games => match self.active_tab {
                     TabId::Games => self.join_game_press(4, shift),
                     TabId::GameNew => {
-                        self.game_settings.time = Some(TimeEnum::VeryLong);
+                        self.game_settings.time = Some(TimeEnum::Long);
                     }
                     _ => {}
                 },
@@ -2491,7 +2491,7 @@ impl<'a> Client {
                 Screen::Games => match self.active_tab {
                     TabId::Games => self.join_game_press(5, shift),
                     TabId::GameNew => {
-                        self.game_settings.time = Some(TimeEnum::Infinity);
+                        self.game_settings.time = Some(TimeEnum::VeryLong);
                     }
                     _ => {}
                 },
@@ -2502,7 +2502,11 @@ impl<'a> Client {
                     self.press_letter('g');
                     self.press_letter_and_number();
                 }
-                Screen::Games => self.join_game_press(6, shift),
+                Screen::Games => match self.active_tab {
+                    TabId::Games => self.join_game_press(6, shift),
+                    TabId::GameNew => self.game_settings.time = Some(TimeEnum::Infinity),
+                    _ => {}
+                },
             },
             Message::PressH(shift) => match self.screen {
                 Screen::EmailEveryone | Screen::Login => {}
