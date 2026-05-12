@@ -78,7 +78,7 @@ fn play_game(i: usize, record: &GameRecord) -> Result<(usize, Game), anyhow::Err
             captures_2.insert(vertex);
         }
 
-        if game.board.find_the_king().is_some() {
+        if game.board.king.is_some() {
             let captures_2 = Captures(captures_2);
 
             if let Some(captures_1) = captures_1 {

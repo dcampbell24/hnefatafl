@@ -508,7 +508,7 @@ impl Game {
     pub fn kings_legal_moves(&self) -> Option<(Vertex, Vec<Vertex>)> {
         let size = self.board.size();
         let board_size_usize = size.into();
-        let kings_position = self.board.find_the_king()?;
+        let kings_position = self.board.king?;
         let mut vertexes_to = Vec::new();
 
         for y in 0..board_size_usize {
@@ -613,7 +613,7 @@ impl Game {
         };
 
         let mut game = self.clone();
-        if let Some(king) = self.board.find_the_king() {
+        if let Some(king) = self.board.king {
             for exit in [exit_1, exit_2, exit_3, exit_4] {
                 if game
                     .play(&Plae::Play(Play {
@@ -633,7 +633,7 @@ impl Game {
 
     #[must_use]
     pub fn moves_to_escape(&self) -> (MovesToEscape, EscapeVec) {
-        let Some(start) = self.board.find_the_king() else {
+        let Some(start) = self.board.king else {
             return (MovesToEscape::GameOver, EscapeVec::new(self.board.size()));
         };
 

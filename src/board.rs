@@ -65,6 +65,8 @@ pub const STARTING_POSITION_13X13: [&str; 13] = [
 pub struct Board {
     pub spaces: Vec<Space>,
     #[serde(skip)]
+    pub king: Option<Vertex>,
+    #[serde(skip)]
     pub display_ascii: bool,
 }
 
@@ -148,10 +150,12 @@ impl TryFrom<[&str; 11]> for Board {
     fn try_from(value: [&str; 11]) -> anyhow::Result<Self> {
         let mut spaces = Vec::with_capacity(11 * 11);
         let mut kings = 0;
+        let mut king = None;
 
         for (y, row) in value.iter().enumerate() {
             for (x, ch) in row.chars().enumerate() {
                 let space = ch.try_into()?;
+
                 match space {
                     Space::Attacker | Space::Defender => {
                         let vertex = Vertex {
@@ -168,6 +172,12 @@ impl TryFrom<[&str; 11]> for Board {
                     Space::Empty => {}
                     Space::King => {
                         kings += 1;
+                        king = Some(Vertex {
+                            size: BoardSize::_11,
+                            x,
+                            y,
+                        });
+
                         if kings > 1 {
                             return Err(anyhow::Error::msg("You can only have one king!"));
                         }
@@ -180,6 +190,7 @@ impl TryFrom<[&str; 11]> for Board {
 
         Ok(Self {
             spaces,
+            king,
             display_ascii: false,
         })
     }
@@ -191,10 +202,12 @@ impl TryFrom<[&str; 13]> for Board {
     fn try_from(value: [&str; 13]) -> anyhow::Result<Self> {
         let mut spaces = Vec::with_capacity(13 * 13);
         let mut kings = 0;
+        let mut king = None;
 
         for (y, row) in value.iter().enumerate() {
             for (x, ch) in row.chars().enumerate() {
                 let space = ch.try_into()?;
+
                 match space {
                     Space::Attacker | Space::Defender => {
                         let vertex = Vertex {
@@ -202,6 +215,7 @@ impl TryFrom<[&str; 13]> for Board {
                             x,
                             y,
                         };
+
                         if vertex.on_restricted_square() {
                             return Err(anyhow::Error::msg(
                                 "Only the king is allowed on restricted squares!",
@@ -211,6 +225,12 @@ impl TryFrom<[&str; 13]> for Board {
                     Space::Empty => {}
                     Space::King => {
                         kings += 1;
+                        king = Some(Vertex {
+                            size: BoardSize::_13,
+                            x,
+                            y,
+                        });
+
                         if kings > 1 {
                             return Err(anyhow::Error::msg("You can only have one king!"));
                         }
@@ -223,6 +243,7 @@ impl TryFrom<[&str; 13]> for Board {
 
         Ok(Self {
             spaces,
+            king,
             display_ascii: false,
         })
     }
@@ -770,6 +791,7 @@ impl Board {
         }
     }
 
+    /*
     #[must_use]
     pub fn find_the_king(&self) -> Option<Vertex> {
         let size = self.size();
@@ -786,6 +808,7 @@ impl Board {
 
         None
     }
+    */
 
     fn capture_the_king(
         &mut self,
@@ -793,7 +816,7 @@ impl Board {
         play_to: &Vertex,
         captures: &mut Vec<Vertex>,
     ) -> bool {
-        if let Some(kings_vertex) = self.find_the_king()
+        if let Some(kings_vertex) = self.king
             && role_from == Role::Attacker
         {
             let mut attacker_moved = false;
@@ -804,6 +827,7 @@ impl Board {
             if !surrounded {
                 return false;
             }
+
             if move_to_capture {
                 attacker_moved = true;
             }
@@ -814,6 +838,7 @@ impl Board {
             if !surrounded {
                 return false;
             }
+
             if move_to_capture {
                 attacker_moved = true;
             }
@@ -824,6 +849,7 @@ impl Board {
             if !surrounded {
                 return false;
             }
+
             if move_to_capture {
                 attacker_moved = true;
             }
@@ -840,7 +866,9 @@ impl Board {
 
             if attacker_moved {
                 self.set(&kings_vertex, Space::Empty);
+                self.king = None;
                 captures.push(kings_vertex);
+
                 return true;
             }
         }
@@ -853,7 +881,7 @@ impl Board {
         let mut spaces_left = 4;
         let mut capture = None;
 
-        if let Some(kings_vertex) = self.find_the_king() {
+        if let Some(kings_vertex) = self.king {
             if let Some(vertex) = kings_vertex.up() {
                 if vertex.on_throne() || self.get(&vertex) == Space::Attacker {
                     spaces_left -= 1;
@@ -906,7 +934,7 @@ impl Board {
     }
 
     fn exit_forts(&self) -> bool {
-        match self.find_the_king() {
+        match self.king {
             Some(kings_vertex) => {
                 kings_vertex.touches_wall()
                     && self.able_to_move(&kings_vertex)
@@ -921,7 +949,7 @@ impl Board {
         let size = self.size();
         let board_size_usize: usize = size.into();
 
-        match self.find_the_king() {
+        match self.king {
             Some(kings_vertex) => {
                 let mut already_checked = vec![false; board_size_usize * board_size_usize];
                 already_checked[usize::from(&kings_vertex)] = true;
@@ -1265,6 +1293,10 @@ impl Board {
         board.set(&play.from, Space::Empty);
         board.set(&play.to, space_from);
 
+        if space_from == Space::King {
+            board.king = Some(play.to);
+        }
+
         if turn == &Role::Defender && previous_boards.0.contains(&board) {
             return Err(InvalidMove::RepeatMove);
         }
@@ -1375,7 +1407,7 @@ impl Board {
 
     #[must_use]
     pub fn spaces_around_the_king(&self) -> Option<u8> {
-        let king = self.find_the_king()?;
+        let king = self.king?;
 
         let Some(up) = king.up() else {
             return Some(5);
@@ -1465,6 +1497,11 @@ fn board_11x11() -> Board {
 
     Board {
         spaces,
+        king: Some(Vertex {
+            size: BoardSize::_11,
+            x: 5,
+            y: 5,
+        }),
         display_ascii: false,
     }
 }
@@ -1480,6 +1517,11 @@ fn board_13x13() -> Board {
 
     Board {
         spaces,
+        king: Some(Vertex {
+            size: BoardSize::_13,
+            x: 6,
+            y: 6,
+        }),
         display_ascii: false,
     }
 }
