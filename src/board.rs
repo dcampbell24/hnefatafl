@@ -1249,6 +1249,7 @@ impl Board {
                     x: play.from.x,
                     y: (play.from.y as i32 - (y_diff * y_diff_sign)) as usize,
                 };
+
                 let space = self.get(&vertex);
                 if space != Space::Empty {
                     return Err(InvalidMove::Empty);
