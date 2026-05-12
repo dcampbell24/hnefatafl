@@ -128,7 +128,7 @@ pub fn game_records_from_path(string: &str) -> anyhow::Result<Vec<(usize, GameRe
         .has_headers(false)
         .from_reader(cursor);
 
-    let mut game_records = Vec::with_capacity(1_800);
+    let mut game_records = Vec::with_capacity(1_752);
     for (i, result) in rdr.deserialize().enumerate() {
         let record: Record = result?;
         let mut role = Role::Defender;
