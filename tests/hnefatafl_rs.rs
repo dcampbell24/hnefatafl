@@ -135,19 +135,18 @@ pub fn game_records_from_path(string: &str) -> anyhow::Result<Vec<(usize, GameRe
         for play in record.moves.split_ascii_whitespace() {
             role = role.opposite();
 
-            if play.contains('-') {
-                let vertexes: Vec<_> = play.split('-').collect();
-                let vertex_1_captures: Vec<_> = vertexes[1].split('x').collect();
+            if let Some((vertex, vertex_captures)) = play.split_once('-') {
+                let vertex_captures: Vec<_> = vertex_captures.split('x').collect();
 
                 if let (Ok(from), Ok(to)) = (
-                    Vertex::from_str(vertexes[0]),
-                    Vertex::from_str(vertex_1_captures[0]),
+                    Vertex::from_str(vertex),
+                    Vertex::from_str(vertex_captures[0]),
                 ) {
                     let play = Play { role, from, to };
 
-                    if vertex_1_captures.get(1).is_some() {
+                    if vertex_captures.get(1).is_some() {
                         let mut captures = FxHashSet::default();
-                        for capture in vertex_1_captures.into_iter().skip(1) {
+                        for capture in vertex_captures.into_iter().skip(1) {
                             let vertex = Vertex::from_str(capture)?;
                             if !captures.contains(&vertex) {
                                 captures.insert(vertex);
