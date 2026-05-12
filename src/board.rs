@@ -882,7 +882,7 @@ impl Board {
                 let mut already_checked = vec![false; board_size_usize * board_size_usize];
                 already_checked[usize::from(&kings_vertex)] = true;
 
-                let mut stack = Vec::new();
+                let mut stack = Vec::with_capacity(32);
                 stack.push(kings_vertex);
 
                 while !stack.is_empty() {
