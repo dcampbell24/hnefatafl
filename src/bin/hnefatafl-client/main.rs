@@ -1403,14 +1403,20 @@ impl<'a> Client {
         );
 
         let real_time = text(format!("{}:", t!("Real Time")));
+        let blitz = radio(
+            format!("{} (b)", TimeEnum::Blitz),
+            TimeEnum::Blitz,
+            self.game_settings.time,
+            Message::Time,
+        );
         let rapid = radio(
-            format!("{} (b)", TimeEnum::Rapid),
+            format!("{} (c)", TimeEnum::Rapid),
             TimeEnum::Rapid,
             self.game_settings.time,
             Message::Time,
         );
         let classical = radio(
-            format!("{} (c)", TimeEnum::Classical),
+            format!("{} (d)", TimeEnum::Classical),
             TimeEnum::Classical,
             self.game_settings.time,
             Message::Time,
@@ -1418,13 +1424,13 @@ impl<'a> Client {
 
         let correspondence = text(format!("{}:", t!("Correspondence")));
         let long = radio(
-            format!("{} (d)", TimeEnum::Long),
+            format!("{} (e)", TimeEnum::Long),
             TimeEnum::Long,
             self.game_settings.time,
             Message::Time,
         );
         let very_long = radio(
-            format!("{} (e)", TimeEnum::VeryLong),
+            format!("{} (f)", TimeEnum::VeryLong),
             TimeEnum::VeryLong,
             self.game_settings.time,
             Message::Time,
@@ -1432,7 +1438,7 @@ impl<'a> Client {
 
         let unlimited = text(format!("{}:", t!("Unlimited")));
         let infinity = radio(
-            format!("{} (f)", TimeEnum::Infinity),
+            format!("{} (g)", TimeEnum::Infinity),
             TimeEnum::Infinity,
             self.game_settings.time,
             Message::Time,
@@ -1441,10 +1447,11 @@ impl<'a> Client {
         let col_1 = column![real_time, correspondence, unlimited].padding(PADDING);
         let col_2 = column![rapid, long, infinity].padding(PADDING);
         let col_3 = column![classical, very_long].padding(PADDING);
+        let col_4 = column![blitz].padding(PADDING);
 
         let row_time = LabeledFrame::new(
             text(format!("fischer {}", t!("time"))),
-            row![col_1, col_2, col_3],
+            row![col_1, col_2, col_3, col_4],
         );
 
         let leave = row![new_game, leave].padding(PADDING).spacing(SPACING);

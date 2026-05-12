@@ -14,10 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Addded
 
+- hnefatafl-client: blitz time setting.
 - hnefatafl-client: client version and server version.
 
 ### Changed
 
+- hnefatafl-client: abbreviate time.
 - Make the engine faster.
 
 ### Removed
