@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - hnefatafl-client: client version and server version.
 
+###
+
+- Make calculating moves a little faster by storing the king's position.
+
 ### Removed
 
 - hnefatafl-client: duplicated "Quit" on settingd page.
