@@ -91,7 +91,7 @@ pub struct PreviousBoards(pub Vec<Board>);
 impl PreviousBoards {
     #[must_use]
     pub fn new(board_size: BoardSize) -> Self {
-        let mut boards = Vec::with_capacity(64);
+        let mut boards = Vec::with_capacity(128);
 
         boards.push(Board::new(board_size));
         Self(boards)
