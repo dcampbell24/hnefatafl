@@ -18,7 +18,7 @@ use hnefatafl_copenhagen::{
 /// # Errors
 ///
 /// If the game records are invalid.
-pub fn setup_hnefatafl_rs() -> anyhow::Result<Vec<(usize, GameRecord)>> {
+pub fn aagenielsen_dk_game_records() -> anyhow::Result<Vec<(usize, GameRecord)>> {
     let copenhagen_csv = include_str!("copenhagen.csv");
     game_records_from_path(copenhagen_csv)
 }
@@ -28,7 +28,7 @@ pub fn setup_hnefatafl_rs() -> anyhow::Result<Vec<(usize, GameRecord)>> {
 /// If the captures or game status don't match for an engine game and a record
 /// game.
 #[allow(clippy::cast_precision_loss, clippy::missing_panics_doc)]
-pub fn hnefatafl_rs(records: &[(usize, GameRecord)]) {
+pub fn play_games(records: &[(usize, GameRecord)]) {
     let mut already_played = 0;
     let mut already_over = 0;
 
@@ -177,7 +177,7 @@ pub fn game_records_from_path(string: &str) -> anyhow::Result<Vec<(usize, GameRe
 
 #[test]
 fn hnefatafl_games() -> anyhow::Result<()> {
-    hnefatafl_rs(&setup_hnefatafl_rs()?);
+    play_games(&aagenielsen_dk_game_records()?);
 
     Ok(())
 }
