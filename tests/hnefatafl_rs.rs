@@ -59,7 +59,6 @@ pub fn play_games(records: &[(usize, GameRecord)]) {
     // assert!(already_played_error > 0.020_5 && already_played_error < 0.020_6);
 }
 
-#[inline]
 fn play_game(i: usize, record: &GameRecord) -> Result<(usize, Game), anyhow::Error> {
     let mut game = Game {
         plays: Plays::new(&time::TimeSettings::UnTimed),
@@ -71,8 +70,7 @@ fn play_game(i: usize, record: &GameRecord) -> Result<(usize, Game), anyhow::Err
 
     for (play, captures_1) in record.clone().plays {
         let mut captures_2 = FxHashSet::default();
-        let play = Plae::Play(play);
-        let captures = game.play(&play)?;
+        let captures = game.play(&Plae::Play(play))?;
 
         for vertex in captures.0 {
             captures_2.insert(vertex);
