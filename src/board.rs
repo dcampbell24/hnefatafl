@@ -791,25 +791,6 @@ impl Board {
         }
     }
 
-    /*
-    #[must_use]
-    pub fn find_the_king(&self) -> Option<Vertex> {
-        let size = self.size();
-        let board_size_usize: usize = size.into();
-
-        for y in 0..board_size_usize {
-            for x in 0..board_size_usize {
-                let v = Vertex { size, x, y };
-                if self.get(&v) == Space::King {
-                    return Some(v);
-                }
-            }
-        }
-
-        None
-    }
-    */
-
     fn capture_the_king(
         &mut self,
         role_from: Role,
