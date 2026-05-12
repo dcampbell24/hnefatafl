@@ -59,17 +59,37 @@ impl fmt::Display for Time {
         let add_minutes = (self.add_seconds % (60 * 60)) / 60;
         let add_seconds = self.add_seconds % 60;
 
-        if days == 0 {
-            write!(
-                f,
-                "{hours:02}:{minutes:02}:{seconds:02} + {add_hours:02}:{add_minutes:02}:{add_seconds:02}"
-            )
-        } else {
-            write!(
-                f,
-                "{days} {hours:02}:{minutes:02}:{seconds:02} + {add_hours:02}:{add_minutes:02}:{add_seconds:02}"
-            )
+        if days != 0 {
+            write!(f, "{days}d")?;
         }
+
+        if hours != 0 {
+            write!(f, " {hours}h")?;
+        }
+
+        if minutes != 0 {
+            write!(f, " {minutes}m")?;
+        }
+
+        if seconds != 0 {
+            write!(f, " {seconds}s")?;
+        }
+
+        write!(f, " +")?;
+
+        if add_hours != 0 {
+            write!(f, " {add_hours}h")?;
+        }
+
+        if add_minutes != 0 {
+            write!(f, " {add_minutes}m")?;
+        }
+
+        if add_seconds != 0 {
+            write!(f, " {add_seconds}s")?;
+        }
+
+        Ok(())
     }
 }
 
@@ -140,6 +160,7 @@ impl fmt::Debug for TimeSettings {
     }
 }
 
+//
 impl fmt::Display for TimeSettings {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -212,12 +233,12 @@ fn time_left(milliseconds_left: i64) -> String {
     }
 }
 
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum TimeEnum {
+    Blitz,
     Classical,
     Infinity,
     Long,
-    #[default]
     Rapid,
     VeryLong,
 }
@@ -225,6 +246,10 @@ pub enum TimeEnum {
 impl From<TimeEnum> for TimeSettings {
     fn from(time_enum: TimeEnum) -> TimeSettings {
         match time_enum {
+            TimeEnum::Blitz => TimeSettings::Timed(Time {
+                add_seconds: 3,
+                milliseconds_left: 5 * MINUTE,
+            }),
             TimeEnum::Classical => TimeSettings::Timed(Time {
                 add_seconds: 20,
                 milliseconds_left: 30 * MINUTE,
@@ -250,11 +275,12 @@ impl From<TimeEnum> for TimeSettings {
 impl fmt::Display for TimeEnum {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Classical => write!(f, "00:30:00 + 00:00:20"),
+            Self::Blitz => write!(f, "5m + 3s"),
+            Self::Classical => write!(f, "30m + 20s"),
             Self::Infinity => write!(f, "∞"),
-            Self::Long => write!(f, "3 00:00:00 + 6:00:00"),
-            Self::Rapid => write!(f, "00:15:00 + 00:00:10 "),
-            Self::VeryLong => write!(f, "7 12:00:00 + 15:00:00 "),
+            Self::Long => write!(f, "3d + 6h"),
+            Self::Rapid => write!(f, "15m + 10s "),
+            Self::VeryLong => write!(f, "7d 12h + 15h "),
         }
     }
 }
