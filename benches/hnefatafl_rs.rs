@@ -8,12 +8,13 @@ use criterion::{Criterion, criterion_group, criterion_main};
 #[path = "../tests/hnefatafl_rs.rs"]
 mod test;
 
-use test::{hnefatafl_rs, setup_hnefatafl_rs};
+use test::{aagenielsen_dk_game_records, play_games};
 
 fn game_play_outs(c: &mut Criterion) {
-    let game_records = setup_hnefatafl_rs().unwrap();
+    let game_records = aagenielsen_dk_game_records().unwrap();
+
     c.bench_function("game_play_outs", move |b| {
-        b.iter(|| hnefatafl_rs(&game_records));
+        b.iter(|| play_games(&game_records));
     });
 }
 
