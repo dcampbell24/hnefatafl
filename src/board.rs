@@ -799,62 +799,24 @@ impl Board {
     ) -> bool {
         if let Some(kings_vertex) = self.king
             && role_from == Role::Attacker
+            && let Some(up) = kings_vertex.up()
+            && let Some(left) = kings_vertex.left()
+            && let Some(down) = kings_vertex.down()
+            && let Some(right) = kings_vertex.right()
+            && (*play_to == up || *play_to == left || *play_to == down || *play_to == right)
+            && (self.get(&up) == Space::Attacker || up.on_throne())
+            && (self.get(&left) == Space::Attacker || left.on_throne())
+            && (self.get(&down) == Space::Attacker || down.on_throne())
+            && (self.get(&right) == Space::Attacker || right.on_throne())
         {
-            let mut attacker_moved = false;
+            self.set(&kings_vertex, Space::Empty);
+            self.king = None;
+            captures.push(kings_vertex);
 
-            let (move_to_capture, surrounded) =
-                self.capture_the_king_space(play_to, kings_vertex.up());
-
-            if !surrounded {
-                return false;
-            }
-
-            if move_to_capture {
-                attacker_moved = true;
-            }
-
-            let (move_to_capture, surrounded) =
-                self.capture_the_king_space(play_to, kings_vertex.left());
-
-            if !surrounded {
-                return false;
-            }
-
-            if move_to_capture {
-                attacker_moved = true;
-            }
-
-            let (move_to_capture, surrounded) =
-                self.capture_the_king_space(play_to, kings_vertex.down());
-
-            if !surrounded {
-                return false;
-            }
-
-            if move_to_capture {
-                attacker_moved = true;
-            }
-
-            let (move_to_capture, surrounded) =
-                self.capture_the_king_space(play_to, kings_vertex.right());
-
-            if !surrounded {
-                return false;
-            }
-            if move_to_capture {
-                attacker_moved = true;
-            }
-
-            if attacker_moved {
-                self.set(&kings_vertex, Space::Empty);
-                self.king = None;
-                captures.push(kings_vertex);
-
-                return true;
-            }
+            true
+        } else {
+            false
         }
-
-        false
     }
 
     #[must_use]
@@ -897,21 +859,6 @@ impl Board {
         }
 
         if spaces_left == 1 { capture } else { None }
-    }
-
-    #[inline]
-    fn capture_the_king_space(&self, play_to: &Vertex, direction: Option<Vertex>) -> (bool, bool) {
-        if let Some(surround_king) = direction {
-            let move_to_capture = *play_to == surround_king;
-
-            let surrounded = move_to_capture
-                || surround_king.on_throne()
-                || self.get(&surround_king) == Space::Attacker;
-
-            (move_to_capture, surrounded)
-        } else {
-            (false, false)
-        }
     }
 
     fn exit_forts(&self) -> bool {
