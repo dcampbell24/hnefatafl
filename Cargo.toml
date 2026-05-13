@@ -23,7 +23,7 @@ criterion = { version = "0.8", features = ["html_reports"] }
 csv = "1"
 
 [target.'cfg(target_os = "linux")'.dev-dependencies]
-taflzero = { git = "https://github.com/sovelin/taflzero.git", default-features = false }
+taflzero = { git = "https://github.com/sovelin/taflzero.git", rev = "1527cb04f54c9e956b36a54822aaf75bf1ccba55", default-features = false }
 socket2 = { version = "0.6", features = ["all"] }
 ort = { version = "=2.0.0-rc.11", features = ["openvino"]}
 
@@ -141,12 +141,6 @@ bench = false
 test = false
 
 [[bin]]
-name = "hnefatafl-ai"
-required-features = ["socket"]
-bench = false
-test = false
-
-[[bin]]
 name = "hnefatafl-client"
 required-features = ["client"]
 bench = false
@@ -218,7 +212,7 @@ The client is a graphical user interface that connects to the server-full. By
 default it connects to the server running at hnefatafl.org.
 """
 assets = [
-    ["hnefatafl-ai.1.gz", "usr/share/man/man1/", "644"],
+    ["taflzero.1.gz", "usr/share/man/man1/", "644"],
     ["hnefatafl-client.1.gz", "usr/share/man/man1/", "644"],
     ["hnefatafl-server.1.gz", "usr/share/man/man1/", "644"],
     ["hnefatafl-server-full.1.gz", "usr/share/man/man1/", "644"],
@@ -228,7 +222,7 @@ assets = [
     ["packages/hnefatafl-ai-attacker.service", "usr/lib/systemd/system/", "644"],
     ["packages/hnefatafl-ai-defender.service", "usr/lib/systemd/system/", "644"],
     ["packages/hnefatafl.service", "usr/lib/systemd/system/", "644"],
-    ["target/release/hnefatafl-ai", "usr/games/", "755"],
+    ["target/release/examples/taflzero", "usr/games/", "755"],
     ["target/release/hnefatafl-client", "usr/games/", "755"],
     ["target/release/hnefatafl-server", "usr/games/", "755"],
     ["target/release/hnefatafl-server-full", "usr/games/", "755"],

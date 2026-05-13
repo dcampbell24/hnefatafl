@@ -27,10 +27,10 @@ use std::{
 };
 
 use anyhow::Error;
-use clap::Parser;
+use clap::{CommandFactory, Parser};
 use env_logger::Builder;
 use hnefatafl_copenhagen::{
-    VERSION_ID,
+    COPYRIGHT, VERSION_ID,
     ai::{AI, AiMonteCarlo},
     game::Game,
     play::{Plae, Play, Vertex},
@@ -56,7 +56,7 @@ struct Args {
     password: String,
 
     /// attacker or defender
-    #[arg(long)]
+    #[arg(long, default_value_t = Role::Defender)]
     role: Role,
 
     /// Connect to the server at host
@@ -78,13 +78,29 @@ struct Args {
     /// Whether to log at the debug level
     #[arg(long)]
     debug: bool,
+
+    /// Build the man page
+    #[arg(long)]
+    man: bool,
 }
 
 fn main() -> anyhow::Result<()> {
     let args = Args::parse();
     init_logger(args.debug, args.systemd);
 
-    let mut username = String::new();
+    if args.man {
+        let mut buffer: Vec<u8> = Vec::default();
+        let cmd = Args::command().name("taflzero").long_version(None);
+        let man = clap_mangen::Man::new(cmd).date("2026-05-13");
+
+        man.render(&mut buffer)?;
+        write!(buffer, "{COPYRIGHT}")?;
+
+        std::fs::write("taflzero.1", buffer)?;
+        return Ok(());
+    }
+
+    let mut username = "ai-taflzero-".to_string();
     username.push_str(&args.username);
 
     let mut address_string = args.host.clone();

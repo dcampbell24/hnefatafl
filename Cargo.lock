@@ -6199,7 +6199,7 @@ dependencies = [
 [[package]]
 name = "taflzero"
 version = "0.1.0"
-source = "git+https://github.com/sovelin/taflzero.git#1527cb04f54c9e956b36a54822aaf75bf1ccba55"
+source = "git+https://github.com/sovelin/taflzero.git?rev=1527cb04f54c9e956b36a54822aaf75bf1ccba55#1527cb04f54c9e956b36a54822aaf75bf1ccba55"
 dependencies = [
  "console_error_panic_hook",
  "getrandom 0.2.17",
