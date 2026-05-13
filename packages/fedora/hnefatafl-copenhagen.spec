@@ -43,15 +43,15 @@ default it connects to the server running at hnefatafl.org.}
 
 %build
 sed -i 's/cargo-/fedora-/' src/bin/hnefatafl-client/main.rs;
-RUST_MIN_STACK=2147483648 cargo build --release
+RUST_MIN_STACK=2147483648 cargo build --release --examples
 
-./target/release/hnefatafl-ai --man --username ""
+./target/release/examples/taflzero --man --username ""
 ./target/release/hnefatafl-client --man
 ./target/release/hnefatafl-server --man
 ./target/release/hnefatafl-server-full --man
 ./target/release/hnefatafl-text-protocol --man
 
-gzip --no-name --best hnefatafl-ai.1
+gzip --no-name --best taflzero.1
 gzip --no-name --best hnefatafl-server.1
 gzip --no-name --best hnefatafl-server-full.1
 gzip --no-name --best hnefatafl-text-protocol.1
@@ -63,7 +63,7 @@ sed -i 's/games/bin/' packages/hnefatafl.service
 sed -i 's/Exec=hnefatafl-client/Exec=hnefatafl-client --ascii/' packages/hnefatafl-client.desktop
 
 %install
-install -Dm755 "target/release/hnefatafl-ai" -t "%{buildroot}%{_bindir}"
+install -Dm755 "target/release/examples/taflzero" -t "%{buildroot}%{_bindir}"
 install -Dm755 "target/release/hnefatafl-client" -t "%{buildroot}%{_bindir}"
 install -Dm755 "target/release/hnefatafl-server" -t "%{buildroot}%{_bindir}"
 install -Dm755 "target/release/hnefatafl-server-full" -t "%{buildroot}%{_bindir}"
@@ -72,7 +72,7 @@ install -Dm644 "packages/hnefatafl.service" -t "%{buildroot}/usr/lib/systemd/sys
 install -Dm644 "packages/hnefatafl-ai-attacker.service" -t "%{buildroot}/usr/lib/systemd/system"
 install -Dm644 "packages/hnefatafl-ai-defender.service" -t "%{buildroot}/usr/lib/systemd/system"
 install -Dm644 "website/src/images/helmet.svg" "%{buildroot}/usr/share/icons/hicolor/scalable/apps/org.hnefatafl.hnefatafl_client.svg"
-install -Dm644 "hnefatafl-ai.1.gz" -t "%{buildroot}/usr/share/man/man1"
+install -Dm644 "taflzero.1.gz" -t "%{buildroot}/usr/share/man/man1"
 install -Dm644 "hnefatafl-client.1.gz" -t "%{buildroot}/usr/share/man/man1"
 install -Dm644 "hnefatafl-server.1.gz" -t "%{buildroot}/usr/share/man/man1"
 install -Dm644 "hnefatafl-server-full.1.gz" -t "%{buildroot}/usr/share/man/man1"
