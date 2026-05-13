@@ -100,3 +100,9 @@ SPDX-FileCopyrightText = "NONE"
 path = ".vscode/settings.json"
 SPDX-License-Identifier = "CC0-1.0"
 SPDX-FileCopyrightText = "NONE"
+
+# Automatically generated.
+[[annotations]]
+path = "default_nn.onnx"
+SPDX-License-Identifier = "GPL-3.0-or-later"
+SPDX-FileCopyrightText = "sovelin (github user name)"
