@@ -16,6 +16,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // SPDX-FileCopyrightText: 2026 David Campbell <david@hnefatafl.org>
 
+#![cfg(target_os = "linux")]
+
 use std::{
     env,
     io::{BufRead, BufReader, Write},
