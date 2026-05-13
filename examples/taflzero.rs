@@ -43,9 +43,9 @@ use taflzero::{Engine, moves::mv::create_move_from_algebraic};
 
 const PORT: &str = ":49152";
 
-/// A Hnefatafl Copenhagen AI
+/// `TaflZero` AI
 ///
-/// This is taflzero client that connects to a hnefatafl.org server.
+/// This is the taflzero client that connects to a hnefatafl.org server.
 #[derive(Parser, Debug)]
 #[command(version, about)]
 struct Args {
