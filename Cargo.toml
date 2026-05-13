@@ -23,10 +23,9 @@ criterion = { version = "0.8", features = ["html_reports"] }
 csv = "1"
 
 [target.'cfg(target_os = "linux")'.dev-dependencies]
-taflzero = { git = "https://github.com/sovelin/taflzero.git" }
+taflzero = { git = "https://github.com/sovelin/taflzero.git", default-features = false }
 socket2 = { version = "0.6", features = ["all"] }
 ort = { version = "=2.0.0-rc.11", features = ["openvino"]}
-# ndarray = "0.17"
 
 # client
 [target.'cfg(not(target_os = "redox"))'.dependencies.iced]
