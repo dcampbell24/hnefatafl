@@ -72,7 +72,7 @@ struct Args {
     systemd: bool,
 
     /// Search for `u64` milliseconds
-    #[arg(long, default_value_t = 1_000)]
+    #[arg(long, default_value_t = 4_000)]
     search: u64,
 
     /// Whether to log at the debug level
