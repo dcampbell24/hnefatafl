@@ -36,7 +36,7 @@ use crate::{
     status::Status,
 };
 
-pub const BOARD_LETTERS: &str = "A B C D E F G H I J K L M ";
+pub const BOARD_LETTERS: &str = " A B C D E F G H I J K L M ";
 
 pub const STARTING_POSITION_11X11: [&str; 11] = [
     "...XXXXX...",
@@ -123,12 +123,12 @@ impl fmt::Display for Board {
         let board_size: usize = self.size().into();
         let mut letters = " ".repeat(3).clone();
         letters.push_str(&BOARD_LETTERS[..board_size * 2]);
-        let bar = "─".repeat(board_size * 2);
+        let bar = "─".repeat(board_size * 2 + 1);
 
         writeln!(f, "\n{letters}\n  ┌{bar}┐")?;
         for y in 0..board_size {
             let y_label = board_size - y;
-            write!(f, "{y_label:2}│")?;
+            write!(f, "{y_label:2}│ ")?;
 
             for x in 0..board_size {
                 if (((y, x) == (0, 0)
