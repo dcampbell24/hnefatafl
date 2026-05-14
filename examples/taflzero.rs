@@ -44,6 +44,9 @@ use taflzero::{Engine, moves::mv::create_move_from_algebraic};
 const PORT: &str = ":49152";
 const ONNX_PATH: &str = "/opt/taflzero/default_nn.onnx";
 
+const MONTE_CARLO_SECONDS: u64 = 16;
+const MONTE_CARLO_DEPTH: u8 = 20;
+
 /// `TaflZero` AI
 ///
 /// This is the taflzero client that connects to a hnefatafl.org server.
@@ -189,7 +192,7 @@ fn main() -> anyhow::Result<()> {
         }
 
         let game = Game::default();
-        let ai = AiMonteCarlo::new(Duration::from_secs(10), 20);
+        let ai = AiMonteCarlo::new(Duration::from_secs(MONTE_CARLO_SECONDS), MONTE_CARLO_DEPTH);
         engine.set_start_position();
 
         log::debug!("\n{}", game.board);
