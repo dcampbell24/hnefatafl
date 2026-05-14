@@ -17,7 +17,7 @@
 // SPDX-FileCopyrightText: 2026 David Campbell <david@hnefatafl.org>
 
 use std::{
-    env,
+    env, fs,
     io::{BufRead, BufReader, Write},
     net::{TcpStream, ToSocketAddrs},
     process::Command,
@@ -42,7 +42,7 @@ use socket2::{Domain, SockAddr, Socket, TcpKeepalive, Type};
 use taflzero::{Engine, moves::mv::create_move_from_algebraic};
 
 const PORT: &str = ":49152";
-
+const ONNX_PATH: &str = "/opt/taflzero/default_nn.onnx";
 /// `TaflZero` AI
 ///
 /// This is the taflzero client that connects to a hnefatafl.org server.
@@ -161,7 +161,14 @@ fn main() -> anyhow::Result<()> {
     buf.clear();
 
     let role = &args.role;
-    let mut engine = Engine::new("default_nn.onnx".to_string());
+
+    let onnx_path = if fs::exists(ONNX_PATH)? {
+        ONNX_PATH
+    } else {
+        "default_nn.onnx"
+    };
+
+    let mut engine = Engine::new(onnx_path.to_string());
 
     loop {
         let game_id;
