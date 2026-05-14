@@ -16,7 +16,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // SPDX-FileCopyrightText: 2025 David Campbell <david@hnefatafl.org>
 
-use std::{collections::HashMap, fmt, str::FromStr};
+use std::{collections::HashMap, fmt, hash::Hash, str::FromStr};
 
 use rustc_hash::FxHashSet;
 use serde::{Deserialize, Serialize};
@@ -61,13 +61,25 @@ pub const STARTING_POSITION_13X13: [&str; 13] = [
     "...XXXXXXX...",
 ];
 
-#[derive(Clone, Deserialize, Eq, Hash, PartialEq, Serialize)]
+#[derive(Clone, Deserialize, Eq, Serialize)]
 pub struct Board {
     pub spaces: Vec<Space>,
     #[serde(skip)]
     pub king: Option<Vertex>,
     #[serde(skip)]
     pub display_ascii: bool,
+}
+
+impl PartialEq for Board {
+    fn eq(&self, other: &Self) -> bool {
+        self.spaces == other.spaces
+    }
+}
+
+impl Hash for Board {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.spaces.hash(state);
+    }
 }
 
 impl Default for Board {
