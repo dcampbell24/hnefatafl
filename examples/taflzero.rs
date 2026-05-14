@@ -164,8 +164,10 @@ fn main() -> anyhow::Result<()> {
     let role = &args.role;
 
     let onnx_path = if fs::exists(ONNX_PATH)? {
+        println!("!");
         ONNX_PATH
     } else {
+        println!("!!");
         "default_nn.onnx"
     };
 
