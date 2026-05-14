@@ -16,7 +16,12 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // SPDX-FileCopyrightText: 2025 David Campbell <david@hnefatafl.org>
 
-use std::{collections::HashMap, fmt, hash::Hash, str::FromStr};
+use std::{
+    collections::HashMap,
+    fmt,
+    hash::{Hash, Hasher},
+    str::FromStr,
+};
 
 use rustc_hash::FxHashSet;
 use serde::{Deserialize, Serialize};
@@ -77,7 +82,7 @@ impl PartialEq for Board {
 }
 
 impl Hash for Board {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+    fn hash<H: Hasher>(&self, state: &mut H) {
         self.spaces.hash(state);
     }
 }
