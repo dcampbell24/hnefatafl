@@ -30,11 +30,13 @@ use thiserror::Error;
 use crate::{
     characters::Characters,
     game::PreviousBoards,
-    play::{BOARD_LETTERS, EXIT_SQUARES_11X11, EXIT_SQUARES_13X13, Plae, Play, Vertex},
+    play::{EXIT_SQUARES_11X11, EXIT_SQUARES_13X13, Plae, Play, Vertex},
     role::Role,
     space::Space,
     status::Status,
 };
+
+pub const BOARD_LETTERS: &str = "A B C D E F G H I J K L M ";
 
 pub const STARTING_POSITION_11X11: [&str; 11] = [
     "...XXXXX...",
@@ -120,8 +122,8 @@ impl fmt::Display for Board {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let board_size: usize = self.size().into();
         let mut letters = " ".repeat(3).clone();
-        letters.push_str(&BOARD_LETTERS[..board_size]);
-        let bar = "─".repeat(board_size);
+        letters.push_str(&BOARD_LETTERS[..board_size * 2]);
+        let bar = "─".repeat(board_size * 2);
 
         writeln!(f, "\n{letters}\n  ┌{bar}┐")?;
         for y in 0..board_size {
@@ -145,14 +147,14 @@ impl fmt::Display for Board {
                         && board_size == 13)
                 {
                     if self.display_ascii {
-                        write!(f, "#")?;
+                        write!(f, "# ")?;
                     } else {
-                        write!(f, "⌘")?;
+                        write!(f, "⌘ ")?;
                     }
                 } else if self.display_ascii {
-                    write!(f, "{}", self.spaces[y * board_size + x].display_ascii())?;
+                    write!(f, "{} ", self.spaces[y * board_size + x].display_ascii())?;
                 } else {
-                    write!(f, "{}", self.spaces[y * board_size + x])?;
+                    write!(f, "{} ", self.spaces[y * board_size + x])?;
                 }
             }
             writeln!(f, "│{y_label:2}")?;

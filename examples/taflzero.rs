@@ -427,9 +427,6 @@ fn generate_move(
                         player_resigns(tcp, game_id, role)?;
                     }
 
-                    // Broken!!!!
-                    game.play(&generate_move.play)?;
-
                     tcp.write_all(format!("game {game_id} {play}\n").as_bytes())?;
                 }
                 Plae::AttackerResigns | Plae::DefenderResigns => {
@@ -451,7 +448,7 @@ fn generate_move(
     log::debug!("{}", game.board);
 
     if game.status != Status::Ongoing {
-        return Ok(());
+        return Err(anyhow::Error::msg("The game ended!"));
     }
 
     Ok(())
