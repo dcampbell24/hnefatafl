@@ -76,7 +76,7 @@ struct Args {
     systemd: bool,
 
     /// Search for `u64` milliseconds
-    #[arg(long, default_value_t = 100)]
+    #[arg(long, default_value_t = 4_000)]
     search_ms: u64,
 
     /// Whether to log at the debug level
@@ -418,7 +418,7 @@ fn generate_move(
             log::info!("changed play to: {generate_move}");
 
             match &generate_move.play {
-                Plae::Play(play) => {
+                full_play @ Plae::Play(play) => {
                     let mv =
                         create_move_from_algebraic(&format!("{}{}", play.from, play.to)).unwrap();
 
@@ -427,7 +427,7 @@ fn generate_move(
                         player_resigns(tcp, game_id, role)?;
                     }
 
-                    tcp.write_all(format!("game {game_id} {play}\n").as_bytes())?;
+                    tcp.write_all(format!("game {game_id} {full_play}\n").as_bytes())?;
                 }
                 Plae::AttackerResigns | Plae::DefenderResigns => {
                     player_resigns(tcp, game_id, role)?;
@@ -446,10 +446,6 @@ fn generate_move(
     }
 
     log::debug!("{}", game.board);
-
-    if game.status != Status::Ongoing {
-        return Err(anyhow::Error::msg("The game ended!"));
-    }
 
     Ok(())
 }
