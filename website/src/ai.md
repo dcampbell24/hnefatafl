@@ -2,7 +2,7 @@
 
 ## Artifcial Intelligence
 
-I adapted TaflZero to my server. It is based off of AlphaZero the Go AI by
+I adapted TaflZero to my server. It is based off of AlphaGoZero by
 Google. You can run it via `taflzero` on the Arch, Debian, and Fedora
 installs, or via the source package. See `--help` for what options you can pass
 it.
