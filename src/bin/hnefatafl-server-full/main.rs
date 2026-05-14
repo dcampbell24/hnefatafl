@@ -978,7 +978,6 @@ impl Server {
         None
     }
 
-    //
     #[allow(clippy::too_many_lines)]
     fn game(
         &mut self,
