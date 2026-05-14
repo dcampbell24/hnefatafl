@@ -426,7 +426,7 @@ fn systemd_delay_restart(args: &Args) -> anyhow::Result<()> {
 
 fn init_logger(debug: bool, systemd: bool) {
     let mut builder = Builder::new();
-    let module = "hnefatafl_org_taflzero";
+    let module = "taflzero";
 
     if systemd {
         builder.format_timestamp(None);
