@@ -43,6 +43,7 @@ use taflzero::{Engine, moves::mv::create_move_from_algebraic};
 
 const PORT: &str = ":49152";
 const ONNX_PATH: &str = "/opt/taflzero/default_nn.onnx";
+
 /// `TaflZero` AI
 ///
 /// This is the taflzero client that connects to a hnefatafl.org server.
