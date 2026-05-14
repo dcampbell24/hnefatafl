@@ -319,15 +319,13 @@ fn handle_messages(
                 let to = Vertex::from_str(&to)?;
 
                 let play = Plae::Play(Play { role, from, to });
-
-                log::debug!("play: {play}");
+                log::info!("{play}");
 
                 if game.play(&play).is_err() {
                     let generate_move = ai.generate_move(&mut game)?;
-                    log::debug!("changed play to: {generate_move}");
-                    let play = generate_move.play;
+                    log::info!("changed play to: {generate_move}");
 
-                    let Plae::Play(play) = &play else {
+                    let Plae::Play(play) = &generate_move.play else {
                         tcp.write_all(
                             format!("game {game_id} play {role} resigns _\n").as_bytes(),
                         )?;
@@ -335,9 +333,11 @@ fn handle_messages(
                         return Ok(());
                     };
 
-                    let mv = create_move_from_algebraic(&format!("{from}{to}")).unwrap();
+                    let mv =
+                        create_move_from_algebraic(&format!("{}{}", play.from, play.to)).unwrap();
+
                     if let Err(invalid_play) = engine.make_move(mv) {
-                        log::debug!("invalid_play: {invalid_play:?}");
+                        log::error!("invalid_play: {invalid_play:?}");
 
                         tcp.write_all(
                             format!("game {game_id} play {role} resigns _\n").as_bytes(),
@@ -349,7 +349,7 @@ fn handle_messages(
                 }
 
                 if let Err(invalid_play) = engine.make_move(mv) {
-                    log::debug!("invalid_play: {invalid_play:?}");
+                    log::error!("invalid_play: {invalid_play:?}");
 
                     tcp.write_all(format!("game {game_id} play {role} resigns _\n").as_bytes())?;
 
@@ -371,6 +371,7 @@ fn handle_messages(
             let play =
                 Plae::try_from(message[2..].to_vec()).expect("we should be getting a valid play");
 
+            log::info!("{play}");
             game.play(&play)?;
 
             if game.status != Status::Ongoing {
@@ -385,7 +386,7 @@ fn handle_messages(
             let mv = create_move_from_algebraic(&mv).unwrap();
 
             if let Err(invalid_play) = engine.make_move(mv) {
-                log::debug!("invalid_play: {invalid_play:?}");
+                log::error!("invalid_play: {invalid_play:?}");
 
                 tcp.write_all(format!("game {game_id} play {role} resigns _\n").as_bytes())?;
                 return Ok(());
