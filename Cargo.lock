@@ -2365,7 +2365,6 @@ dependencies = [
  "jiff",
  "lettre",
  "log",
- "ort",
  "password-hash",
  "postcard",
  "rand 0.10.1",

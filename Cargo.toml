@@ -21,11 +21,7 @@ include = ["/src/**/*", "/README.md", "/CHANGELOG.md", "/LICENSE.txt"]
 [dev-dependencies]
 criterion = { version = "0.8", features = ["html_reports"] }
 csv = "1"
-
-[target.'cfg(target_os = "linux")'.dev-dependencies]
 taflzero = { git = "https://github.com/sovelin/taflzero.git", rev = "1527cb04f54c9e956b36a54822aaf75bf1ccba55", default-features = false }
-socket2 = { version = "0.6", features = ["all"] }
-ort = { version = "=2.0.0-rc.11", features = ["openvino"]}
 
 # client
 [target.'cfg(not(target_os = "redox"))'.dependencies.iced]
@@ -120,8 +116,6 @@ server = [
 ]
 socket = ["dep:socket2"]
 toml = ["dep:toml"]
-cuda = ["ort/cuda"]
-directml = ["ort/directml"]
 
 # client
 icon_2 = []
@@ -172,6 +166,10 @@ name = "send-website-urls"
 required-features = ["urls"]
 bench = false
 test = false
+
+[[example]]
+name = "taflzero"
+required-features = ["socket"]
 
 [[bench]]
 name = "hnefatafl_rs"
