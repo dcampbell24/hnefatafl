@@ -76,8 +76,8 @@ struct Args {
     systemd: bool,
 
     /// Search for `u64` milliseconds
-    #[arg(long, default_value_t = 4_000)]
-    search: u64,
+    #[arg(long, default_value_t = 100)]
+    search_ms: u64,
 
     /// Whether to log at the debug level
     #[arg(long)]
@@ -205,7 +205,7 @@ fn main() -> anyhow::Result<()> {
             *role,
             &mut reader,
             &mut tcp,
-            args.search,
+            args.search_ms,
         )?;
 
         if args.join_game.is_some() {
@@ -277,7 +277,7 @@ fn handle_messages(
     role: Role,
     reader: &mut BufReader<TcpStream>,
     tcp: &mut TcpStream,
-    search: u64,
+    search_ms: u64,
 ) -> anyhow::Result<()> {
     let mut buf = String::new();
 
@@ -291,82 +291,7 @@ fn handle_messages(
         let message: Vec<_> = buf.split_ascii_whitespace().collect();
 
         if Some("generate_move") == message.get(2).copied() {
-            engine.make_search(search, None);
-
-            if let Some(mv) = engine.best_move() {
-                log::debug!("taflzero: {mv}");
-
-                let play = mv.to_string();
-                let mut play = play.chars();
-                let mut from = Vec::new();
-
-                from.push(play.next().unwrap());
-                from.push(play.next().unwrap());
-
-                let ch = play.next().unwrap();
-                let to: String = if ch.is_ascii_digit() {
-                    from.push(ch);
-
-                    play.collect()
-                } else {
-                    let mut s = ch.to_string();
-                    s.push_str(&(play.collect::<String>()));
-                    s
-                };
-
-                let from: String = from.iter().collect();
-                let from = Vertex::from_str(&from)?;
-                let to = Vertex::from_str(&to)?;
-
-                let play = Plae::Play(Play { role, from, to });
-                log::info!("{play}");
-
-                if game.play(&play).is_err() {
-                    let generate_move = ai.generate_move(&mut game)?;
-                    log::info!("changed play to: {generate_move}");
-
-                    let Plae::Play(play) = &generate_move.play else {
-                        tcp.write_all(
-                            format!("game {game_id} play {role} resigns _\n").as_bytes(),
-                        )?;
-
-                        return Ok(());
-                    };
-
-                    let mv =
-                        create_move_from_algebraic(&format!("{}{}", play.from, play.to)).unwrap();
-
-                    if let Err(invalid_play) = engine.make_move(mv) {
-                        log::error!("invalid_play: {invalid_play:?}");
-
-                        tcp.write_all(
-                            format!("game {game_id} play {role} resigns _\n").as_bytes(),
-                        )?;
-                        return Ok(());
-                    }
-
-                    tcp.write_all(format!("game {game_id} {play}\n").as_bytes())?;
-                }
-
-                if let Err(invalid_play) = engine.make_move(mv) {
-                    log::error!("invalid_play: {invalid_play:?}");
-
-                    tcp.write_all(format!("game {game_id} play {role} resigns _\n").as_bytes())?;
-
-                    return Ok(());
-                }
-
-                tcp.write_all(format!("game {game_id} {play}\n").as_bytes())?;
-            } else {
-                tcp.write_all(format!("game {game_id} play {role} resigns _\n").as_bytes())?;
-                return Ok(());
-            }
-
-            log::debug!("{}", game.board);
-
-            if game.status != Status::Ongoing {
-                return Ok(());
-            }
+            generate_move(&mut ai, &mut game, engine, game_id, role, tcp, search_ms)?;
         } else if Some("play") == message.get(2).copied() {
             let play =
                 Plae::try_from(message[2..].to_vec()).expect("we should be getting a valid play");
@@ -447,4 +372,92 @@ fn init_logger(debug: bool, systemd: bool) {
     }
 
     builder.init();
+}
+
+fn generate_move(
+    ai: &mut AiMonteCarlo,
+    game: &mut Game,
+    engine: &mut Engine,
+    game_id: &str,
+    role: Role,
+    tcp: &mut TcpStream,
+    search_ms: u64,
+) -> anyhow::Result<()> {
+    engine.make_search(search_ms, None);
+
+    if let Some(mv) = engine.best_move() {
+        log::debug!("taflzero: {mv}");
+
+        let play = mv.to_string();
+        let mut play = play.chars();
+        let mut from = Vec::new();
+
+        from.push(play.next().unwrap());
+        from.push(play.next().unwrap());
+
+        let ch = play.next().unwrap();
+        let to: String = if ch.is_ascii_digit() {
+            from.push(ch);
+
+            play.collect()
+        } else {
+            let mut s = ch.to_string();
+            s.push_str(&(play.collect::<String>()));
+            s
+        };
+
+        let from: String = from.iter().collect();
+        let from = Vertex::from_str(&from)?;
+        let to = Vertex::from_str(&to)?;
+        let play = Plae::Play(Play { role, from, to });
+
+        log::info!("{play}");
+
+        if game.play(&play).is_err() {
+            let generate_move = ai.generate_move(game)?;
+            log::info!("changed play to: {generate_move}");
+
+            match &generate_move.play {
+                Plae::Play(play) => {
+                    let mv =
+                        create_move_from_algebraic(&format!("{}{}", play.from, play.to)).unwrap();
+
+                    if let Err(invalid_play) = engine.make_move(mv) {
+                        log::error!("invalid_play: {invalid_play:?}");
+                        player_resigns(tcp, game_id, role)?;
+                    }
+
+                    // Broken!!!!
+                    game.play(&generate_move.play)?;
+
+                    tcp.write_all(format!("game {game_id} {play}\n").as_bytes())?;
+                }
+                Plae::AttackerResigns | Plae::DefenderResigns => {
+                    player_resigns(tcp, game_id, role)?;
+                }
+            }
+        } else {
+            if let Err(invalid_play) = engine.make_move(mv) {
+                log::error!("invalid_play: {invalid_play:?}");
+                player_resigns(tcp, game_id, role)?;
+            }
+
+            tcp.write_all(format!("game {game_id} {play}\n").as_bytes())?;
+        }
+    } else {
+        player_resigns(tcp, game_id, role)?;
+    }
+
+    log::debug!("{}", game.board);
+
+    if game.status != Status::Ongoing {
+        return Ok(());
+    }
+
+    Ok(())
+}
+
+fn player_resigns(tcp: &mut TcpStream, game_id: &str, role: Role) -> anyhow::Result<()> {
+    tcp.write_all(format!("game {game_id} play {role} resigns _\n").as_bytes())?;
+    Err(anyhow::Error::msg("The player resigned!"))
 }
