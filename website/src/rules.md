@@ -190,7 +190,7 @@ The king is captured when the attackers surround him on all four cardinal
 points, except when he is next to the throne.
 
 If on a square next to the throne, the attackers must occupy the three remaining
-squares around him.
+squares around him and be the one to move.
 
 The king cannot be captured on the board edge.
 
@@ -207,7 +207,7 @@ The king cannot be captured on the board edge.
  5│ . . . . . A . . . . . │ │ . . . . A k A . . . . │ │ . . . . . . . . . . . │
  4│ . . . . . . . . . . . │ │ . . . . . A . . . . . │ │ . . . . A . . . . . . │
  3│ . . . . . . . . . . . │ │ . . . . . . . . . . . │ │ . . . A k A . . . . . │
- 2│ . . . . . . . . . . . │ │ . . . . . . . . . . . │ │ . . . . A . . . . . . │
+ 2│ . . . . . . . . . . . │ │ . . . . . ↑ . . . . . │ │ . . . . A . . . . . . │
  1│ # . . . . . . . . . # │ │ # . . . . . . . . . # │ │ # . . . . . . . . . # │
   └───────────────────────┘ └───────────────────────┘ └───────────────────────┘
     A B C D E F G H I J K     A B C D E F G H I J K     A B C D E F G H I J K
