@@ -23,6 +23,7 @@ use std::{
     str::FromStr,
 };
 
+use colored::Colorize;
 use rustc_hash::FxHashSet;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -147,9 +148,9 @@ impl fmt::Display for Board {
                         && board_size == 13)
                 {
                     if self.display_ascii {
-                        write!(f, "# ")?;
+                        write!(f, "{} ", "#".green())?;
                     } else {
-                        write!(f, "⌘ ")?;
+                        write!(f, "{} ", "⌘".green())?;
                     }
                 } else if self.display_ascii {
                     write!(f, "{} ", self.spaces[y * board_size + x].display_ascii())?;
