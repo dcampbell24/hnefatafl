@@ -254,7 +254,31 @@ If a player cannot move, he loses the game.
 
 ### 10. Defenders Can't Win
 
-When the king is trapped. (Not added to the game engine)
+When the defenders don't have enough pieces left to make an exit fort and the
+corners are blocked.
+
+```plain
+  ┌───────────────────────┐
+11│ # . A . . . . . A . # │
+10│ . A . . . . . . . A . │
+ 9│ A . . . . . . . . . A │
+ 8│ . . . . . . . . . . . │
+ 7│ . . . . . . . . . . D │
+ 6│ A . . . . # . . . D K │
+ 5│ . . . . . . . . . . D │
+ 4│ . . . . . . . . . . . │
+ 3│ A . . . . . . . . . A │
+ 2│ . A . . . . . . . A . │
+ 1│ # . A . . . . . A . # │
+  └───────────────────────┘
+    A B C D E F G H I J K
+```
+
+Not added to the game engine below this line.
+
+---
+
+When the king is trapped.
 
 ```plain
   ┌───────────────────────┐
@@ -273,22 +297,22 @@ When the king is trapped. (Not added to the game engine)
     A B C D E F G H I J K
 ```
 
-When the defenders don't have enough pieces left to make an exit fort and the
-corners are blocked.
+When the attackers have all corners blocked and only two spaces left on any
+side.
 
 ```plain
   ┌───────────────────────┐
-11│ # . A . . . . . A . # │
-10│ . A . . . . . . . A . │
- 9│ A . . . . . . . . . A │
- 8│ . . . . . . . . . . . │
- 7│ . . . . . . . . . . D │
- 6│ A . . . . # . . . D K │
- 5│ . . . . . . . . . . D │
- 4│ . . . . . . . . . . . │
- 3│ A . . . . . . . . . A │
- 2│ . A . . . . . . . A . │
- 1│ # . A . . . . . A . # │
+11│ # . . .   A . . A . # │
+10│ . . . . A . . . . A . │
+ 9│ . .   A . . . . . . A │
+ 8│ . . A . . . . . D D D │
+ 7│ . . A . . . . D . K D │
+ 6│ . . A . . # . D D D A │
+ 5│ . . A . . . . . . . A │
+ 4│ . . A . . . . . . . A │
+ 3│ . . . A . . . . . . A │
+ 2│ . . . . A . . . . A . │
+ 1│ # . . . . A . . A . # │
   └───────────────────────┘
     A B C D E F G H I J K
 ```
