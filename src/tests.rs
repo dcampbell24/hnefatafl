@@ -2253,6 +2253,82 @@ fn closed_off_exits() -> anyhow::Result<()> {
 }
 
 #[test]
+fn can_not_escape() -> anyhow::Result<()> {
+    let board: Board = [
+        "..X..X..X..",
+        ".X.......X.",
+        "X.........X",
+        "...........",
+        "...........",
+        "...........",
+        "...........",
+        "...........",
+        "X.........X",
+        ".X...O...X.",
+        "..X.OKO.X..",
+    ]
+    .try_into()?;
+    assert!(board.can_not_esacpe());
+
+    let board: Board = [
+        "..X..X..X..",
+        ".X.......X.",
+        "X.........X",
+        "...........",
+        "...........",
+        "...........",
+        "...........",
+        "...........",
+        "X.........X",
+        ".X...OOO.X.",
+        "..X.OK..X..",
+    ]
+    .try_into()?;
+    assert!(!board.can_not_esacpe());
+
+    let board: Board = [
+        "..X.....X..",
+        ".X.......X.",
+        "X.........X",
+        "...........",
+        "...........",
+        "...........",
+        "...........",
+        "...........",
+        "X.........X",
+        ".X.......X.",
+        "..X..K..X..",
+    ]
+    .try_into()?;
+    assert!(!board.can_not_esacpe());
+
+    let board = [
+        "..X.....X..",
+        ".X.......X.",
+        "X.........X",
+        "...........",
+        "...........",
+        "...........",
+        "...........",
+        "...........",
+        "X.........X",
+        ".X..XOO..X.",
+        "..XO..KOX..",
+    ];
+
+    let mut game = game::Game {
+        board: board.try_into()?,
+        ..Default::default()
+    };
+
+    game.read_line("play attacker e2 e1")?;
+    assert!(game.board.can_not_esacpe());
+    assert_eq!(game.status, Status::AttackerWins);
+
+    Ok(())
+}
+
+#[test]
 fn someone_wins() {
     let mut game = Game::default();
     let mut ai: Box<dyn AI> = Box::new(AiBanal);

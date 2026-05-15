@@ -75,6 +75,10 @@ pub struct Board {
     #[serde(skip)]
     pub king: Option<Vertex>,
     #[serde(skip)]
+    pub attackers_captured: usize,
+    #[serde(skip)]
+    pub defenders_captured: usize,
+    #[serde(skip)]
     pub display_ascii: bool,
 }
 
@@ -208,11 +212,19 @@ impl TryFrom<[&str; 11]> for Board {
             }
         }
 
-        Ok(Self {
+        let mut board = Self {
             spaces,
+            attackers_captured: 0,
+            defenders_captured: 0,
             king,
             display_ascii: false,
-        })
+        };
+
+        let captured = board.captured();
+        board.attackers_captured = captured.attacker;
+        board.defenders_captured = captured.defender;
+
+        Ok(board)
     }
 }
 
@@ -261,11 +273,19 @@ impl TryFrom<[&str; 13]> for Board {
             }
         }
 
-        Ok(Self {
+        let mut board = Self {
             spaces,
+            attackers_captured: 0,
+            defenders_captured: 0,
             king,
             display_ascii: false,
-        })
+        };
+
+        let captured = board.captured();
+        board.attackers_captured = captured.attacker;
+        board.defenders_captured = captured.defender;
+
+        Ok(board)
     }
 }
 
@@ -769,6 +789,21 @@ impl Board {
         }
 
         closed_off_exits
+    }
+
+    #[must_use]
+    pub fn can_not_esacpe(&self) -> bool {
+        let defenders_left = match self.size() {
+            BoardSize::_11 => 12 - self.defenders_captured < 4,
+            BoardSize::_13 => 16 - self.defenders_captured < 4,
+        };
+
+        let attackers_left = match self.size() {
+            BoardSize::_11 => 24 - self.attackers_captured >= 13,
+            BoardSize::_13 => 32 - self.attackers_captured >= 13,
+        };
+
+        self.closed_off_exits() == 4 && defenders_left && attackers_left
     }
 
     #[must_use]
@@ -1443,15 +1478,23 @@ fn board_11x11() -> Board {
         .flat_map(|space| space.chars().map(|ch| ch.try_into().unwrap()))
         .collect();
 
-    Board {
+    let mut board = Board {
         spaces,
+        attackers_captured: 0,
+        defenders_captured: 0,
         king: Some(Vertex {
             size: BoardSize::_11,
             x: 5,
             y: 5,
         }),
         display_ascii: false,
-    }
+    };
+
+    let captured = board.captured();
+    board.attackers_captured = captured.attacker;
+    board.defenders_captured = captured.defender;
+
+    board
 }
 
 #[must_use]
@@ -1463,21 +1506,39 @@ fn board_13x13() -> Board {
         .flat_map(|space| space.chars().map(|ch| ch.try_into().unwrap()))
         .collect();
 
-    Board {
+    let mut board = Board {
         spaces,
+        attackers_captured: 0,
+        defenders_captured: 0,
         king: Some(Vertex {
             size: BoardSize::_13,
             x: 6,
             y: 6,
         }),
         display_ascii: false,
-    }
+    };
+
+    let captured = board.captured();
+    board.attackers_captured = captured.attacker;
+    board.defenders_captured = captured.defender;
+
+    board
 }
 
 pub struct Captured {
-    pub attacker: u8,
-    pub defender: u8,
+    pub attacker: usize,
+    pub defender: usize,
     pub king: bool,
+}
+
+impl From<&Board> for Captured {
+    fn from(board: &Board) -> Self {
+        Captured {
+            attacker: board.attackers_captured,
+            defender: board.defenders_captured,
+            king: board.king.is_none(),
+        }
+    }
 }
 
 impl Captured {
