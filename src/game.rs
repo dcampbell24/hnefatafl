@@ -34,7 +34,7 @@ use wasm_bindgen::prelude::wasm_bindgen;
 
 use crate::{
     ai::{AI, AiBasic},
-    board::{Board, BoardSize, InvalidMove},
+    board::{Board, BoardSize, Captured, InvalidMove},
     characters::Characters,
     message::{COMMANDS, Message},
     play::{Captures, Plae, Play, PlayRecordTimed, Plays, Vertex},
@@ -106,7 +106,7 @@ impl Default for PreviousBoards {
 
 impl fmt::Display for Game {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let captured = self.board.captured();
+        let captured = Captured::from(&self.board);
 
         writeln!(f, "{}\n", self.board)?;
         writeln!(f, "move: {}", self.plays.len() + 1)?;
@@ -821,6 +821,12 @@ impl Game {
                         Plays::PlayRecords(plays) => plays.push(Some(Plae::Play(play.clone()))),
                     }
 
+                    match self.turn {
+                        Role::Attacker => self.board.defenders_captured += captures.len(),
+                        Role::Defender => self.board.attackers_captured += captures.len(),
+                        Role::Roleless => unreachable!(),
+                    }
+
                     if self.status == Status::Ongoing {
                         self.turn = self.turn.opposite();
 
@@ -834,6 +840,8 @@ impl Game {
                                 Role::Roleless => unreachable!(),
                                 Role::Defender => Status::AttackerWins,
                             }
+                        } else if self.board.can_not_esacpe() {
+                            self.status = Status::AttackerWins;
                         }
                     }
 
@@ -988,8 +996,8 @@ impl Game {
     pub fn utility(&self) -> (f64, EscapeVec) {
         let mut utility = 0.0;
 
-        let captured = self.board.captured();
-        utility -= f64::from(captured.attacker) * 100_000.0;
+        // Fixme: let captured = self.board.captured();
+        // Fixme: utility -= f64::from(captured.attacker) * 100_000.0;
 
         let (moves_to_escape, escape_vec) = self.moves_to_escape();
         utility += match moves_to_escape {
@@ -1000,7 +1008,7 @@ impl Game {
 
         utility += f64::from(self.board.closed_off_exits()) * 100.0;
         // Todo: An extra 100.0 points for each corner that touches another corner.
-        utility += f64::from(captured.defender) * 10.0;
+        // Fixme: utility += f64::from(captured.defender) * 10.0;
 
         if let Some(spaces) = self.board.spaces_around_the_king() {
             utility -= f64::from(spaces);
