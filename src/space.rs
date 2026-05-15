@@ -18,6 +18,7 @@
 
 use std::fmt;
 
+use colored::Colorize;
 use serde::{Deserialize, Serialize};
 
 use crate::role::Role;
@@ -32,12 +33,12 @@ pub enum Space {
 
 impl Space {
     #[must_use]
-    pub fn display_ascii(&self) -> &str {
+    pub fn display_ascii(&self) -> String {
         match self {
-            Self::Attacker => "A",
-            Self::Empty => ".",
-            Self::King => "K",
-            Self::Defender => "D",
+            Self::Attacker => format!("{}", "A".red()),
+            Self::Empty => ".".to_string(),
+            Self::King => format!("{}", "K".yellow()),
+            Self::Defender => format!("{}", "D".blue()),
         }
     }
 }
@@ -61,10 +62,10 @@ impl TryFrom<char> for Space {
 impl fmt::Display for Space {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Attacker => write!(f, "♟"),
+            Self::Attacker => write!(f, "{}", "♟".red()),
             Self::Empty => write!(f, "."),
-            Self::King => write!(f, "♔"),
-            Self::Defender => write!(f, "♙"),
+            Self::King => write!(f, "{}", "♔".yellow()),
+            Self::Defender => write!(f, "{}", "♙".blue()),
         }
     }
 }

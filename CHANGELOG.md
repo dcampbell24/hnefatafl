@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - hnefatafl-client: blitz time setting.
 - hnefatafl-client: client version and server version.
+- Colorize the board pieces.
 
 ### Changed
 
