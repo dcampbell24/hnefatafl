@@ -251,3 +251,44 @@ If the defender would repeat a board position, the move is not allowed.
 ### 9. Automatic Loss
 
 If a player cannot move, he loses the game.
+
+### 10. Defenders Can't Win (Not Added to Game)
+
+When the king is trapped.
+
+```plain
+  ┌───────────────────────┐
+11│ # . . . . . . . . . # │
+10│ . . . . . . . . . . . │
+ 9│ . . . . . . . . . . . │
+ 8│ . . . . . . . . . . . │
+ 7│ . . . . . . . . . . . │
+ 6│ A . . . . # . . . . D │
+ 5│ . . . . . . . . . . D │
+ 4│ . . . . . . . . . . . │
+ 3│ . . . . . A A . . . . │
+ 2│ . . . . . A A . . . . │
+ 1│ # . . A A K A A . . # │
+  └───────────────────────┘
+    A B C D E F G H I J K
+```
+
+When the defenders don't have enough pieces left to make an exit fort and the
+corners are blocked.
+
+```plain
+  ┌───────────────────────┐
+11│ # . A . . . . . A . # │
+10│ . A . . . . . . . A . │
+ 9│ A . . . . . . . . . A │
+ 8│ . . . . . . . . . . . │
+ 7│ . . . . . . . . . . D │
+ 6│ A . . . . # . . . D K │
+ 5│ . . . . . . . . . . D │
+ 4│ . . . . . . . . . . . │
+ 3│ A . . . . . . . . . A │
+ 2│ . A . . . . . . . A . │
+ 1│ # . A . . . . . A . # │
+  └───────────────────────┘
+    A B C D E F G H I J K
+```
