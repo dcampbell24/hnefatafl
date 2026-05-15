@@ -28,6 +28,7 @@ use std::{
 
 use anyhow::Error;
 use clap::{CommandFactory, Parser};
+use colored::Colorize;
 use env_logger::Builder;
 use hnefatafl_copenhagen::{
     COPYRIGHT, VERSION_ID,
@@ -296,7 +297,7 @@ fn handle_messages(
             let play =
                 Plae::try_from(message[2..].to_vec()).expect("we should be getting a valid play");
 
-            log::info!("{play}");
+            log_play(&play, false);
             game.play(&play)?;
 
             if game.status != Status::Ongoing {
@@ -386,8 +387,6 @@ fn generate_move(
     engine.make_search(search_ms, None);
 
     if let Some(mv) = engine.best_move() {
-        log::debug!("taflzero: {mv}");
-
         let play = mv.to_string();
         let mut play = play.chars();
         let mut from = Vec::new();
@@ -411,7 +410,7 @@ fn generate_move(
         let to = Vertex::from_str(&to)?;
         let play = Plae::Play(Play { role, from, to });
 
-        log::info!("{play}");
+        log_play(&play, true);
 
         if game.play(&play).is_err() {
             let generate_move = ai.generate_move(game)?;
@@ -453,4 +452,18 @@ fn generate_move(
 fn player_resigns(tcp: &mut TcpStream, game_id: &str, role: Role) -> anyhow::Result<()> {
     tcp.write_all(format!("game {game_id} play {role} resigns _\n").as_bytes())?;
     Err(anyhow::Error::msg("The player resigned!"))
+}
+
+fn log_play(play_full: &Plae, sending: bool) {
+    let direction = if sending { '>' } else { '<' };
+
+    match play_full {
+        Plae::Play(play) => match play.role {
+            Role::Attacker => log::info!("{direction} {}", play_full.to_string().red()),
+            Role::Defender => log::info!("{direction} {}", play_full.to_string().blue()),
+            Role::Roleless => unreachable!(),
+        },
+        Plae::AttackerResigns => log::info!("{}", play_full.to_string().red()),
+        Plae::DefenderResigns => log::info!("{}", play_full.to_string().blue()),
+    }
 }
