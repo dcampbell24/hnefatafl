@@ -252,9 +252,9 @@ If the defender would repeat a board position, the move is not allowed.
 
 If a player cannot move, he loses the game.
 
-### 10. Defenders Can't Win (Not Added to Game)
+### 10. Defenders Can't Win
 
-When the king is trapped.
+When the king is trapped. (Not added to the game engine)
 
 ```plain
   ┌───────────────────────┐
