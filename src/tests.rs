@@ -2178,7 +2178,6 @@ fn closed_off_exits() -> anyhow::Result<()> {
         "..X..K.....",
     ]
     .try_into()?;
-
     assert_eq!(board.closed_off_exits(), 1);
 
     let board: Board = [
@@ -2195,7 +2194,6 @@ fn closed_off_exits() -> anyhow::Result<()> {
         "..X..K..X..",
     ]
     .try_into()?;
-
     assert_eq!(board.closed_off_exits(), 4);
 
     let board: Board = [
@@ -2212,7 +2210,6 @@ fn closed_off_exits() -> anyhow::Result<()> {
         ".XX..K..XX.",
     ]
     .try_into()?;
-
     assert_eq!(board.closed_off_exits(), 0);
 
     let board: Board = [
@@ -2229,7 +2226,6 @@ fn closed_off_exits() -> anyhow::Result<()> {
         ".X...K...X.",
     ]
     .try_into()?;
-
     assert_eq!(board.closed_off_exits(), 0);
 
     let board: Board = [
@@ -2246,7 +2242,6 @@ fn closed_off_exits() -> anyhow::Result<()> {
         ".XX..K..XX.",
     ]
     .try_into()?;
-
     assert_eq!(board.closed_off_exits(), 4);
 
     Ok(())
