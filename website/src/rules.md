@@ -274,6 +274,26 @@ corners are blocked.
     A B C D E F G H I J K
 ```
 
+When the attackers have all corners blocked and only two spaces left on any
+side.
+
+```plain
+  ┌───────────────────────┐
+11│ # . . . . A . . A . # │
+10│ . . . . A . . . . A . │
+ 9│ . . . A . . . . . . A │
+ 8│ . . A . . . . . D D D │
+ 7│ . . A . . . . D . K D │
+ 6│ . . A . . # . D D D A │
+ 5│ . . A . . . . . . . A │
+ 4│ . . A . . . . . . . A │
+ 3│ . . . A . . . . . . A │
+ 2│ . . . . A . . . . A . │
+ 1│ # . . . . A . . A . # │
+  └───────────────────────┘
+    A B C D E F G H I J K
+```
+
 Not added to the game engine below this line.
 
 ---
@@ -293,26 +313,6 @@ When the king is trapped.
  3│ . . . . . A A . . . . │
  2│ . . . . . A A . . . . │
  1│ # . . A A K A A . . # │
-  └───────────────────────┘
-    A B C D E F G H I J K
-```
-
-When the attackers have all corners blocked and only two spaces left on any
-side.
-
-```plain
-  ┌───────────────────────┐
-11│ # . . . . A . . A . # │
-10│ . . . . A . . . . A . │
- 9│ . . . A . . . . . . A │
- 8│ . . A . . . . . D D D │
- 7│ . . A . . . . D . K D │
- 6│ . . A . . # . D D D A │
- 5│ . . A . . . . . . . A │
- 4│ . . A . . . . . . . A │
- 3│ . . . A . . . . . . A │
- 2│ . . . . A . . . . A . │
- 1│ # . . . . A . . A . # │
   └───────────────────────┘
     A B C D E F G H I J K
 ```
