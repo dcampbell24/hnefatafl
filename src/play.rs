@@ -403,11 +403,37 @@ impl Vertex {
     }
 
     #[must_use]
+    pub fn up_y(&self, y: usize) -> Option<Vertex> {
+        if self.y - y > 0 {
+            Some(Vertex {
+                size: self.size,
+                x: self.x,
+                y: self.y - y,
+            })
+        } else {
+            None
+        }
+    }
+
+    #[must_use]
     pub fn left(&self) -> Option<Vertex> {
         if self.x > 0 {
             Some(Vertex {
                 size: self.size,
                 x: self.x - 1,
+                y: self.y,
+            })
+        } else {
+            None
+        }
+    }
+
+    #[must_use]
+    pub fn left_x(&self, x: usize) -> Option<Vertex> {
+        if self.x - x > 0 {
+            Some(Vertex {
+                size: self.size,
+                x: self.x - x,
                 y: self.y,
             })
         } else {
@@ -424,6 +450,51 @@ impl Vertex {
                 size: self.size,
                 x: self.x,
                 y: self.y + 1,
+            })
+        } else {
+            None
+        }
+    }
+
+    #[must_use]
+    pub fn down_y(&self, y: usize) -> Option<Vertex> {
+        let board_size: usize = self.size.into();
+
+        if self.y < board_size - y {
+            Some(Vertex {
+                size: self.size,
+                x: self.x,
+                y: self.y + y,
+            })
+        } else {
+            None
+        }
+    }
+
+    #[must_use]
+    pub fn right(&self) -> Option<Vertex> {
+        let board_size: usize = self.size.into();
+
+        if self.x < board_size - 1 {
+            Some(Vertex {
+                size: self.size,
+                x: self.x + 1,
+                y: self.y,
+            })
+        } else {
+            None
+        }
+    }
+
+    #[must_use]
+    pub fn right_x(&self, x: usize) -> Option<Vertex> {
+        let board_size: usize = self.size.into();
+
+        if self.x < board_size - x {
+            Some(Vertex {
+                size: self.size,
+                x: self.x + x,
+                y: self.y,
             })
         } else {
             None
@@ -453,21 +524,6 @@ impl Vertex {
         match &self.size {
             BoardSize::_11 => RESTRICTED_SQUARES_11X11.contains(self),
             BoardSize::_13 => RESTRICTED_SQUARES_13X13.contains(self),
-        }
-    }
-
-    #[must_use]
-    pub fn right(&self) -> Option<Vertex> {
-        let board_size: usize = self.size.into();
-
-        if self.x < board_size - 1 {
-            Some(Vertex {
-                size: self.size,
-                x: self.x + 1,
-                y: self.y,
-            })
-        } else {
-            None
         }
     }
 
