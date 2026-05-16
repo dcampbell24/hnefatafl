@@ -699,7 +699,7 @@ impl Board {
     #[allow(clippy::unwrap_used)]
     #[must_use]
     fn closed_off_exit(&self, exit: Vertex) -> (bool, Vec<Vertex>) {
-        let mut defended = Vec::new();
+        let mut defended = Vec::with_capacity(32);
         let size = self.size();
         let board_size_usize: usize = size.into();
         let mut already_checked = vec![false; board_size_usize * board_size_usize];
