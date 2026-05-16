@@ -703,8 +703,8 @@ impl Board {
         let mut defended = Vec::with_capacity(32);
         let size = self.size();
         let board_size_usize: usize = size.into();
-        let mut already_checked = vec![false; board_size_usize * board_size_usize];
-        already_checked[usize::from(&exit)] = true;
+        let mut already_checked = vec![0; board_size_usize * board_size_usize];
+        already_checked[usize::from(&exit)] += 1;
 
         let mut pre_stack = Vec::with_capacity(board_size_usize * board_size_usize);
         let up = expand_flood_fill(exit.up(), &mut already_checked, &mut pre_stack);
@@ -769,15 +769,18 @@ impl Board {
                 if space == Space::Empty {
                     defended.push(vertex);
 
-                    let _ = expand_flood_fill(vertex.up(), &mut already_checked, &mut stack);
-                    let _ = expand_flood_fill(vertex.left(), &mut already_checked, &mut stack);
-                    let _ = expand_flood_fill(vertex.down(), &mut already_checked, &mut stack);
                     let _ = expand_flood_fill(vertex.right(), &mut already_checked, &mut stack);
+                    let _ = expand_flood_fill(vertex.left(), &mut already_checked, &mut stack);
+
+                    let _ = expand_flood_fill(vertex.down(), &mut already_checked, &mut stack);
+                    let _ = expand_flood_fill(vertex.up(), &mut already_checked, &mut stack);
                 } else if Into::<Role>::into(space) == Role::Defender {
                     return (false, defended);
                 }
             }
         }
+
+        // print_u32(&already_checked);
 
         (true, defended)
     }
@@ -869,10 +872,10 @@ impl Board {
     ) -> bool {
         if let Some(kings_vertex) = self.king
             && role_from == Role::Attacker
-            && let Some(up) = kings_vertex.up()
+            && let Some(right) = kings_vertex.right()
             && let Some(left) = kings_vertex.left()
             && let Some(down) = kings_vertex.down()
-            && let Some(right) = kings_vertex.right()
+            && let Some(up) = kings_vertex.up()
             && (*play_to == up || *play_to == left || *play_to == down || *play_to == right)
             && (self.get(&up) == Space::Attacker || up.on_throne())
             && (self.get(&left) == Space::Attacker || left.on_throne())
@@ -949,8 +952,8 @@ impl Board {
 
         match self.king {
             Some(kings_vertex) => {
-                let mut already_checked = vec![false; board_size_usize * board_size_usize];
-                already_checked[usize::from(&kings_vertex)] = true;
+                let mut already_checked = vec![0; board_size_usize * board_size_usize];
+                already_checked[usize::from(&kings_vertex)] += 1;
 
                 let mut stack = Vec::with_capacity(32);
                 stack.push(kings_vertex);
@@ -980,7 +983,7 @@ impl Board {
                     for x in 0..board_size_usize {
                         let vertex = Vertex { size, x, y };
                         if Role::from(self.get(&vertex)) == Role::Defender
-                            && !already_checked[usize::from(&vertex)]
+                            && already_checked[usize::from(&vertex)] == 0
                         {
                             return false;
                         }
@@ -1675,18 +1678,32 @@ pub enum InvalidMove {
 #[inline]
 fn expand_flood_fill(
     vertex: Option<Vertex>,
-    already_checked: &mut [bool],
+    already_checked: &mut [u32],
     stack: &mut Vec<Vertex>,
 ) -> bool {
     if let Some(vertex) = vertex {
         let i = usize::from(&vertex);
-        if !already_checked[i] {
+        if already_checked[i] == 0 {
             stack.push(vertex);
-            already_checked[i] = true;
+            already_checked[i] += 1;
+        } else {
+            already_checked[i] += 1;
         }
 
         true
     } else {
         false
     }
+}
+
+fn _print_u32(vector: &[u32]) {
+    for (count, i) in vector.iter().enumerate() {
+        if count % 11 == 0 {
+            println!();
+        }
+
+        print!("{i} ");
+    }
+
+    println!();
 }
