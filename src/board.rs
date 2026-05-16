@@ -696,6 +696,7 @@ impl Board {
         }
     }
 
+    // Fixme: slow! Use a faster flood fill?
     #[allow(clippy::unwrap_used)]
     #[must_use]
     fn closed_off_exit(&self, exit: Vertex) -> (bool, Vec<Vertex>) {
