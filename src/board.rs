@@ -696,7 +696,7 @@ impl Board {
         }
     }
 
-    // Fixme: slow! Use a faster flood fill?
+    // Fixme: slow!
     #[allow(clippy::unwrap_used)]
     #[must_use]
     fn closed_off_exit(&self, exit: Vertex) -> (bool, Vec<Vertex>) {
@@ -767,7 +767,9 @@ impl Board {
             if let Some(vertex) = stack.pop() {
                 let space = self.get(&vertex);
                 if space == Space::Empty {
-                    defended.push(vertex);
+                    if vertex.touches_wall() {
+                        defended.push(vertex);
+                    }
 
                     let _ = expand_flood_fill(vertex.right(), &mut already_checked, &mut stack);
                     let _ = expand_flood_fill(vertex.left(), &mut already_checked, &mut stack);
