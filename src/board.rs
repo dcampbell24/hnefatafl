@@ -17,7 +17,7 @@
 // SPDX-FileCopyrightText: 2025 David Campbell <david@hnefatafl.org>
 
 use std::{
-    collections::HashMap,
+    collections::{HashMap, HashSet},
     fmt,
     hash::{Hash, Hasher},
     str::FromStr,
@@ -698,7 +698,8 @@ impl Board {
 
     #[allow(clippy::unwrap_used)]
     #[must_use]
-    fn closed_off_exit(&self, exit: Vertex) -> bool {
+    fn closed_off_exit(&self, exit: Vertex) -> (bool, Vec<Vertex>) {
+        let mut defended = Vec::new();
         let size = self.size();
         let board_size_usize: usize = size.into();
         let mut already_checked = vec![false; board_size_usize * board_size_usize];
@@ -717,7 +718,7 @@ impl Board {
             && self.get(&pre_stack[0].up().unwrap()) == Space::Attacker
             && self.get(&pre_stack[1].left().unwrap()) == Space::Attacker
         {
-            return true;
+            return (true, defended);
         }
 
         if up
@@ -727,7 +728,7 @@ impl Board {
             && self.get(&pre_stack[0].up().unwrap()) == Space::Attacker
             && self.get(&pre_stack[1].right().unwrap()) == Space::Attacker
         {
-            return true;
+            return (true, defended);
         }
 
         if left
@@ -737,7 +738,7 @@ impl Board {
             && self.get(&pre_stack[0].left().unwrap()) == Space::Attacker
             && self.get(&pre_stack[1].down().unwrap()) == Space::Attacker
         {
-            return true;
+            return (true, defended);
         }
 
         if down
@@ -747,7 +748,7 @@ impl Board {
             && self.get(&pre_stack[0].down().unwrap()) == Space::Attacker
             && self.get(&pre_stack[1].right().unwrap()) == Space::Attacker
         {
-            return true;
+            return (true, defended);
         }
 
         let mut stack = Vec::with_capacity(board_size_usize * board_size_usize);
@@ -765,30 +766,39 @@ impl Board {
             if let Some(vertex) = stack.pop() {
                 let space = self.get(&vertex);
                 if space == Space::Empty {
+                    defended.push(vertex);
+
                     let _ = expand_flood_fill(vertex.up(), &mut already_checked, &mut stack);
                     let _ = expand_flood_fill(vertex.left(), &mut already_checked, &mut stack);
                     let _ = expand_flood_fill(vertex.down(), &mut already_checked, &mut stack);
                     let _ = expand_flood_fill(vertex.right(), &mut already_checked, &mut stack);
                 } else if Into::<Role>::into(space) == Role::Defender {
-                    return false;
+                    return (false, defended);
                 }
             }
         }
 
-        true
+        (true, defended)
     }
 
     #[must_use]
-    pub fn closed_off_exits(&self) -> u8 {
+    pub fn closed_off_exits(&self) -> (u8, HashSet<Vertex>) {
+        let mut defended_spaces = HashSet::new();
         let mut closed_off_exits = 0;
 
         for exit in self.exit_squares() {
-            if self.closed_off_exit(exit) {
+            if let (closed_off, defended) = self.closed_off_exit(exit)
+                && closed_off
+            {
                 closed_off_exits += 1;
+
+                for vertex in defended {
+                    defended_spaces.insert(vertex);
+                }
             }
         }
 
-        closed_off_exits
+        (closed_off_exits, defended_spaces)
     }
 
     #[must_use]
@@ -803,7 +813,11 @@ impl Board {
             BoardSize::_13 => 32 - self.attackers_captured >= 13,
         };
 
-        self.closed_off_exits() == 4 && defenders_left && attackers_left
+        let (closed_off_exits, defended_spaces) = self.closed_off_exits();
+
+        closed_off_exits == 4
+            && ((defenders_left && attackers_left)
+                || self.two_or_less_side_spaces(&defended_spaces))
     }
 
     #[must_use]
@@ -1413,6 +1427,78 @@ impl Board {
         }
 
         Some(sum)
+    }
+
+    #[must_use]
+    fn two_or_less_side_spaces(&self, defended_spaces: &HashSet<Vertex>) -> bool {
+        let size = self.size();
+        let size_usize = usize::from(size);
+
+        let mut count = 0;
+        for y in 2..size_usize - 2 {
+            let vertex = Vertex { size, x: 0, y };
+            let space = self.get(&vertex);
+
+            if space != Space::Attacker && !defended_spaces.contains(&vertex) {
+                count += 1;
+            }
+
+            if count > 2 {
+                return false;
+            }
+        }
+
+        let mut count = 0;
+        for y in 2..size_usize - 2 {
+            let vertex = Vertex {
+                size,
+                x: size_usize - 1,
+                y,
+            };
+            let space = self.get(&vertex);
+
+            if space != Space::Attacker && !defended_spaces.contains(&vertex) {
+                count += 1;
+            }
+
+            if count > 2 {
+                return false;
+            }
+        }
+
+        let mut count = 0;
+        for x in 2..size_usize - 2 {
+            let vertex = Vertex { size, x, y: 0 };
+            let space = self.get(&vertex);
+
+            if space != Space::Attacker && !defended_spaces.contains(&vertex) {
+                count += 1;
+            }
+
+            if count > 2 {
+                return false;
+            }
+        }
+
+        let mut count = 0;
+        for x in 2..size_usize - 2 {
+            let vertex = Vertex {
+                size,
+                x,
+                y: size_usize - 1,
+            };
+            let space = self.get(&vertex);
+
+            if space != Space::Attacker && !defended_spaces.contains(&vertex) {
+                count += 1;
+            }
+
+            if count > 2 {
+                return false;
+            }
+        }
+
+        true
     }
 }
 

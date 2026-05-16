@@ -27,6 +27,7 @@ use crate::{
 };
 
 use super::*;
+use anyhow::Ok;
 use board::{Board, STARTING_POSITION_11X11};
 use game::Game;
 use play::Vertex;
@@ -2027,8 +2028,8 @@ fn defender_automatically_loses_1() -> anyhow::Result<()> {
 fn defender_automatically_loses_2() -> anyhow::Result<()> {
     let board = [
         "...........",
-        "...........",
-        "...........",
+        ".........XO",
+        "..........X",
         "...........",
         "...........",
         "...........",
@@ -2178,7 +2179,9 @@ fn closed_off_exits() -> anyhow::Result<()> {
         "..X..K.....",
     ]
     .try_into()?;
-    assert_eq!(board.closed_off_exits(), 1);
+
+    let (closed_off_exits, _) = board.closed_off_exits();
+    assert_eq!(closed_off_exits, 1);
 
     let board: Board = [
         "..X....X...",
@@ -2194,7 +2197,9 @@ fn closed_off_exits() -> anyhow::Result<()> {
         "..X..K..X..",
     ]
     .try_into()?;
-    assert_eq!(board.closed_off_exits(), 4);
+
+    let (closed_off_exits, _) = board.closed_off_exits();
+    assert_eq!(closed_off_exits, 4);
 
     let board: Board = [
         ".XX.....XX.",
@@ -2210,7 +2215,9 @@ fn closed_off_exits() -> anyhow::Result<()> {
         ".XX..K..XX.",
     ]
     .try_into()?;
-    assert_eq!(board.closed_off_exits(), 0);
+
+    let (closed_off_exits, _) = board.closed_off_exits();
+    assert_eq!(closed_off_exits, 0);
 
     let board: Board = [
         ".X.......X.",
@@ -2226,7 +2233,9 @@ fn closed_off_exits() -> anyhow::Result<()> {
         ".X...K...X.",
     ]
     .try_into()?;
-    assert_eq!(board.closed_off_exits(), 0);
+
+    let (closed_off_exits, _) = board.closed_off_exits();
+    assert_eq!(closed_off_exits, 0);
 
     let board: Board = [
         ".XX.....XX.",
@@ -2242,13 +2251,15 @@ fn closed_off_exits() -> anyhow::Result<()> {
         ".XX..K..XX.",
     ]
     .try_into()?;
-    assert_eq!(board.closed_off_exits(), 4);
+
+    let (closed_off_exits, _) = board.closed_off_exits();
+    assert_eq!(closed_off_exits, 4);
 
     Ok(())
 }
 
 #[test]
-fn can_not_escape() -> anyhow::Result<()> {
+fn can_not_escape_1() -> anyhow::Result<()> {
     let board: Board = [
         "..X..X..X..",
         ".X.......X.",
@@ -2317,6 +2328,83 @@ fn can_not_escape() -> anyhow::Result<()> {
     };
 
     game.read_line("play attacker e2 e1")?;
+    assert!(game.board.can_not_esacpe());
+    assert_eq!(game.status, Status::AttackerWins);
+
+    Ok(())
+}
+
+#[test]
+fn can_not_escape_2() -> anyhow::Result<()> {
+    let board: Board = [
+        "..XXX...X..",
+        ".X.......X.",
+        "X.........X",
+        "........OOO",
+        ".......O.KO",
+        "X......OOOX",
+        "X.........X",
+        "X.........X",
+        "X.........X",
+        ".X.......X.",
+        "..XXXX..X..",
+    ]
+    .try_into()?;
+
+    let mut game = game::Game {
+        board,
+        ..Default::default()
+    };
+
+    game.read_line("play attacker f1 h1")?;
+    assert!(!game.board.can_not_esacpe());
+    assert_eq!(game.status, Status::Ongoing);
+
+    let board: Board = [
+        "..XXXX..X..",
+        ".X.......X.",
+        "X.........X",
+        "........OOO",
+        ".......O.KO",
+        "X......OOOX",
+        "X.........X",
+        "X.........X",
+        "X.........X",
+        ".X.......X.",
+        "..XXXX..X..",
+    ]
+    .try_into()?;
+
+    let mut game = game::Game {
+        board,
+        ..Default::default()
+    };
+
+    game.read_line("play attacker f1 h1")?;
+    assert!(game.board.can_not_esacpe());
+    assert_eq!(game.status, Status::AttackerWins);
+
+    let board: Board = [
+        ".....X..X..",
+        "....X....X.",
+        "...X......X",
+        "..X.....OOO",
+        "..X....O.KO",
+        "..X....OOOX",
+        "..X.......X",
+        "..X.......X",
+        "...X......X",
+        "....X....X.",
+        "....X...X..",
+    ]
+    .try_into()?;
+
+    let mut game = game::Game {
+        board,
+        ..Default::default()
+    };
+
+    game.read_line("play attacker e1 f1")?;
     assert!(game.board.can_not_esacpe());
     assert_eq!(game.status, Status::AttackerWins);
 
