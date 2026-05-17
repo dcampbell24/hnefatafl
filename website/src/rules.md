@@ -5,7 +5,7 @@ From [Copenhagen Hnefatafl][1] with minor changes.
 The Copenhagen rules were outlined 2012 by Aage Nielsen (Denmark), Adam Bartley
 (Norway) and Tim Millar (UK). English text and diagrams: Adam Bartley (Norway)
 
-Based on the version that was last updated 21.12.2024.
+Based on the version that was last updated 2024-12-21.
 
 Copyright © 1998-2025 Aage Nielsen, All Rights Reserved;
 
