@@ -25,7 +25,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Make Display::Board prettier.
 - Replace the AI with TaflZero.
 - hnefatafl-client: abbreviate time.
-- Make the engine faster.
 
 ### Removed
 
