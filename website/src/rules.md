@@ -261,8 +261,8 @@ Not added to the game engine below this line.
 When the defenders don't have enough pieces left to make an exit fort, the
 corners are blocked, and the attackers can move without unblocking a corner.
 
-If only three spaces are left on the side and the defender only has five pieces
-plus the king left.
+Also, when only three spaces are left on the side and the defender only has
+five pieces plus the king left.
 
 ```plain
   ┌───────────────────────┐ ┌───────────────────────┐
@@ -278,7 +278,7 @@ plus the king left.
  2│ . A . . . . . . . A . │ │ . A . . . . . . . A . │
  1│ # . A . . . . . A . # │ │ # . A A A . . . A . # │
   └───────────────────────┘ └───────────────────────┘
-    A B C D E F G H I J K
+    A B C D E F G H I J K     A B C D E F G H I J K
 ```
 
 When the attackers have all corners blocked and only two spaces left on any
@@ -337,9 +337,7 @@ and not if the peices moved away from the wall are not connected to a corner.
  1│ . . A A A A . . A . . │
   └───────────────────────┘
     A B C D E F G H I J K
-Not added to the game engine below this line.
-
----
+```
 
 When the king is trapped.
 
@@ -355,7 +353,7 @@ When the king is trapped.
  4│ . . . . . . . . . . . │ │ . . . . . . . . . . . │ │ . . . . . . . . . . . │
  3│ . . . . . . . . . . . │ │ . . . . . . . . . . . │ │ . . . . . . . . . . . │
  2│ . . . . . . . . . . . │ │ . . . . . . . . . . . │ │ . . . . . . . . . . . │
- 1│ # . . . . . . . . . # │ | # . . . . . . . . . # │ | # . . . . . . . . . # │
+ 1│ # . . . . . . . . . # │ │ # . . . . . . . . . # │ │ # . . . . . . . . . # │
   └───────────────────────┘ └───────────────────────┘ └───────────────────────┘
     A B C D E F G H I J K     A B C D E F G H I J K     A B C D E F G H I J K
 ```
