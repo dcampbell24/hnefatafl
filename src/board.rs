@@ -697,9 +697,9 @@ impl Board {
     }
 
     // Fixme: slow!
-    #[allow(clippy::unwrap_used)]
+    #[allow(clippy::unwrap_used, clippy::too_many_lines)]
     #[must_use]
-    fn closed_off_exit(&self, exit: Vertex) -> (bool, Vec<Vertex>) {
+    fn closed_off_exit(&self, exit: Vertex) -> Vec<Vertex> {
         let mut defended = Vec::with_capacity(32);
         let size = self.size();
         let board_size_usize: usize = size.into();
@@ -712,50 +712,114 @@ impl Board {
         let down = expand_flood_fill(exit.down(), &mut already_checked, &mut pre_stack);
         let right = expand_flood_fill(exit.right(), &mut already_checked, &mut pre_stack);
 
-        if up
-            && left
-            && self.get(&pre_stack[0]) == Space::Attacker
-            && self.get(&pre_stack[1]) == Space::Attacker
-            && self.get(&pre_stack[0].up().unwrap()) == Space::Attacker
-            && self.get(&pre_stack[1].left().unwrap()) == Space::Attacker
-        {
-            return (true, defended);
+        if up && left {
+            let up_1_vertex = &pre_stack[0];
+            let up_2_vertex = &pre_stack[0].up().unwrap();
+            let left_1_vertex = &pre_stack[1];
+            let left_2_vertex = &pre_stack[1].left().unwrap();
+
+            if self.get(up_1_vertex) == Space::Attacker
+                && self.get(up_2_vertex) == Space::Attacker
+                && self.get(left_1_vertex) == Space::Attacker
+                && self.get(left_2_vertex) == Space::Attacker
+            {
+                for vertex in [
+                    &exit,
+                    up_1_vertex,
+                    up_2_vertex,
+                    left_1_vertex,
+                    left_2_vertex,
+                ] {
+                    defended.push(*vertex);
+                }
+
+                return defended;
+            }
         }
 
-        if up
-            && right
-            && self.get(&pre_stack[0]) == Space::Attacker
-            && self.get(&pre_stack[1]) == Space::Attacker
-            && self.get(&pre_stack[0].up().unwrap()) == Space::Attacker
-            && self.get(&pre_stack[1].right().unwrap()) == Space::Attacker
-        {
-            return (true, defended);
+        if up && right {
+            let up_1_vertex = &pre_stack[0];
+            let up_2_vertex = &pre_stack[0].up().unwrap();
+            let right_1_vertex = &pre_stack[1];
+            let right_2_vertex = &pre_stack[1].right().unwrap();
+
+            if self.get(up_1_vertex) == Space::Attacker
+                && self.get(up_2_vertex) == Space::Attacker
+                && self.get(right_1_vertex) == Space::Attacker
+                && self.get(right_2_vertex) == Space::Attacker
+            {
+                for vertex in [
+                    &exit,
+                    up_1_vertex,
+                    up_2_vertex,
+                    right_1_vertex,
+                    right_2_vertex,
+                ] {
+                    defended.push(*vertex);
+                }
+
+                return defended;
+            }
         }
 
-        if left
-            && down
-            && self.get(&pre_stack[0]) == Space::Attacker
-            && self.get(&pre_stack[1]) == Space::Attacker
-            && self.get(&pre_stack[0].left().unwrap()) == Space::Attacker
-            && self.get(&pre_stack[1].down().unwrap()) == Space::Attacker
-        {
-            return (true, defended);
+        if left && down {
+            let left_1_vertex = &pre_stack[0];
+            let left_2_vertex = &pre_stack[0].left().unwrap();
+            let down_1_vertex = &pre_stack[1];
+            let down_2_vertex = &pre_stack[1].down().unwrap();
+
+            if self.get(left_1_vertex) == Space::Attacker
+                && self.get(left_2_vertex) == Space::Attacker
+                && self.get(down_1_vertex) == Space::Attacker
+                && self.get(down_2_vertex) == Space::Attacker
+            {
+                for vertex in [
+                    &exit,
+                    left_1_vertex,
+                    left_2_vertex,
+                    down_1_vertex,
+                    down_2_vertex,
+                ] {
+                    defended.push(*vertex);
+                }
+
+                return defended;
+            }
         }
 
-        if down
-            && right
-            && self.get(&pre_stack[0]) == Space::Attacker
-            && self.get(&pre_stack[1]) == Space::Attacker
-            && self.get(&pre_stack[0].down().unwrap()) == Space::Attacker
-            && self.get(&pre_stack[1].right().unwrap()) == Space::Attacker
-        {
-            return (true, defended);
+        if down && right {
+            let down_1_vertex = &pre_stack[0];
+            let down_2_vertex = &pre_stack[0].down().unwrap();
+            let right_1_vertex = &pre_stack[1];
+            let right_2_vertex = &pre_stack[1].right().unwrap();
+
+            if self.get(down_1_vertex) == Space::Attacker
+                && self.get(down_2_vertex) == Space::Attacker
+                && self.get(right_1_vertex) == Space::Attacker
+                && self.get(right_2_vertex) == Space::Attacker
+            {
+                for vertex in [
+                    &exit,
+                    down_1_vertex,
+                    down_2_vertex,
+                    right_1_vertex,
+                    right_2_vertex,
+                ] {
+                    defended.push(*vertex);
+                }
+
+                return defended;
+            }
         }
 
         let mut stack = Vec::with_capacity(board_size_usize * board_size_usize);
         for vertex in pre_stack {
             let space = self.get(&vertex);
             if space == Space::Empty || space == Space::Attacker {
+                if vertex.touches_wall() {
+                    defended.push(vertex);
+                }
+
                 let _ = expand_flood_fill(vertex.up(), &mut already_checked, &mut stack);
                 let _ = expand_flood_fill(vertex.left(), &mut already_checked, &mut stack);
                 let _ = expand_flood_fill(vertex.down(), &mut already_checked, &mut stack);
@@ -766,6 +830,7 @@ impl Board {
         while !stack.is_empty() {
             if let Some(vertex) = stack.pop() {
                 let space = self.get(&vertex);
+
                 if space == Space::Empty {
                     if vertex.touches_wall() {
                         defended.push(vertex);
@@ -777,14 +842,16 @@ impl Board {
                     let _ = expand_flood_fill(vertex.down(), &mut already_checked, &mut stack);
                     let _ = expand_flood_fill(vertex.up(), &mut already_checked, &mut stack);
                 } else if Into::<Role>::into(space) == Role::Defender {
-                    return (false, defended);
+                    return defended;
                 }
             }
         }
 
-        // print_u32(&already_checked);
+        // _print_u32(&already_checked);
 
-        (true, defended)
+        defended.push(exit);
+
+        defended
     }
 
     #[must_use]
@@ -793,9 +860,9 @@ impl Board {
         let mut closed_off_exits = 0;
 
         for exit in self.exit_squares() {
-            if let (closed_off, defended) = self.closed_off_exit(exit)
-                && closed_off
-            {
+            let defended = self.closed_off_exit(exit);
+
+            if defended.contains(&exit) {
                 closed_off_exits += 1;
 
                 for vertex in defended {
