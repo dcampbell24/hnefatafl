@@ -254,8 +254,8 @@ If a player cannot move, he loses the game.
 
 ### 10. Defenders Can't Escape, Attackers Win
 
-When the defenders don't have enough pieces left to make an exit fort and the
-corners are blocked.
+When the defenders don't have enough pieces left to make an exit fort, the
+corners are blocked, and the attackers can move without unblocking a corner.
 
 ```plain
   ┌───────────────────────┐
