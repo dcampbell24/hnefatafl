@@ -252,25 +252,32 @@ If the defender would repeat a board position, the move is not allowed.
 
 If a player cannot move, he loses the game.
 
+Not added to the game engine below this line.
+
+---
+
 ### 10. Defenders Can't Escape, Attackers Win
 
 When the defenders don't have enough pieces left to make an exit fort, the
 corners are blocked, and the attackers can move without unblocking a corner.
 
+If only three spaces are left on the side and the defender only has five pieces
+plus the king left.
+
 ```plain
-  ┌───────────────────────┐
-11│ # . A . . . . . A . # │
-10│ . A . . . . . . . A . │
- 9│ A . . . . . . . . . A │
- 8│ . . . . . . . . . . . │
- 7│ . . . . . . . . . . D │
- 6│ A . . . . # . . . D K │
- 5│ . . . . . . . . . . D │
- 4│ . . . . . . . . . . . │
- 3│ A . . . . . . . . . A │
- 2│ . A . . . . . . . A . │
- 1│ # . A . . . . . A . # │
-  └───────────────────────┘
+  ┌───────────────────────┐ ┌───────────────────────┐
+11│ # . A . . . . . A . # │ │ # . A A A . . . A . # │
+10│ . A . . . . . . . A . │ │ . A . . . . . . . A . │
+ 9│ A . . . . . . . . . A │ │ A . . . . . . . . . A │
+ 8│ . . . . . . . . . . . │ │ . . . . . . . . . D D │
+ 7│ . . . . . . . . . . D │ │ . . . . . . . . D . K │
+ 6│ A . . . . # . . . . K │ │ . . . . . # . . . D D │ 
+ 5│ . . . . . . . . . D . │ │ A . . . . . . . . . A │
+ 4│ . . . . . . . . . . D │ │ A . . . . . . . . . A │
+ 3│ A . . . . . . . . . A │ │ A . . . . . . . . . A │
+ 2│ . A . . . . . . . A . │ │ . A . . . . . . . A . │
+ 1│ # . A . . . . . A . # │ │ # . A A A . . . A . # │
+  └───────────────────────┘  └───────────────────────┘
     A B C D E F G H I J K
 ```
 
@@ -279,12 +286,12 @@ side,
 
 ```plain
   ┌───────────────────────┐
-11│ # . . . . A . . A . # │
+11│ # . . . . A D D A . # │
 10│ . . . . A . . . . A . │
  9│ . . . A . . . . . . A │
  8│ . . A . . . . . D D D │
- 7│ . . A . . . . D . K D │
- 6│ . . A . . # . D D D A │
+ 7│ . . A . . . . . D . K │
+ 6│ . . A . . # . . D D A │
  5│ . . A . . . . . . . A │
  4│ . . A . . . . . . . A │
  3│ . . . A . . . . . . A │
@@ -294,11 +301,11 @@ side,
     A B C D E F G H I J K
 ```
 
-but not if the spaces are not connected.
+but not if the spaces are not connected,
 
 ```plain
   ┌───────────────────────┐
-11│ # . A A A A . . A . # │
+11│ # . A A A A D D A . # │
 10│ . A . . . . . . . A . │
  9│ A . . . . . . . . . A │
  8│ . . . . . . . . D D D │
@@ -313,6 +320,23 @@ but not if the spaces are not connected.
     A B C D E F G H I J K
 ```
 
+and not if the peices moved away from the wall are not connected to a corner.
+
+```plain
+  ┌───────────────────────┐
+11│ # . A A A A D D A . . │
+10│ . A . . . . . . . A . │
+ 9│ A . . . . . . . . . A │
+ 8│ . . . . . . . . D D D │
+ 7│ . . . . . . . . D . K │
+ 6│ A . . . . . . . D D A │
+ 5│ . A . . . . . . . . A │
+ 4│ . A . . . . . . . . A │
+ 3│ A . . . . . . . . . A │
+ 2│ . A . . . . . . . A . │
+ 1│ . . A A A A . . A . . │
+  └───────────────────────┘
+    A B C D E F G H I J K
 Not added to the game engine below this line.
 
 ---
