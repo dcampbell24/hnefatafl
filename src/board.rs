@@ -1440,71 +1440,76 @@ impl Board {
         let size = self.size();
         let size_usize = usize::from(size);
 
-        let mut count = 0;
+        let mut next_space = NextSpace::default();
         for y in 2..size_usize - 2 {
             let vertex = Vertex { size, x: 0, y };
-            let space = self.get(&vertex);
 
-            if space != Space::Attacker && !defended_spaces.contains(&vertex) {
-                count += 1;
-            }
-
-            if count > 2 {
+            if !self.two_spaces(&vertex, defended_spaces, &mut next_space) {
                 return false;
             }
         }
 
-        let mut count = 0;
+        let mut next_space = NextSpace::default();
         for y in 2..size_usize - 2 {
             let vertex = Vertex {
                 size,
                 x: size_usize - 1,
                 y,
             };
-            let space = self.get(&vertex);
 
-            if space != Space::Attacker && !defended_spaces.contains(&vertex) {
-                count += 1;
-            }
-
-            if count > 2 {
+            if !self.two_spaces(&vertex, defended_spaces, &mut next_space) {
                 return false;
             }
         }
 
-        let mut count = 0;
+        let mut next_space = NextSpace::default();
         for x in 2..size_usize - 2 {
             let vertex = Vertex { size, x, y: 0 };
-            let space = self.get(&vertex);
 
-            if space != Space::Attacker && !defended_spaces.contains(&vertex) {
-                count += 1;
-            }
-
-            if count > 2 {
+            if !self.two_spaces(&vertex, defended_spaces, &mut next_space) {
                 return false;
             }
         }
 
-        let mut count = 0;
+        let mut next_space = NextSpace::default();
         for x in 2..size_usize - 2 {
             let vertex = Vertex {
                 size,
                 x,
                 y: size_usize - 1,
             };
-            let space = self.get(&vertex);
 
-            if space != Space::Attacker && !defended_spaces.contains(&vertex) {
-                count += 1;
-            }
-
-            if count > 2 {
+            if !self.two_spaces(&vertex, defended_spaces, &mut next_space) {
                 return false;
             }
         }
 
         true
+    }
+
+    fn two_spaces(
+        &self,
+        vertex: &Vertex,
+        defended_spaces: &HashSet<Vertex>,
+        next_space: &mut NextSpace,
+    ) -> bool {
+        let space = self.get(vertex);
+
+        match next_space {
+            NextSpace::None => {
+                if space != Space::Attacker && !defended_spaces.contains(vertex) {
+                    *next_space = NextSpace::One;
+                }
+
+                true
+            }
+            NextSpace::One => {
+                *next_space = NextSpace::After;
+
+                true
+            }
+            NextSpace::After => space == Space::Attacker || defended_spaces.contains(vertex),
+        }
     }
 }
 
@@ -1674,6 +1679,14 @@ pub enum InvalidMove {
     StraightLine,
     #[error("play: it isn't your turn")]
     Turn,
+}
+
+#[derive(Clone, Debug, Default)]
+enum NextSpace {
+    #[default]
+    None,
+    One,
+    After,
 }
 
 #[must_use]
