@@ -93,6 +93,8 @@ const SEVEN_DAYS: i64 = 1_000 * 60 * 60 * 24 * 7;
 const USERS_FILE: &str = "users.ron";
 const MESSAGE_LENGTH: usize = 128;
 
+const UPDATE_MILLISECONDS: u64 = 100;
+
 fn main() -> anyhow::Result<()> {
     // println!("{:x}", rand::random::<u32>());
     // return Ok(());
@@ -458,7 +460,7 @@ impl Server {
         thread::spawn(move || {
             loop {
                 handle_error(tx.send(("0 server display_server".to_string(), None)));
-                thread::sleep(Duration::from_secs(1));
+                thread::sleep(Duration::from_millis(UPDATE_MILLISECONDS));
             }
         });
     }
