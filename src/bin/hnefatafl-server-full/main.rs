@@ -93,7 +93,7 @@ const SEVEN_DAYS: i64 = 1_000 * 60 * 60 * 24 * 7;
 const USERS_FILE: &str = "users.ron";
 const MESSAGE_LENGTH: usize = 128;
 
-const UPDATE_MILLISECONDS: u64 = 100;
+const UPDATE_MILLISECONDS: u64 = 250;
 
 fn main() -> anyhow::Result<()> {
     // println!("{:x}", rand::random::<u32>());
