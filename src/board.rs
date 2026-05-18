@@ -697,7 +697,7 @@ impl Board {
     }
 
     // Fixme: slow!
-    #[allow(clippy::unwrap_used, clippy::similar_names)]
+    #[allow(clippy::unwrap_used)]
     #[must_use]
     fn closed_off_exit(&self, exit: Vertex) -> Vec<Vertex> {
         let size = self.size();
