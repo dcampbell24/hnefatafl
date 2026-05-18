@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- hnefatafl-server-full: Update every 100 milliseconds.
+- hnefatafl-server-full: Update every 250 milliseconds.
 - Make Display::Board prettier.
 - Replace the AI with TaflZero.
 - hnefatafl-client: abbreviate time.
