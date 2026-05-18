@@ -2180,8 +2180,7 @@ fn closed_off_exits() -> anyhow::Result<()> {
     ]
     .try_into()?;
 
-    let (closed_off_exits, _) = board.closed_off_exits();
-    assert_eq!(closed_off_exits, 1);
+    assert!(board.closed_off_exits().is_none());
 
     let board: Board = [
         "..X....X...",
@@ -2198,8 +2197,7 @@ fn closed_off_exits() -> anyhow::Result<()> {
     ]
     .try_into()?;
 
-    let (closed_off_exits, _) = board.closed_off_exits();
-    assert_eq!(closed_off_exits, 4);
+    assert!(board.closed_off_exits().is_some());
 
     let board: Board = [
         ".XX.....XX.",
@@ -2216,8 +2214,7 @@ fn closed_off_exits() -> anyhow::Result<()> {
     ]
     .try_into()?;
 
-    let (closed_off_exits, _) = board.closed_off_exits();
-    assert_eq!(closed_off_exits, 0);
+    assert!(board.closed_off_exits().is_none());
 
     let board: Board = [
         ".X.......X.",
@@ -2234,8 +2231,7 @@ fn closed_off_exits() -> anyhow::Result<()> {
     ]
     .try_into()?;
 
-    let (closed_off_exits, _) = board.closed_off_exits();
-    assert_eq!(closed_off_exits, 0);
+    assert!(board.closed_off_exits().is_none());
 
     let board: Board = [
         ".XX.....XX.",
@@ -2252,8 +2248,7 @@ fn closed_off_exits() -> anyhow::Result<()> {
     ]
     .try_into()?;
 
-    let (closed_off_exits, _) = board.closed_off_exits();
-    assert_eq!(closed_off_exits, 4);
+    assert!(board.closed_off_exits().is_some());
 
     Ok(())
 }

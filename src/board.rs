@@ -699,7 +699,7 @@ impl Board {
     // Fixme: slow!
     #[allow(clippy::unwrap_used)]
     #[must_use]
-    fn closed_off_exit(&self, exit: Vertex) -> Vec<Vertex> {
+    fn closed_off_exit(&self, exit: Vertex) -> Option<Vec<Vertex>> {
         let size = self.size();
         let board_size_usize: usize = size.into();
         let mut already_checked = vec![0; board_size_usize * board_size_usize];
@@ -718,7 +718,7 @@ impl Board {
             let left_v2 = &pre_stack[1].left().unwrap();
 
             if let Some(defended) = self.closed_off_exit_2(up_v1, up_v2, left_v1, left_v2, &exit) {
-                return defended;
+                return Some(defended);
             }
         }
 
@@ -730,7 +730,7 @@ impl Board {
 
             if let Some(defended) = self.closed_off_exit_2(up_v1, up_v2, right_v1, right_v2, &exit)
             {
-                return defended;
+                return Some(defended);
             }
         }
 
@@ -743,7 +743,7 @@ impl Board {
             if let Some(defended) =
                 self.closed_off_exit_2(left_v1, left_v2, down_v1, down_v2, &exit)
             {
-                return defended;
+                return Some(defended);
             }
         }
 
@@ -756,7 +756,7 @@ impl Board {
             if let Some(defended) =
                 self.closed_off_exit_2(down_v1, down_v2, right_v1, right_v2, &exit)
             {
-                return defended;
+                return Some(defended);
             }
         }
 
@@ -792,7 +792,7 @@ impl Board {
                     let _ = expand_flood_fill(vertex.down(), &mut already_checked, &mut stack);
                     let _ = expand_flood_fill(vertex.up(), &mut already_checked, &mut stack);
                 } else if Into::<Role>::into(space) == Role::Defender {
-                    return Vec::new();
+                    return None;
                 }
             }
         }
@@ -801,7 +801,7 @@ impl Board {
 
         defended.push(exit);
 
-        defended
+        Some(defended)
     }
 
     #[must_use]
@@ -831,45 +831,33 @@ impl Board {
             }
 
             Some(defended)
-        } else if d1_s1 == Space::Defender
-            || d1_s1 == Space::King
-            || d1_s2 == Space::Defender
-            || d1_s2 == Space::King
-            || d2_s1 == Space::Defender
-            || d2_s1 == Space::King
-            || d2_s2 == Space::Defender
-            || d2_s2 == Space::King
-        {
-            Some(defended)
         } else {
             None
         }
     }
 
     #[must_use]
-    pub fn closed_off_exits(&self) -> (u8, HashSet<Vertex>) {
+    pub fn closed_off_exits(&self) -> Option<HashSet<Vertex>> {
         let mut defended_spaces = HashSet::new();
-        let mut closed_off_exits = 0;
 
         for exit in self.exit_squares() {
-            let defended = self.closed_off_exit(exit);
-
-            /* DEBUG!
-            if defended_spaces.contains(&exit) == true && defended.contains(&exit) == false {
-                println!("{exit}\n{self}");
-            }
-            */
-
-            if defended.contains(&exit) {
-                closed_off_exits += 1;
+            if let Some(defended) = self.closed_off_exit(exit) {
+                // DEBUG!
+                /*
+                if defended_spaces.contains(&exit) == true && defended.contains(&exit) == false {
+                    println!("{exit}\n{self}");
+                }
+                */
 
                 for vertex in defended {
                     defended_spaces.insert(vertex);
                 }
+            } else {
+                return None;
             }
         }
 
-        (closed_off_exits, defended_spaces)
+        Some(defended_spaces)
     }
 
     #[must_use]
@@ -884,11 +872,11 @@ impl Board {
             BoardSize::_13 => 32 - self.attackers_captured >= 13,
         };
 
-        let (closed_off_exits, defended_spaces) = self.closed_off_exits();
-
-        closed_off_exits == 4
-            && ((defenders_left && attackers_left)
-                || self.two_or_less_side_spaces(&defended_spaces))
+        if let Some(defended_spaces) = self.closed_off_exits() {
+            (defenders_left && attackers_left) || self.two_or_less_side_spaces(&defended_spaces)
+        } else {
+            false
+        }
     }
 
     #[must_use]
