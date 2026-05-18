@@ -2379,6 +2379,30 @@ fn can_not_escape_2() -> anyhow::Result<()> {
     assert!(game.board.can_not_esacpe());
     assert_eq!(game.status, Status::AttackerWins);
 
+    let board: Board = [
+        "..XXX...X..",
+        ".X.......X.",
+        "X.........X",
+        ".........OO",
+        "........O.K",
+        ".........OO",
+        "X.........X",
+        "X.........X",
+        "X.........X",
+        ".X.......X.",
+        "..XXXX..X..",
+    ]
+    .try_into()?;
+
+    let mut game = game::Game {
+        board,
+        ..Default::default()
+    };
+
+    game.read_line("play attacker f1 h1")?;
+    assert!(game.board.can_not_esacpe());
+    assert_eq!(game.status, Status::AttackerWins);
+
     Ok(())
 }
 

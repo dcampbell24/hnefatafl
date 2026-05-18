@@ -867,13 +867,20 @@ impl Board {
             BoardSize::_13 => 16 - self.defenders_captured < 4,
         };
 
+        let defenders_left_lots = match self.size() {
+            BoardSize::_11 => 12 - self.defenders_captured < 6,
+            BoardSize::_13 => 16 - self.defenders_captured < 6,
+        };
+
         let attackers_left = match self.size() {
             BoardSize::_11 => 24 - self.attackers_captured >= 13,
             BoardSize::_13 => 32 - self.attackers_captured >= 13,
         };
 
         if let Some(defended_spaces) = self.closed_off_exits() {
-            (defenders_left && attackers_left) || self.two_or_less_side_spaces(&defended_spaces)
+            (defenders_left && attackers_left)
+                || self.n_or_less_side_spaces(&defended_spaces, 2)
+                || (defenders_left_lots && self.n_or_less_side_spaces(&defended_spaces, 3))
         } else {
             false
         }
@@ -1489,20 +1496,22 @@ impl Board {
     }
 
     #[must_use]
-    fn two_or_less_side_spaces(&self, defended_spaces: &HashSet<Vertex>) -> bool {
+    fn n_or_less_side_spaces(&self, defended_spaces: &HashSet<Vertex>, n: u8) -> bool {
         let size = self.size();
         let size_usize = usize::from(size);
 
-        let mut next_space = NextSpace::default();
+        let mut count = 0;
+        let mut continuos = Continuos::default();
         for y in 0..size_usize {
             let vertex = Vertex { size, x: 0, y };
 
-            if !self.two_spaces(&vertex, defended_spaces, &mut next_space) {
+            if !self.connected(&vertex, defended_spaces, n, &mut count, &mut continuos) {
                 return false;
             }
         }
 
-        let mut next_space = NextSpace::default();
+        let mut count = 0;
+        let mut continuos = Continuos::default();
         for y in 0..size_usize {
             let vertex = Vertex {
                 size,
@@ -1510,21 +1519,23 @@ impl Board {
                 y,
             };
 
-            if !self.two_spaces(&vertex, defended_spaces, &mut next_space) {
+            if !self.connected(&vertex, defended_spaces, n, &mut count, &mut continuos) {
                 return false;
             }
         }
 
-        let mut next_space = NextSpace::default();
+        let mut count = 0;
+        let mut continuos = Continuos::default();
         for x in 0..size_usize {
             let vertex = Vertex { size, x, y: 0 };
 
-            if !self.two_spaces(&vertex, defended_spaces, &mut next_space) {
+            if !self.connected(&vertex, defended_spaces, n, &mut count, &mut continuos) {
                 return false;
             }
         }
 
-        let mut next_space = NextSpace::default();
+        let mut count = 0;
+        let mut continuos = Continuos::default();
         for x in 0..size_usize {
             let vertex = Vertex {
                 size,
@@ -1532,7 +1543,7 @@ impl Board {
                 y: size_usize - 1,
             };
 
-            if !self.two_spaces(&vertex, defended_spaces, &mut next_space) {
+            if !self.connected(&vertex, defended_spaces, n, &mut count, &mut continuos) {
                 return false;
             }
         }
@@ -1540,29 +1551,33 @@ impl Board {
         true
     }
 
-    fn two_spaces(
+    fn connected(
         &self,
         vertex: &Vertex,
         defended_spaces: &HashSet<Vertex>,
-        next_space: &mut NextSpace,
+        spaces: u8,
+        count: &mut u8,
+        continuos: &mut Continuos,
     ) -> bool {
         let space = self.get(vertex);
 
-        match next_space {
-            NextSpace::None => {
-                if space != Space::Attacker && !defended_spaces.contains(vertex) {
-                    *next_space = NextSpace::One;
-                }
-
-                true
+        if space != Space::Attacker && !defended_spaces.contains(vertex) {
+            if *continuos == Continuos::Next {
+                return false;
+            } else if *count == 0 {
+                *continuos = Continuos::Some;
             }
-            NextSpace::One => {
-                *next_space = NextSpace::After;
 
-                true
-            }
-            NextSpace::After => space == Space::Attacker || defended_spaces.contains(vertex),
+            *count += 1;
+        } else if *continuos == Continuos::Some {
+            *continuos = Continuos::Next;
         }
+
+        if *count > spaces {
+            return false;
+        }
+
+        true
     }
 }
 
@@ -1734,12 +1749,12 @@ pub enum InvalidMove {
     Turn,
 }
 
-#[derive(Clone, Debug, Default)]
-enum NextSpace {
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
+enum Continuos {
     #[default]
     None,
-    One,
-    After,
+    Some,
+    Next,
 }
 
 #[must_use]
