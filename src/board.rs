@@ -697,10 +697,9 @@ impl Board {
     }
 
     // Fixme: slow!
-    #[allow(clippy::unwrap_used, clippy::too_many_lines)]
+    #[allow(clippy::unwrap_used, clippy::similar_names)]
     #[must_use]
     fn closed_off_exit(&self, exit: Vertex) -> Vec<Vertex> {
-        let mut defended = Vec::with_capacity(32);
         let size = self.size();
         let board_size_usize: usize = size.into();
         let mut already_checked = vec![0; board_size_usize * board_size_usize];
@@ -713,106 +712,57 @@ impl Board {
         let right = expand_flood_fill(exit.right(), &mut already_checked, &mut pre_stack);
 
         if up && left {
-            let up_1_vertex = &pre_stack[0];
-            let up_2_vertex = &pre_stack[0].up().unwrap();
-            let left_1_vertex = &pre_stack[1];
-            let left_2_vertex = &pre_stack[1].left().unwrap();
+            let up_v1 = &pre_stack[0];
+            let up_v2 = &pre_stack[0].up().unwrap();
+            let left_v1 = &pre_stack[1];
+            let left_v2 = &pre_stack[1].left().unwrap();
 
-            if self.get(up_1_vertex) == Space::Attacker
-                && self.get(up_2_vertex) == Space::Attacker
-                && self.get(left_1_vertex) == Space::Attacker
-                && self.get(left_2_vertex) == Space::Attacker
-            {
-                for vertex in [
-                    &exit,
-                    up_1_vertex,
-                    up_2_vertex,
-                    left_1_vertex,
-                    left_2_vertex,
-                ] {
-                    defended.push(*vertex);
-                }
-
+            if let Some(defended) = self.closed_off_exit_2(up_v1, up_v2, left_v1, left_v2, &exit) {
                 return defended;
             }
         }
 
         if up && right {
-            let up_1_vertex = &pre_stack[0];
-            let up_2_vertex = &pre_stack[0].up().unwrap();
-            let right_1_vertex = &pre_stack[1];
-            let right_2_vertex = &pre_stack[1].right().unwrap();
+            let up_v1 = &pre_stack[0];
+            let up_v2 = &pre_stack[0].up().unwrap();
+            let right_v1 = &pre_stack[1];
+            let right_v2 = &pre_stack[1].right().unwrap();
 
-            if self.get(up_1_vertex) == Space::Attacker
-                && self.get(up_2_vertex) == Space::Attacker
-                && self.get(right_1_vertex) == Space::Attacker
-                && self.get(right_2_vertex) == Space::Attacker
+            if let Some(defended) = self.closed_off_exit_2(up_v1, up_v2, right_v1, right_v2, &exit)
             {
-                for vertex in [
-                    &exit,
-                    up_1_vertex,
-                    up_2_vertex,
-                    right_1_vertex,
-                    right_2_vertex,
-                ] {
-                    defended.push(*vertex);
-                }
-
                 return defended;
             }
         }
 
         if left && down {
-            let left_1_vertex = &pre_stack[0];
-            let left_2_vertex = &pre_stack[0].left().unwrap();
-            let down_1_vertex = &pre_stack[1];
-            let down_2_vertex = &pre_stack[1].down().unwrap();
+            let left_v1 = &pre_stack[0];
+            let left_v2 = &pre_stack[0].left().unwrap();
+            let down_v1 = &pre_stack[1];
+            let down_v2 = &pre_stack[1].down().unwrap();
 
-            if self.get(left_1_vertex) == Space::Attacker
-                && self.get(left_2_vertex) == Space::Attacker
-                && self.get(down_1_vertex) == Space::Attacker
-                && self.get(down_2_vertex) == Space::Attacker
+            if let Some(defended) =
+                self.closed_off_exit_2(left_v1, left_v2, down_v1, down_v2, &exit)
             {
-                for vertex in [
-                    &exit,
-                    left_1_vertex,
-                    left_2_vertex,
-                    down_1_vertex,
-                    down_2_vertex,
-                ] {
-                    defended.push(*vertex);
-                }
-
                 return defended;
             }
         }
 
         if down && right {
-            let down_1_vertex = &pre_stack[0];
-            let down_2_vertex = &pre_stack[0].down().unwrap();
-            let right_1_vertex = &pre_stack[1];
-            let right_2_vertex = &pre_stack[1].right().unwrap();
+            let down_v1 = &pre_stack[0];
+            let down_v2 = &pre_stack[0].down().unwrap();
+            let right_v1 = &pre_stack[1];
+            let right_v2 = &pre_stack[1].right().unwrap();
 
-            if self.get(down_1_vertex) == Space::Attacker
-                && self.get(down_2_vertex) == Space::Attacker
-                && self.get(right_1_vertex) == Space::Attacker
-                && self.get(right_2_vertex) == Space::Attacker
+            if let Some(defended) =
+                self.closed_off_exit_2(down_v1, down_v2, right_v1, right_v2, &exit)
             {
-                for vertex in [
-                    &exit,
-                    down_1_vertex,
-                    down_2_vertex,
-                    right_1_vertex,
-                    right_2_vertex,
-                ] {
-                    defended.push(*vertex);
-                }
-
                 return defended;
             }
         }
 
+        let mut defended = Vec::with_capacity(32);
         let mut stack = Vec::with_capacity(board_size_usize * board_size_usize);
+
         for vertex in pre_stack {
             let space = self.get(&vertex);
             if space == Space::Empty || space == Space::Attacker {
@@ -842,7 +792,7 @@ impl Board {
                     let _ = expand_flood_fill(vertex.down(), &mut already_checked, &mut stack);
                     let _ = expand_flood_fill(vertex.up(), &mut already_checked, &mut stack);
                 } else if Into::<Role>::into(space) == Role::Defender {
-                    return defended;
+                    return Vec::new();
                 }
             }
         }
@@ -855,12 +805,60 @@ impl Board {
     }
 
     #[must_use]
+    #[allow(clippy::similar_names)]
+    fn closed_off_exit_2(
+        &self,
+        d1_v1: &Vertex,
+        d1_v2: &Vertex,
+        d2_v1: &Vertex,
+        d2_v2: &Vertex,
+        exit: &Vertex,
+    ) -> Option<Vec<Vertex>> {
+        let mut defended = Vec::new();
+
+        let d1_s1 = self.get(d1_v1);
+        let d1_s2 = self.get(d1_v2);
+        let d2_s1 = self.get(d2_v1);
+        let d2_s2 = self.get(d2_v2);
+
+        if d1_s1 == Space::Attacker
+            && d1_s2 == Space::Attacker
+            && d2_s1 == Space::Attacker
+            && d2_s2 == Space::Attacker
+        {
+            for vertex in [exit, d1_v1, d1_v2, d2_v1, d2_v2] {
+                defended.push(*vertex);
+            }
+
+            Some(defended)
+        } else if d1_s1 == Space::Defender
+            || d1_s1 == Space::King
+            || d1_s2 == Space::Defender
+            || d1_s2 == Space::King
+            || d2_s1 == Space::Defender
+            || d2_s1 == Space::King
+            || d2_s2 == Space::Defender
+            || d2_s2 == Space::King
+        {
+            Some(defended)
+        } else {
+            None
+        }
+    }
+
+    #[must_use]
     pub fn closed_off_exits(&self) -> (u8, HashSet<Vertex>) {
         let mut defended_spaces = HashSet::new();
         let mut closed_off_exits = 0;
 
         for exit in self.exit_squares() {
             let defended = self.closed_off_exit(exit);
+
+            /* DEBUG!
+            if defended_spaces.contains(&exit) == true && defended.contains(&exit) == false {
+                println!("{exit}\n{self}");
+            }
+            */
 
             if defended.contains(&exit) {
                 closed_off_exits += 1;
@@ -1508,7 +1506,7 @@ impl Board {
         let size_usize = usize::from(size);
 
         let mut next_space = NextSpace::default();
-        for y in 2..size_usize - 2 {
+        for y in 0..size_usize {
             let vertex = Vertex { size, x: 0, y };
 
             if !self.two_spaces(&vertex, defended_spaces, &mut next_space) {
@@ -1517,7 +1515,7 @@ impl Board {
         }
 
         let mut next_space = NextSpace::default();
-        for y in 2..size_usize - 2 {
+        for y in 0..size_usize {
             let vertex = Vertex {
                 size,
                 x: size_usize - 1,
@@ -1530,7 +1528,7 @@ impl Board {
         }
 
         let mut next_space = NextSpace::default();
-        for x in 2..size_usize - 2 {
+        for x in 0..size_usize {
             let vertex = Vertex { size, x, y: 0 };
 
             if !self.two_spaces(&vertex, defended_spaces, &mut next_space) {
@@ -1539,7 +1537,7 @@ impl Board {
         }
 
         let mut next_space = NextSpace::default();
-        for x in 2..size_usize - 2 {
+        for x in 0..size_usize {
             let vertex = Vertex {
                 size,
                 x,
