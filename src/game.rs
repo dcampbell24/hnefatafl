@@ -1006,8 +1006,10 @@ impl Game {
             MovesToEscape::Moves(moves) => f64::from(moves) * 1_000.0,
         };
 
-        let (closed_off_exits, _defended_spaces) = self.board.closed_off_exits();
-        utility += f64::from(closed_off_exits) * 100.0;
+        if self.board.closed_off_exits().is_some() {
+            utility += 400.0;
+        }
+
         // Todo: An extra 100.0 points for each corner that touches another corner.
         // Fixme: utility += f64::from(captured.defender) * 10.0;
 
