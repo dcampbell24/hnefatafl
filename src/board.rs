@@ -29,7 +29,6 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 use crate::{
-    characters::Characters,
     game::PreviousBoards,
     play::{EXIT_SQUARES_11X11, EXIT_SQUARES_13X13, Plae, Play, Vertex},
     role::Role,
@@ -1883,23 +1882,6 @@ impl From<&Board> for Captured {
             defender: board.defenders_captured,
             king: board.king.is_none(),
         }
-    }
-}
-
-impl Captured {
-    #[must_use]
-    pub fn attacker(&self, chars: &Characters) -> String {
-        format!("{} {}", chars.attacker, self.attacker)
-    }
-
-    #[must_use]
-    pub fn defender(&self, chars: &Characters) -> String {
-        let mut string = format!("{} {}", chars.defender, self.defender);
-        if self.king {
-            string.push(' ');
-            string.push_str(&chars.king);
-        }
-        string
     }
 }
 

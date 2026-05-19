@@ -1806,8 +1806,15 @@ impl<'a> Client {
         let mut row_1 = row![
             text(attacker_string),
             text(attacker_rating).center(),
-            text(captured.defender(&self.chars).clone()).font(Font::MONOSPACE),
+            text(&self.chars.defender)
+                .color(blue())
+                .font(Font::MONOSPACE),
+            text(captured.defender).font(Font::MONOSPACE),
         ];
+
+        if captured.king {
+            row_1 = row_1.push(text(&self.chars.king).color(yellow()).font(Font::MONOSPACE));
+        }
 
         if !self.spectators.contains(attacker_string) {
             row_1 = row_1.push(text(&self.chars.warning).style(text::danger));
@@ -1830,8 +1837,30 @@ impl<'a> Client {
         let mut row_2 = row![
             text(defender_string),
             text(defender_rating).center(),
-            text(captured.attacker(&self.chars).clone()).font(Font::MONOSPACE),
+            text(&self.chars.attacker)
+                .color(red())
+                .font(Font::MONOSPACE),
+            text(captured.attacker).font(Font::MONOSPACE),
         ];
+
+        /*
+        impl Captured {
+            #[must_use]
+            pub fn attacker(&self, chars: &Characters) -> String {
+                format!("{} {}", chars.attacker, self.attacker)
+            }
+
+            #[must_use]
+            pub fn defender(&self, chars: &Characters) -> String {
+                let mut string = format!("{} {}", chars.defender, self.defender);
+                if self.king {
+                    string.push(' ');
+                    string.push_str(&chars.king);
+                }
+                string
+            }
+        }
+        */
 
         if !self.spectators.contains(defender_string) {
             row_2 = row_2.push(text(&self.chars.warning).style(text::danger));

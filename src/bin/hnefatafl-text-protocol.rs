@@ -65,10 +65,6 @@ struct Args {
     #[arg(long)]
     host: Option<String>,
 
-    /// Render everything in ASCII
-    #[arg(long)]
-    ascii: bool,
-
     /// Build the manpage
     #[arg(long)]
     man: bool,
@@ -94,13 +90,11 @@ fn main() -> anyhow::Result<()> {
     let args = Args::parse();
 
     let mut game = Game::default();
-    if args.ascii {
-        game.chars.ascii();
-        game.board.display_ascii = true;
+    game.chars.ascii();
+    game.board.display_ascii = true;
 
-        if let Some(board) = game.previous_boards.0.first_mut() {
-            board.display_ascii = true;
-        }
+    if let Some(board) = game.previous_boards.0.first_mut() {
+        board.display_ascii = true;
     }
 
     if let Some(mut address) = args.host {
