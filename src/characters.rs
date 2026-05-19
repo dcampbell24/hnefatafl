@@ -41,10 +41,10 @@ impl Default for Characters {
     fn default() -> Self {
         Self {
             attacker: "⬤".to_string(),
-            arrow_down: "↓".to_string(),
-            arrow_left: "←".to_string(),
-            arrow_right: "→".to_string(),
-            arrow_up: "↑".to_string(),
+            arrow_down: "🡓".to_string(),
+            arrow_left: "🡐".to_string(),
+            arrow_right: "🡒".to_string(),
+            arrow_up: "🡑".to_string(),
             captured: "🗙".to_string(),
             dagger: "🗡".to_string(),
             defender: "⬤".to_string(),
