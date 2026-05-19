@@ -40,19 +40,19 @@ pub struct Characters {
 impl Default for Characters {
     fn default() -> Self {
         Self {
-            attacker: "♟".to_string(),
+            attacker: "⬤".to_string(),
             arrow_down: "↓".to_string(),
             arrow_left: "←".to_string(),
             arrow_right: "→".to_string(),
             arrow_up: "↑".to_string(),
             captured: "🗙".to_string(),
             dagger: "🗡".to_string(),
-            defender: "♙".to_string(),
+            defender: "◯".to_string(),
             double_arrow_left: "⏪".to_string(),
             double_arrow_left_full: "⏮".to_string(),
             double_arrow_right: "⏩".to_string(),
             double_arrow_right_full: "⏭".to_string(),
-            king: "♔".to_string(),
+            king: "⨁".to_string(),
             people: "👥".to_string(),
             restricted_square: "⌘".to_string(),
             shield: "⛨".to_string(),
