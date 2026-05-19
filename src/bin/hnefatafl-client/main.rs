@@ -26,6 +26,7 @@ mod dimensions;
 mod enums;
 mod new_game_settings;
 mod portable_game_notation;
+mod solarized;
 mod tabs;
 mod user;
 mod volume;
@@ -105,6 +106,7 @@ use crate::{
     enums::{Coordinates, JoinGame, Message, Move, Screen, Size, SortBy, State, Theme},
     new_game_settings::NewGameSettings,
     portable_game_notation::{read_portable_game_notation, write_portable_game_notation},
+    solarized::{blue, green, red, yellow},
     tabs::TabId,
     user::User,
     volume::{MAX_VOLUME, Volume},
@@ -914,20 +916,20 @@ impl<'a> Client {
                 };
 
                 let mut txt = match board.get(&vertex) {
-                    Space::Attacker => text(&self.chars.attacker),
-                    Space::Defender => text(&self.chars.defender),
+                    Space::Attacker => text(&self.chars.attacker).color(red()),
+                    Space::Defender => text(&self.chars.defender).color(blue()),
                     Space::Empty => {
                         if let Some(arrow) = self.draw_arrow(y, x) {
                             text(arrow)
                         } else if self.captures.contains(&vertex) {
                             text(&self.chars.captured)
                         } else if vertex.on_restricted_square() {
-                            text(&self.chars.restricted_square)
+                            text(&self.chars.restricted_square).color(green())
                         } else {
                             text(" ")
                         }
                     }
-                    Space::King => text(&self.chars.king),
+                    Space::King => text(&self.chars.king).color(yellow()),
                 };
 
                 if let Some((heat_map_from, heat_map_to)) = &heat_map
