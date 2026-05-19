@@ -872,10 +872,19 @@ impl Board {
             BoardSize::_13 => 16 - self.defenders_captured < 6,
         };
 
+        let defenders_left_one = match self.size() {
+            BoardSize::_11 => 12 - self.defenders_captured == 1,
+            BoardSize::_13 => 16 - self.defenders_captured == 1,
+        };
+
         let attackers_left = match self.size() {
             BoardSize::_11 => 24 - self.attackers_captured >= 13,
             BoardSize::_13 => 32 - self.attackers_captured >= 13,
         };
+
+        if defenders_left_one && self.king_trapped_1() {
+            return true;
+        }
 
         if let Some(defended_spaces) = self.closed_off_exits() {
             (defenders_left && attackers_left)
@@ -1493,6 +1502,177 @@ impl Board {
         }
 
         Some(sum)
+    }
+
+    #[must_use]
+    #[allow(clippy::too_many_lines)]
+    pub fn king_trapped_1(&self) -> bool {
+        let size = self.size();
+        let size_usize = usize::from(size);
+
+        if let Some(king) = self.king {
+            if king.x == 0 {
+                for y in (king.y - 2)..king.y {
+                    if y == 0 {
+                        continue;
+                    }
+
+                    let vertex = Vertex { size, x: 0, y };
+
+                    if self.get(&vertex) != Space::Attacker {
+                        return false;
+                    }
+                }
+
+                for y in (king.y + 1)..(king.y + 3) {
+                    if y == size_usize - 1 {
+                        continue;
+                    }
+
+                    let vertex = Vertex { size, x: 0, y };
+
+                    if self.get(&vertex) != Space::Attacker {
+                        return false;
+                    }
+                }
+
+                for x in (king.x + 1)..(king.x + 3) {
+                    let vertex = Vertex { size, x, y: king.y };
+
+                    if self.get(&vertex) != Space::Attacker {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            if king.x == size_usize - 1 {
+                for y in (king.y - 2)..king.y {
+                    if y == 0 {
+                        continue;
+                    }
+
+                    let vertex = Vertex {
+                        size,
+                        x: size_usize - 1,
+                        y,
+                    };
+
+                    if self.get(&vertex) != Space::Attacker {
+                        return false;
+                    }
+                }
+
+                for y in (king.y + 1)..(king.y + 3) {
+                    if y == size_usize - 1 {
+                        continue;
+                    }
+
+                    let vertex = Vertex {
+                        size,
+                        x: size_usize - 1,
+                        y,
+                    };
+
+                    if self.get(&vertex) != Space::Attacker {
+                        return false;
+                    }
+                }
+
+                for x in (king.x - 2)..(king.x) {
+                    let vertex = Vertex { size, x, y: king.y };
+
+                    if self.get(&vertex) != Space::Attacker {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            if king.y == 0 {
+                for x in (king.x - 2)..king.x {
+                    if x == 0 {
+                        continue;
+                    }
+
+                    let vertex = Vertex { size, x, y: 0 };
+
+                    if self.get(&vertex) != Space::Attacker {
+                        return false;
+                    }
+                }
+
+                for x in (king.x + 1)..(king.x + 3) {
+                    if x == size_usize - 1 {
+                        continue;
+                    }
+
+                    let vertex = Vertex { size, x, y: 0 };
+
+                    if self.get(&vertex) != Space::Attacker {
+                        return false;
+                    }
+                }
+
+                for y in (king.y + 1)..(king.y + 3) {
+                    let vertex = Vertex { size, x: king.x, y };
+
+                    if self.get(&vertex) != Space::Attacker {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            if king.y == size_usize - 1 {
+                for x in (king.x - 2)..king.x {
+                    if x == 0 {
+                        continue;
+                    }
+
+                    let vertex = Vertex {
+                        size,
+                        x,
+                        y: size_usize - 1,
+                    };
+
+                    if self.get(&vertex) != Space::Attacker {
+                        return false;
+                    }
+                }
+
+                for x in (king.x + 1)..(king.x + 3) {
+                    if x == size_usize - 1 {
+                        continue;
+                    }
+
+                    let vertex = Vertex {
+                        size,
+                        x,
+                        y: size_usize - 1,
+                    };
+
+                    if self.get(&vertex) != Space::Attacker {
+                        return false;
+                    }
+                }
+
+                for y in (king.y - 2)..(king.y) {
+                    let vertex = Vertex { size, x: king.x, y };
+
+                    if self.get(&vertex) != Space::Attacker {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+        }
+
+        false
     }
 
     #[must_use]
