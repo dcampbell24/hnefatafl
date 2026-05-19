@@ -25,6 +25,7 @@ use std::{
     str::FromStr,
 };
 
+use colored::Colorize;
 use jiff::Timestamp;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use rustc_hash::FxHashMap;
@@ -110,12 +111,21 @@ impl fmt::Display for Game {
 
         writeln!(f, "{}\n", self.board)?;
         writeln!(f, "move: {}", self.plays.len() + 1)?;
-        writeln!(
+        write!(
             f,
-            "captures: {} {}",
-            &captured.attacker(&self.chars),
-            &captured.defender(&self.chars)
+            "captures: {} {}, {} {}",
+            "A".red(),
+            captured.attacker,
+            "D".blue(),
+            captured.defender,
         )?;
+
+        if captured.king {
+            writeln!(f, "{}", "K".yellow())?;
+        } else {
+            writeln!(f)?;
+        }
+
         writeln!(f, "status: {}", self.status)?;
         writeln!(f, "turn: {}", self.turn)?;
 
