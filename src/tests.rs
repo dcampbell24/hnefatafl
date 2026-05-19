@@ -2484,6 +2484,315 @@ fn can_not_escape_3() -> anyhow::Result<()> {
 }
 
 #[test]
+fn can_not_escape_4() -> anyhow::Result<()> {
+    let board: Board = [
+        ".XXKXX.....",
+        "...X.......",
+        "...X.......",
+        "...........",
+        "...........",
+        "X.........O",
+        "...........",
+        "...........",
+        "...........",
+        "...........",
+        "...........",
+    ]
+    .try_into()?;
+
+    let mut game = game::Game {
+        board,
+        ..Default::default()
+    };
+
+    game.read_line("play attacker a6 a7")?;
+    assert!(game.board.can_not_esacpe());
+    assert_eq!(game.status, Status::AttackerWins);
+
+    let board: Board = [
+        ".XKXX......",
+        "..X........",
+        "..X........",
+        "...........",
+        "...........",
+        "X.........O",
+        "...........",
+        "...........",
+        "...........",
+        "...........",
+        "...........",
+    ]
+    .try_into()?;
+
+    let mut game = game::Game {
+        board,
+        ..Default::default()
+    };
+
+    game.read_line("play attacker a6 a7")?;
+    assert!(game.board.can_not_esacpe());
+    assert_eq!(game.status, Status::AttackerWins);
+
+    let board: Board = [
+        "......XXKX.",
+        "........X..",
+        "........X..",
+        "...........",
+        "...........",
+        "X.........O",
+        "...........",
+        "...........",
+        "...........",
+        "...........",
+        "...........",
+    ]
+    .try_into()?;
+
+    let mut game = game::Game {
+        board,
+        ..Default::default()
+    };
+
+    game.read_line("play attacker a6 a7")?;
+    assert!(game.board.can_not_esacpe());
+    assert_eq!(game.status, Status::AttackerWins);
+
+    Ok(())
+}
+
+#[test]
+fn can_not_escape_5() -> anyhow::Result<()> {
+    let board: Board = [
+        "...........",
+        "X..........",
+        "X..........",
+        "KXX........",
+        "X..........",
+        "X.........O",
+        "...........",
+        "...........",
+        "...........",
+        "...........",
+        ".....X.....",
+    ]
+    .try_into()?;
+
+    let mut game = game::Game {
+        board,
+        ..Default::default()
+    };
+
+    game.read_line("play attacker f1 g1")?;
+    assert!(game.board.can_not_esacpe());
+    assert_eq!(game.status, Status::AttackerWins);
+
+    let board: Board = [
+        "...........",
+        "X..........",
+        "KXX........",
+        "X..........",
+        "X..........",
+        "..........O",
+        "...........",
+        "...........",
+        "...........",
+        "...........",
+        ".....X.....",
+    ]
+    .try_into()?;
+
+    let mut game = game::Game {
+        board,
+        ..Default::default()
+    };
+
+    game.read_line("play attacker f1 g1")?;
+    assert!(game.board.can_not_esacpe());
+    assert_eq!(game.status, Status::AttackerWins);
+
+    let board: Board = [
+        "...........",
+        "...........",
+        "...........",
+        "...........",
+        "...........",
+        "..........O",
+        "X..........",
+        "X..........",
+        "KXX........",
+        "X..........",
+        ".....X.....",
+    ]
+    .try_into()?;
+
+    let mut game = game::Game {
+        board,
+        ..Default::default()
+    };
+
+    game.read_line("play attacker f1 g1")?;
+    assert!(game.board.can_not_esacpe());
+    assert_eq!(game.status, Status::AttackerWins);
+
+    Ok(())
+}
+
+#[test]
+fn can_not_escape_6() -> anyhow::Result<()> {
+    let board: Board = [
+        "......X....",
+        "..........X",
+        "..........X",
+        "........XXK",
+        "..........X",
+        "..........X",
+        "O..........",
+        "...........",
+        "...........",
+        "...........",
+        "...........",
+    ]
+    .try_into()?;
+
+    let mut game = game::Game {
+        board,
+        ..Default::default()
+    };
+
+    game.read_line("play attacker g11 h11")?;
+    assert!(game.board.can_not_esacpe());
+    assert_eq!(game.status, Status::AttackerWins);
+
+    let board: Board = [
+        "......X....",
+        "..........X",
+        "........XXK",
+        "..........X",
+        "..........X",
+        "O..........",
+        "...........",
+        "...........",
+        "...........",
+        "...........",
+        "...........",
+    ]
+    .try_into()?;
+
+    let mut game = game::Game {
+        board,
+        ..Default::default()
+    };
+
+    game.read_line("play attacker g11 h11")?;
+    assert!(game.board.can_not_esacpe());
+    assert_eq!(game.status, Status::AttackerWins);
+
+    let board: Board = [
+        "......X....",
+        "...........",
+        "...........",
+        "...........",
+        "...........",
+        "..........O",
+        "..........X",
+        "..........X",
+        "........XXK",
+        "..........X",
+        "...........",
+    ]
+    .try_into()?;
+
+    let mut game = game::Game {
+        board,
+        ..Default::default()
+    };
+
+    game.read_line("play attacker g11 h11")?;
+    assert!(game.board.can_not_esacpe());
+    assert_eq!(game.status, Status::AttackerWins);
+
+    Ok(())
+}
+
+// TODO!
+#[test]
+fn can_not_escape_7() -> anyhow::Result<()> {
+    let board: Board = [
+        "......X....",
+        "...........",
+        "...........",
+        "...........",
+        "...........",
+        "...........",
+        "O..........",
+        "...........",
+        "...X.......",
+        "...X.......",
+        ".XXKXX.....",
+    ]
+    .try_into()?;
+
+    let mut game = game::Game {
+        board,
+        ..Default::default()
+    };
+
+    game.read_line("play attacker g11 h11")?;
+    assert!(game.board.can_not_esacpe());
+    assert_eq!(game.status, Status::AttackerWins);
+
+    let board: Board = [
+        "......X....",
+        "...........",
+        "...........",
+        "...........",
+        "...........",
+        "...........",
+        "O..........",
+        "...........",
+        "..X........",
+        "..X........",
+        ".XKXX......",
+    ]
+    .try_into()?;
+
+    let mut game = game::Game {
+        board,
+        ..Default::default()
+    };
+
+    game.read_line("play attacker g11 h11")?;
+    assert!(game.board.can_not_esacpe());
+    assert_eq!(game.status, Status::AttackerWins);
+
+    let board: Board = [
+        "......X....",
+        "...........",
+        "...........",
+        "...........",
+        "...........",
+        "..........O",
+        "...........",
+        "...........",
+        "........X..",
+        "........X..",
+        "......XXKX.",
+    ]
+    .try_into()?;
+
+    let mut game = game::Game {
+        board,
+        ..Default::default()
+    };
+
+    game.read_line("play attacker g11 h11")?;
+    assert!(game.board.can_not_esacpe());
+    assert_eq!(game.status, Status::AttackerWins);
+
+    Ok(())
+}
+
+#[test]
 fn someone_wins() {
     let mut game = Game::default();
     let mut ai: Box<dyn AI> = Box::new(AiBanal);
