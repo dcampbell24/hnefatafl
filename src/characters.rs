@@ -47,7 +47,7 @@ impl Default for Characters {
             arrow_up: "↑".to_string(),
             captured: "🗙".to_string(),
             dagger: "🗡".to_string(),
-            defender: "◯".to_string(),
+            defender: "⬤".to_string(),
             double_arrow_left: "⏪".to_string(),
             double_arrow_left_full: "⏮".to_string(),
             double_arrow_right: "⏩".to_string(),
