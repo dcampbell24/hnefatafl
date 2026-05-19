@@ -62,10 +62,10 @@ impl TryFrom<char> for Space {
 impl fmt::Display for Space {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Attacker => write!(f, "{}", "♟".red()),
+            Self::Attacker => write!(f, "{}", "A".red()),
             Self::Empty => write!(f, "."),
-            Self::King => write!(f, "{}", "♔".yellow()),
-            Self::Defender => write!(f, "{}", "♙".blue()),
+            Self::King => write!(f, "{}", "K".yellow()),
+            Self::Defender => write!(f, "{}", "D".blue()),
         }
     }
 }
