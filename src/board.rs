@@ -1544,9 +1544,7 @@ impl Board {
                 }
 
                 return true;
-            }
-
-            if king.x == size_usize - 1 {
+            } else if king.x == size_usize - 1 {
                 for y in (king.y - 2)..king.y {
                     if y == 0 {
                         continue;
@@ -1588,9 +1586,7 @@ impl Board {
                 }
 
                 return true;
-            }
-
-            if king.y == 0 {
+            } else if king.y == 0 {
                 for x in (king.x - 2)..king.x {
                     if x == 0 {
                         continue;
@@ -1624,9 +1620,7 @@ impl Board {
                 }
 
                 return true;
-            }
-
-            if king.y == size_usize - 1 {
+            } else if king.y == size_usize - 1 {
                 for x in (king.x - 2)..king.x {
                     if x == 0 {
                         continue;
