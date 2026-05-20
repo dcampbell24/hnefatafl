@@ -72,19 +72,55 @@ impl ArchivedGame {
 
 impl fmt::Display for ArchivedGame {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(
-            f,
-            "# {}: {}: {} {}, {}: {} {}, {}: {}",
-            self.id,
-            t!("Attacker"),
-            self.attacker,
-            self.attacker_rating.to_string_rounded(),
-            t!("Defender"),
-            self.defender,
-            self.defender_rating.to_string_rounded(),
-            t!("Size"),
-            self.board_size,
-        )
+        match self.status {
+            Status::AttackerWins => {
+                writeln!(
+                    f,
+                    "# {}: [{}: {} {}], {}: {} {}, {}: {}",
+                    self.id,
+                    t!("Attacker"),
+                    self.attacker,
+                    self.attacker_rating.to_string_rounded(),
+                    t!("Defender"),
+                    self.defender,
+                    self.defender_rating.to_string_rounded(),
+                    t!("Size"),
+                    self.board_size,
+                )?;
+            }
+            Status::Draw | Status::Ongoing => {
+                writeln!(
+                    f,
+                    "# {}: {}: {} {}, {}: {} {}, {}: {}",
+                    self.id,
+                    t!("Attacker"),
+                    self.attacker,
+                    self.attacker_rating.to_string_rounded(),
+                    t!("Defender"),
+                    self.defender,
+                    self.defender_rating.to_string_rounded(),
+                    t!("Size"),
+                    self.board_size,
+                )?;
+            }
+            Status::DefenderWins => {
+                writeln!(
+                    f,
+                    "# {}: {}: {} {}, [{}: {} {}], {}: {}",
+                    self.id,
+                    t!("Attacker"),
+                    self.attacker,
+                    self.attacker_rating.to_string_rounded(),
+                    t!("Defender"),
+                    self.defender,
+                    self.defender_rating.to_string_rounded(),
+                    t!("Size"),
+                    self.board_size,
+                )?;
+            }
+        }
+
+        Ok(())
     }
 }
 
