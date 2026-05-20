@@ -1505,8 +1505,7 @@ impl Board {
 
     #[must_use]
     pub fn king_trapped_1(&self) -> bool {
-        let size = self.size();
-        let size_usize = usize::from(size);
+        let size_usize = usize::from(self.size());
 
         if let Some(king) = self.king {
             if king.x == 0 {
