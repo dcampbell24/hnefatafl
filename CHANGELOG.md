@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- hnefatafl-client: use circles instead of chess pieces.
 - hnefatafl-server-full: Update every 250 milliseconds.
 - Make Display::Board prettier.
 - Replace the AI with TaflZero.
