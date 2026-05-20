@@ -72,7 +72,7 @@ use hnefatafl_copenhagen::{
 #[cfg(target_os = "linux")]
 use iced::window::settings::PlatformSpecific;
 use iced::{
-    Color, Element, Event, Font, Length, Pixels, Subscription, Task,
+    Element, Event, Font, Length, Pixels, Subscription, Task,
     alignment::{Horizontal, Vertical},
     color, event,
     font::Weight,
@@ -886,6 +886,7 @@ impl<'a> Client {
     }
 
     #[must_use]
+    #[allow(clippy::too_many_lines)]
     fn board(&self) -> Row<'_, Message> {
         let (board, heat_map) = self.board_and_heatmap();
         let board_size = board.size();
@@ -942,26 +943,77 @@ impl<'a> Client {
                             let heat = heat_map_to[y * board_size_usize + x];
 
                             if heat == Heat::UnRanked {
-                                txt = txt.color(Color::from_rgba(0.0, 0.0, 0.0, heat.into()));
-                            } else {
-                                let txt_char = match space {
-                                    Space::Attacker => &self.chars.attacker,
-                                    Space::Defender => &self.chars.defender,
-                                    Space::Empty => "",
-                                    Space::King => &self.chars.king,
-                                };
+                                let space = board.get(&Vertex {
+                                    size: board_size,
+                                    x,
+                                    y,
+                                });
 
-                                txt = text(txt_char).color(Color::from_rgba(
-                                    0.0,
-                                    0.0,
-                                    0.0,
-                                    heat.into(),
-                                ));
+                                txt = match space {
+                                    Space::Attacker => {
+                                        let mut red = red();
+                                        red.a = heat.into();
+                                        text(&self.chars.attacker).color(red)
+                                    }
+                                    Space::Defender => {
+                                        let mut blue = blue();
+                                        blue.a = heat.into();
+                                        text(&self.chars.defender).color(blue)
+                                    }
+                                    Space::Empty => text(""),
+                                    Space::King => {
+                                        let mut yellow = yellow();
+                                        yellow.a = heat.into();
+                                        text(&self.chars.king).color(yellow)
+                                    }
+                                };
+                            } else {
+                                txt = match space {
+                                    Space::Attacker => {
+                                        let mut red = red();
+                                        red.a = heat.into();
+                                        text(&self.chars.attacker).color(red)
+                                    }
+                                    Space::Defender => {
+                                        let mut blue = blue();
+                                        blue.a = heat.into();
+                                        text(&self.chars.defender).color(blue)
+                                    }
+                                    Space::Empty => text(""),
+                                    Space::King => {
+                                        let mut yellow = yellow();
+                                        yellow.a = heat.into();
+                                        text(&self.chars.king).color(yellow)
+                                    }
+                                };
                             }
                         }
                     } else {
                         let heat = heat_map_from[y * board_size_usize + x];
-                        txt = txt.color(Color::from_rgba(0.0, 0.0, 0.0, heat.into()));
+                        let space = board.get(&Vertex {
+                            size: board_size,
+                            x,
+                            y,
+                        });
+
+                        txt = match space {
+                            Space::Attacker => {
+                                let mut red = red();
+                                red.a = heat.into();
+                                text(&self.chars.attacker).color(red)
+                            }
+                            Space::Defender => {
+                                let mut blue = blue();
+                                blue.a = heat.into();
+                                text(&self.chars.defender).color(blue)
+                            }
+                            Space::Empty => text(""),
+                            Space::King => {
+                                let mut yellow = yellow();
+                                yellow.a = heat.into();
+                                text(&self.chars.king).color(yellow)
+                            }
+                        };
                     }
                 }
 
