@@ -32,16 +32,16 @@ impl Dimensions {
     pub(crate) fn new(board_size: BoardSize, screen_size: &Size) -> Self {
         let (board_dimension, letter_size, piece_size, spacing) = match board_size {
             BoardSize::_11 => match screen_size {
-                Size::Large | Size::Giant => (75, 55, 60, 6),
-                Size::Medium => (65, 45, 50, 8),
-                Size::Small => (55, 35, 40, 11),
-                Size::Tiny | Size::TinyWide => (40, 20, 25, 16),
+                Size::Large | Size::Giant => (75, 55, 70, 6),
+                Size::Medium => (65, 45, 60, 8),
+                Size::Small => (55, 35, 50, 11),
+                Size::Tiny | Size::TinyWide => (40, 20, 35, 16),
             },
             BoardSize::_13 => match screen_size {
-                Size::Large | Size::Giant => (65, 45, 50, 8),
-                Size::Medium => (58, 38, 43, 10),
-                Size::Small => (50, 30, 35, 12),
-                Size::Tiny | Size::TinyWide => (40, 20, 25, 15),
+                Size::Large | Size::Giant => (65, 45, 60, 8),
+                Size::Medium => (58, 38, 53, 10),
+                Size::Small => (50, 30, 45, 12),
+                Size::Tiny | Size::TinyWide => (40, 20, 35, 15),
             },
         };
 
