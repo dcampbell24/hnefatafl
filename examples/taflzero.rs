@@ -330,8 +330,8 @@ fn handle_messages(
 fn systemd_delay_restart(args: &Args) -> anyhow::Result<()> {
     if args.systemd {
         let service = match args.role {
-            Role::Attacker => "hnefatafl-ai-basic-attacker.service",
-            Role::Defender => "hnefatafl-ai-basic-defender.service",
+            Role::Attacker => "hnefatafl-ai-attacker.service",
+            Role::Defender => "hnefatafl-ai-defender.service",
             Role::Roleless => unreachable!(),
         };
 
