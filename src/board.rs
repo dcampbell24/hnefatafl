@@ -1528,6 +1528,10 @@ impl Board {
         let size = king.size;
         let size_usize = usize::from(size);
 
+        if king.y == 1 || king.y == size_usize - 2 {
+            return false;
+        }
+
         for y in (king.y - 2)..king.y {
             if y == 0 {
                 continue;
@@ -1567,6 +1571,10 @@ impl Board {
     fn king_trapped_x_size(&self, king: Vertex) -> bool {
         let size = king.size;
         let size_usize = usize::from(size);
+
+        if king.y == 1 || king.y == size_usize - 2 {
+            return false;
+        }
 
         for y in (king.y - 2)..king.y {
             if y == 0 {
@@ -1616,6 +1624,10 @@ impl Board {
         let size = king.size;
         let size_usize = usize::from(size);
 
+        if king.x == 1 || king.x == size_usize - 2 {
+            return false;
+        }
+
         for x in (king.x - 2)..king.x {
             if x == 0 {
                 continue;
@@ -1655,6 +1667,11 @@ impl Board {
     fn king_trapped_y_size(&self, king: Vertex) -> bool {
         let size = king.size;
         let size_usize = usize::from(size);
+
+        if king.x == 1 || king.x == size_usize - 2 {
+            return false;
+        }
+
         for x in (king.x - 2)..king.x {
             if x == 0 {
                 continue;

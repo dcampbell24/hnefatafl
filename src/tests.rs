@@ -2793,6 +2793,83 @@ fn can_not_escape_7() -> anyhow::Result<()> {
 }
 
 #[test]
+fn can_not_escape_8() -> anyhow::Result<()> {
+    let board: Board = [
+        "......X....",
+        "...........",
+        "...........",
+        "...........",
+        "...........",
+        "...........",
+        "O..........",
+        "X..........",
+        "X..........",
+        "KXX........",
+        "...........",
+    ]
+    .try_into()?;
+
+    let mut game = game::Game {
+        board,
+        ..Default::default()
+    };
+
+    game.read_line("play attacker g11 h11")?;
+    assert!(!game.board.can_not_esacpe());
+    assert_eq!(game.status, Status::Ongoing);
+
+    let board: Board = [
+        "......X....",
+        "...........",
+        "...........",
+        "...........",
+        "...........",
+        "...........",
+        "O..........",
+        "...........",
+        ".........X.",
+        ".........X.",
+        ".......XXK.",
+    ]
+    .try_into()?;
+
+    let mut game = game::Game {
+        board,
+        ..Default::default()
+    };
+
+    game.read_line("play attacker g11 h11")?;
+    assert!(!game.board.can_not_esacpe());
+    assert_eq!(game.status, Status::Ongoing);
+
+    let board: Board = [
+        "......X....",
+        "...........",
+        "...........",
+        "...........",
+        "...........",
+        "..........O",
+        "...........",
+        "...........",
+        ".........X.",
+        ".........X.",
+        ".......XXK.",
+    ]
+    .try_into()?;
+
+    let mut game = game::Game {
+        board,
+        ..Default::default()
+    };
+
+    game.read_line("play attacker g11 h11")?;
+    assert!(!game.board.can_not_esacpe());
+    assert_eq!(game.status, Status::Ongoing);
+
+    Ok(())
+}
+
+#[test]
 fn someone_wins() {
     let mut game = Game::default();
     let mut ai: Box<dyn AI> = Box::new(AiBanal);
