@@ -881,7 +881,7 @@ impl Board {
             BoardSize::_13 => 32 - self.attackers_captured >= 13,
         };
 
-        if defenders_left_one && self.king_trapped_1() {
+        if defenders_left_one && self.king_trapped() {
             return true;
         }
 
@@ -1504,7 +1504,7 @@ impl Board {
     }
 
     #[must_use]
-    pub fn king_trapped_1(&self) -> bool {
+    pub fn king_trapped(&self) -> bool {
         let size_usize = usize::from(self.size());
 
         if let Some(king) = self.king {
@@ -1552,15 +1552,16 @@ impl Board {
             }
         }
 
-        for x in (king.x + 1)..(king.x + 3) {
-            let vertex = Vertex { size, x, y: king.y };
-
-            if self.get(&vertex) != Space::Attacker {
-                return false;
-            }
-        }
-
-        true
+        self.get(&Vertex {
+            size,
+            x: king.x + 1,
+            y: king.y,
+        }) == Space::Attacker
+            && self.get(&Vertex {
+                size,
+                x: king.x + 2,
+                y: king.y,
+            }) == Space::Attacker
     }
 
     fn king_trapped_x_size(&self, king: Vertex) -> bool {
@@ -1599,15 +1600,16 @@ impl Board {
             }
         }
 
-        for x in (king.x - 2)..(king.x) {
-            let vertex = Vertex { size, x, y: king.y };
-
-            if self.get(&vertex) != Space::Attacker {
-                return false;
-            }
-        }
-
-        true
+        self.get(&Vertex {
+            size,
+            x: king.x - 1,
+            y: king.y,
+        }) == Space::Attacker
+            && self.get(&Vertex {
+                size,
+                x: king.x - 2,
+                y: king.y,
+            }) == Space::Attacker
     }
 
     fn king_trapped_y_0(&self, king: Vertex) -> bool {
@@ -1638,15 +1640,16 @@ impl Board {
             }
         }
 
-        for y in (king.y + 1)..(king.y + 3) {
-            let vertex = Vertex { size, x: king.x, y };
-
-            if self.get(&vertex) != Space::Attacker {
-                return false;
-            }
-        }
-
-        true
+        self.get(&Vertex {
+            size,
+            x: king.x,
+            y: king.y + 1,
+        }) == Space::Attacker
+            && self.get(&Vertex {
+                size,
+                x: king.x,
+                y: king.y + 2,
+            }) == Space::Attacker
     }
 
     fn king_trapped_y_size(&self, king: Vertex) -> bool {
@@ -1684,15 +1687,16 @@ impl Board {
             }
         }
 
-        for y in (king.y - 2)..(king.y) {
-            let vertex = Vertex { size, x: king.x, y };
-
-            if self.get(&vertex) != Space::Attacker {
-                return false;
-            }
-        }
-
-        true
+        self.get(&Vertex {
+            size,
+            x: king.x,
+            y: king.y - 1,
+        }) == Space::Attacker
+            && self.get(&Vertex {
+                size,
+                x: king.x,
+                y: king.y - 2,
+            }) == Space::Attacker
     }
 
     #[must_use]
