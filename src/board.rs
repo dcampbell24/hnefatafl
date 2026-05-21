@@ -862,33 +862,23 @@ impl Board {
     #[must_use]
     pub fn can_not_esacpe(&self) -> bool {
         let defenders_left = match self.size() {
-            BoardSize::_11 => 12 - self.defenders_captured < 4,
-            BoardSize::_13 => 16 - self.defenders_captured < 4,
-        };
-
-        let defenders_left_lots = match self.size() {
-            BoardSize::_11 => 12 - self.defenders_captured < 6,
-            BoardSize::_13 => 16 - self.defenders_captured < 6,
-        };
-
-        let defenders_left_one = match self.size() {
-            BoardSize::_11 => 12 - self.defenders_captured == 1,
-            BoardSize::_13 => 16 - self.defenders_captured == 1,
+            BoardSize::_11 => 12 - self.defenders_captured,
+            BoardSize::_13 => 16 - self.defenders_captured,
         };
 
         let attackers_left = match self.size() {
-            BoardSize::_11 => 24 - self.attackers_captured >= 13,
-            BoardSize::_13 => 32 - self.attackers_captured >= 13,
+            BoardSize::_11 => 24 - self.attackers_captured,
+            BoardSize::_13 => 32 - self.attackers_captured,
         };
 
-        if defenders_left_one && self.king_trapped() {
+        if self.king_trapped(defenders_left) {
             return true;
         }
 
         if let Some(defended_spaces) = self.closed_off_exits() {
-            (defenders_left && attackers_left)
+            (defenders_left < 4 && attackers_left >= 13)
+                || (defenders_left < 6 && self.n_or_less_side_spaces(&defended_spaces, 3))
                 || self.n_or_less_side_spaces(&defended_spaces, 2)
-                || (defenders_left_lots && self.n_or_less_side_spaces(&defended_spaces, 3))
         } else {
             false
         }
@@ -1504,17 +1494,17 @@ impl Board {
     }
 
     #[must_use]
-    pub fn king_trapped(&self) -> bool {
+    pub fn king_trapped(&self, defenders_left: usize) -> bool {
         let size_usize = usize::from(self.size());
 
         if let Some(king) = self.king {
             if king.x == 0 {
-                self.king_trapped_x_0(king)
-            } else if king.x == size_usize - 1 {
+                self.king_trapped_x_0(king, defenders_left)
+            } else if king.x == size_usize - 1 && defenders_left < 2 {
                 self.king_trapped_x_size(king)
-            } else if king.y == 0 {
+            } else if king.y == 0 && defenders_left < 2 {
                 self.king_trapped_y_0(king)
-            } else if king.y == size_usize - 1 {
+            } else if king.y == size_usize - 1 && defenders_left < 2 {
                 self.king_trapped_y_size(king)
             } else {
                 false
@@ -1524,7 +1514,7 @@ impl Board {
         }
     }
 
-    fn king_trapped_x_0(&self, king: Vertex) -> bool {
+    fn king_trapped_x_0(&self, king: Vertex, defenders_left: usize) -> bool {
         let size = king.size;
         let size_usize = usize::from(size);
 
@@ -1554,6 +1544,31 @@ impl Board {
             if self.get(&vertex) != Space::Attacker {
                 return false;
             }
+        }
+
+        if defenders_left > 1
+            && ((self.get(&Vertex {
+                size,
+                x: king.x + 1,
+                y: king.y + 1,
+            }) == Space::Attacker
+                && self.get(&Vertex {
+                    size,
+                    x: king.x + 2,
+                    y: king.y + 1,
+                }) == Space::Attacker)
+                || (self.get(&Vertex {
+                    size,
+                    x: king.x + 1,
+                    y: king.y - 1,
+                }) == Space::Attacker
+                    && self.get(&Vertex {
+                        size,
+                        x: king.x + 2,
+                        y: king.y - 1,
+                    }) == Space::Attacker))
+        {
+            return false;
         }
 
         self.get(&Vertex {
