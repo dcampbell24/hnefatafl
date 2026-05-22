@@ -248,10 +248,6 @@ If the defender would repeat a board position, the move is not allowed.
 
 If a player cannot move, he loses the game.
 
-Not added to the game engine below this line.
-
----
-
 ### 10. Defenders Can't Escape, Attackers Win
 
 When the defenders don't have enough pieces left to make an exit fort, the
