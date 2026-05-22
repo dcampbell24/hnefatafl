@@ -871,7 +871,7 @@ impl Board {
             BoardSize::_13 => 32 - self.attackers_captured,
         };
 
-        if self.king_trapped(defenders_left) {
+        if self.king_trapped(defenders_left, attackers_left) {
             return true;
         }
 
@@ -1494,18 +1494,18 @@ impl Board {
     }
 
     #[must_use]
-    pub fn king_trapped(&self, defenders_left: usize) -> bool {
+    pub fn king_trapped(&self, defenders_left: usize, attackers_left: usize) -> bool {
         let size_usize = usize::from(self.size());
 
         if let Some(king) = self.king {
             if king.x == 0 {
-                self.king_trapped_x_0(king, defenders_left)
+                self.king_trapped_x_0(king, defenders_left, attackers_left)
             } else if king.x == size_usize - 1 {
-                self.king_trapped_x_size(king, defenders_left)
+                self.king_trapped_x_size(king, defenders_left, attackers_left)
             } else if king.y == 0 {
-                self.king_trapped_y_0(king, defenders_left)
+                self.king_trapped_y_0(king, defenders_left, attackers_left)
             } else if king.y == size_usize - 1 {
-                self.king_trapped_y_size(king, defenders_left)
+                self.king_trapped_y_size(king, defenders_left, attackers_left)
             } else {
                 false
             }
@@ -1514,7 +1514,12 @@ impl Board {
         }
     }
 
-    fn king_trapped_x_0(&self, king: Vertex, defenders_left: usize) -> bool {
+    fn king_trapped_x_0(
+        &self,
+        king: Vertex,
+        defenders_left: usize,
+        mut attackers_left: usize,
+    ) -> bool {
         let size = king.size;
         let size_usize = usize::from(size);
 
@@ -1524,6 +1529,7 @@ impl Board {
 
         for y in (king.y - 2)..king.y {
             if y == 0 {
+                attackers_left += 1;
                 continue;
             }
 
@@ -1536,6 +1542,7 @@ impl Board {
 
         for y in (king.y + 1)..(king.y + 3) {
             if y == size_usize - 1 {
+                attackers_left += 1;
                 continue;
             }
 
@@ -1546,44 +1553,51 @@ impl Board {
             }
         }
 
-        if !(self.get(&Vertex {
-            size,
-            x: king.x + 1,
-            y: king.y,
-        }) == Space::Attacker
-            && self.get(&Vertex {
-                size,
-                x: king.x + 2,
-                y: king.y,
-            }) == Space::Attacker)
-        {
-            return false;
-        }
-
-        defenders_left < 2
-            || ((self.get(&Vertex {
+        if attackers_left > 5
+            && !(self.get(&Vertex {
                 size,
                 x: king.x + 1,
-                y: king.y + 1,
+                y: king.y,
             }) == Space::Attacker
                 && self.get(&Vertex {
                     size,
                     x: king.x + 2,
-                    y: king.y + 1,
+                    y: king.y,
                 }) == Space::Attacker)
-                || (self.get(&Vertex {
+        {
+            return false;
+        }
+
+        defenders_left < 2
+            || attackers_left > 7
+                && ((self.get(&Vertex {
                     size,
                     x: king.x + 1,
-                    y: king.y - 1,
+                    y: king.y + 1,
                 }) == Space::Attacker
                     && self.get(&Vertex {
                         size,
                         x: king.x + 2,
+                        y: king.y + 1,
+                    }) == Space::Attacker)
+                    || (self.get(&Vertex {
+                        size,
+                        x: king.x + 1,
                         y: king.y - 1,
-                    }) == Space::Attacker))
+                    }) == Space::Attacker
+                        && self.get(&Vertex {
+                            size,
+                            x: king.x + 2,
+                            y: king.y - 1,
+                        }) == Space::Attacker))
     }
 
-    fn king_trapped_x_size(&self, king: Vertex, defenders_left: usize) -> bool {
+    fn king_trapped_x_size(
+        &self,
+        king: Vertex,
+        defenders_left: usize,
+        mut attackers_left: usize,
+    ) -> bool {
         let size = king.size;
         let size_usize = usize::from(size);
 
@@ -1593,6 +1607,7 @@ impl Board {
 
         for y in (king.y - 2)..king.y {
             if y == 0 {
+                attackers_left += 1;
                 continue;
             }
 
@@ -1609,6 +1624,7 @@ impl Board {
 
         for y in (king.y + 1)..(king.y + 3) {
             if y == size_usize - 1 {
+                attackers_left += 1;
                 continue;
             }
 
@@ -1623,44 +1639,51 @@ impl Board {
             }
         }
 
-        if !(self.get(&Vertex {
-            size,
-            x: king.x - 1,
-            y: king.y,
-        }) == Space::Attacker
-            && self.get(&Vertex {
-                size,
-                x: king.x - 2,
-                y: king.y,
-            }) == Space::Attacker)
-        {
-            return false;
-        }
-
-        defenders_left < 2
-            || ((self.get(&Vertex {
+        if attackers_left > 5
+            && !(self.get(&Vertex {
                 size,
                 x: king.x - 1,
-                y: king.y + 1,
+                y: king.y,
             }) == Space::Attacker
                 && self.get(&Vertex {
                     size,
                     x: king.x - 2,
-                    y: king.y + 1,
+                    y: king.y,
                 }) == Space::Attacker)
-                || (self.get(&Vertex {
+        {
+            return false;
+        }
+
+        defenders_left < 2
+            || attackers_left > 7
+                && ((self.get(&Vertex {
                     size,
                     x: king.x - 1,
-                    y: king.y - 1,
+                    y: king.y + 1,
                 }) == Space::Attacker
                     && self.get(&Vertex {
                         size,
                         x: king.x - 2,
+                        y: king.y + 1,
+                    }) == Space::Attacker)
+                    || (self.get(&Vertex {
+                        size,
+                        x: king.x - 1,
                         y: king.y - 1,
-                    }) == Space::Attacker))
+                    }) == Space::Attacker
+                        && self.get(&Vertex {
+                            size,
+                            x: king.x - 2,
+                            y: king.y - 1,
+                        }) == Space::Attacker))
     }
 
-    fn king_trapped_y_0(&self, king: Vertex, defenders_left: usize) -> bool {
+    fn king_trapped_y_0(
+        &self,
+        king: Vertex,
+        defenders_left: usize,
+        mut attackers_left: usize,
+    ) -> bool {
         let size = king.size;
         let size_usize = usize::from(size);
 
@@ -1670,6 +1693,7 @@ impl Board {
 
         for x in (king.x - 2)..king.x {
             if x == 0 {
+                attackers_left += 1;
                 continue;
             }
 
@@ -1682,6 +1706,7 @@ impl Board {
 
         for x in (king.x + 1)..(king.x + 3) {
             if x == size_usize - 1 {
+                attackers_left += 1;
                 continue;
             }
 
@@ -1692,44 +1717,51 @@ impl Board {
             }
         }
 
-        if !(self.get(&Vertex {
-            size,
-            x: king.x,
-            y: king.y + 1,
-        }) == Space::Attacker
-            && self.get(&Vertex {
+        if attackers_left > 5
+            && !(self.get(&Vertex {
                 size,
                 x: king.x,
-                y: king.y + 2,
-            }) == Space::Attacker)
-        {
-            return false;
-        }
-
-        defenders_left < 2
-            || ((self.get(&Vertex {
-                size,
-                x: king.x + 1,
                 y: king.y + 1,
             }) == Space::Attacker
                 && self.get(&Vertex {
                     size,
-                    x: king.x + 1,
+                    x: king.x,
                     y: king.y + 2,
                 }) == Space::Attacker)
-                || (self.get(&Vertex {
+        {
+            return false;
+        }
+
+        defenders_left < 2
+            || attackers_left > 7
+                && ((self.get(&Vertex {
                     size,
-                    x: king.x - 1,
+                    x: king.x + 1,
                     y: king.y + 1,
                 }) == Space::Attacker
                     && self.get(&Vertex {
                         size,
-                        x: king.x - 1,
+                        x: king.x + 1,
                         y: king.y + 2,
-                    }) == Space::Attacker))
+                    }) == Space::Attacker)
+                    || (self.get(&Vertex {
+                        size,
+                        x: king.x - 1,
+                        y: king.y + 1,
+                    }) == Space::Attacker
+                        && self.get(&Vertex {
+                            size,
+                            x: king.x - 1,
+                            y: king.y + 2,
+                        }) == Space::Attacker))
     }
 
-    fn king_trapped_y_size(&self, king: Vertex, defenders_left: usize) -> bool {
+    fn king_trapped_y_size(
+        &self,
+        king: Vertex,
+        defenders_left: usize,
+        mut attackers_left: usize,
+    ) -> bool {
         let size = king.size;
         let size_usize = usize::from(size);
 
@@ -1739,6 +1771,7 @@ impl Board {
 
         for x in (king.x - 2)..king.x {
             if x == 0 {
+                attackers_left += 1;
                 continue;
             }
 
@@ -1755,6 +1788,7 @@ impl Board {
 
         for x in (king.x + 1)..(king.x + 3) {
             if x == size_usize - 1 {
+                attackers_left += 1;
                 continue;
             }
 
@@ -1769,41 +1803,43 @@ impl Board {
             }
         }
 
-        if !(self.get(&Vertex {
-            size,
-            x: king.x,
-            y: king.y - 1,
-        }) == Space::Attacker
-            && self.get(&Vertex {
+        if attackers_left > 5
+            && !(self.get(&Vertex {
                 size,
                 x: king.x,
-                y: king.y - 2,
-            }) == Space::Attacker)
+                y: king.y - 1,
+            }) == Space::Attacker
+                && self.get(&Vertex {
+                    size,
+                    x: king.x,
+                    y: king.y - 2,
+                }) == Space::Attacker)
         {
             return false;
         }
 
         defenders_left < 2
-            || ((self.get(&Vertex {
-                size,
-                x: king.x + 1,
-                y: king.y - 1,
-            }) == Space::Attacker
-                && self.get(&Vertex {
+            || attackers_left > 7
+                && ((self.get(&Vertex {
                     size,
                     x: king.x + 1,
-                    y: king.y - 2,
-                }) == Space::Attacker)
-                || (self.get(&Vertex {
-                    size,
-                    x: king.x - 1,
                     y: king.y - 1,
                 }) == Space::Attacker
                     && self.get(&Vertex {
                         size,
-                        x: king.x - 1,
+                        x: king.x + 1,
                         y: king.y - 2,
-                    }) == Space::Attacker))
+                    }) == Space::Attacker)
+                    || (self.get(&Vertex {
+                        size,
+                        x: king.x - 1,
+                        y: king.y - 1,
+                    }) == Space::Attacker
+                        && self.get(&Vertex {
+                            size,
+                            x: king.x - 1,
+                            y: king.y - 2,
+                        }) == Space::Attacker))
     }
 
     #[must_use]
