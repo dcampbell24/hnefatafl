@@ -859,6 +859,7 @@ impl Board {
         Some(defended_spaces)
     }
 
+    // Fixme: make sure their are enough attackers left to surround the king.
     #[must_use]
     pub fn can_not_esacpe(&self) -> bool {
         let defenders_left = match self.size() {
