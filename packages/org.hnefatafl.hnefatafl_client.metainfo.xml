@@ -44,7 +44,6 @@
   <url type="contribute">https://codeberg.org/dcampbell/hnefatafl/src/branch/main/CONTRIBUTING.md</url>
   <url type="vcs-browser">https://codeberg.org/dcampbell/hnefatafl</url>
 
-  <!-- Update the screenshots! -->
   <screenshots>
     <screenshot type="default">
       <image>https://hnefatafl.org/screenshots/opening_game.png</image>
@@ -83,6 +82,13 @@
   </content_rating>
 
   <releases>
+    <release version="5.12.0" date="2026-05-22">
+      <url type="details">https://codeberg.org/dcampbell/hnefatafl/src/branch/main/CHANGELOG.md#5-12-0-2026-05-22</url>
+      <description>
+        <p>See the CHANGELOG.md file.</p>
+      </description>
+    </release>
+
     <release version="5.11.0" date="2026-05-11">
       <url type="details">https://codeberg.org/dcampbell/hnefatafl/src/branch/main/CHANGELOG.md#5-11-0-2026-05-11</url>
       <description>

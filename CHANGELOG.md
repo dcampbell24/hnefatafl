@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.12.0] - 2026-05-22
+
 ### Addded
 
 - hnefatafl-client: mark the winner in archived games.
@@ -849,7 +851,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - hnefatafl-client: Make users and games scrollable.
 - Make all the features dependencies.
 
-[unreleased]: https://codeberg.org/dcampbell/hnefatafl/compare/v5.11.0-1...main
+[unreleased]: https://codeberg.org/dcampbell/hnefatafl/compare/v5.12.0-1...main
+[5.12.0]: https://codeberg.org/dcampbell/hnefatafl/compare/v5.11.0-1..v5.12.0-1
 [5.11.0]: https://codeberg.org/dcampbell/hnefatafl/compare/v5.10.0-1..v5.11.0-1
 [5.10.0]: https://codeberg.org/dcampbell/hnefatafl/compare/v5.9.0-1..v5.10.0-1
 [5.9.0]: https://codeberg.org/dcampbell/hnefatafl/compare/v5.8.0-1...v5.9.0-1
