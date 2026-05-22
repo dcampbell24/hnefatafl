@@ -20,7 +20,6 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 [![Discord]][discord-link]&ensp;
 [![docs-rs]][docs-rs-link]&ensp;
 [![REUSE status]][reuse]&ensp;
-[![coverage]][coverage-link]&ensp;
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/dcampbell24)
 
 [Discord]:  https://img.shields.io/badge/Discord-111111?logo=discord
@@ -29,8 +28,6 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 [docs-rs-link]: https://docs.rs/hnefatafl-copenhagen
 [REUSE status]: https://api.reuse.software/badge/github.com/dcampbell24/hnefatafl
 [reuse]: https://api.reuse.software/info/github.com/dcampbell24/hnefatafl
-[coverage]: https://img.shields.io/badge/coverage-34.43%25-red
-[coverage-link]: https://dlc.name/hnefatafl
 
 ![Opening Game](https://codeberg.org/dcampbell/hnefatafl/raw/branch/main/website/src/screenshots/opening_game.png)
 
