@@ -20,11 +20,11 @@ modules:
       - type: git
         url: https://codeberg.org/dcampbell/hnefatafl.git
         # git show-ref --tags
-        commit: 6f64bacdb14ccb7af79d2fd033fcb999650be8fd
-        tag: v5.11.0-1
+        commit: cae36ec80c1470fa00c54b6bb697f961a7a17098
+        tag: v5.12.0-1
       - type: file
         url: https://codeberg.org/dcampbell/hnefatafl/raw/branch/main/packages/org.hnefatafl.hnefatafl_client.metainfo.xml
-        sha256: 215a0218f4fc82fba43b6e154c50b8acd23ddf2052aa281432722ecb0b0aefce
+        sha256: 905beec593b53fb52b00c431b32cf1154548b3af62da4f36b89729113cdf4b80
       - cargo-sources.json
 
     build-options:
