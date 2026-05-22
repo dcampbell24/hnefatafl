@@ -44,6 +44,7 @@ default it connects to the server running at hnefatafl.org.}
 %build
 sed -i 's/cargo-/fedora-/' src/bin/hnefatafl-client/main.rs;
 RUST_MIN_STACK=2147483648 cargo build --release --examples
+RUST_MIN_STACK=2147483648 cargo build --release
 
 ./target/release/examples/taflzero --man --username ""
 ./target/release/hnefatafl-client --man
