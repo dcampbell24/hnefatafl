@@ -840,7 +840,9 @@ impl Game {
                     if self.status == Status::Ongoing {
                         self.turn = self.turn.opposite();
 
-                        if !self.board.a_legal_move_exists(
+                        if self.board.can_not_esacpe() {
+                            self.status = Status::AttackerWins;
+                        } else if !self.board.a_legal_move_exists(
                             &self.status,
                             &self.turn,
                             &self.previous_boards,
@@ -850,8 +852,6 @@ impl Game {
                                 Role::Roleless => unreachable!(),
                                 Role::Defender => Status::AttackerWins,
                             }
-                        } else if self.board.can_not_esacpe() {
-                            self.status = Status::AttackerWins;
                         }
                     }
 
