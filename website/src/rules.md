@@ -257,28 +257,45 @@ Not added to the game engine below this line.
 When the defenders don't have enough pieces left to make an exit fort, the
 corners are blocked, and the attackers can move without unblocking a corner.
 
-Also, when only three spaces are left on the side and the defender only has
-five pieces plus the king left.
+```plain
+  ┌───────────────────────┐
+11│ # . A . . . . . A . # │
+10│ . A . . . . . . . A . │
+ 9│ A . . . . . . . . . A │
+ 8│ . . . . . . . . . . . │
+ 7│ . . . . . . . . . . D │
+ 6│ A . . . . # . . . . K │
+ 5│ . . . . . . . . . D . │
+ 4│ . . . . . . . . . . D │
+ 3│ A . . . . . . . . . A │
+ 2│ . A . . . . . . . A . │
+ 1│ # . A . . . . . A . # │
+  └───────────────────────┘
+    A B C D E F G H I J K
+```
+
+When only three spaces are left on the side and the defender only has five
+pieces plus the king left.
 
 ```plain
-  ┌───────────────────────┐ ┌───────────────────────┐
-11│ # . A . . . . . A . # │ │ # . A A A . . . A . # │
-10│ . A . . . . . . . A . │ │ . A . . . . . . . A . │
- 9│ A . . . . . . . . . A │ │ A . . . . . . . . . A │
- 8│ . . . . . . . . . . . │ │ . . . . . . . . . D D │
- 7│ . . . . . . . . . . D │ │ . . . . . . . . D . K │
- 6│ A . . . . # . . . . K │ │ . . . . . # . . . D D │ 
- 5│ . . . . . . . . . D . │ │ A . . . . . . . . . A │
- 4│ . . . . . . . . . . D │ │ A . . . . . . . . . A │
- 3│ A . . . . . . . . . A │ │ A . . . . . . . . . A │
- 2│ . A . . . . . . . A . │ │ . A . . . . . . . A . │
- 1│ # . A . . . . . A . # │ │ # . A A A . . . A . # │
-  └───────────────────────┘ └───────────────────────┘
-    A B C D E F G H I J K     A B C D E F G H I J K
+  ┌───────────────────────┐
+11│ # . A A A . . . A . # │
+10│ . A . . . . . . . A . │
+ 9│ A . . . . . . . . . A │
+ 8│ . . . . . . . . . D D │
+ 7│ . . . . . . . . D . K │
+ 6│ . . . . . # . . . D D │
+ 5│ A . . . . . . . . . A │
+ 4│ A . . . . . . . . . A │
+ 3│ A . . . . . . . . . A │
+ 2│ . A . . . . . . . A . │
+ 1│ # . A A A . . . A . # │
+  └───────────────────────┘
+    A B C D E F G H I J K
 ```
 
 When the attackers have all corners blocked and only two spaces left on any
-side,
+side.
 
 ```plain
   ┌───────────────────────┐
@@ -297,7 +314,8 @@ side,
     A B C D E F G H I J K
 ```
 
-but not if the spaces are not connected,
+It does not count as the side being blocked if the side spaces are not
+connected
 
 ```plain
   ┌───────────────────────┐
@@ -377,5 +395,5 @@ When the king is trapped.
  2│ . . . . . . . . . . . │ │ . . . . . . . . . . . │
  1│ # . . . . . . . . . # │ │ # . . . . . . . . . # │
   └───────────────────────┘ └───────────────────────┘
-    A B C D E F G H I J K     A B C D E F G H I J K    A B C D E F G H I J K
+    A B C D E F G H I J K     A B C D E F G H I J K
 ```
