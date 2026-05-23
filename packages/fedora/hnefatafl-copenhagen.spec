@@ -88,6 +88,7 @@ install -Dm644 "default_nn.onnx" -t "%{buildroot}/opt/taflzero"
 %{_bindir}/hnefatafl-server-full
 %{_bindir}/hnefatafl-text-protocol
 %{_bindir}/taflzero
+/opt/taflzero/default_nn.onnx"
 /usr/lib/systemd/system/hnefatafl-ai-attacker.service
 /usr/lib/systemd/system/hnefatafl-ai-defender.service
 /usr/lib/systemd/system/hnefatafl.service
