@@ -82,7 +82,7 @@ install -Dm644 "hnefatafl-server-full.1.gz" -t "%{buildroot}/usr/share/man/man1"
 install -Dm644 "hnefatafl-text-protocol.1.gz" -t "%{buildroot}/usr/share/man/man1"
 install -Dm644 "packages/hnefatafl-client.desktop" -t "%{buildroot}/usr/share/applications"
 install -Dm644 "packages/org.hnefatafl.hnefatafl_client.metainfo.xml" -t "%{buildroot}%{_metainfodir}"
-install -Dm644 "%{SOURCE1}" -t "%{buildroot}/usr/local/share/taflzero"
+install -Dm644 "%{SOURCE1}" -t "%{buildroot}/usr/share/taflzero"
 
 %files
 %{_bindir}/hnefatafl-client
