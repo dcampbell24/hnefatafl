@@ -93,11 +93,11 @@ install -Dm644 "default_nn.onnx" -t "%{buildroot}/opt/taflzero"
 /usr/lib/systemd/system/hnefatafl.service
 /usr/share/applications/hnefatafl-client.desktop
 /usr/share/icons/hicolor/scalable/apps/org.hnefatafl.hnefatafl_client.svg
-/usr/share/man/man1/hnefatafl-ai.1.gz
 /usr/share/man/man1/hnefatafl-client.1.gz
 /usr/share/man/man1/hnefatafl-server-full.1.gz
 /usr/share/man/man1/hnefatafl-server.1.gz
 /usr/share/man/man1/hnefatafl-text-protocol.1.gz
+/usr/share/man/man1/hnefatafl-taflzero.1.gz
 %{_metainfodir}/org.hnefatafl.hnefatafl_client.metainfo.xml
 %license LICENSES/AGPL-3.0-or-later.txt
 %doc README.md
