@@ -100,7 +100,7 @@ pub enum Message {
 
     /// `final_status`
     ///
-    /// Returns `attacker_wins` or `draw` or `ongoing` or `defender_wins`.
+    /// Returns `attacker_wins`, `draw`, `ongoing`, or `defender_wins`.
     FinalStatus,
 
     /// `generate_move`
