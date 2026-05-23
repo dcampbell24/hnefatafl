@@ -3,7 +3,6 @@
 export RUST_MIN_STACK=67108864
 
 sed -i 's/cargo-/debian-/' src/bin/hnefatafl-client/main.rs;
-sed -i 's/opt/usr\/share/' examples/taflzero.rs;
 
 cargo build --release --examples
 cargo build --release
