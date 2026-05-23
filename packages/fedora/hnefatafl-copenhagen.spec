@@ -83,11 +83,11 @@ install -Dm644 "packages/org.hnefatafl.hnefatafl_client.metainfo.xml" -t "%{buil
 install -Dm644 "default_nn.onnx" -t "%{buildroot}/opt/taflzero"
 
 %files
-%{_bindir}/hnefatafl-ai
 %{_bindir}/hnefatafl-client
 %{_bindir}/hnefatafl-server
 %{_bindir}/hnefatafl-server-full
 %{_bindir}/hnefatafl-text-protocol
+%{_bindir}/taflzero
 /usr/lib/systemd/system/hnefatafl-ai-attacker.service
 /usr/lib/systemd/system/hnefatafl-ai-defender.service
 /usr/lib/systemd/system/hnefatafl.service
