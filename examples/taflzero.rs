@@ -43,7 +43,7 @@ use socket2::{Domain, SockAddr, Socket, TcpKeepalive, Type};
 use taflzero::{Engine, moves::mv::create_move_from_algebraic};
 
 const PORT: &str = ":49152";
-const ONNX_PATH: &str = "/usr/local/share/taflzero/default_nn.onnx";
+const ONNX_PATH: &str = "/usr/share/taflzero/default_nn.onnx";
 const MONTE_CARLO_SECONDS: u64 = 16;
 const MONTE_CARLO_DEPTH: u8 = 20;
 

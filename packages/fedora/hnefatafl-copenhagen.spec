@@ -63,7 +63,7 @@ sed -i 's/games/bin/' packages/hnefatafl-ai-defender.service
 sed -i 's/games/bin/' packages/hnefatafl.service
 sed -i 's/Exec=hnefatafl-client/Exec=hnefatafl-client --ascii/' packages/hnefatafl-client.desktop
 
-sed -i 's/opt/usr\/local\/share/' examples/taflzero.rs;
+sed -i 's/opt/usr\/share/' examples/taflzero.rs;
 
 %install
 install -Dm755 "target/release/examples/taflzero" -t "%{buildroot}%{_bindir}"
@@ -90,7 +90,7 @@ install -Dm644 "%{SOURCE1}" -t "%{buildroot}/usr/local/share/taflzero"
 %{_bindir}/hnefatafl-server-full
 %{_bindir}/hnefatafl-text-protocol
 %{_bindir}/taflzero
-/usr/local/share/taflzero/default_nn.onnx
+/usr/share/taflzero/default_nn.onnx
 /usr/lib/systemd/system/hnefatafl-ai-attacker.service
 /usr/lib/systemd/system/hnefatafl-ai-defender.service
 /usr/lib/systemd/system/hnefatafl.service
