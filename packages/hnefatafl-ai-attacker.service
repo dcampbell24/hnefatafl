@@ -10,7 +10,6 @@ PrivateTmp=yes
 InaccessibleDirectories=/home
 DeviceAllow=/dev/null rw
 EnvironmentFile=/etc/hnefatafl-ai-attacker.conf
-WorkingDirectory=/opt/taflzero
 
 [Install]
 WantedBy=multi-user.target
