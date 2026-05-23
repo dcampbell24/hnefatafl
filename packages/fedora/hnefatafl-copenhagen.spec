@@ -97,7 +97,7 @@ install -Dm644 "default_nn.onnx" -t "%{buildroot}/opt/taflzero"
 /usr/share/man/man1/hnefatafl-server-full.1.gz
 /usr/share/man/man1/hnefatafl-server.1.gz
 /usr/share/man/man1/hnefatafl-text-protocol.1.gz
-/usr/share/man/man1/hnefatafl-taflzero.1.gz
+/usr/share/man/man1/taflzero.1.gz
 %{_metainfodir}/org.hnefatafl.hnefatafl_client.metainfo.xml
 %license LICENSES/AGPL-3.0-or-later.txt
 %doc README.md
