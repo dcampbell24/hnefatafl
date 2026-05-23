@@ -63,8 +63,6 @@ sed -i 's/games/bin/' packages/hnefatafl-ai-defender.service
 sed -i 's/games/bin/' packages/hnefatafl.service
 sed -i 's/Exec=hnefatafl-client/Exec=hnefatafl-client --ascii/' packages/hnefatafl-client.desktop
 
-sed -i 's/opt/usr\/share/' examples/taflzero.rs;
-
 %install
 install -Dm755 "target/release/examples/taflzero" -t "%{buildroot}%{_bindir}"
 install -Dm755 "target/release/hnefatafl-client" -t "%{buildroot}%{_bindir}"
