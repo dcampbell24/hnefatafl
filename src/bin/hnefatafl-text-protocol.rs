@@ -65,6 +65,10 @@ struct Args {
     #[arg(long)]
     host: Option<String>,
 
+    /// Allow the defender to repeat moves
+    #[arg(long)]
+    repeat_moves: bool,
+
     /// Build the manpage
     #[arg(long)]
     man: bool,
@@ -111,13 +115,13 @@ fn main() -> anyhow::Result<()> {
 
         play_ai(game, ai, args.display_game)?;
     } else {
-        play(game, args.display_game)?;
+        play(game, args.display_game, args.repeat_moves)?;
     }
 
     Ok(())
 }
 
-fn play(mut game: Game, display_game: bool) -> anyhow::Result<()> {
+fn play(mut game: Game, display_game: bool, repeat_moves: bool) -> anyhow::Result<()> {
     let mut buffer = String::new();
     let stdin = io::stdin();
 
@@ -132,6 +136,10 @@ fn play(mut game: Game, display_game: bool) -> anyhow::Result<()> {
             println!("? {error}\n");
             buffer.clear();
             return Ok(());
+        }
+
+        if repeat_moves {
+            game.previous_boards.0 = Vec::new();
         }
 
         let result = game.read_line(&buffer);
