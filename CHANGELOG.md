@@ -12,6 +12,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- hnefatafl-text-protocol: time_settings MINUTES instead of MILLISECONDS
+- hnefatafl-text-protocol: don't change the time settings when the board_size
+  changes if it is the first move.
+
 ## [5.12.0] - 2026-05-22
 
 ### Addded
