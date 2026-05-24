@@ -39,15 +39,6 @@ impl Time {
     }
 }
 
-impl Default for Time {
-    fn default() -> Self {
-        Self {
-            add_seconds: 10,
-            milliseconds_left: 15 * MINUTE,
-        }
-    }
-}
-
 impl fmt::Display for Time {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let days = self.milliseconds_left / DAY;
@@ -93,9 +84,10 @@ impl fmt::Display for Time {
     }
 }
 
-#[derive(Clone, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
+#[derive(Clone, Default, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
 pub enum TimeSettings {
     Timed(Time),
+    #[default]
     UnTimed,
 }
 
@@ -138,14 +130,6 @@ impl TryFrom<TimeSettings> for TimeLeft {
             }),
             TimeSettings::UnTimed => Err(anyhow::Error::msg("the time settings are un-timed")),
         }
-    }
-}
-
-impl Default for TimeSettings {
-    fn default() -> Self {
-        Self::Timed(Time {
-            ..Default::default()
-        })
     }
 }
 

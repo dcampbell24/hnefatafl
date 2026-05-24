@@ -403,37 +403,29 @@ impl Game {
     }
 
     #[must_use]
-    pub fn new_game(board_size: BoardSize, time_settings: Option<TimeSettings>) -> Self {
+    pub fn new_game(board_size: BoardSize, time_settings: &TimeSettings) -> Self {
         let board = Board::new(board_size);
         let previous_boards = PreviousBoards::new(board_size);
 
-        if let Some(time_settings) = time_settings {
-            let mut game = Self {
-                board,
-                plays: Plays::new(&time_settings),
-                previous_boards,
-                ..Self::default()
-            };
+        let mut game = Self {
+            board,
+            plays: Plays::new(time_settings),
+            previous_boards,
+            ..Self::default()
+        };
 
-            match time_settings {
-                TimeSettings::Timed(time) => {
-                    game.attacker_time = TimeSettings::Timed(time);
-                    game.defender_time = TimeSettings::Timed(time);
-                }
-                TimeSettings::UnTimed => {
-                    game.attacker_time = TimeSettings::UnTimed;
-                    game.defender_time = TimeSettings::UnTimed;
-                }
+        match time_settings {
+            TimeSettings::Timed(time) => {
+                game.attacker_time = TimeSettings::Timed(*time);
+                game.defender_time = TimeSettings::Timed(*time);
             }
-
-            game
-        } else {
-            Self {
-                board,
-                previous_boards,
-                ..Self::default()
+            TimeSettings::UnTimed => {
+                game.attacker_time = TimeSettings::UnTimed;
+                game.defender_time = TimeSettings::UnTimed;
             }
         }
+
+        game
     }
 
     #[must_use]
@@ -886,12 +878,12 @@ impl Game {
                 let board_size = BoardSize::try_from(size)?;
 
                 let time_settings = if self.previous_boards.0.len() == 1 {
-                    Some(self.defender_time.clone())
+                    self.defender_time.clone()
                 } else {
-                    None
+                    TimeSettings::UnTimed
                 };
 
-                *self = Self::new_game(board_size, time_settings);
+                *self = Self::new_game(board_size, &time_settings);
 
                 Ok(Some(String::new()))
             }
@@ -1004,7 +996,7 @@ impl Game {
                     time.milliseconds_left *= 60_000;
                 }
 
-                *self = Self::new_game(self.board.size(), Some(time_settings));
+                *self = Self::new_game(self.board.size(), &time_settings);
 
                 Ok(Some(String::new()))
             }
