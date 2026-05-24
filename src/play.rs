@@ -281,7 +281,7 @@ impl Plays {
 
 impl Default for Plays {
     fn default() -> Self {
-        Plays::PlayRecordsTimed(Vec::new())
+        Plays::PlayRecords(Vec::new())
     }
 }
 
