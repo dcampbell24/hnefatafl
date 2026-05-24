@@ -885,10 +885,11 @@ impl Game {
             Message::BoardSize(size) => {
                 let board_size = BoardSize::try_from(size)?;
 
-                let mut time_settings = None;
-                if self.previous_boards.0.len() == 1 {
-                    time_settings = Some(self.defender_time.clone());
-                }
+                let time_settings = if self.previous_boards.0.len() == 1 {
+                    Some(self.defender_time.clone())
+                } else {
+                    None
+                };
 
                 *self = Self::new_game(board_size, time_settings);
 
