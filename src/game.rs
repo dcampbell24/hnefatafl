@@ -884,7 +884,14 @@ impl Game {
         match message {
             Message::BoardSize(size) => {
                 let board_size = BoardSize::try_from(size)?;
-                *self = Self::new_game(board_size, None);
+
+                let mut time_settings = None;
+                if self.previous_boards.0.len() == 1 {
+                    time_settings = Some(self.defender_time.clone());
+                }
+
+                *self = Self::new_game(board_size, time_settings);
+
                 Ok(Some(String::new()))
             }
             Message::Empty => Ok(None),
