@@ -991,8 +991,13 @@ impl Game {
             Message::ProtocolVersion => Ok(Some("1-beta".to_string())),
             Message::Quit => exit(0),
             Message::ShowBoard => Ok(Some(self.board.to_string())),
-            Message::TimeSettings(time_settings) => {
+            Message::TimeSettings(mut time_settings) => {
+                if let TimeSettings::Timed(time) = &mut time_settings {
+                    time.milliseconds_left *= 60_000;
+                }
+
                 *self = Self::new_game(self.board.size(), Some(time_settings));
+
                 Ok(Some(String::new()))
             }
             Message::Version => {
