@@ -2980,7 +2980,17 @@ impl<'a> Client {
                     if let Some(string) = string.first() {
                         let username = string.to_ascii_lowercase();
 
-                        if !invalid_username(&username) {
+                        if !(username.len() > 16
+                            || !(username
+                                .chars()
+                                .all(|ch| ch.is_alphanumeric() || ch == '-' || ch == '_'))
+                            || username.starts_with('-')
+                            || username.starts_with('_')
+                            || username.contains("--")
+                            || username.contains("-_")
+                            || username.contains("_-")
+                            || username.contains("__"))
+                        {
                             self.text_input = username.clone();
                             self.username = username;
                         }
@@ -4346,12 +4356,9 @@ impl<'a> Client {
                 let save_password = checkbox(self.password_save).on_toggle(Message::PasswordSave);
 
                 let mut login = button(text!("{} (Enter)", t!("Login")));
-                if !self.password_ends_with_whitespace && !self.text_input.is_empty() {
-                    login = login.on_press(Message::TextSendLogin);
-                }
-
                 let mut create_account = button(text!("{} (4)", t!("Create Account")));
-                if !self.text_input.is_empty() && !self.password_ends_with_whitespace {
+                if !invalid_username(&self.text_input) {
+                    login = login.on_press(Message::TextSendLogin);
                     create_account = create_account.on_press(Message::TextSendCreateAccount);
                 }
 
