@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- hnefatafl-client: allow users to type '_' and '-' at the end of their
+  username.
 - hnefatafl-text-protocol: time_settings MINUTES instead of MILLISECONDS
 - hnefatafl-text-protocol: don't change the time settings when the board_size
   changes if it is the first move.
