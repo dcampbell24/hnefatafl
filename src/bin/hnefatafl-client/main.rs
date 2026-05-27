@@ -4285,7 +4285,6 @@ impl<'a> Client {
                             horizontal: scrollable::Scrollbar::new(),
                         });
 
-                //
                 Tabs::new(Message::TabSelected)
                     .push(
                         TabId::Games,
