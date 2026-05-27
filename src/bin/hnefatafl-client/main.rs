@@ -637,6 +637,8 @@ struct Client {
     #[serde(skip)]
     archived_games_filtered: Option<Vec<ArchivedGame>>,
     #[serde(skip)]
+    archived_games_button_pressed: bool,
+    #[serde(skip)]
     archived_game_selected: Option<ArchivedGame>,
     #[serde(skip)]
     archived_game_handle: Option<ArchivedGameHandle>,
@@ -2280,11 +2282,19 @@ impl<'a> Client {
             _ => None,
         });
 
+        let subscription_5 = if self.archived_games_button_pressed {
+            iced::time::every(iced::time::Duration::from_mins(1))
+                .map(|_instant| Message::ArchivedGamesRelease)
+        } else {
+            Subscription::none()
+        };
+
         Subscription::batch(vec![
             subscription_1,
             subscription_2,
             subscription_3,
             subscription_4,
+            subscription_5,
         ])
     }
 
@@ -2388,7 +2398,11 @@ impl<'a> Client {
                 self.archived_games_filtered = None;
                 handle_error(self.save_client_postcard());
             }
-            Message::ArchivedGamesGet => self.send("archived_games\n"),
+            Message::ArchivedGamesPress => {
+                self.send("archived_games\n");
+                self.archived_games_button_pressed = true;
+            }
+            Message::ArchivedGamesRelease => self.archived_games_button_pressed = false,
             Message::ArchivedGameSelected(game) => self.archived_game_selected = Some(game),
             Message::CancelGame(id) => self.send(&format!("leave_game {id}\n")),
             Message::ChangeTheme(theme) => self.change_theme(theme),
@@ -3783,8 +3797,11 @@ impl<'a> Client {
 
         let my_games_text = text!("{} (8)", t!("My Games Only")).center();
         let my_games = checkbox(self.my_games_only).on_toggle(Message::MyGamesOnly);
-        let get_archived_games =
-            button(text!("{} (7)", t!("Get Archived Games"))).on_press(Message::ArchivedGamesGet);
+
+        let mut get_archived_games = button(text!("{} (7)", t!("Get Archived Games")));
+        if !self.archived_games_button_pressed {
+            get_archived_games = get_archived_games.on_press(Message::ArchivedGamesPress);
+        }
 
         let quit = button(text!("{} (Esc)", t!("Quit"))).on_press(Message::Leave);
 

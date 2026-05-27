@@ -81,7 +81,8 @@ pub(crate) enum JoinGame {
 #[derive(Clone, Debug)]
 pub(crate) enum Message {
     ArchivedGames(Vec<ArchivedGame>),
-    ArchivedGamesGet,
+    ArchivedGamesPress,
+    ArchivedGamesRelease,
     ArchivedGameSelected(ArchivedGame),
     BoardSizeSelected(BoardSize),
     CancelGame(Id),
