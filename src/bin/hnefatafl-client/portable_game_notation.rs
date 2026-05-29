@@ -107,7 +107,7 @@ fn archived_game_from_pgn(mut file: File) -> anyhow::Result<ArchivedGame> {
         }
     }
 
-    let mut game = Game::new_game(BoardSize::_11, &TimeSettings::UnTimed);
+    let mut game = Game::new(BoardSize::_11, &TimeSettings::UnTimed);
     let mut role = Role::Attacker;
 
     for play in plays {
