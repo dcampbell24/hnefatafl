@@ -1123,7 +1123,8 @@ pub enum TimeUnix {
 }
 
 impl TimeUnix {
-    fn timed() -> Self {
+    #[must_use]
+    pub fn timed() -> Self {
         Self::Time(Timestamp::now().as_millisecond())
     }
 }
