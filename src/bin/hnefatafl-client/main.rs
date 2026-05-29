@@ -57,7 +57,7 @@ use hnefatafl_copenhagen::{
     heat_map::{Heat, HeatMap},
     invalid_username,
     locale::Locale,
-    play::{BOARD_LETTERS, Plae, Plays, Vertex},
+    play::{BOARD_LETTERS, Plae, Vertex},
     rating::Rated,
     role::Role,
     server_game::{ArchivedGame, Challenger, ServerGameLight, ServerGamesLight},
@@ -3203,15 +3203,7 @@ impl<'a> Client {
                                 let board_size = BoardSize::from_str(board_size)
                                     .expect("there should be a valid board size");
 
-                                let board = Board::new(board_size);
-
-                                let mut game = Game {
-                                    attacker_time: timed.clone(),
-                                    defender_time: timed.clone(),
-                                    plays: Plays::new(&timed),
-                                    board,
-                                    ..Game::default()
-                                };
+                                let mut game = Game::new_game(board_size, &timed);
 
                                 self.time_attacker = timed.clone();
                                 self.time_defender = timed;

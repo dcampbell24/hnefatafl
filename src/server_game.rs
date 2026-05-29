@@ -29,7 +29,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     Id,
     board::{Board, BoardSize},
-    game::Game,
+    game::{Game, TimeUnix},
     glicko::Rating,
     play::{PlayRecordTimed, Plays},
     rating::Rated,
@@ -210,6 +210,12 @@ impl ServerGame {
 
         let board = Board::new(game.board_size);
 
+        let time = if let TimeSettings::Timed(_) = &game.timed {
+            TimeUnix::timed()
+        } else {
+            TimeUnix::UnTimed
+        };
+
         Self {
             id: game.id,
             attacker,
@@ -222,6 +228,7 @@ impl ServerGame {
             game: Game {
                 attacker_time: game.timed.clone(),
                 defender_time: game.timed,
+                time,
                 board,
                 plays,
                 ..Game::default()
