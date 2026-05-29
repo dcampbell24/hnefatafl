@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- cargo update
 - hnefatafl-text-protocol: default to un-timed.
 - hnefatafl-client: hold down "Get Archived Games" for a minute when pressed.
 
