@@ -144,7 +144,6 @@ impl fmt::Debug for TimeSettings {
     }
 }
 
-//
 impl fmt::Display for TimeSettings {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
