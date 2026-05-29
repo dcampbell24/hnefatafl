@@ -3203,7 +3203,7 @@ impl<'a> Client {
                                 let board_size = BoardSize::from_str(board_size)
                                     .expect("there should be a valid board size");
 
-                                let mut game = Game::new_game(board_size, &timed);
+                                let mut game = Game::new(board_size, &timed);
 
                                 self.time_attacker = timed.clone();
                                 self.time_defender = timed;
