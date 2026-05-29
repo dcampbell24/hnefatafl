@@ -403,7 +403,7 @@ impl Game {
     }
 
     #[must_use]
-    pub fn new(board_size: BoardSize, time_settings: &TimeSettings) -> Self {
+    pub fn make(board_size: BoardSize, time_settings: &TimeSettings) -> Self {
         let board = Board::new(board_size);
         let previous_boards = PreviousBoards::new(board_size);
 
@@ -878,7 +878,7 @@ impl Game {
                     TimeSettings::UnTimed
                 };
 
-                *self = Self::new(board_size, &time_settings);
+                *self = Self::make(board_size, &time_settings);
 
                 Ok(Some(String::new()))
             }
@@ -991,7 +991,7 @@ impl Game {
                     time.milliseconds_left *= 60_000;
                 }
 
-                *self = Self::new(self.board.size(), &time_settings);
+                *self = Self::make(self.board.size(), &time_settings);
 
                 Ok(Some(String::new()))
             }
