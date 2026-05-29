@@ -8,11 +8,10 @@ use std::{fmt, io::Cursor, str::FromStr};
 use rustc_hash::FxHashSet;
 
 use hnefatafl_copenhagen::{
-    game::{self, Game},
-    play::{Plae, Play, Plays, Vertex},
+    game::Game,
+    play::{Plae, Play, Vertex},
     role::Role,
     status::Status,
-    time,
 };
 
 /// # Errors
@@ -60,13 +59,7 @@ pub fn play_games(records: &[(usize, GameRecord)]) {
 }
 
 fn play_game(i: usize, record: &GameRecord) -> Result<(usize, Game), anyhow::Error> {
-    let mut game = Game {
-        plays: Plays::new(&time::TimeSettings::UnTimed),
-        time: game::TimeUnix::UnTimed,
-        attacker_time: time::TimeSettings::UnTimed,
-        defender_time: time::TimeSettings::UnTimed,
-        ..Game::default()
-    };
+    let mut game = Game::default();
 
     for (play, captures_1) in record.clone().plays {
         let mut captures_2 = FxHashSet::default();

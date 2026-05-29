@@ -409,20 +409,15 @@ impl Game {
 
         let mut game = Self {
             board,
+            attacker_time: time_settings.clone(),
+            defender_time: time_settings.clone(),
             plays: Plays::new(time_settings),
             previous_boards,
             ..Self::default()
         };
 
-        match time_settings {
-            TimeSettings::Timed(time) => {
-                game.attacker_time = TimeSettings::Timed(*time);
-                game.defender_time = TimeSettings::Timed(*time);
-            }
-            TimeSettings::UnTimed => {
-                game.attacker_time = TimeSettings::UnTimed;
-                game.defender_time = TimeSettings::UnTimed;
-            }
+        if let TimeSettings::Timed(_) = time_settings {
+            game.time = TimeUnix::timed();
         }
 
         game
@@ -1120,14 +1115,15 @@ pub struct LegalMoves {
     pub moves: FxHashMap<Vertex, Vec<Vertex>>,
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub enum TimeUnix {
     Time(i64),
+    #[default]
     UnTimed,
 }
 
-impl Default for TimeUnix {
-    fn default() -> Self {
+impl TimeUnix {
+    fn timed() -> Self {
         Self::Time(Timestamp::now().as_millisecond())
     }
 }
