@@ -10,13 +10,9 @@ language = "en"
 edition = "2024"
 
 [output.html]
-git-repository-url = "https://github.com/dcampbell24/hnefatafl"
-mathjax-support = true
+git-repository-url = "https://codeberg.org/dcampbell/hnefatafl"
+git-repository-icon = "fas-code-branch"
 input-404 = "404.md"
-
-[output.html.playground]
-editable = true
-line-numbers = true
 
 [output.html.search]
 limit-results = 20
