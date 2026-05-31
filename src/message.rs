@@ -103,6 +103,11 @@ pub enum Message {
     /// Returns `attacker_wins`, `draw`, `ongoing`, or `defender_wins`.
     FinalStatus,
 
+    /// `first_move ROLE`
+    ///
+    /// Sets who goes first.
+    FirstMove(Role),
+
     /// `generate_move`
     ///
     /// Returns `play ROLE FROM TO`.
@@ -171,9 +176,10 @@ pub enum Message {
     Version,
 }
 
-pub static COMMANDS: [&str; 15] = [
+pub static COMMANDS: [&str; 16] = [
     "board_size",
     "final_status",
+    "first_move",
     "generate_move",
     "known_command",
     "list_commands",
@@ -207,6 +213,10 @@ impl FromStr for Message {
                 .parse()?,
             )),
             "final_status" => Ok(Self::FinalStatus),
+            "first_move" => {
+                let role = Role::from_str(args.get(1).context("expected: first_move ROLE")?)?;
+                Ok(Self::FirstMove(role))
+            }
             "generate_move" => Ok(Self::GenerateMove),
             "known_command" => Ok(Self::KnownCommand(
                 (*args.get(1).context("expected: known_command COMMAND")?).to_string(),

@@ -884,6 +884,18 @@ impl Game {
             }
             Message::Empty => Ok(None),
             Message::FinalStatus => Ok(Some(format!("{}", self.status))),
+            Message::FirstMove(role) => {
+                let time_settings = if self.previous_boards.0.len() == 1 {
+                    self.defender_time.clone()
+                } else {
+                    TimeSettings::UnTimed
+                };
+
+                *self = Self::make(self.board.size(), &time_settings);
+                self.turn = role;
+
+                Ok(Some(String::new()))
+            }
             Message::GenerateMove => {
                 let mut ai = AiBasic::new(4, true);
                 let generate_move = ai.generate_move(self)?;
