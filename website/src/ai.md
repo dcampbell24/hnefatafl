@@ -2,7 +2,7 @@
 
 ## Artifcial Intelligence
 
-I adapted TaflZero (<https://github.com/sovelin/taflzero>) to my server. It is
+I adapted [TaflZero](https://github.com/sovelin/taflzero) to my server. It is
 based off of AlphaGoZero by Google. You can run it via `taflzero` on the Arch,
 Debian, and Fedora installs, or via the source package. See `--help` for what
 options you can pass it.
