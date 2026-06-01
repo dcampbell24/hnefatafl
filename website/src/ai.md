@@ -8,8 +8,8 @@ Debian, and Fedora installs, or via the source package. See `--help` for what
 options you can pass it.
 
 You'll have to create an account for it first on whatever server you will be
-running it on. Run `hnefatafl-client` and log onto the server. Then, Create an
-account for your AI, prefixing the username with `ai-taflzero`.
+running it on. Run `hnefatafl-client`. Then, Create an account for your AI,
+prefixing the username with `ai-taflzero`.
 
 It can also be run as a service. Edit the file
 `/etc/hnefatafl-ai-attacker.conf` or `/etc/hnefatafl-ai-defender.conf` and add
