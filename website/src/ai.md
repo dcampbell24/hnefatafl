@@ -2,10 +2,10 @@
 
 ## Artifcial Intelligence
 
-I adapted TaflZero to my server. It is based off of AlphaGoZero by
-Google. You can run it via `taflzero` on the Arch, Debian, and Fedora
-installs, or via the source package. See `--help` for what options you can pass
-it.
+I adapted TaflZero (<https://github.com/sovelin/taflzero>) to my server. It is
+based off of AlphaGoZero by Google. You can run it via `taflzero` on the Arch,
+Debian, and Fedora installs, or via the source package. See `--help` for what
+options you can pass it.
 
 You'll have to create an account for it first on whatever server you will be
 running it on. Run `hnefatafl-client` and log onto the server. Then, Create an
