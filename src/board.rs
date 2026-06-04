@@ -760,7 +760,7 @@ impl Board {
         }
 
         let mut defended = Vec::with_capacity(32);
-        let mut stack = Vec::with_capacity(board_size_usize * board_size_usize);
+        let mut stack = Vec::with_capacity((board_size_usize * board_size_usize) / 2);
 
         for vertex in pre_stack {
             let space = self.get(&vertex);
