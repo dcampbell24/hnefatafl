@@ -21,7 +21,7 @@ include = ["/src/**/*", "/README.md", "/CHANGELOG.md", "/LICENSE.txt"]
 [dev-dependencies]
 criterion = { version = "0.8", features = ["html_reports"] }
 csv = "1"
-taflzero = { git = "https://github.com/sovelin/taflzero.git", rev = "1527cb04f54c9e956b36a54822aaf75bf1ccba55", default-features = false }
+taflzero = { git = "https://github.com/sovelin/taflzero.git", rev = "06be616bd7786dc01c3b0eef0658f142b6be9f9c", default-features = false }
 
 # client
 [target.'cfg(not(any(target_os = "redox", target_os = "android")))'.dependencies.iced]
