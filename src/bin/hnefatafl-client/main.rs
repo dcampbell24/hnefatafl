@@ -65,7 +65,7 @@ use hnefatafl_copenhagen::{
     status::Status,
     tcp_keep_alive,
     time::{TimeEnum, TimeSettings},
-    tournament::Tournament,
+    tournament::TournamentFull,
     tree::Tree,
     utils::{self, choose_ai, config_file, create_config_folder, create_data_folder, data_file},
 };
@@ -751,7 +751,7 @@ struct Client {
     #[serde(skip)]
     time_defender: TimeSettings,
     #[serde(skip)]
-    tournament: Tournament,
+    tournament: TournamentFull,
     #[serde(skip)]
     tournament_date: Date,
     #[serde(skip)]
@@ -1205,18 +1205,33 @@ impl<'a> Client {
 
     #[allow(clippy::too_many_lines)]
     fn display_tournament(&self) -> Column<'_, Message> {
-        let tournament_string = t!("Tournament");
-        let row_1 = text(tournament_string.to_string());
-        let row_2 = text("-".repeat(tournament_string.len())).font(Font::MONOSPACE);
-        let column_1 = column![row_1, row_2];
+        let column_1 = if let Some(tournament) = &self.tournament.tournament {
+            let tournament_string = t!("Tournament");
+            let row_1 = text(tournament_string.to_string());
+            let row_2 = text("-".repeat(tournament_string.len())).font(Font::MONOSPACE);
+            let row_3 = text!(
+                "{}: {}, {}: {}, fischer {}: {}",
+                t!("Tournament Start Date"),
+                tournament.date.strftime("%F %T UTC"),
+                t!("board size"),
+                tournament.board_size,
+                t!("time"),
+                tournament.time_setting
+            );
+
+            column![row_1, row_2, row_3]
+        } else {
+            Column::new()
+        };
+
         let mut column_rounds = Column::new();
 
-        if let Some(round) = &self.tournament.groups {
+        if let Some(tournament) = &self.tournament.tournament {
             let mut column_round = Column::new();
 
-            for (i, group) in round.iter().enumerate() {
+            for (i, group) in tournament.groups.iter().enumerate() {
                 let round_title =
-                    if self.tournament.tournament_games.is_empty() && i + 1 == round.len() {
+                    if tournament.tournament_games.is_empty() && i + 1 == tournament.groups.len() {
                         let winner = t!("Winner");
                         let row_1 = text(winner.to_string());
                         let row_2 = text!("{}", "-".repeat(winner.len())).font(Font::MONOSPACE);
@@ -1257,7 +1272,9 @@ impl<'a> Client {
                         for (player, record) in &players.records {
                             games_count += record.games_count();
 
-                            if self.tournament.tournament_games.is_empty() && i + 1 == round.len() {
+                            if tournament.tournament_games.is_empty()
+                                && i + 1 == tournament.groups.len()
+                            {
                                 column_group_vec.push(
                                     text!("{:16} {:10}", player, record.rating.to_string_rounded())
                                         .font(Font::MONOSPACE),
@@ -2985,6 +3002,23 @@ impl<'a> Client {
             }
             Message::TabSelected(tab) => self.active_tab = tab,
             Message::TcpDisconnect => self.connected_tcp = false,
+            Message::TournamentBoardSize(board_size) => {
+                if self.admin_tournament {
+                    match board_size {
+                        BoardSize::_11 => self.send("tournament_board_size 11\n"),
+                        BoardSize::_13 => self.send("tournament_board_size 13\n"),
+                    }
+                }
+            }
+            Message::TournamentTime(time_settings) => {
+                if self.admin_tournament {
+                    let time_settings: TimeSettings = time_settings.into();
+                    let ron_string = ron::ser::to_string(&time_settings)
+                        .expect("you should be able to serialize time_settings");
+
+                    self.send(&format!("tournament_time {ron_string}\n"));
+                }
+            }
             Message::TournamentJoin => self.send("join_tournament\n"),
             Message::TournamentLeave => self.send("leave_tournament\n"),
             Message::TournamentStart => self.send("tournament_start\n"),
@@ -3205,7 +3239,7 @@ impl<'a> Client {
 
                                 let mut game = Game::make(board_size, &timed);
 
-                                self.time_attacker = timed.clone();
+                                self.time_attacker = timed;
                                 self.time_defender = timed;
 
                                 if let Some(game_serialized) = text.next() {
@@ -3214,8 +3248,8 @@ impl<'a> Client {
 
                                     game = game_deserialized;
 
-                                    self.time_attacker = game.attacker_time.clone();
-                                    self.time_defender = game.defender_time.clone();
+                                    self.time_attacker = game.attacker_time;
+                                    self.time_defender = game.defender_time;
 
                                     match game.turn {
                                         Role::Attacker => {
@@ -3291,9 +3325,9 @@ impl<'a> Client {
                             }
                             Some("text") => self.texts.push_front(text_collect(text)),
                             Some("text_game") => self.texts_game.push_front(text_collect(text)),
-                            Some("tournament_status_1") => {
+                            Some("tournament_status_2") => {
                                 if let Some(tournament) = text.next() {
-                                    let tournament: Tournament = ron::from_str(tournament)
+                                    let tournament: TournamentFull = ron::from_str(tournament)
                                         .expect("This is a valid tournament.");
 
                                     self.tournament = tournament;
@@ -4599,6 +4633,7 @@ impl<'a> Client {
         handle_error(self.save_client_ron());
     }
 
+    #[allow(clippy::too_many_lines)]
     fn tournament_view(&self) -> Scrollable<'_, Message> {
         let mut column = Column::new().padding(PADDING).spacing(SPACING);
 
@@ -4619,10 +4654,90 @@ impl<'a> Client {
             column = column.push(row);
         }
 
+        let size_11x11 = radio(
+            "11x11",
+            BoardSize::_11,
+            Some(self.tournament.board_size),
+            Message::TournamentBoardSize,
+        );
+
+        let size_13x13 = radio(
+            "13x13",
+            BoardSize::_13,
+            Some(self.tournament.board_size),
+            Message::TournamentBoardSize,
+        );
+
+        let board_size = LabeledFrame::new(
+            text(t!("board size")),
+            row![size_11x11, size_13x13]
+                .padding(PADDING)
+                .spacing(SPACING),
+        );
+
+        let real_time = text(format!("{}:", t!("Real Time")));
+        let blitz = radio(
+            TimeEnum::Blitz.to_string(),
+            TimeEnum::Blitz,
+            (&self.tournament.time_setting).into(),
+            Message::TournamentTime,
+        );
+        let rapid = radio(
+            TimeEnum::Rapid.to_string(),
+            TimeEnum::Rapid,
+            (&self.tournament.time_setting).into(),
+            Message::TournamentTime,
+        );
+        let classical = radio(
+            TimeEnum::Classical.to_string(),
+            TimeEnum::Classical,
+            (&self.tournament.time_setting).into(),
+            Message::TournamentTime,
+        );
+
+        let correspondence = text(format!("{}:", t!("Correspondence")));
+        let long = radio(
+            TimeEnum::Long.to_string(),
+            TimeEnum::Long,
+            (&self.tournament.time_setting).into(),
+            Message::TournamentTime,
+        );
+        let very_long = radio(
+            TimeEnum::VeryLong.to_string(),
+            TimeEnum::VeryLong,
+            (&self.tournament.time_setting).into(),
+            Message::TournamentTime,
+        );
+
+        let unlimited = text(format!("{}:", t!("Unlimited")));
+        let infinity = radio(
+            TimeEnum::Infinity.to_string(),
+            TimeEnum::Infinity,
+            (&self.tournament.time_setting).into(),
+            Message::TournamentTime,
+        );
+
+        let col_1 = column![real_time, correspondence, unlimited].padding(PADDING);
+        let col_2 = column![blitz, long, infinity].padding(PADDING);
+        let col_3 = column![rapid, very_long].padding(PADDING);
+        let col_4 = column![classical].padding(PADDING);
+
+        let time = LabeledFrame::new(
+            text(format!("fischer {}", t!("time"))),
+            row![col_1, col_2, col_3, col_4],
+        );
+
         let mut date = Row::new().spacing(SPACING);
-        let start_date = t!("Tournament Start Date");
         if let Some(timestamp) = self.tournament.date {
-            date = date.push(text!("{start_date}: {}", timestamp.strftime("%F %T UTC")));
+            date = date.push(text!(
+                "{}: {}, {}: {}, fischer {}: {}",
+                t!("Tournament Start Date"),
+                timestamp.strftime("%F %T UTC"),
+                t!("board size"),
+                self.tournament.board_size,
+                t!("time"),
+                self.tournament.time_setting
+            ));
         }
 
         column = column.push(
@@ -4652,19 +4767,25 @@ impl<'a> Client {
         }
 
         column = column.push(date);
+
+        if self.admin_tournament {
+            column = column.push(board_size);
+            column = column.push(time);
+        }
+
         column = column.push(buttons);
         column = column.push(LabeledFrame::new(text(t!("Players")), players));
 
         if self.admin_tournament {
             let mut delete_button_2 = button("Delete Tournament Tree");
 
-            if self.tournament.groups.is_some() {
+            if self.tournament.tournament.is_some() {
                 delete_button_2 = delete_button_2.on_press(Message::TournamentTreeDelete);
             }
 
             let mut start_tournament = button("Start Tournament");
 
-            if self.tournament.groups.is_none()
+            if self.tournament.tournament.is_none()
                 && !self.tournament.players.is_empty()
                 && let Some(date) = self.tournament.date
                 && date < Timestamp::now()

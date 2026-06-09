@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Breaking
+
+- Add board_size and time to tournament.
+
 ### Changed
 
 - hnefatafl-text-protocol: allow the defenders to go first.

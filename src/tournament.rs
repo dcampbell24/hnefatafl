@@ -25,15 +25,28 @@ use jiff::Timestamp;
 use rand::seq::SliceRandom;
 use serde::{Deserialize, Serialize};
 
-use crate::{Id, accounts::Accounts, glicko::Rating, server_game::ServerGame, status::Status};
+use crate::{
+    Id, accounts::Accounts, board::BoardSize, glicko::Rating, server_game::ServerGame,
+    status::Status, time::TimeSettings,
+};
+
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+pub struct TournamentFull {
+    pub players: HashSet<String>,
+    pub board_size: BoardSize,
+    pub time_setting: TimeSettings,
+    pub date: Option<Timestamp>,
+    pub tournament: Option<Tournament>,
+}
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct Tournament {
     pub id: u64,
     pub players: HashSet<String>,
-    pub players_left: HashSet<String>,
-    pub date: Option<Timestamp>,
-    pub groups: Option<Vec<Vec<Arc<Mutex<Group>>>>>,
+    pub board_size: BoardSize,
+    pub time_setting: TimeSettings,
+    pub date: Timestamp,
+    pub groups: Vec<Vec<Arc<Mutex<Group>>>>,
     pub tournament_games: HashMap<Id, Arc<Mutex<Group>>>,
 }
 
@@ -106,9 +119,7 @@ impl Tournament {
 
             self.tournament_games.remove(&game.id);
 
-            if let Some(round) = &self.groups
-                && let Some(groups) = round.last()
-            {
+            if let Some(groups) = self.groups.last() {
                 let mut finished = true;
                 for group in groups {
                     if let Ok(group) = group.lock() {
@@ -126,7 +137,7 @@ impl Tournament {
                 }
 
                 if finished {
-                    let mut players_left = HashSet::new();
+                    let mut players = HashSet::new();
 
                     for group in groups {
                         if let Ok(group) = group.lock()
@@ -134,7 +145,7 @@ impl Tournament {
                         {
                             for (name, record) in &group.records {
                                 if record.score() == top_score {
-                                    players_left.insert(name.clone());
+                                    players.insert(name.clone());
                                 } else {
                                     next_round = true;
                                 }
@@ -142,7 +153,7 @@ impl Tournament {
                         }
                     }
 
-                    self.players_left = players_left;
+                    self.players = players;
                 }
             }
         }
@@ -155,7 +166,7 @@ impl Tournament {
     pub fn generate_round(&mut self, accounts: &Accounts, mut group_size: usize) -> Vec<Group> {
         let mut players_vec = Vec::new();
 
-        for player in &self.players_left {
+        for player in &self.players {
             let mut rating = Rating::default();
 
             if let Some(account) = accounts.0.get(player.as_str()) {
@@ -251,16 +262,14 @@ impl Tournament {
     }
 
     pub fn remove_duplicate_ids(&mut self) {
-        if let Some(groups) = &self.groups {
-            for round in groups {
-                for group_1 in round {
-                    if let Ok(group_1a) = group_1.lock() {
-                        for group_2 in self.tournament_games.values_mut() {
-                            if let Ok(group_2a) = group_2.clone().lock()
-                                && group_1a.id == group_2a.id
-                            {
-                                *group_2 = group_1.clone();
-                            }
+        for round in &self.groups {
+            for group_1 in round {
+                if let Ok(group_1a) = group_1.lock() {
+                    for group_2 in self.tournament_games.values_mut() {
+                        if let Ok(group_2a) = group_2.clone().lock()
+                            && group_1a.id == group_2a.id
+                        {
+                            *group_2 = group_1.clone();
                         }
                     }
                 }
