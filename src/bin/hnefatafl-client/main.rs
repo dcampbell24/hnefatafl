@@ -65,7 +65,7 @@ use hnefatafl_copenhagen::{
     status::Status,
     tcp_keep_alive,
     time::{TimeEnum, TimeSettings},
-    tournament::TournamentFull,
+    tournament::{GroupSize, TournamentFull},
     tree::Tree,
     utils::{self, choose_ai, config_file, create_config_folder, create_data_folder, data_file},
 };
@@ -165,6 +165,7 @@ const SOUND_MOVE: &[u8] = include_bytes!("assets/move.ogg");
 /// In milliseconds.
 const TICK: i64 = 100;
 const TICK_U: u64 = 100;
+const DEFAULT_GROUP_SIZE: f64 = 4.0;
 
 rust_i18n::i18n!();
 
@@ -304,7 +305,9 @@ fn init_client() -> Client {
     if client.rating_minimum == 0.0 {
         client.rating_min();
     }
+
     client.games_filtered();
+    client.group_size = DEFAULT_GROUP_SIZE;
 
     client
 }
@@ -690,6 +693,8 @@ struct Client {
     games_light_vec: Vec<ServerGameLight>,
     #[serde(skip)]
     game_settings: NewGameSettings,
+    #[serde(skip)]
+    group_size: f64,
     #[serde(skip)]
     heat_map: Option<HeatMap>,
     #[serde(skip)]
@@ -1213,13 +1218,14 @@ impl<'a> Client {
             let row_1 = text(tournament_string.to_string());
             let row_2 = text("-".repeat(tournament_string.len())).font(Font::MONOSPACE);
             let row_3 = text!(
-                "{}: {}, {}: {}, fischer {}: {}",
-                t!("Tournament Start Date"),
+                "[{}] {}: {}, fischer {}: {}, {}: {}",
                 tournament.date.strftime("%F %T UTC"),
                 t!("board size"),
                 tournament.board_size,
                 t!("time"),
-                tournament.time_setting
+                tournament.time_setting,
+                t!("group size"),
+                tournament.group_size,
             );
 
             column![row_1, row_2, row_3]
@@ -2479,6 +2485,14 @@ impl<'a> Client {
             Message::GameDecline(id) => self.send(&format!("decline_game {id}\n")),
             Message::GameJoin(id) => self.join(id),
             Message::GameWatch(id) => self.watch(id),
+            Message::GroupSizeChanged(size) => {
+                self.tournament.group_size = GroupSize {
+                    #[allow(clippy::cast_sign_loss)]
+                    #[allow(clippy::cast_possible_truncation)]
+                    size: size as usize,
+                };
+                self.group_size = size;
+            }
             Message::HeatMap(_display) => self.heat_map_display = !self.heat_map_display,
             #[cfg(not(target_os = "redox"))]
             Message::ImportPGN => self.import_portable_game_notation(),
@@ -4745,21 +4759,17 @@ impl<'a> Client {
         let col_3 = column![rapid, very_long].padding(PADDING);
         let col_4 = column![classical].padding(PADDING);
 
-        let time = LabeledFrame::new(
-            text(format!("fischer {}", t!("time"))),
-            row![col_1, col_2, col_3, col_4],
-        );
-
         let mut date = Row::new().spacing(SPACING);
         if let Some(timestamp) = self.tournament.date {
             date = date.push(text!(
-                "{}: {}, {}: {}, fischer {}: {}",
-                t!("Tournament Start Date"),
+                "[{}] {}: {}, fischer {}: {}, {}: {}",
                 timestamp.strftime("%F %T UTC"),
                 t!("board size"),
                 self.tournament.board_size,
                 t!("time"),
-                self.tournament.time_setting
+                self.tournament.time_setting,
+                t!("group size"),
+                self.tournament.group_size.size,
             ));
         }
 
@@ -4792,8 +4802,17 @@ impl<'a> Client {
         column = column.push(date);
 
         if self.admin_tournament {
-            column = column.push(board_size);
-            column = column.push(time);
+            let time = LabeledFrame::new(
+                text(format!("fischer {}", t!("time"))),
+                row![col_1, col_2, col_3, col_4],
+            );
+
+            let group_size =
+                number_input(&self.group_size, 1.0..=1024.0, Message::GroupSizeChanged);
+
+            let group_size = LabeledFrame::new("group size", group_size);
+
+            column = column.push(column![board_size, time, group_size]);
         }
 
         column = column.push(buttons);
