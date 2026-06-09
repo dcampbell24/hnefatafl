@@ -100,6 +100,7 @@ pub(crate) enum Message {
     EstimateScoreConnected(mpsc::Sender<Tree>),
     EstimateScoreDisplay((Node, GenerateMove)),
     Exit,
+    #[cfg(not(target_os = "redox"))]
     ExportPGN,
     FocusPrevious,
     FocusNext,
@@ -111,6 +112,7 @@ pub(crate) enum Message {
     GameSubmit,
     GameWatch(Id),
     HeatMap(bool),
+    #[cfg(not(target_os = "redox"))]
     ImportPGN,
     Leave,
     LeaveSoft,

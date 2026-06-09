@@ -105,12 +105,14 @@ use crate::{
     dimensions::Dimensions,
     enums::{Coordinates, JoinGame, Message, Move, Screen, Size, SortBy, State, Theme},
     new_game_settings::NewGameSettings,
-    portable_game_notation::{read_portable_game_notation, write_portable_game_notation},
     solarized::{blue, green, red, yellow},
     tabs::TabId,
     user::User,
     volume::{MAX_VOLUME, Volume},
 };
+
+#[cfg(not(target_os = "redox"))]
+use crate::portable_game_notation::{read_portable_game_notation, write_portable_game_notation};
 
 /// The software package that this is.
 const SOFTWARE_ID: &str = concat!("cargo-", env!("CARGO_PKG_VERSION"));
@@ -1106,6 +1108,7 @@ impl<'a> Client {
         .padding(PADDING)
     }
 
+    #[cfg(not(target_os = "redox"))]
     fn export_pgn(&self) {
         if let Some(game) = &self.archived_game_selected
             && let Err(error) = write_portable_game_notation(game)
@@ -2096,8 +2099,15 @@ impl<'a> Client {
             }
 
             user_area = user_area.push(row![left_all, left, right, right_all].spacing(SPACING));
-            user_area = user_area
-                .push(button(text!("{} (r)", t!("Export PGN File"))).on_press(Message::ExportPGN));
+
+            #[cfg(not(target_os = "redox"))]
+            let export_pgn =
+                button(text!("{} (r)", t!("Export PGN File"))).on_press(Message::ExportPGN);
+
+            #[cfg(target_os = "redox")]
+            let export_pgn = button(text!("{} (r)", t!("Export PGN File")));
+
+            user_area = user_area.push(export_pgn);
         } else {
             user_area = user_area.push(leave);
 
@@ -2172,6 +2182,7 @@ impl<'a> Client {
         }
     }
 
+    #[cfg(not(target_os = "redox"))]
     fn import_portable_game_notation(&mut self) {
         match read_portable_game_notation() {
             Ok(game) => {
@@ -2456,6 +2467,7 @@ impl<'a> Client {
                 self.estimate_score = false;
             }
             Message::Exit => return iced::exit(),
+            #[cfg(not(target_os = "redox"))]
             Message::ExportPGN => self.export_pgn(),
             Message::FocusNext => return focus_next(),
             Message::FocusPrevious => return focus_previous(),
@@ -2468,6 +2480,7 @@ impl<'a> Client {
             Message::GameJoin(id) => self.join(id),
             Message::GameWatch(id) => self.watch(id),
             Message::HeatMap(_display) => self.heat_map_display = !self.heat_map_display,
+            #[cfg(not(target_os = "redox"))]
             Message::ImportPGN => self.import_portable_game_notation(),
             Message::Leave => {
                 if self.screen == Screen::Login {
@@ -2579,7 +2592,10 @@ impl<'a> Client {
                     }
                     _ => {}
                 },
-                Screen::Login => self.import_portable_game_notation(),
+                Screen::Login => {
+                    #[cfg(not(target_os = "redox"))]
+                    self.import_portable_game_notation();
+                }
                 Screen::EmailEveryone => {}
             },
             Message::PressE(shift) => match self.screen {
@@ -2699,7 +2715,10 @@ impl<'a> Client {
                         self.send(&format!("draw {} {}\n", self.game_id, Draw::Accept));
                     }
                 }
-                Screen::GameReview => self.export_pgn(),
+                Screen::GameReview => {
+                    #[cfg(not(target_os = "redox"))]
+                    self.export_pgn();
+                }
                 Screen::Games => self.join_game_press(17, shift),
             },
             Message::PressS(shift) => match self.screen {
@@ -4451,8 +4470,12 @@ impl<'a> Client {
                     self.archived_games.clone()
                 };
 
+                #[cfg(not(target_os = "redox"))]
                 let import_pgn = button(text!("{} (d)", t!("Import Portable Game Notation File")))
                     .on_press(Message::ImportPGN);
+
+                #[cfg(target_os = "redox")]
+                let import_pgn = button(text!("{} (d)", t!("Import Portable Game Notation File")));
 
                 let my_games_text = text!("{} (3)", t!("My Games Only"));
                 let my_games = checkbox(self.my_games_only).on_toggle(Message::MyGamesOnly);
