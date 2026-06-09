@@ -111,6 +111,7 @@ pub(crate) enum Message {
     GameResume(Id),
     GameSubmit,
     GameWatch(Id),
+    GroupSizeChanged(f64),
     HeatMap(bool),
     #[cfg(not(target_os = "redox"))]
     ImportPGN,

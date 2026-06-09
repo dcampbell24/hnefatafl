@@ -987,7 +987,6 @@ impl Server {
         username: &str,
         command: &str,
         the_rest: &[&str],
-        group_size: usize,
     ) -> Option<(mpsc::Sender<String>, bool, String)> {
         if the_rest.len() < 5 {
             return Some((
@@ -1216,7 +1215,7 @@ impl Server {
                 && tournament.is_tournament_game(&game.id)
             {
                 if tournament.game_over(&game) {
-                    self.generate_round(group_size);
+                    self.generate_round();
                 }
 
                 self.tournament_status_all();
@@ -1240,12 +1239,12 @@ impl Server {
         ))
     }
 
-    fn generate_round(&mut self, group_size: usize) {
+    fn generate_round(&mut self) {
         let Some(mut tournament) = take(&mut self.tournament.tournament) else {
             return;
         };
 
-        let groups = tournament.generate_round(&self.accounts, group_size);
+        let groups = tournament.generate_round(&self.accounts);
         let mut ids = VecDeque::new();
         let mut groups_arc_mutex = Vec::new();
 
@@ -1482,13 +1481,7 @@ impl Server {
                 }
                 "display_server" => self.display_server(username),
                 "draw" => self.draw(index_supplied, command, the_rest.as_slice()),
-                "game" => self.game(
-                    index_supplied,
-                    username,
-                    command,
-                    the_rest.as_slice(),
-                    args.group_size,
-                ),
+                "game" => self.game(index_supplied, username, command, the_rest.as_slice()),
                 "email" => {
                     self.set_email(index_supplied, username, command, the_rest.first().copied())
                 }
@@ -1860,15 +1853,14 @@ impl Server {
                             players: take(&mut self.tournament.players),
                             board_size: self.tournament.board_size,
                             time_setting: self.tournament.time_setting,
+                            group_size: self.tournament.group_size.size,
                             ..Tournament::default()
                         };
 
-                        if let Some(date) = take(&mut self.tournament.date) {
-                            tournament.date = date;
-                        }
+                        tournament.date = Timestamp::now();
 
                         self.tournament.tournament = Some(tournament);
-                        self.generate_round(args.group_size);
+                        self.generate_round();
                         self.tournament_status_all();
                     }
 

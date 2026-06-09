@@ -30,12 +30,24 @@ use crate::{
     status::Status, time::TimeSettings,
 };
 
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct GroupSize {
+    pub size: usize,
+}
+
+impl Default for GroupSize {
+    fn default() -> Self {
+        Self { size: 4 }
+    }
+}
+
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct TournamentFull {
     pub players: HashSet<String>,
     pub board_size: BoardSize,
     pub time_setting: TimeSettings,
     pub date: Option<Timestamp>,
+    pub group_size: GroupSize,
     pub tournament: Option<Tournament>,
 }
 
@@ -46,6 +58,7 @@ pub struct Tournament {
     pub board_size: BoardSize,
     pub time_setting: TimeSettings,
     pub date: Timestamp,
+    pub group_size: usize,
     pub groups: Vec<Vec<Arc<Mutex<Group>>>>,
     pub tournament_games: HashMap<Id, Arc<Mutex<Group>>>,
 }
@@ -163,7 +176,7 @@ impl Tournament {
 
     #[allow(clippy::missing_panics_doc)]
     #[must_use]
-    pub fn generate_round(&mut self, accounts: &Accounts, mut group_size: usize) -> Vec<Group> {
+    pub fn generate_round(&mut self, accounts: &Accounts) -> Vec<Group> {
         let mut players_vec = Vec::new();
 
         for player in &self.players {
@@ -181,14 +194,14 @@ impl Tournament {
         players_vec.shuffle(&mut rng);
         players_vec.sort_unstable_by(|a, b| b.1.rating.total_cmp(&a.1.rating));
 
-        let mut groups_number = players_len / group_size;
+        let mut groups_number = players_len / self.group_size;
         let mut remainder = 0;
 
         if groups_number == 0 {
             groups_number = 1;
-            group_size = players_len;
+            self.group_size = players_len;
         } else {
-            remainder = players_len % group_size;
+            remainder = players_len % self.group_size;
         }
 
         let mut groups = Vec::new();
@@ -196,7 +209,7 @@ impl Tournament {
         for _ in 0..groups_number {
             let mut group = self.new_group();
 
-            for _ in 0..group_size {
+            for _ in 0..self.group_size {
                 let player = players_vec.pop().expect("There should be a player to pop.");
 
                 group.records.insert(
