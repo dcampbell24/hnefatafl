@@ -226,7 +226,7 @@ impl ServerGame {
             elapsed_time: 0,
             rated: game.rated,
             game: Game {
-                attacker_time: game.timed.clone(),
+                attacker_time: game.timed,
                 defender_time: game.timed,
                 time,
                 board,
@@ -382,7 +382,7 @@ impl From<&ServerGameSerialized> for ServerGameLight {
             defender: Some(game.defender.clone()),
             challenger: Challenger::default(),
             rated: game.rated,
-            timed: game.timed.clone(),
+            timed: game.timed,
             board_size: game.game.board.size(),
             spectators: HashMap::new(),
             challenge_accepted: true,

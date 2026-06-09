@@ -194,6 +194,8 @@ pub(crate) enum Message {
     TextSendLogin,
     Tick,
     Time(TimeEnum),
+    TournamentBoardSize(BoardSize),
+    TournamentTime(TimeEnum),
     Tournaments,
     TournamentJoin,
     TournamentLeave,

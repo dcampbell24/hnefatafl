@@ -409,8 +409,8 @@ impl Game {
 
         let mut game = Self {
             board,
-            attacker_time: time_settings.clone(),
-            defender_time: time_settings.clone(),
+            attacker_time: *time_settings,
+            defender_time: *time_settings,
             plays: Plays::new(time_settings),
             previous_boards,
             ..Self::default()
@@ -757,8 +757,8 @@ impl Game {
                             Plays::PlayRecordsTimed(plays) => {
                                 plays.push(PlayRecordTimed {
                                     play: Some(play.clone()),
-                                    attacker_time: self.attacker_time.clone().try_into()?,
-                                    defender_time: self.defender_time.clone().try_into()?,
+                                    attacker_time: self.attacker_time.try_into()?,
+                                    defender_time: self.defender_time.try_into()?,
                                 });
                             }
                             Plays::PlayRecords(plays) => plays.push(Some(play.clone())),
@@ -777,8 +777,8 @@ impl Game {
                             Plays::PlayRecordsTimed(plays) => {
                                 plays.push(PlayRecordTimed {
                                     play: Some(play.clone()),
-                                    attacker_time: self.attacker_time.clone().try_into()?,
-                                    defender_time: self.defender_time.clone().try_into()?,
+                                    attacker_time: self.attacker_time.try_into()?,
+                                    defender_time: self.defender_time.try_into()?,
                                 });
                             }
                             Plays::PlayRecords(plays) => plays.push(Some(play.clone())),
@@ -811,8 +811,8 @@ impl Game {
                         Plays::PlayRecordsTimed(plays) => {
                             plays.push(PlayRecordTimed {
                                 play: Some(Plae::Play(play.clone())),
-                                attacker_time: self.attacker_time.clone().try_into()?,
-                                defender_time: self.defender_time.clone().try_into()?,
+                                attacker_time: self.attacker_time.try_into()?,
+                                defender_time: self.defender_time.try_into()?,
                             });
                         }
                         Plays::PlayRecords(plays) => plays.push(Some(Plae::Play(play.clone()))),
@@ -873,7 +873,7 @@ impl Game {
                 let board_size = BoardSize::try_from(size)?;
 
                 let time_settings = if self.previous_boards.0.len() == 1 {
-                    self.defender_time.clone()
+                    self.defender_time
                 } else {
                     TimeSettings::UnTimed
                 };
@@ -886,7 +886,7 @@ impl Game {
             Message::FinalStatus => Ok(Some(format!("{}", self.status))),
             Message::FirstMove(role) => {
                 let time_settings = if self.previous_boards.0.len() == 1 {
-                    self.defender_time.clone()
+                    self.defender_time
                 } else {
                     TimeSettings::UnTimed
                 };

@@ -84,7 +84,7 @@ impl fmt::Display for Time {
     }
 }
 
-#[derive(Clone, Default, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
+#[derive(Clone, Copy, Default, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
 pub enum TimeSettings {
     Timed(Time),
     #[default]
@@ -252,6 +252,43 @@ impl From<TimeEnum> for TimeSettings {
                 milliseconds_left: 12 * 15 * HOUR,
             }),
             TimeEnum::Infinity => TimeSettings::UnTimed,
+        }
+    }
+}
+
+const BLITZ_MS_LEFT: i64 = 5 * MINUTE;
+const CLASSICAL_MS_LEFT: i64 = 30 * MINUTE;
+const RAPID_MS_LEFT: i64 = 15 * MINUTE;
+const LONG_ADD_SECONDS: i64 = 60 * 60 * 6;
+const LONG_MS_LEFT: i64 = 3 * DAY;
+const VERY_LONG_ADD_SECONDS: i64 = 60 * 60 * 15;
+const VERY_LONG_MS_LEFT: i64 = 12 * 15 * HOUR;
+
+impl From<&TimeSettings> for Option<TimeEnum> {
+    fn from(time_settings: &TimeSettings) -> Option<TimeEnum> {
+        match time_settings {
+            TimeSettings::Timed(Time {
+                add_seconds: 3,
+                milliseconds_left: BLITZ_MS_LEFT,
+            }) => Some(TimeEnum::Blitz),
+            TimeSettings::Timed(Time {
+                add_seconds: 20,
+                milliseconds_left: CLASSICAL_MS_LEFT,
+            }) => Some(TimeEnum::Classical),
+            TimeSettings::Timed(Time {
+                add_seconds: 10,
+                milliseconds_left: RAPID_MS_LEFT,
+            }) => Some(TimeEnum::Rapid),
+            TimeSettings::Timed(Time {
+                add_seconds: LONG_ADD_SECONDS,
+                milliseconds_left: LONG_MS_LEFT,
+            }) => Some(TimeEnum::Long),
+            TimeSettings::Timed(Time {
+                add_seconds: VERY_LONG_ADD_SECONDS,
+                milliseconds_left: VERY_LONG_MS_LEFT,
+            }) => Some(TimeEnum::VeryLong),
+            TimeSettings::Timed(_) => None,
+            TimeSettings::UnTimed => Some(TimeEnum::Infinity),
         }
     }
 }
