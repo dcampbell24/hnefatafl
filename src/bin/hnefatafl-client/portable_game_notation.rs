@@ -16,6 +16,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // SPDX-FileCopyrightText: 2026 David Campbell <david@hnefatafl.org>
 
+#![cfg(not(target_os = "redox"))]
+
 use std::{
     collections::{HashMap, VecDeque},
     fs::File,
