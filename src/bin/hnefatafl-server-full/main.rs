@@ -49,12 +49,13 @@ use clap::Parser;
 use hnefatafl_copenhagen::{
     Id, SERVER_PORT, VERSION_ID,
     accounts::{Account, Accounts, DateTimeUtc},
-    board::BoardSize,
+    board::{BoardSize, InvalidMove},
     draw::Draw,
     email::Email,
     game::TimeUnix,
     glicko::Outcome,
     invalid_username,
+    play::Plae,
     rating::Rated,
     role::Role,
     server_game::{
@@ -559,7 +560,7 @@ impl Server {
         index_supplied: usize,
         command: &str,
         the_rest: &[&str],
-    ) -> Option<(mpsc::Sender<String>, bool, String)> {
+    ) -> Option<(mpsc::Sender<String>, Result<(), InvalidMove>, String)> {
         info!("{index_supplied} {username} change_password");
 
         let account = self.accounts.0.get_mut(username)?;
@@ -568,7 +569,7 @@ impl Server {
         if password.len() > 32 {
             return Some((
                 self.clients.get(&index_supplied)?.clone(),
-                false,
+                Err(InvalidMove::Other),
                 format!("{command} password is greater than 32 characters"),
             ));
         }
@@ -577,7 +578,7 @@ impl Server {
 
         Some((
             self.clients.get(&index_supplied)?.clone(),
-            true,
+            Ok(()),
             (*command).to_string(),
         ))
     }
@@ -628,7 +629,7 @@ impl Server {
         command: &str,
         the_rest: &[&str],
         option_tx: Option<Sender<String>>,
-    ) -> Option<(mpsc::Sender<String>, bool, String)> {
+    ) -> Option<(mpsc::Sender<String>, Result<(), InvalidMove>, String)> {
         let password = the_rest.join(" ");
         let tx = option_tx?;
 
@@ -638,7 +639,7 @@ impl Server {
 
             info!("{index_supplied} {username} {error}");
 
-            Some((tx, false, error))
+            Some((tx, Err(InvalidMove::Other), error))
         } else if let censored = self.censor(username)
             && censored != username
         {
@@ -647,14 +648,14 @@ impl Server {
 
             info!("{index_supplied} {username} {error}");
 
-            Some((tx, false, error))
+            Some((tx, Err(InvalidMove::Other), error))
         } else if invalid_username(username) {
             let mut error = (*command).to_string();
             error.push_str(" is_not_alphanumeric");
 
             info!("{index_supplied} {username} {error}");
 
-            Some((tx, false, error))
+            Some((tx, Err(InvalidMove::Other), error))
         } else {
             info!("{index_supplied} {username} created user account");
 
@@ -671,7 +672,7 @@ impl Server {
 
             Some((
                 self.clients.get(&index_supplied)?.clone(),
-                true,
+                Ok(()),
                 (*command).to_string(),
             ))
         }
@@ -683,14 +684,14 @@ impl Server {
         index_supplied: usize,
         mut command: String,
         the_rest: &[&str],
-    ) -> Option<(mpsc::Sender<String>, bool, String)> {
+    ) -> Option<(mpsc::Sender<String>, Result<(), InvalidMove>, String)> {
         let channel = self.clients.get(&index_supplied)?;
 
         let Some(id) = the_rest.first() else {
-            return Some((channel.clone(), false, command));
+            return Some((channel.clone(), Err(InvalidMove::Other), command));
         };
         let Ok(id) = id.parse::<Id>() else {
-            return Some((channel.clone(), false, command));
+            return Some((channel.clone(), Err(InvalidMove::Other), command));
         };
 
         let mut switch = false;
@@ -734,7 +735,7 @@ impl Server {
             self.games_light.0.insert(id, game);
         }
 
-        Some((channel.clone(), true, command))
+        Some((channel.clone(), Ok(()), command))
     }
 
     fn delete_account(&mut self, username: &str, index_supplied: usize) {
@@ -744,7 +745,10 @@ impl Server {
     }
 
     #[allow(clippy::too_many_lines)]
-    fn display_server(&mut self, username: &str) -> Option<(mpsc::Sender<String>, bool, String)> {
+    fn display_server(
+        &mut self,
+        username: &str,
+    ) -> Option<(mpsc::Sender<String>, Result<(), InvalidMove>, String)> {
         if self.games_light != self.games_light_old {
             debug!("0 {username} display_games");
             self.games_light_old = self.games_light.clone();
@@ -876,18 +880,18 @@ impl Server {
         index_supplied: usize,
         command: &str,
         the_rest: &[&str],
-    ) -> Option<(mpsc::Sender<String>, bool, String)> {
+    ) -> Option<(mpsc::Sender<String>, Result<(), InvalidMove>, String)> {
         let Some(id) = the_rest.first() else {
             return Some((
                 self.clients.get(&index_supplied)?.clone(),
-                false,
+                Err(InvalidMove::Other),
                 (*command).to_string(),
             ));
         };
         let Ok(id) = id.parse::<Id>() else {
             return Some((
                 self.clients.get(&index_supplied)?.clone(),
-                false,
+                Err(InvalidMove::Other),
                 (*command).to_string(),
             ));
         };
@@ -895,14 +899,14 @@ impl Server {
         let Some(draw) = the_rest.get(1) else {
             return Some((
                 self.clients.get(&index_supplied)?.clone(),
-                false,
+                Err(InvalidMove::Other),
                 (*command).to_string(),
             ));
         };
         let Ok(draw) = Draw::from_str(draw) else {
             return Some((
                 self.clients.get(&index_supplied)?.clone(),
-                false,
+                Err(InvalidMove::Other),
                 (*command).to_string(),
             ));
         };
@@ -910,7 +914,7 @@ impl Server {
         let Some(mut game) = self.games.0.remove(&id) else {
             return Some((
                 self.clients.get(&index_supplied)?.clone(),
-                false,
+                Err(InvalidMove::Other),
                 (*command).to_string(),
             ));
         };
@@ -923,7 +927,7 @@ impl Server {
             let Some(game_light) = self.games_light.0.get(&id) else {
                 return Some((
                     self.clients.get(&index_supplied)?.clone(),
-                    false,
+                    Err(InvalidMove::Other),
                     (*command).to_string(),
                 ));
             };
@@ -987,11 +991,11 @@ impl Server {
         username: &str,
         command: &str,
         the_rest: &[&str],
-    ) -> Option<(mpsc::Sender<String>, bool, String)> {
+    ) -> Option<(mpsc::Sender<String>, Result<(), InvalidMove>, String)> {
         if the_rest.len() < 5 {
             return Some((
                 self.clients.get(&index_supplied)?.clone(),
-                false,
+                Err(InvalidMove::Other),
                 (*command).to_string(),
             ));
         }
@@ -1000,7 +1004,7 @@ impl Server {
         let Ok(index) = index.parse() else {
             return Some((
                 self.clients.get(&index_supplied)?.clone(),
-                false,
+                Err(InvalidMove::Other),
                 (*command).to_string(),
             ));
         };
@@ -1008,7 +1012,7 @@ impl Server {
         let Ok(role) = Role::from_str(role) else {
             return Some((
                 self.clients.get(&index_supplied)?.clone(),
-                false,
+                Err(InvalidMove::Other),
                 (*command).to_string(),
             ));
         };
@@ -1022,7 +1026,7 @@ impl Server {
         let Some(game) = self.games.0.get_mut(&index) else {
             return Some((
                 self.clients.get(&index_supplied)?.clone(),
-                false,
+                Err(InvalidMove::Other),
                 (*command).to_string(),
             ));
         };
@@ -1030,7 +1034,7 @@ impl Server {
         let Some(game_light) = self.games_light.0.get_mut(&index) else {
             return Some((
                 self.clients.get(&index_supplied)?.clone(),
-                false,
+                Err(InvalidMove::Other),
                 (*command).to_string(),
             ));
         };
@@ -1041,13 +1045,32 @@ impl Server {
         let mut attackers_turn_next = true;
         if role == Role::Attacker {
             if *username == game.attacker {
-                game.game
-                    .read_line(&format!("play attacker {from} {to}"))
-                    .map_err(|error| {
-                        error!("play attacker {from} {to}: {error}");
-                        error
-                    })
-                    .ok()?;
+                let play =
+                    match Plae::try_from(["play", &role.to_string(), *from, &to, "_"].to_vec()) {
+                        Ok(play) => play,
+                        result @ Err(_) => {
+                            error!("play attacker {from} {to}: {result:?}");
+                            let error = result.map(|_string| ());
+
+                            return Some((
+                                self.clients.get(&index_supplied)?.clone(),
+                                error,
+                                (*command).to_string(),
+                            ));
+                        }
+                    };
+
+                let result = game.game.play(&play);
+                if result.is_err() {
+                    error!("play attacker {from} {to}: {result:?}");
+                    let error = result.map(|_string| ());
+
+                    return Some((
+                        self.clients.get(&index_supplied)?.clone(),
+                        error,
+                        (*command).to_string(),
+                    ));
+                }
 
                 attackers_turn_next = false;
 
@@ -1057,22 +1080,41 @@ impl Server {
                         let _ok = client.send(message.clone());
                     }
                 }
+
                 game.defender_tx.send(message);
             } else {
                 return Some((
                     self.clients.get(&index_supplied)?.clone(),
-                    false,
+                    Err(InvalidMove::Turn),
                     (*command).to_string(),
                 ));
             }
         } else if *username == game.defender {
-            game.game
-                .read_line(&format!("play defender {from} {to}"))
-                .map_err(|error| {
-                    error!("play defender {from} {to}: {error}");
-                    error
-                })
-                .ok()?;
+            let play = match Plae::try_from(["play", &role.to_string(), *from, &to].to_vec()) {
+                Ok(play) => play,
+                result @ Err(_) => {
+                    error!("play defender {from} {to}: {result:?}");
+                    let error = result.map(|_string| ());
+
+                    return Some((
+                        self.clients.get(&index_supplied)?.clone(),
+                        error,
+                        (*command).to_string(),
+                    ));
+                }
+            };
+
+            let result = game.game.play(&play);
+            if result.is_err() {
+                error!("play defender {from} {to}: {result:?}");
+                let error = result.map(|_string| ());
+
+                return Some((
+                    self.clients.get(&index_supplied)?.clone(),
+                    error,
+                    (*command).to_string(),
+                ));
+            }
 
             let message = format!("game {index} play defender {from} {to}");
             for spectator in game_light.spectators() {
@@ -1080,11 +1122,12 @@ impl Server {
                     let _ok = client.send(message.clone());
                 }
             }
+
             game.attacker_tx.send(message);
         } else {
             return Some((
                 self.clients.get(&index_supplied)?.clone(),
-                false,
+                Err(InvalidMove::Turn),
                 (*command).to_string(),
             ));
         }
@@ -1234,7 +1277,7 @@ impl Server {
 
         Some((
             self.clients.get(&index_supplied)?.clone(),
-            true,
+            Ok(()),
             (*command).to_string(),
         ))
     }
@@ -1296,11 +1339,11 @@ impl Server {
         username: &str,
         command: &str,
         email: Option<&str>,
-    ) -> Option<(mpsc::Sender<String>, bool, String)> {
+    ) -> Option<(mpsc::Sender<String>, Result<(), InvalidMove>, String)> {
         let Some(address) = email else {
             return Some((
                 self.clients.get(&index_supplied)?.clone(),
-                false,
+                Err(InvalidMove::Other),
                 (*command).to_string(),
             ));
         };
@@ -1308,7 +1351,7 @@ impl Server {
         let Some(account) = self.accounts.0.get_mut(username) else {
             return Some((
                 self.clients.get(&index_supplied)?.clone(),
-                false,
+                Err(InvalidMove::Other),
                 (*command).to_string(),
             ));
         };
@@ -1347,13 +1390,17 @@ impl Server {
                 account.email = Some(email);
 
                 let reply = format!("email {address} false");
-                Some((self.clients.get(&index_supplied)?.clone(), true, reply))
+                Some((self.clients.get(&index_supplied)?.clone(), Ok(()), reply))
             }
             Err(err) => {
                 let reply = format!("could not send email to {address}");
                 error!("{reply}: {err}");
 
-                Some((self.clients.get(&index_supplied)?.clone(), false, reply))
+                Some((
+                    self.clients.get(&index_supplied)?.clone(),
+                    Err(InvalidMove::Other),
+                    reply,
+                ))
             }
         }
     }
@@ -1365,11 +1412,11 @@ impl Server {
         loop {
             let (message, option_tx) = rx.recv()?;
 
-            if let Some((tx, ok, command)) = self.handle_messages_internal(&message, option_tx) {
-                if ok {
-                    tx.send(format!("= {command}"))?;
-                } else {
-                    tx.send(format!("? {command}"))?;
+            if let Some((tx, result, command)) = self.handle_messages_internal(&message, option_tx)
+            {
+                match result {
+                    Ok(()) => tx.send(format!("= {command}"))?,
+                    Err(error) => tx.send(format!("? {command} {error}"))?,
                 }
             }
         }
@@ -1380,7 +1427,7 @@ impl Server {
         &mut self,
         message: &str,
         option_tx: Option<Sender<String>>,
-    ) -> Option<(mpsc::Sender<String>, bool, String)> {
+    ) -> Option<(mpsc::Sender<String>, Result<(), InvalidMove>, String)> {
         let args = Args::parse();
         let index_username_command: Vec<_> = message.split_ascii_whitespace().collect();
 
@@ -1473,7 +1520,7 @@ impl Server {
                         self.clients.get(&index_supplied).map(|tx| {
                             (
                                 tx.clone(),
-                                true,
+                                Ok(()),
                                 format!("display_games {:?}", &self.games_light_vec),
                             )
                         })
@@ -1523,7 +1570,7 @@ impl Server {
 
                             Some((
                                 self.clients.get(&index_supplied)?.clone(),
-                                true,
+                                Ok(()),
                                 (*command).to_string(),
                             ))
                         }
@@ -1533,7 +1580,7 @@ impl Server {
 
                             Some((
                                 self.clients.get(&index_supplied)?.clone(),
-                                false,
+                                Err(InvalidMove::Other),
                                 reply.to_string(),
                             ))
                         }
@@ -1593,7 +1640,7 @@ impl Server {
 
                         Some((
                             self.clients.get(&index_supplied)?.clone(),
-                            true,
+                            Ok(()),
                             (*command).to_string(),
                         ))
                     } else {
@@ -1663,7 +1710,7 @@ impl Server {
                 "new_game" => self.new_game(username, index_supplied, command, the_rest.as_slice()),
                 "ping" => Some((
                     self.clients.get(&index_supplied)?.clone(),
-                    true,
+                    Ok(()),
                     (*command).to_string(),
                 )),
                 "reset_password" => {
@@ -1836,7 +1883,7 @@ impl Server {
 
                         Some((
                             tx.clone(),
-                            true,
+                            Ok(()),
                             format!("tournament_status_2 {tournament}"),
                         ))
                     }
@@ -1885,7 +1932,11 @@ impl Server {
                 "=" => None,
                 _ => self.clients.get(&index_supplied).map(|channel| {
                     error!("{index_supplied} {username} {command}");
-                    (channel.clone(), false, (*command).to_string())
+                    (
+                        channel.clone(),
+                        Err(InvalidMove::Other),
+                        (*command).to_string(),
+                    )
                 }),
             }
         } else {
@@ -1900,12 +1951,20 @@ impl Server {
         index_supplied: usize,
         command: String,
         the_rest: &[&str],
-    ) -> Option<(mpsc::Sender<String>, bool, String)> {
+    ) -> Option<(mpsc::Sender<String>, Result<(), InvalidMove>, String)> {
         let Some(id) = the_rest.first() else {
-            return Some((self.clients.get(&index_supplied)?.clone(), false, command));
+            return Some((
+                self.clients.get(&index_supplied)?.clone(),
+                Err(InvalidMove::Other),
+                command,
+            ));
         };
         let Ok(id) = id.parse::<Id>() else {
-            return Some((self.clients.get(&index_supplied)?.clone(), false, command));
+            return Some((
+                self.clients.get(&index_supplied)?.clone(),
+                Err(InvalidMove::Other),
+                command,
+            ));
         };
 
         info!("{index_supplied} {username} join_game {id}");
@@ -1991,20 +2050,20 @@ impl Server {
         index_supplied: usize,
         mut command: String,
         the_rest: &[&str],
-    ) -> Option<(mpsc::Sender<String>, bool, String)> {
+    ) -> Option<(mpsc::Sender<String>, Result<(), InvalidMove>, String)> {
         let channel = self.clients.get(&index_supplied)?;
 
         let Some(id) = the_rest.first() else {
-            return Some((channel.clone(), false, command));
+            return Some((channel.clone(), Err(InvalidMove::Other), command));
         };
         let Ok(id) = id.parse::<Id>() else {
-            return Some((channel.clone(), false, command));
+            return Some((channel.clone(), Err(InvalidMove::Other), command));
         };
 
         info!("{index_supplied} {username} join_game_pending {id}");
         let Some(game) = self.games_light.0.get_mut(&id) else {
             command.push_str(" the id doesn't refer to a pending game");
-            return Some((channel.clone(), false, command));
+            return Some((channel.clone(), Err(InvalidMove::Other), command));
         };
 
         if game.attacker.is_none() {
@@ -2033,7 +2092,7 @@ impl Server {
         command.push(' ');
         command.push_str(the_rest.first()?);
 
-        Some((channel.clone(), true, command))
+        Some((channel.clone(), Ok(()), command))
     }
 
     fn leave_game(
@@ -2042,12 +2101,20 @@ impl Server {
         index_supplied: usize,
         mut command: String,
         the_rest: &[&str],
-    ) -> Option<(mpsc::Sender<String>, bool, String)> {
+    ) -> Option<(mpsc::Sender<String>, Result<(), InvalidMove>, String)> {
         let Some(id) = the_rest.first() else {
-            return Some((self.clients.get(&index_supplied)?.clone(), false, command));
+            return Some((
+                self.clients.get(&index_supplied)?.clone(),
+                Err(InvalidMove::Other),
+                command,
+            ));
         };
         let Ok(id) = id.parse::<Id>() else {
-            return Some((self.clients.get(&index_supplied)?.clone(), false, command));
+            return Some((
+                self.clients.get(&index_supplied)?.clone(),
+                Err(InvalidMove::Other),
+                command,
+            ));
         };
         if let Some(account) = self.accounts.0.get_mut(username) {
             account.pending_games.remove(&id);
@@ -2084,7 +2151,13 @@ impl Server {
                     remove = true;
                 }
             }
-            None => return Some((self.clients.get(&index_supplied)?.clone(), false, command)),
+            None => {
+                return Some((
+                    self.clients.get(&index_supplied)?.clone(),
+                    Err(InvalidMove::Other),
+                    command,
+                ));
+            }
         }
 
         if remove {
@@ -2093,7 +2166,7 @@ impl Server {
 
         command.push(' ');
         command.push_str(the_rest.first()?);
-        Some((self.clients.get(&index_supplied)?.clone(), true, command))
+        Some((self.clients.get(&index_supplied)?.clone(), Ok(()), command))
     }
 
     fn login(
@@ -2103,7 +2176,7 @@ impl Server {
         command: &str,
         the_rest: &[&str],
         option_tx: Option<Sender<String>>,
-    ) -> Option<(mpsc::Sender<String>, bool, String)> {
+    ) -> Option<(mpsc::Sender<String>, Result<(), InvalidMove>, String)> {
         let password_1 = the_rest.join(" ");
         let tx = option_tx?;
         if let Some(account) = self.accounts.0.get_mut(username) {
@@ -2111,7 +2184,7 @@ impl Server {
             if let Some(index_database) = account.logged_in {
                 error!("{index_supplied} {username} login failed, {index_database} is logged in");
 
-                Some(((tx), false, (*command).to_string()))
+                Some(((tx), Err(InvalidMove::Other), (*command).to_string()))
             // The username is in the database, but not logged in yet.
             } else {
                 let hash_2 = PasswordHash::try_from(account.password.as_str()).ok()?;
@@ -2119,7 +2192,7 @@ impl Server {
                     Argon2::default().verify_password(password_1.as_bytes(), &hash_2)
                 {
                     error!("{index_supplied} {username} provided the wrong password: {error}");
-                    return Some((tx, false, (*command).to_string()));
+                    return Some((tx, Err(InvalidMove::Other), (*command).to_string()));
                 }
 
                 self.clients.insert(index_supplied, tx);
@@ -2128,13 +2201,13 @@ impl Server {
 
                 Some((
                     self.clients.get(&index_supplied)?.clone(),
-                    true,
+                    Ok(()),
                     (*command).to_string(),
                 ))
             }
         } else {
             error!("{index_supplied} {username} is not in the database");
-            Some((tx, false, (*command).to_string()))
+            Some((tx, Err(InvalidMove::Other), (*command).to_string()))
         }
     }
 
@@ -2228,7 +2301,7 @@ impl Server {
         username: &str,
         index_supplied: usize,
         command: &str,
-    ) -> Option<(mpsc::Sender<String>, bool, String)> {
+    ) -> Option<(mpsc::Sender<String>, Result<(), InvalidMove>, String)> {
         // The username is in the database and already logged in.
         if let Some(account) = self.accounts.0.get_mut(username) {
             for id in &account.pending_games {
@@ -2261,9 +2334,13 @@ impl Server {
             }
         }
 
-        self.clients
-            .get(&index_supplied)
-            .map(|sender| (sender.clone(), false, (*command).to_string()))
+        self.clients.get(&index_supplied).map(|sender| {
+            (
+                sender.clone(),
+                Err(InvalidMove::Other),
+                (*command).to_string(),
+            )
+        })
     }
 
     /// ```sh
@@ -2276,11 +2353,11 @@ impl Server {
         index_supplied: usize,
         command: &str,
         the_rest: &[&str],
-    ) -> Option<(mpsc::Sender<String>, bool, String)> {
+    ) -> Option<(mpsc::Sender<String>, Result<(), InvalidMove>, String)> {
         if the_rest.len() < 6 {
             return Some((
                 self.clients.get(&index_supplied)?.clone(),
-                false,
+                Err(InvalidMove::Other),
                 (*command).to_string(),
             ));
         }
@@ -2289,7 +2366,7 @@ impl Server {
         let Ok(role) = Role::from_str(role) else {
             return Some((
                 self.clients.get(&index_supplied)?.clone(),
-                false,
+                Err(InvalidMove::Other),
                 (*command).to_string(),
             ));
         };
@@ -2298,7 +2375,7 @@ impl Server {
         let Ok(rated) = Rated::from_str(rated) else {
             return Some((
                 self.clients.get(&index_supplied)?.clone(),
-                false,
+                Err(InvalidMove::Other),
                 (*command).to_string(),
             ));
         };
@@ -2311,7 +2388,7 @@ impl Server {
         else {
             return Some((
                 self.clients.get(&index_supplied)?.clone(),
-                false,
+                Err(InvalidMove::Other),
                 (*command).to_string(),
             ));
         };
@@ -2342,7 +2419,7 @@ impl Server {
 
         self.game_id += 1;
 
-        Some((self.clients.get(&index_supplied)?.clone(), true, command))
+        Some((self.clients.get(&index_supplied)?.clone(), Ok(()), command))
     }
 
     fn new_tournament(tx: Sender<(String, Option<Sender<String>>)>) {
@@ -2427,18 +2504,18 @@ impl Server {
         index_supplied: usize,
         command: &str,
         the_rest: &[&str],
-    ) -> Option<(mpsc::Sender<String>, bool, String)> {
+    ) -> Option<(mpsc::Sender<String>, Result<(), InvalidMove>, String)> {
         let Some(id) = the_rest.first() else {
             return Some((
                 self.clients.get(&index_supplied)?.clone(),
-                false,
+                Err(InvalidMove::Other),
                 (*command).to_string(),
             ));
         };
         let Ok(id) = id.parse::<Id>() else {
             return Some((
                 self.clients.get(&index_supplied)?.clone(),
-                false,
+                Err(InvalidMove::Other),
                 (*command).to_string(),
             ));
         };
@@ -2519,18 +2596,18 @@ impl Server {
         index_supplied: usize,
         command: &str,
         the_rest: &[&str],
-    ) -> Option<(mpsc::Sender<String>, bool, String)> {
+    ) -> Option<(mpsc::Sender<String>, Result<(), InvalidMove>, String)> {
         let Some(id) = the_rest.first() else {
             return Some((
                 self.clients.get(&index_supplied)?.clone(),
-                false,
+                Err(InvalidMove::Other),
                 (*command).to_string(),
             ));
         };
         let Ok(id) = id.parse::<Id>() else {
             return Some((
                 self.clients.get(&index_supplied)?.clone(),
-                false,
+                Err(InvalidMove::Other),
                 (*command).to_string(),
             ));
         };
@@ -2538,14 +2615,14 @@ impl Server {
         let Some(role) = the_rest.get(1) else {
             return Some((
                 self.clients.get(&index_supplied)?.clone(),
-                false,
+                Err(InvalidMove::Other),
                 (*command).to_string(),
             ));
         };
         let Ok(role) = Role::from_str(role) else {
             return Some((
                 self.clients.get(&index_supplied)?.clone(),
-                false,
+                Err(InvalidMove::Other),
                 (*command).to_string(),
             ));
         };
@@ -2571,7 +2648,7 @@ impl Server {
 
         Some((
             self.clients.get(&index_supplied)?.clone(),
-            true,
+            Ok(()),
             (*command).to_string(),
         ))
     }
@@ -2654,18 +2731,18 @@ impl Server {
         index_supplied: usize,
         command: &str,
         mut the_rest: Vec<&str>,
-    ) -> Option<(mpsc::Sender<String>, bool, String)> {
+    ) -> Option<(mpsc::Sender<String>, Result<(), InvalidMove>, String)> {
         let Some(id) = the_rest.first() else {
             return Some((
                 self.clients.get(&index_supplied)?.clone(),
-                false,
+                Err(InvalidMove::Other),
                 (*command).to_string(),
             ));
         };
         let Ok(id) = id.parse::<Id>() else {
             return Some((
                 self.clients.get(&index_supplied)?.clone(),
-                false,
+                Err(InvalidMove::Other),
                 (*command).to_string(),
             ));
         };
@@ -2767,12 +2844,20 @@ impl Server {
         index_supplied: usize,
         command: String,
         the_rest: &[&str],
-    ) -> Option<(mpsc::Sender<String>, bool, String)> {
+    ) -> Option<(mpsc::Sender<String>, Result<(), InvalidMove>, String)> {
         let Some(id) = the_rest.first() else {
-            return Some((self.clients.get(&index_supplied)?.clone(), false, command));
+            return Some((
+                self.clients.get(&index_supplied)?.clone(),
+                Err(InvalidMove::Other),
+                command,
+            ));
         };
         let Ok(id) = id.parse::<Id>() else {
-            return Some((self.clients.get(&index_supplied)?.clone(), false, command));
+            return Some((
+                self.clients.get(&index_supplied)?.clone(),
+                Err(InvalidMove::Other),
+                command,
+            ));
         };
 
         if let Some(game) = self.games_light.0.get_mut(&id) {

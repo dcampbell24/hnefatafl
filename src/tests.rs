@@ -22,7 +22,7 @@ use std::{fmt, str::FromStr, time::Duration};
 
 use crate::{
     ai::{AI, AiBanal},
-    board::BoardSize,
+    board::{BoardSize, InvalidMove},
     game_tree::Tree,
     time::TimeSettings,
 };
@@ -157,20 +157,16 @@ fn move_orthogonally_1() -> anyhow::Result<()> {
     };
 
     let mut result = game.read_line("play defender d4 d1");
-    assert!(result.is_err());
-    assert_error_str(result, "play: you have to play through empty locations");
+    assert_eq!(result, Err(InvalidMove::Empty));
 
     result = game.read_line("play defender d4 d11");
-    assert!(result.is_err());
-    assert_error_str(result, "play: you have to play through empty locations");
+    assert_eq!(result, Err(InvalidMove::Empty));
 
     result = game.read_line("play defender d4 a4");
-    assert!(result.is_err());
-    assert_error_str(result, "play: you have to play through empty locations");
+    assert_eq!(result, Err(InvalidMove::Empty));
 
     result = game.read_line("play defender d4 k4");
-    assert!(result.is_err());
-    assert_error_str(result, "play: you have to play through empty locations");
+    assert_eq!(result, Err(InvalidMove::Empty));
 
     Ok(())
 }
@@ -199,35 +195,53 @@ fn move_orthogonally_2() -> anyhow::Result<()> {
 
     // Play a junk move:
     let mut result = game.read_line("play defender junk d1");
-    assert!(result.is_err());
-    assert_error_str(result, "invalid digit found in string");
+    assert_eq!(
+        result,
+        Err(InvalidMove::Message(
+            "message: invalid digit found in string".to_string()
+        ))
+    );
 
     result = game.read_line("play defender d4 junk");
-    assert!(result.is_err());
-    assert_error_str(result, "invalid digit found in string");
+    assert_eq!(
+        result,
+        Err(InvalidMove::Message(
+            "message: invalid digit found in string".to_string()
+        ))
+    );
 
     // Diagonal play:
     result = game.read_line("play defender d4 a3");
-    assert!(result.is_err());
-    assert_error_str(result, "play: you can only play in a straight line");
+    assert_eq!(result, Err(InvalidMove::StraightLine));
 
     // Play out of bounds:
     result = game.read_line("play defender d4 m4");
-    assert!(result.is_err());
-    assert_error_str(result, "play: the first letter is not a legal char");
+    assert_eq!(
+        result,
+        Err(InvalidMove::Message(
+            "message: play: the first letter is not a legal char".to_string()
+        ))
+    );
 
     result = game.read_line("play defender d4 d12");
-    assert!(result.is_err());
-    assert_error_str(result, "play: invalid coordinate");
+    assert_eq!(
+        result,
+        Err(InvalidMove::Message(
+            "message: play: invalid coordinate".to_string()
+        ))
+    );
 
     result = game.read_line("play defender d4 d0");
-    assert!(result.is_err());
-    assert_error_str(result, "play: invalid coordinate");
+    assert_eq!(
+        result,
+        Err(InvalidMove::Message(
+            "message: play: invalid coordinate".to_string()
+        ))
+    );
 
     // Don't move:
     result = game.read_line("play defender d4 d4");
-    assert!(result.is_err());
-    assert_error_str(result, "play: you have to change location");
+    assert_eq!(result, Err(InvalidMove::Location));
 
     // Move all the way to the right:
     let mut game_1 = game.clone();
@@ -1252,11 +1266,7 @@ fn kings_2() -> anyhow::Result<()> {
     };
 
     let result = game.read_line("play attacker b11 a11");
-    assert!(result.is_err());
-    assert_error_str(
-        result,
-        "play: only the king may move to a restricted square",
-    );
+    assert_eq!(result, Err(InvalidMove::Restricted));
 
     Ok(())
 }
@@ -1962,8 +1972,8 @@ fn can_not_repeat_moves() -> anyhow::Result<()> {
     game.read_line("play attacker f3 f2")?;
 
     let result = game.read_line("play defender g4 f4");
-    assert!(result.is_err());
-    assert_error_str(result, "play: you already reached that position");
+
+    assert_eq!(result, Err(InvalidMove::RepeatMove));
 
     Ok(())
 }

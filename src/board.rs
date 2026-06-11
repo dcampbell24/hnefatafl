@@ -1391,7 +1391,7 @@ impl Board {
         status: &Status,
         turn: &Role,
         previous_boards: &mut PreviousBoards,
-    ) -> anyhow::Result<(Vec<Vertex>, Status)> {
+    ) -> Result<(Vec<Vertex>, Status), InvalidMove> {
         let (board, captures, status) = self.play_internal(play, status, turn, previous_boards)?;
         previous_boards.0.push(board.clone());
         *self = board;
@@ -1408,11 +1408,9 @@ impl Board {
         status: &Status,
         turn: &Role,
         previous_boards: &PreviousBoards,
-    ) -> anyhow::Result<(Board, Vec<Vertex>, Status)> {
+    ) -> Result<(Board, Vec<Vertex>, Status), InvalidMove> {
         if *status != Status::Ongoing {
-            return Err(anyhow::Error::msg(
-                "play: the game has to be ongoing to play",
-            ));
+            return Err(InvalidMove::NotOngoing);
         }
 
         let play = match play {
@@ -2059,8 +2057,14 @@ enum Direction {
     UpDown,
 }
 
-#[derive(Error, Debug)]
+#[derive(Error, Debug, PartialEq)]
 pub enum InvalidMove {
+    #[error("to plae: {0}")]
+    ToPlae(String),
+    #[error("message: {0}")]
+    Message(String),
+    #[error("unrecognized command: {0}")]
+    UnrecognizedCommand(String),
     #[error("play: the game is already over")]
     GameOver,
     #[error("play: you have to play through empty locations")]
@@ -2077,6 +2081,34 @@ pub enum InvalidMove {
     StraightLine,
     #[error("play: it isn't your turn")]
     Turn,
+    #[error("play: the game has to be ongoing to play")]
+    NotOngoing,
+    #[error("play: you can't resign for the other player")]
+    InvalidResign,
+    #[error("play: invalid vertex")]
+    InvalidVertex,
+    #[error("play to: expected 'play_to role vertex'")]
+    InvalidRoleVertex,
+    #[error("play undo: it is the first move")]
+    FirstMove,
+    #[error(
+        "time_settings: expected 'time_settings un-timed' or 'time_settings fischer MINUTES ADD_SECONDS'"
+    )]
+    InvalidArguments,
+    #[error("time_settings: arg 2 is not an integer")]
+    NotInteger2,
+    #[error("time_settings: arg 3 is not an integer")]
+    NotInteger3,
+    #[error("time_settings: the time settings are un-timed")]
+    UnTimed,
+    #[error("unknown error")]
+    Other,
+}
+
+impl From<anyhow::Error> for InvalidMove {
+    fn from(error: anyhow::Error) -> Self {
+        InvalidMove::Message(error.to_string())
+    }
 }
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]

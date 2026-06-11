@@ -719,7 +719,7 @@ impl Game {
     ///
     /// If the game is already over or the move is illegal.
     #[allow(clippy::too_many_lines)]
-    pub fn play(&mut self, play: &Plae) -> anyhow::Result<Captures> {
+    pub fn play(&mut self, play: &Plae) -> Result<Captures, InvalidMove> {
         if self.status == Status::Ongoing {
             if let (status, TimeSettings::Timed(timer), TimeUnix::Time(time)) = match self.turn {
                 Role::Attacker => (
@@ -766,7 +766,7 @@ impl Game {
 
                         Ok(Captures::default())
                     } else {
-                        Err(anyhow::Error::msg("You can't resign for the other player."))
+                        Err(InvalidMove::InvalidResign)
                     }
                 }
                 Plae::DefenderResigns => {
@@ -786,16 +786,13 @@ impl Game {
 
                         Ok(Captures::default())
                     } else {
-                        Err(anyhow::Error::msg("You can't resign for the other player."))
+                        Err(InvalidMove::InvalidResign)
                     }
                 }
                 Plae::Play(play) => {
                     let piece_role = Role::from(self.board.get(&play.from));
                     if piece_role != play.role {
-                        return Err(anyhow::Error::msg(format!(
-                            "play: you are trying to move {piece_role}, but it's {}'s turn",
-                            play.role
-                        )));
+                        return Err(InvalidMove::Turn);
                     }
 
                     let (captures, status) = self.board.play(
@@ -847,14 +844,14 @@ impl Game {
                 }
             }
         } else {
-            Err(InvalidMove::GameOver.into())
+            Err(InvalidMove::GameOver)
         }
     }
 
     /// # Errors
     ///
     /// If the command is illegal or invalid.
-    pub fn read_line(&mut self, buffer: &str) -> anyhow::Result<Option<String>> {
+    pub fn read_line(&mut self, buffer: &str) -> Result<Option<String>, InvalidMove> {
         let mut buffer = Cow::from(buffer);
         if let Some(comment_offset) = buffer.find('#') {
             buffer.to_mut().replace_range(comment_offset.., "");
@@ -867,7 +864,7 @@ impl Game {
     ///
     /// If the command is illegal or invalid.
     #[allow(clippy::too_many_lines)]
-    pub fn update(&mut self, message: Message) -> anyhow::Result<Option<String>> {
+    pub fn update(&mut self, message: Message) -> Result<Option<String>, InvalidMove> {
         match message {
             Message::BoardSize(size) => {
                 let board_size = BoardSize::try_from(size)?;
@@ -935,10 +932,7 @@ impl Game {
                 let (role, vertex) = from;
                 let moves = self.all_legal_moves();
                 if role != moves.role {
-                    return Err(anyhow::Error::msg(format!(
-                        "tried play_to {role}, but it's {} turn",
-                        moves.role
-                    )));
+                    return Err(InvalidMove::Turn);
                 }
 
                 if let Some(moves) = moves.moves.get(&vertex) {
@@ -950,7 +944,7 @@ impl Game {
                             .join(" "),
                     ))
                 } else {
-                    Err(anyhow::Error::msg("invalid from vertex"))
+                    Err(InvalidMove::InvalidVertex)
                 }
             }
             Message::PlayUndo => {
@@ -992,7 +986,7 @@ impl Game {
 
                     Ok(Some(String::new()))
                 } else {
-                    Err(anyhow::Error::msg("it is the first move"))
+                    Err(InvalidMove::FirstMove)
                 }
             }
             Message::ProtocolVersion => Ok(Some("1-beta".to_string())),

@@ -230,10 +230,10 @@ fn many_clients() -> anyhow::Result<()> {
 }
 
 fn create_account(server: &mut ServerFull, tx: Sender<String>) -> anyhow::Result<()> {
-    if let Some((_, bool, message)) =
+    if let Some((_, result, message)) =
         server.handle_messages_internal("0 david create_account PASSWORD", Some(tx))
     {
-        assert!(bool);
+        assert_eq!(Ok(()), result);
         assert_eq!(message, "create_account");
 
         Ok(())
@@ -243,10 +243,10 @@ fn create_account(server: &mut ServerFull, tx: Sender<String>) -> anyhow::Result
 }
 
 fn login(server: &mut ServerFull, tx: Sender<String>, password: &str) -> anyhow::Result<()> {
-    if let Some((_, bool, message)) =
+    if let Some((_, result, message)) =
         server.handle_messages_internal(&format!("0 david login {password}"), Some(tx))
     {
-        assert!(bool);
+        assert_eq!(Ok(()), result);
         assert_eq!(message, "login");
 
         Ok(())
@@ -339,8 +339,8 @@ fn change_password() -> anyhow::Result<()> {
 
     let option = server.handle_messages_internal("0 david change_password password", None);
     assert!(option.is_some());
-    if let Some((_, bool, message)) = option {
-        assert!(bool);
+    if let Some((_, result, message)) = option {
+        assert_eq!(Ok(()), result);
         assert_eq!(message, "change_password");
     }
 

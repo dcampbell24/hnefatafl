@@ -18,8 +18,9 @@
 
 use std::fmt;
 
-use anyhow::Context;
 use serde::{Deserialize, Serialize};
+
+use crate::board::InvalidMove;
 
 pub const DAY: i64 = 24 * 60 * 60 * 1_000;
 pub const HOUR: i64 = 60 * 60 * 1_000;
@@ -121,14 +122,14 @@ impl From<Time> for TimeLeft {
 }
 
 impl TryFrom<TimeSettings> for TimeLeft {
-    type Error = anyhow::Error;
+    type Error = InvalidMove;
 
-    fn try_from(time: TimeSettings) -> Result<TimeLeft, anyhow::Error> {
+    fn try_from(time: TimeSettings) -> Result<TimeLeft, InvalidMove> {
         match time {
             TimeSettings::Timed(time) => Ok(TimeLeft {
                 milliseconds_left: time.milliseconds_left,
             }),
-            TimeSettings::UnTimed => Err(anyhow::Error::msg("the time settings are un-timed")),
+            TimeSettings::UnTimed => Err(InvalidMove::UnTimed),
         }
     }
 }
@@ -163,35 +164,28 @@ impl From<TimeSettings> for bool {
 }
 
 impl TryFrom<Vec<&str>> for TimeSettings {
-    type Error = anyhow::Error;
+    type Error = InvalidMove;
 
-    fn try_from(args: Vec<&str>) -> anyhow::Result<Self> {
-        let err_msg =
-            "expected: 'time_settings un-timed' or 'time_settings fischer MINUTES ADD_SECONDS'";
-
+    fn try_from(args: Vec<&str>) -> Result<Self, InvalidMove> {
         if Some("un-timed").as_ref() == args.get(1) {
             return Ok(Self::UnTimed);
         }
 
         if args.len() < 4 {
-            return Err(anyhow::Error::msg(err_msg));
+            return Err(InvalidMove::InvalidArguments);
         }
 
         if "fischer" == args[1] {
-            let arg_2 = args[2]
-                .parse::<i64>()
-                .context("time_settings: arg 2 is not an integer")?;
+            let arg_2 = args[2].parse::<i64>().or(Err(InvalidMove::NotInteger2))?;
 
-            let arg_3 = args[3]
-                .parse::<i64>()
-                .context("time_settings: arg 3 is not an integer")?;
+            let arg_3 = args[3].parse::<i64>().or(Err(InvalidMove::NotInteger3))?;
 
             Ok(Self::Timed(Time {
                 add_seconds: arg_3,
                 milliseconds_left: arg_2,
             }))
         } else {
-            Err(anyhow::Error::msg(err_msg))
+            Err(InvalidMove::InvalidArguments)
         }
     }
 }
