@@ -122,7 +122,7 @@ fn main() -> anyhow::Result<()> {
     }
 
     let blocked_ips = server.blocked_ips.clone();
-    thread::spawn(move || handle_error(server.handle_messages(&rx)));
+    thread::spawn(move || server.handle_messages(&rx));
 
     if !args.skip_advertising_updates {
         Server::advertise_updates(tx.clone());
@@ -1405,18 +1405,23 @@ impl Server {
         }
     }
 
-    fn handle_messages(
-        &mut self,
-        rx: &mpsc::Receiver<(String, Option<mpsc::Sender<String>>)>,
-    ) -> anyhow::Result<()> {
+    fn handle_messages(&mut self, rx: &mpsc::Receiver<(String, Option<mpsc::Sender<String>>)>) {
         loop {
-            let (message, option_tx) = rx.recv()?;
-
-            if let Some((tx, result, command)) = self.handle_messages_internal(&message, option_tx)
+            if let Ok((message, option_tx)) = rx.recv()
+                && let Some((tx, result, command)) =
+                    self.handle_messages_internal(&message, option_tx)
             {
                 match result {
-                    Ok(()) => tx.send(format!("= {command}"))?,
-                    Err(error) => tx.send(format!("? {command} {error}"))?,
+                    Ok(()) => {
+                        if let Err(error) = tx.send(format!("= {command}")) {
+                            error!("handle_messages: {message}: {error}");
+                        }
+                    }
+                    Err(error) => {
+                        if let Err(error) = tx.send(format!("? {command} {error}")) {
+                            error!("handle_messages: {message}: {error}");
+                        }
+                    }
                 }
             }
         }
