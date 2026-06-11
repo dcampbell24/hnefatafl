@@ -21,6 +21,7 @@ use std::str::FromStr;
 use anyhow::Context;
 
 use crate::{
+    board::InvalidMove,
     play::{Plae, Vertex},
     role::Role,
     time,
@@ -234,7 +235,7 @@ impl FromStr for Message {
                     let vertex = Vertex::from_str(vertex)?;
                     Ok(Self::PlayTo((role, vertex)))
                 } else {
-                    Err(anyhow::Error::msg("expected: play_to role vertex"))
+                    Err(InvalidMove::InvalidRoleVertex)?
                 }
             }
             "play_undo" => Ok(Self::PlayUndo),
@@ -250,7 +251,7 @@ impl FromStr for Message {
                 if text.trim().is_empty() {
                     Ok(Self::Empty)
                 } else {
-                    Err(anyhow::Error::msg(format!("unrecognized command: {text}")))
+                    Err(InvalidMove::UnrecognizedCommand(text.to_string()))?
                 }
             }
         }

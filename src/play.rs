@@ -26,7 +26,7 @@ use anyhow::Context;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    board::BoardSize,
+    board::{BoardSize, InvalidMove},
     role::Role,
     time::{TimeLeft, TimeSettings},
 };
@@ -193,13 +193,13 @@ impl Plae {
 }
 
 impl TryFrom<Vec<&str>> for Plae {
-    type Error = anyhow::Error;
+    type Error = InvalidMove;
 
     fn try_from(args: Vec<&str>) -> Result<Self, Self::Error> {
         let error_str = "expected: 'play ROLE FROM TO' or 'play ROLE resign'";
 
         if args.len() < 3 {
-            return Err(anyhow::Error::msg(error_str));
+            return Err(InvalidMove::ToPlae(error_str.to_string()));
         }
 
         let role = Role::from_str(args[1])?;
@@ -212,7 +212,7 @@ impl TryFrom<Vec<&str>> for Plae {
         }
 
         if args.len() < 4 {
-            return Err(anyhow::Error::msg(error_str));
+            return Err(InvalidMove::ToPlae(error_str.to_string()));
         }
 
         Ok(Self::Play(Play {

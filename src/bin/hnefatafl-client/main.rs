@@ -3900,6 +3900,7 @@ impl<'a> Client {
 
         let play = Plae::try_from(vec!["play", &role.to_string(), from, to])
             .expect("This is a valid plae.");
+
         let captures = game.play(&play).expect("This should be a legal play.");
         for vertex in captures.0 {
             self.captures.insert(vertex);
