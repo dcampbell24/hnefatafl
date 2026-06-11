@@ -52,6 +52,7 @@ const MONTE_CARLO_DEPTH: u8 = 20;
 /// This is the taflzero client that connects to a hnefatafl.org server.
 #[derive(Parser, Debug)]
 #[command(version, about)]
+#[allow(clippy::struct_excessive_bools)]
 struct Args {
     #[arg(long)]
     username: String,
@@ -70,6 +71,10 @@ struct Args {
     /// Join game with id
     #[arg(long)]
     join_game: Option<u64>,
+
+    /// Play in a tournament
+    #[arg(long)]
+    join_tournament: bool,
 
     /// Whether the application is being run by systemd
     #[arg(long)]
@@ -158,6 +163,11 @@ fn main() -> anyhow::Result<()> {
     let mut reader = BufReader::new(tcp.try_clone()?);
 
     tcp.write_all(format!("{VERSION_ID} login {username} {}\n", args.password).as_bytes())?;
+
+    if args.join_tournament {
+        tcp.write_all("join_tournament\n".as_bytes())?;
+        return Ok(());
+    }
 
     let mut buf = String::new();
     reader.read_line(&mut buf)?;
