@@ -4787,10 +4787,17 @@ impl<'a> Client {
             Message::TournamentTime,
         );
 
-        let col_1 = column![real_time, correspondence, unlimited].padding(PADDING);
-        let col_2 = column![blitz, long, infinity].padding(PADDING);
-        let col_3 = column![rapid, very_long].padding(PADDING);
-        let col_4 = column![classical].padding(PADDING);
+        let ai = radio(
+            TimeEnum::AI.to_string(),
+            TimeEnum::AI,
+            (&self.tournament.time_setting).into(),
+            Message::TournamentTime,
+        );
+
+        let col_1 = column!["AI:", real_time, correspondence, unlimited].padding(PADDING);
+        let col_2 = column![ai, blitz, long, infinity].padding(PADDING);
+        let col_3 = column!["", rapid, very_long].padding(PADDING);
+        let col_4 = column!["", classical].padding(PADDING);
 
         let mut date = Row::new().spacing(SPACING);
         if let Some(timestamp) = self.tournament.date {
