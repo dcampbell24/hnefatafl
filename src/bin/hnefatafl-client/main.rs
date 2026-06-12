@@ -4848,7 +4848,7 @@ impl<'a> Client {
 
             let number_of_games = LabeledFrame::new("number of games", number_of_games);
 
-            column = column.push(column![board_size, time, row![group_size, number_of_games]]);
+            column = column.push(column![row![board_size, group_size, number_of_games], time]);
         }
 
         column = column.push(buttons);
