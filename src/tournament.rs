@@ -41,6 +41,17 @@ impl Default for GroupSize {
     }
 }
 
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct NumberOfGames {
+    pub number: usize,
+}
+
+impl Default for NumberOfGames {
+    fn default() -> Self {
+        Self { number: 1 }
+    }
+}
+
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct TournamentFull {
     pub players: HashSet<String>,
@@ -48,6 +59,7 @@ pub struct TournamentFull {
     pub time_setting: TimeSettings,
     pub date: Option<Timestamp>,
     pub group_size: GroupSize,
+    pub number_of_games: NumberOfGames,
     pub tournament: Option<Tournament>,
 }
 
@@ -59,6 +71,7 @@ pub struct Tournament {
     pub time_setting: TimeSettings,
     pub date: Timestamp,
     pub group_size: usize,
+    pub number_of_games: usize,
     pub groups: Vec<Vec<Arc<Mutex<Group>>>>,
     pub tournament_games: HashMap<Id, Arc<Mutex<Group>>>,
 }

@@ -65,7 +65,7 @@ use hnefatafl_copenhagen::{
     status::Status,
     tcp_keep_alive,
     time::{TimeEnum, TimeSettings},
-    tournament::{GroupSize, TournamentFull},
+    tournament::{GroupSize, NumberOfGames, TournamentFull},
     tree::Tree,
     utils::{self, choose_ai, config_file, create_config_folder, create_data_folder, data_file},
 };
@@ -165,7 +165,11 @@ const SOUND_MOVE: &[u8] = include_bytes!("assets/move.ogg");
 /// In milliseconds.
 const TICK: i64 = 100;
 const TICK_U: u64 = 100;
+
 const DEFAULT_GROUP_SIZE: f64 = 4.0;
+const DEFAULT_GROUP_SIZE_USIZE: usize = 4;
+const DEFAULT_NUMBER_OF_GAMES: f64 = 1.0;
+const DEFAULT_NUMBER_OF_GAMES_USIZE: usize = 1;
 
 rust_i18n::i18n!();
 
@@ -307,7 +311,11 @@ fn init_client() -> Client {
     }
 
     client.games_filtered();
+
     client.group_size = DEFAULT_GROUP_SIZE;
+    client.tournament.group_size.size = DEFAULT_GROUP_SIZE_USIZE;
+    client.number_of_games = DEFAULT_NUMBER_OF_GAMES;
+    client.tournament.number_of_games.number = DEFAULT_NUMBER_OF_GAMES_USIZE;
 
     client
 }
@@ -707,6 +715,8 @@ struct Client {
     my_turn: bool,
     #[serde(skip)]
     now: i64,
+    #[serde(skip)]
+    number_of_games: f64,
     #[serde(skip)]
     now_diff: i64,
     #[serde(default)]
@@ -2491,7 +2501,14 @@ impl<'a> Client {
                     #[allow(clippy::cast_possible_truncation)]
                     size: size as usize,
                 };
+
                 self.group_size = size;
+
+                let group_size = self.tournament.group_size.size;
+                let ron_string = ron::ser::to_string(&group_size)
+                    .expect("you should be able to serialize group_size");
+
+                self.send(&format!("tournament_group_size {ron_string}\n"));
             }
             Message::HeatMap(_display) => self.heat_map_display = !self.heat_map_display,
             #[cfg(not(target_os = "redox"))]
@@ -2511,6 +2528,21 @@ impl<'a> Client {
             }
             Message::MyGamesOnly(_selected) => {
                 self.my_games_only();
+            }
+            Message::NumberOfGames(number) => {
+                self.tournament.number_of_games = NumberOfGames {
+                    #[allow(clippy::cast_sign_loss)]
+                    #[allow(clippy::cast_possible_truncation)]
+                    number: number as usize,
+                };
+
+                self.number_of_games = number;
+
+                let number = self.tournament.number_of_games.number;
+                let ron_string = ron::ser::to_string(&number)
+                    .expect("you should be able to serialize number_of_games");
+
+                self.send(&format!("tournament_number_of_games {ron_string}\n"));
             }
             Message::OpenUrl(string) => open_url(&string),
             Message::GameResume(id) => self.resume(id),
@@ -4808,12 +4840,15 @@ impl<'a> Client {
                 row![col_1, col_2, col_3, col_4],
             );
 
-            let group_size =
-                number_input(&self.group_size, 1.0..=1024.0, Message::GroupSizeChanged);
-
+            let group_size = number_input(&self.group_size, 1.0..=255.0, Message::GroupSizeChanged);
             let group_size = LabeledFrame::new("group size", group_size);
 
-            column = column.push(column![board_size, time, group_size]);
+            let number_of_games =
+                number_input(&self.number_of_games, 1.0..=255.0, Message::NumberOfGames);
+
+            let number_of_games = LabeledFrame::new("number of games", number_of_games);
+
+            column = column.push(column![board_size, time, row![group_size, number_of_games]]);
         }
 
         column = column.push(buttons);
