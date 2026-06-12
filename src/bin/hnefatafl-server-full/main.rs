@@ -88,9 +88,10 @@ const KEEP_TEXTS: usize = 256;
 
 const HOUR_IN_SECONDS: u64 = 60 * 60;
 const DAY_IN_SECONDS: u64 = HOUR_IN_SECONDS * 24;
+const DAY_IN_SECONDS_SIGNED: i64 = 24 * 60 * 60;
 
-const TWO_MONTHS_MICRO_SECONDS: i64 = 60 * 60 * 24 * 30_436_875 * 2;
-const SEVEN_DAYS: i64 = 1_000 * 60 * 60 * 24 * 7;
+const TWO_MONTHS_MICRO_SECONDS: i64 = DAY_IN_SECONDS_SIGNED * 30_436_875 * 2;
+const SEVEN_DAYS: i64 = 1_000 * DAY_IN_SECONDS_SIGNED * 7;
 const USERS_FILE: &str = "users.ron";
 const MESSAGE_LENGTH: usize = 128;
 
@@ -1924,6 +1925,14 @@ impl Server {
                         && Timestamp::now() >= date
                     {
                         info!("Starting tournament...");
+
+                        if let TimeSettings::Timed(time) = &mut self.tournament.time_setting
+                            && time.milliseconds_left <= 1_000 * DAY_IN_SECONDS_SIGNED
+                            && let Ok(players) = i64::try_from(self.tournament.players.len())
+                        {
+                            time.milliseconds_left *= (players - 1) * 2;
+                            time.add_seconds *= (players - 1) * 2;
+                        }
 
                         let mut tournament = Tournament {
                             players: take(&mut self.tournament.players),
