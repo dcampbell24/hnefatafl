@@ -119,6 +119,7 @@ pub(crate) enum Message {
     LeaveSoft,
     LocaleSelected(Locale),
     MyGamesOnly(bool),
+    NumberOfGames(f64),
     OpenUrl(String),
     PasswordChanged(String),
     PasswordSave(bool),

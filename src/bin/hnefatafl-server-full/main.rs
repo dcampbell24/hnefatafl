@@ -1293,26 +1293,28 @@ impl Server {
 
         for (i, mut group) in groups.into_iter().enumerate() {
             for combination in group.records.iter().map(|record| record.0).combinations(2) {
-                if let (Some(first), Some(second)) = (combination.first(), combination.get(1)) {
-                    ids.push_back((
-                        self.new_tournament_game(
-                            first,
-                            second,
-                            tournament.time_setting,
-                            tournament.board_size,
-                        ),
-                        i,
-                    ));
-                    ids.push_back((
-                        self.new_tournament_game(
-                            second,
-                            first,
-                            tournament.time_setting,
-                            tournament.board_size,
-                        ),
-                        i,
-                    ));
-                    group.total_games += 2;
+                for _ in 0..tournament.number_of_games {
+                    if let (Some(first), Some(second)) = (combination.first(), combination.get(1)) {
+                        ids.push_back((
+                            self.new_tournament_game(
+                                first,
+                                second,
+                                tournament.time_setting,
+                                tournament.board_size,
+                            ),
+                            i,
+                        ));
+                        ids.push_back((
+                            self.new_tournament_game(
+                                second,
+                                first,
+                                tournament.time_setting,
+                                tournament.board_size,
+                            ),
+                            i,
+                        ));
+                        group.total_games += 2;
+                    }
                 }
             }
 
@@ -1837,6 +1839,28 @@ impl Server {
 
                     None
                 }
+                "tournament_group_size" => {
+                    if self.admins_tournament.contains(username) {
+                        if let Err(error) = self.tournament_group_size(&the_rest) {
+                            error!("tournament_group_size: {error}");
+                        } else {
+                            self.tournament_status_all();
+                        }
+                    }
+
+                    None
+                }
+                "tournament_number_of_games" => {
+                    if self.admins_tournament.contains(username) {
+                        if let Err(error) = self.tournament_number_of_games(&the_rest) {
+                            error!("tournament_number_of_games: {error}");
+                        } else {
+                            self.tournament_status_all();
+                        }
+                    }
+
+                    None
+                }
                 "tournament_time" => {
                     if self.admins_tournament.contains(username) {
                         if let Err(error) = self.tournament_time(&the_rest) {
@@ -1906,6 +1930,7 @@ impl Server {
                             board_size: self.tournament.board_size,
                             time_setting: self.tournament.time_setting,
                             group_size: self.tournament.group_size.size,
+                            number_of_games: self.tournament.number_of_games.number,
                             ..Tournament::default()
                         };
 
@@ -2814,6 +2839,42 @@ impl Server {
             Ok(timestamp) => Some(timestamp),
             Err(error) => return Err(anyhow::Error::msg(format!("tournament_date: {error}"))),
         };
+
+        Ok(())
+    }
+
+    fn tournament_group_size(&mut self, the_rest: &[&str]) -> anyhow::Result<()> {
+        let Some(group_size) = the_rest.first() else {
+            return Err(anyhow::Error::msg("tournament_group_size: size is empty"));
+        };
+
+        match ron::de::from_str(group_size) {
+            Ok(group_size) => self.tournament.group_size.size = group_size,
+            Err(error) => {
+                return Err(anyhow::Error::msg(format!(
+                    "tournament_group_size: {error}"
+                )));
+            }
+        }
+
+        Ok(())
+    }
+
+    fn tournament_number_of_games(&mut self, the_rest: &[&str]) -> anyhow::Result<()> {
+        let Some(group_size) = the_rest.first() else {
+            return Err(anyhow::Error::msg(
+                "tournament_number_of_games: number is empty",
+            ));
+        };
+
+        match ron::de::from_str(group_size) {
+            Ok(number) => self.tournament.number_of_games.number = number,
+            Err(error) => {
+                return Err(anyhow::Error::msg(format!(
+                    "tournament_number_of_games: {error}"
+                )));
+            }
+        }
 
         Ok(())
     }
