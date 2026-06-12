@@ -213,6 +213,7 @@ fn time_left(milliseconds_left: i64) -> String {
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum TimeEnum {
+    AI,
     Blitz,
     Classical,
     Infinity,
@@ -224,6 +225,10 @@ pub enum TimeEnum {
 impl From<TimeEnum> for TimeSettings {
     fn from(time_enum: TimeEnum) -> TimeSettings {
         match time_enum {
+            TimeEnum::AI => TimeSettings::Timed(Time {
+                add_seconds: 2,
+                milliseconds_left: 8 * SECOND,
+            }),
             TimeEnum::Blitz => TimeSettings::Timed(Time {
                 add_seconds: 3,
                 milliseconds_left: 5 * MINUTE,
@@ -262,6 +267,10 @@ impl From<&TimeSettings> for Option<TimeEnum> {
     fn from(time_settings: &TimeSettings) -> Option<TimeEnum> {
         match time_settings {
             TimeSettings::Timed(Time {
+                add_seconds: 2,
+                milliseconds_left: 8_000,
+            }) => Some(TimeEnum::AI),
+            TimeSettings::Timed(Time {
                 add_seconds: 3,
                 milliseconds_left: BLITZ_MS_LEFT,
             }) => Some(TimeEnum::Blitz),
@@ -290,6 +299,7 @@ impl From<&TimeSettings> for Option<TimeEnum> {
 impl fmt::Display for TimeEnum {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            Self::AI => write!(f, "8s + 2s"),
             Self::Blitz => write!(f, "5m + 3s"),
             Self::Classical => write!(f, "30m + 20s"),
             Self::Infinity => write!(f, "∞"),
