@@ -1053,6 +1053,7 @@ impl Game {
             Message::ProtocolVersion => Ok(Some("1-beta".to_string())),
             Message::Quit => exit(0),
             Message::ShowBoard => Ok(Some(self.board.to_string())),
+            Message::ShowBoardOpenTafl => Ok(Some(self.board.open_tafl_serialize())),
             Message::TimeSettings(mut time_settings) => {
                 if let TimeSettings::Timed(time) = &mut time_settings {
                     time.milliseconds_left *= 60_000;
