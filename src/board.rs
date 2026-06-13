@@ -860,7 +860,7 @@ impl Board {
     }
 
     #[must_use]
-    pub fn can_not_esacpe(&self) -> bool {
+    pub fn can_not_escape(&self) -> bool {
         let defenders_left = match self.size() {
             BoardSize::_11 => 12 - self.defenders_captured,
             BoardSize::_13 => 16 - self.defenders_captured,

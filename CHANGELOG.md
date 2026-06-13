@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Restore the king's position when restoring a game.
 - hnefatafl-server-full: handle_messages.
 - hnefatafl-client: disable rfd on redox.
 - hnefatafl-client: allow users to type '_' and '-' at the end of their

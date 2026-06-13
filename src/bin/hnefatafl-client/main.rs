@@ -1933,25 +1933,6 @@ impl<'a> Client {
             text(captured.attacker).font(Font::MONOSPACE),
         ];
 
-        /*
-        impl Captured {
-            #[must_use]
-            pub fn attacker(&self, chars: &Characters) -> String {
-                format!("{} {}", chars.attacker, self.attacker)
-            }
-
-            #[must_use]
-            pub fn defender(&self, chars: &Characters) -> String {
-                let mut string = format!("{} {}", chars.defender, self.defender);
-                if self.king {
-                    string.push(' ');
-                    string.push_str(&chars.king);
-                }
-                string
-            }
-        }
-        */
-
         if !self.spectators.contains(defender_string) {
             row_2 = row_2.push(text(&self.chars.warning).style(text::danger));
         }
@@ -3312,6 +3293,19 @@ impl<'a> Client {
                                         .expect("we should be able to deserialize the game");
 
                                     game = game_deserialized;
+
+                                    let size = game.board.size();
+                                    let size_usize: usize = size.into();
+
+                                    for y in 0..size_usize {
+                                        for x in 0..size_usize {
+                                            let vertex = Vertex { size, x, y };
+
+                                            if let Space::King = game.board.get(&vertex) {
+                                                game.board.king = Some(vertex);
+                                            }
+                                        }
+                                    }
 
                                     self.time_attacker = game.attacker_time;
                                     self.time_defender = game.defender_time;

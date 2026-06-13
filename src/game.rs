@@ -824,7 +824,7 @@ impl Game {
                     if self.status == Status::Ongoing {
                         self.turn = self.turn.opposite();
 
-                        if self.board.can_not_esacpe() {
+                        if self.board.can_not_escape() {
                             self.status = Status::AttackerWins;
                         } else if !self.board.a_legal_move_exists(
                             &self.status,
