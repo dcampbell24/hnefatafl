@@ -56,6 +56,9 @@ pub const STARTING_POSITION_11X11: [&str; 11] = [
     "...XXXXX...",
 ];
 
+pub const STARTING_POSITION_11X11_OPEN_TAFL: &str =
+    "/3ttttt3/5t5/11/t4T4t/t3TTT3t/tt1TTKTT1tt/t3TTT3t/t4T4t/11/5t5/3ttttt3/";
+
 pub const STARTING_POSITION_13X13: [&str; 13] = [
     "...XXXXXXX...",
     "......X......",
@@ -71,6 +74,9 @@ pub const STARTING_POSITION_13X13: [&str; 13] = [
     "......X......",
     "...XXXXXXX...",
 ];
+
+pub const STARTING_POSITION_13X13_OPEN_TAFL: &str =
+    "/3ttttttt3/6t6/13/t5T5t/t5T5t/t4TTT4t/tt1TTTKTTT1tt/t4TTT4t/t5T5t/t5T5t/13/6t6/3ttttttt3/";
 
 #[derive(Clone, Deserialize, Eq, Serialize)]
 pub struct Board {

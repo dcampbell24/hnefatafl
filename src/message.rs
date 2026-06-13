@@ -164,6 +164,11 @@ pub enum Message {
     /// Displays the board
     ShowBoard,
 
+    /// `show_board`
+    ///
+    /// Displays the board in OpenTafl format
+    ShowBoardOpenTafl,
+
     /// `time_settings un-timed` | `time_settings fischer MINUTES ADD_SECONDS`
     ///
     /// Choose the time settings and reset the plays. For fischer time **MINUTES** is the starting time and
@@ -177,7 +182,7 @@ pub enum Message {
     Version,
 }
 
-pub static COMMANDS: [&str; 16] = [
+pub static COMMANDS: [&str; 17] = [
     "board_size",
     "final_status",
     "first_move",
@@ -192,6 +197,7 @@ pub static COMMANDS: [&str; 16] = [
     "protocol_version",
     "quit",
     "show_board",
+    "show_board_open_tafl",
     "time_settings",
     "version",
 ];
@@ -242,6 +248,7 @@ impl FromStr for Message {
             "protocol_version" => Ok(Self::ProtocolVersion),
             "quit" => Ok(Self::Quit),
             "show_board" => Ok(Self::ShowBoard),
+            "show_board_open_tafl" => Ok(Self::ShowBoardOpenTafl),
             "time_settings" => {
                 let time_settings = time::TimeSettings::try_from(args)?;
                 Ok(Self::TimeSettings(time_settings))
