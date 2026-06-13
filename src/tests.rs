@@ -2280,7 +2280,7 @@ fn can_not_escape_1() -> anyhow::Result<()> {
         "..X.OKO.X..",
     ]
     .try_into()?;
-    assert!(board.can_not_esacpe());
+    assert!(board.can_not_escape());
 
     let board: Board = [
         "..X..X..X..",
@@ -2296,7 +2296,7 @@ fn can_not_escape_1() -> anyhow::Result<()> {
         "..X.OK..X..",
     ]
     .try_into()?;
-    assert!(!board.can_not_esacpe());
+    assert!(!board.can_not_escape());
 
     let board: Board = [
         "..X.....X..",
@@ -2312,7 +2312,7 @@ fn can_not_escape_1() -> anyhow::Result<()> {
         "..X..K..X..",
     ]
     .try_into()?;
-    assert!(!board.can_not_esacpe());
+    assert!(!board.can_not_escape());
 
     let board = [
         "..X.....X..",
@@ -2334,7 +2334,7 @@ fn can_not_escape_1() -> anyhow::Result<()> {
     };
 
     game.read_line("play attacker e2 e1")?;
-    assert!(game.board.can_not_esacpe());
+    assert!(game.board.can_not_escape());
     assert_eq!(game.status, Status::AttackerWins);
 
     Ok(())
@@ -2363,7 +2363,7 @@ fn can_not_escape_2() -> anyhow::Result<()> {
     };
 
     game.read_line("play attacker f1 h1")?;
-    assert!(!game.board.can_not_esacpe());
+    assert!(!game.board.can_not_escape());
     assert_eq!(game.status, Status::Ongoing);
 
     let board: Board = [
@@ -2387,7 +2387,7 @@ fn can_not_escape_2() -> anyhow::Result<()> {
     };
 
     game.read_line("play attacker f1 h1")?;
-    assert!(game.board.can_not_esacpe());
+    assert!(game.board.can_not_escape());
     assert_eq!(game.status, Status::AttackerWins);
 
     let board: Board = [
@@ -2411,7 +2411,7 @@ fn can_not_escape_2() -> anyhow::Result<()> {
     };
 
     game.read_line("play attacker f1 h1")?;
-    assert!(game.board.can_not_esacpe());
+    assert!(game.board.can_not_escape());
     assert_eq!(game.status, Status::AttackerWins);
 
     Ok(())
@@ -2440,7 +2440,7 @@ fn can_not_escape_3() -> anyhow::Result<()> {
     };
 
     game.read_line("play attacker f1 h1")?;
-    assert!(!game.board.can_not_esacpe());
+    assert!(!game.board.can_not_escape());
     assert_eq!(game.status, Status::Ongoing);
 
     let board: Board = [
@@ -2464,7 +2464,7 @@ fn can_not_escape_3() -> anyhow::Result<()> {
     };
 
     game.read_line("play attacker e1 f1")?;
-    assert!(game.board.can_not_esacpe());
+    assert!(game.board.can_not_escape());
     assert_eq!(game.status, Status::AttackerWins);
 
     let board: Board = [
@@ -2488,7 +2488,7 @@ fn can_not_escape_3() -> anyhow::Result<()> {
     };
 
     game.read_line("play attacker a7 a6")?;
-    assert!(!game.board.can_not_esacpe());
+    assert!(!game.board.can_not_escape());
     assert_eq!(game.status, Status::Ongoing);
 
     Ok(())
@@ -2517,7 +2517,7 @@ fn can_not_escape_4() -> anyhow::Result<()> {
     };
 
     game.read_line("play attacker a6 a7")?;
-    assert!(game.board.can_not_esacpe());
+    assert!(game.board.can_not_escape());
     assert_eq!(game.status, Status::AttackerWins);
 
     let board: Board = [
@@ -2541,7 +2541,7 @@ fn can_not_escape_4() -> anyhow::Result<()> {
     };
 
     game.read_line("play attacker a6 a7")?;
-    assert!(game.board.can_not_esacpe());
+    assert!(game.board.can_not_escape());
     assert_eq!(game.status, Status::AttackerWins);
 
     let board: Board = [
@@ -2565,7 +2565,7 @@ fn can_not_escape_4() -> anyhow::Result<()> {
     };
 
     game.read_line("play attacker a6 a7")?;
-    assert!(game.board.can_not_esacpe());
+    assert!(game.board.can_not_escape());
     assert_eq!(game.status, Status::AttackerWins);
 
     Ok(())
@@ -2594,7 +2594,7 @@ fn can_not_escape_4_more() -> anyhow::Result<()> {
     };
 
     game.read_line("play attacker a6 a7")?;
-    assert!(game.board.can_not_esacpe());
+    assert!(game.board.can_not_escape());
     assert_eq!(game.status, Status::AttackerWins);
 
     let board: Board = [
@@ -2618,7 +2618,7 @@ fn can_not_escape_4_more() -> anyhow::Result<()> {
     };
 
     game.read_line("play attacker a6 a7")?;
-    assert!(game.board.can_not_esacpe());
+    assert!(game.board.can_not_escape());
     assert_eq!(game.status, Status::AttackerWins);
 
     let board: Board = [
@@ -2642,7 +2642,7 @@ fn can_not_escape_4_more() -> anyhow::Result<()> {
     };
 
     game.read_line("play attacker a6 a7")?;
-    assert!(game.board.can_not_esacpe());
+    assert!(game.board.can_not_escape());
     assert_eq!(game.status, Status::AttackerWins);
 
     let board: Board = [
@@ -2666,7 +2666,7 @@ fn can_not_escape_4_more() -> anyhow::Result<()> {
     };
 
     game.read_line("play attacker a6 a7")?;
-    assert!(!game.board.can_not_esacpe());
+    assert!(!game.board.can_not_escape());
     assert_eq!(game.status, Status::Ongoing);
 
     Ok(())
@@ -2695,7 +2695,7 @@ fn can_not_escape_5() -> anyhow::Result<()> {
     };
 
     game.read_line("play attacker f1 g1")?;
-    assert!(game.board.can_not_esacpe());
+    assert!(game.board.can_not_escape());
     assert_eq!(game.status, Status::AttackerWins);
 
     let board: Board = [
@@ -2719,7 +2719,7 @@ fn can_not_escape_5() -> anyhow::Result<()> {
     };
 
     game.read_line("play attacker f1 g1")?;
-    assert!(game.board.can_not_esacpe());
+    assert!(game.board.can_not_escape());
     assert_eq!(game.status, Status::AttackerWins);
 
     let board: Board = [
@@ -2743,7 +2743,7 @@ fn can_not_escape_5() -> anyhow::Result<()> {
     };
 
     game.read_line("play attacker f1 g1")?;
-    assert!(game.board.can_not_esacpe());
+    assert!(game.board.can_not_escape());
     assert_eq!(game.status, Status::AttackerWins);
 
     Ok(())
@@ -2772,7 +2772,7 @@ fn can_not_escape_5_more() -> anyhow::Result<()> {
     };
 
     game.read_line("play attacker f1 g1")?;
-    assert!(game.board.can_not_esacpe());
+    assert!(game.board.can_not_escape());
     assert_eq!(game.status, Status::AttackerWins);
 
     let board: Board = [
@@ -2796,7 +2796,7 @@ fn can_not_escape_5_more() -> anyhow::Result<()> {
     };
 
     game.read_line("play attacker f1 g1")?;
-    assert!(game.board.can_not_esacpe());
+    assert!(game.board.can_not_escape());
     assert_eq!(game.status, Status::AttackerWins);
 
     let board: Board = [
@@ -2820,7 +2820,7 @@ fn can_not_escape_5_more() -> anyhow::Result<()> {
     };
 
     game.read_line("play attacker f1 g1")?;
-    assert!(game.board.can_not_esacpe());
+    assert!(game.board.can_not_escape());
     assert_eq!(game.status, Status::AttackerWins);
 
     let board: Board = [
@@ -2844,7 +2844,7 @@ fn can_not_escape_5_more() -> anyhow::Result<()> {
     };
 
     game.read_line("play attacker f1 g1")?;
-    assert!(!game.board.can_not_esacpe());
+    assert!(!game.board.can_not_escape());
     assert_eq!(game.status, Status::Ongoing);
 
     Ok(())
@@ -2873,7 +2873,7 @@ fn can_not_escape_6() -> anyhow::Result<()> {
     };
 
     game.read_line("play attacker g11 h11")?;
-    assert!(game.board.can_not_esacpe());
+    assert!(game.board.can_not_escape());
     assert_eq!(game.status, Status::AttackerWins);
 
     let board: Board = [
@@ -2897,7 +2897,7 @@ fn can_not_escape_6() -> anyhow::Result<()> {
     };
 
     game.read_line("play attacker g11 h11")?;
-    assert!(game.board.can_not_esacpe());
+    assert!(game.board.can_not_escape());
     assert_eq!(game.status, Status::AttackerWins);
 
     let board: Board = [
@@ -2921,7 +2921,7 @@ fn can_not_escape_6() -> anyhow::Result<()> {
     };
 
     game.read_line("play attacker g11 h11")?;
-    assert!(game.board.can_not_esacpe());
+    assert!(game.board.can_not_escape());
     assert_eq!(game.status, Status::AttackerWins);
 
     Ok(())
@@ -2950,7 +2950,7 @@ fn can_not_escape_6_more() -> anyhow::Result<()> {
     };
 
     game.read_line("play attacker f1 g1")?;
-    assert!(game.board.can_not_esacpe());
+    assert!(game.board.can_not_escape());
     assert_eq!(game.status, Status::AttackerWins);
 
     let board: Board = [
@@ -2974,7 +2974,7 @@ fn can_not_escape_6_more() -> anyhow::Result<()> {
     };
 
     game.read_line("play attacker f1 g1")?;
-    assert!(game.board.can_not_esacpe());
+    assert!(game.board.can_not_escape());
     assert_eq!(game.status, Status::AttackerWins);
 
     let board: Board = [
@@ -2998,7 +2998,7 @@ fn can_not_escape_6_more() -> anyhow::Result<()> {
     };
 
     game.read_line("play attacker f1 g1")?;
-    assert!(game.board.can_not_esacpe());
+    assert!(game.board.can_not_escape());
     assert_eq!(game.status, Status::AttackerWins);
 
     let board: Board = [
@@ -3022,7 +3022,7 @@ fn can_not_escape_6_more() -> anyhow::Result<()> {
     };
 
     game.read_line("play attacker f1 g1")?;
-    assert!(!game.board.can_not_esacpe());
+    assert!(!game.board.can_not_escape());
     assert_eq!(game.status, Status::Ongoing);
 
     Ok(())
@@ -3051,7 +3051,7 @@ fn can_not_escape_7() -> anyhow::Result<()> {
     };
 
     game.read_line("play attacker g11 h11")?;
-    assert!(game.board.can_not_esacpe());
+    assert!(game.board.can_not_escape());
     assert_eq!(game.status, Status::AttackerWins);
 
     let board: Board = [
@@ -3075,7 +3075,7 @@ fn can_not_escape_7() -> anyhow::Result<()> {
     };
 
     game.read_line("play attacker g11 h11")?;
-    assert!(game.board.can_not_esacpe());
+    assert!(game.board.can_not_escape());
     assert_eq!(game.status, Status::AttackerWins);
 
     let board: Board = [
@@ -3099,7 +3099,7 @@ fn can_not_escape_7() -> anyhow::Result<()> {
     };
 
     game.read_line("play attacker g11 h11")?;
-    assert!(game.board.can_not_esacpe());
+    assert!(game.board.can_not_escape());
     assert_eq!(game.status, Status::AttackerWins);
 
     Ok(())
@@ -3128,7 +3128,7 @@ fn can_not_escape_7_more() -> anyhow::Result<()> {
     };
 
     game.read_line("play attacker g11 h11")?;
-    assert!(game.board.can_not_esacpe());
+    assert!(game.board.can_not_escape());
     assert_eq!(game.status, Status::AttackerWins);
 
     let board: Board = [
@@ -3152,7 +3152,7 @@ fn can_not_escape_7_more() -> anyhow::Result<()> {
     };
 
     game.read_line("play attacker g11 h11")?;
-    assert!(game.board.can_not_esacpe());
+    assert!(game.board.can_not_escape());
     assert_eq!(game.status, Status::AttackerWins);
 
     let board: Board = [
@@ -3176,7 +3176,7 @@ fn can_not_escape_7_more() -> anyhow::Result<()> {
     };
 
     game.read_line("play attacker g11 h11")?;
-    assert!(game.board.can_not_esacpe());
+    assert!(game.board.can_not_escape());
     assert_eq!(game.status, Status::AttackerWins);
 
     let board: Board = [
@@ -3200,7 +3200,7 @@ fn can_not_escape_7_more() -> anyhow::Result<()> {
     };
 
     game.read_line("play attacker g11 h11")?;
-    assert!(!game.board.can_not_esacpe());
+    assert!(!game.board.can_not_escape());
     assert_eq!(game.status, Status::Ongoing);
 
     Ok(())
@@ -3229,7 +3229,7 @@ fn can_not_escape_8() -> anyhow::Result<()> {
     };
 
     game.read_line("play attacker g11 h11")?;
-    assert!(!game.board.can_not_esacpe());
+    assert!(!game.board.can_not_escape());
     assert_eq!(game.status, Status::Ongoing);
 
     let board: Board = [
@@ -3253,7 +3253,7 @@ fn can_not_escape_8() -> anyhow::Result<()> {
     };
 
     game.read_line("play attacker g11 h11")?;
-    assert!(!game.board.can_not_esacpe());
+    assert!(!game.board.can_not_escape());
     assert_eq!(game.status, Status::Ongoing);
 
     let board: Board = [
@@ -3277,7 +3277,7 @@ fn can_not_escape_8() -> anyhow::Result<()> {
     };
 
     game.read_line("play attacker g11 h11")?;
-    assert!(!game.board.can_not_esacpe());
+    assert!(!game.board.can_not_escape());
     assert_eq!(game.status, Status::Ongoing);
 
     Ok(())

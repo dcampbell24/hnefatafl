@@ -163,18 +163,18 @@ pub struct ServerGame {
 }
 
 impl From<ServerGameSerialized> for ServerGame {
-    fn from(game: ServerGameSerialized) -> Self {
+    fn from(server_game: ServerGameSerialized) -> Self {
         Self {
-            id: game.id,
-            attacker: game.attacker,
+            id: server_game.id,
+            attacker: server_game.attacker,
             attacker_tx: Messenger(None),
-            defender: game.defender,
+            defender: server_game.defender,
             defender_tx: Messenger(None),
             draw_requested: Role::Roleless,
             elapsed_time: 0,
-            rated: game.rated,
-            game: game.game,
-            texts: game.texts,
+            rated: server_game.rated,
+            game: server_game.game,
+            texts: server_game.texts,
         }
     }
 }

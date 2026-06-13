@@ -55,13 +55,14 @@ use hnefatafl_copenhagen::{
     game::TimeUnix,
     glicko::Outcome,
     invalid_username,
-    play::Plae,
+    play::{Plae, Vertex},
     rating::Rated,
     role::Role,
     server_game::{
         ArchivedGame, Challenger, Messenger, ServerGame, ServerGameLight, ServerGameSerialized,
         ServerGames, ServerGamesLight, ServerGamesLightVec,
     },
+    space::Space,
     status::Status,
     time::{Time, TimeSettings},
     tournament::{Tournament, TournamentFull},
@@ -2314,8 +2315,21 @@ impl Server {
             file.read_to_end(&mut data)?;
 
             let games: Vec<ServerGameSerialized> = postcard::from_bytes(data.as_slice())?;
-            for game in games {
+            for mut game in games {
                 let id = game.id;
+                let size = game.game.board.size();
+                let size_usize: usize = size.into();
+
+                for y in 0..size_usize {
+                    for x in 0..size_usize {
+                        let vertex = Vertex { size, x, y };
+
+                        if let Space::King = game.game.board.get(&vertex) {
+                            game.game.board.king = Some(vertex);
+                        }
+                    }
+                }
+
                 let server_game_light = ServerGameLight::from(&game);
                 let server_game = ServerGame::from(game);
 
