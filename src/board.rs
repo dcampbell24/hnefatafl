@@ -18,14 +18,18 @@
 
 use std::{
     collections::{HashMap, HashSet},
-    fmt,
+    fmt::{self, Display},
     hash::{Hash, Hasher},
+    num::ParseIntError,
     str::FromStr,
 };
 
 use colored::Colorize;
 use rustc_hash::FxHashSet;
-use serde::{Deserialize, Serialize};
+use serde::{
+    Deserialize, Deserializer, Serialize, Serializer,
+    de::{self, Visitor},
+};
 use thiserror::Error;
 
 use crate::{
@@ -1271,7 +1275,8 @@ impl Board {
         } else if len == 13 * 13 {
             BoardSize::_13
         } else {
-            unreachable!()
+            eprintln!("len is {len} not 11^2 or 13^2");
+            unreachable!();
         }
     }
 
@@ -1400,7 +1405,7 @@ impl Board {
     }
 
     #[must_use]
-    pub fn open_tafl(&self) -> String {
+    pub fn open_tafl_serialize(&self) -> String {
         let size = self.size();
         let size_usize: usize = self.size().into();
         let mut empty_spaces: Option<u8> = None;
@@ -1459,6 +1464,124 @@ impl Board {
         open_tafl.push('/');
 
         open_tafl
+    }
+
+    /// # Errors
+    ///
+    /// If it fails deserializing the `&str`.
+    pub fn open_tafl_deserialize(string: &str) -> Result<Self, InvalidMove> {
+        let mut board_size = 0;
+        let mut number = String::new();
+
+        'outer: for ch in string.chars().skip(1) {
+            match ch {
+                't' | 'T' | 'K' => {
+                    if !number.is_empty() {
+                        board_size += number.parse::<usize>()?;
+                        number = String::new();
+                    }
+
+                    board_size += 1;
+                }
+                '/' => break 'outer,
+                ch if ch.is_ascii_digit() => number.push(ch),
+                _ => {}
+            }
+        }
+
+        if !number.is_empty() {
+            board_size += number.parse::<usize>()?;
+            number = String::new();
+        }
+
+        let mut spaces = Vec::with_capacity(board_size * board_size);
+        let mut attackers = 0;
+        let mut defenders = 0;
+
+        for ch in string.chars() {
+            match ch {
+                't' => {
+                    if !number.is_empty() {
+                        let empty_spaces = number.parse()?;
+                        for _ in 0..empty_spaces {
+                            spaces.push(Space::Empty);
+                        }
+                        number = String::new();
+                    }
+
+                    attackers += 1;
+                    spaces.push(Space::Attacker);
+                }
+                'T' => {
+                    if !number.is_empty() {
+                        let empty_spaces = number.parse()?;
+                        for _ in 0..empty_spaces {
+                            spaces.push(Space::Empty);
+                        }
+                        number = String::new();
+                    }
+
+                    defenders += 1;
+                    spaces.push(Space::Defender);
+                }
+                'K' => {
+                    if !number.is_empty() {
+                        let empty_spaces = number.parse()?;
+                        for _ in 0..empty_spaces {
+                            spaces.push(Space::Empty);
+                        }
+                        number = String::new();
+                    }
+
+                    spaces.push(Space::King);
+                }
+                '/' => {
+                    if !number.is_empty() {
+                        let empty_spaces = number.parse()?;
+                        for _ in 0..empty_spaces {
+                            spaces.push(Space::Empty);
+                        }
+                        number = String::new();
+                    }
+                }
+                ch if ch.is_ascii_digit() => number.push(ch),
+                _ => {}
+            }
+        }
+
+        let mut board = Self {
+            spaces,
+            king: None,
+            attackers_captured: 0,
+            defenders_captured: 0,
+            display_ascii: false,
+        };
+
+        let size = board.size();
+        let size_usize = size.into();
+
+        for y in 0..size_usize {
+            for x in 0..size_usize {
+                let vertex = Vertex { size, x, y };
+
+                if let Space::King = board.get(&vertex) {
+                    board.king = Some(vertex);
+                }
+            }
+        }
+
+        match size {
+            BoardSize::_11 => {
+                board.attackers_captured = 24 - attackers;
+                board.defenders_captured = 12 - defenders;
+            }
+            BoardSize::_13 => {
+                board.attackers_captured = 32 - attackers;
+                board.defenders_captured = 16 - defenders;
+            }
+        }
+
+        Ok(board)
     }
 
     /// # Errors
@@ -1988,6 +2111,49 @@ impl Board {
     }
 }
 
+#[derive(Clone, Debug)]
+pub struct OpenTaflBoard {
+    pub board: Board,
+}
+
+impl Serialize for OpenTaflBoard {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let board = self.board.open_tafl_serialize();
+        serializer.serialize_str(&board)
+    }
+}
+
+impl<'de> Deserialize<'de> for OpenTaflBoard {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        struct MyVisitor;
+
+        impl Visitor<'_> for MyVisitor {
+            type Value = Board;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                formatter.write_str("a board")
+            }
+
+            fn visit_str<E>(self, string: &str) -> Result<Self::Value, E>
+            where
+                E: de::Error,
+            {
+                Ok(Board::open_tafl_deserialize(string).expect("failed deserializing..."))
+            }
+        }
+
+        Ok(OpenTaflBoard {
+            board: deserializer.deserialize_str(MyVisitor)?,
+        })
+    }
+}
+
 #[derive(
     Clone, Copy, Debug, Default, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize,
 )]
@@ -2163,6 +2329,10 @@ pub enum InvalidMove {
     NotInteger3,
     #[error("time_settings: the time settings are un-timed")]
     UnTimed,
+    #[error("error deserializing board: {0}")]
+    Deserialize(String),
+    #[error("error parsing: {0}")]
+    Parsing(String),
     #[error("unknown error")]
     Other,
 }
@@ -2170,6 +2340,21 @@ pub enum InvalidMove {
 impl From<anyhow::Error> for InvalidMove {
     fn from(error: anyhow::Error) -> Self {
         InvalidMove::Message(error.to_string())
+    }
+}
+
+impl From<ParseIntError> for InvalidMove {
+    fn from(error: ParseIntError) -> Self {
+        InvalidMove::Parsing(error.to_string())
+    }
+}
+
+impl de::Error for InvalidMove {
+    fn custom<T>(msg: T) -> Self
+    where
+        T: Display,
+    {
+        InvalidMove::Deserialize(format!("{msg}"))
     }
 }
 
