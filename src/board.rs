@@ -1399,6 +1399,68 @@ impl Board {
         Ok((captures, status))
     }
 
+    #[must_use]
+    pub fn open_tafl(&self) -> String {
+        let size = self.size();
+        let size_usize: usize = self.size().into();
+        let mut empty_spaces: Option<u8> = None;
+        let mut open_tafl = String::new();
+
+        for y in 0..size_usize {
+            if let Some(spaces) = empty_spaces {
+                open_tafl.push_str(&spaces.to_string());
+                empty_spaces = None;
+            }
+
+            open_tafl.push('/');
+
+            for x in 0..size_usize {
+                let vertex = Vertex { size, x, y };
+                match self.get(&vertex) {
+                    Space::Empty => match empty_spaces {
+                        None => {
+                            empty_spaces = Some(1);
+                        }
+                        Some(spaces) => {
+                            empty_spaces = Some(spaces + 1);
+                        }
+                    },
+                    Space::Attacker => {
+                        if let Some(spaces) = empty_spaces {
+                            open_tafl.push_str(&spaces.to_string());
+                            empty_spaces = None;
+                        }
+
+                        open_tafl.push('t');
+                    }
+                    Space::King => {
+                        if let Some(spaces) = empty_spaces {
+                            open_tafl.push_str(&spaces.to_string());
+                            empty_spaces = None;
+                        }
+
+                        open_tafl.push('K');
+                    }
+                    Space::Defender => {
+                        if let Some(spaces) = empty_spaces {
+                            open_tafl.push_str(&spaces.to_string());
+                            empty_spaces = None;
+                        }
+
+                        open_tafl.push('T');
+                    }
+                }
+            }
+        }
+
+        if let Some(spaces) = empty_spaces {
+            open_tafl.push_str(&spaces.to_string());
+        }
+        open_tafl.push('/');
+
+        open_tafl
+    }
+
     /// # Errors
     ///
     /// If the move is illegal.
