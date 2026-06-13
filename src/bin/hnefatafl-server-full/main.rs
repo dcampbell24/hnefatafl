@@ -52,7 +52,7 @@ use hnefatafl_copenhagen::{
     board::{BoardSize, InvalidMove},
     draw::Draw,
     email::Email,
-    game::TimeUnix,
+    game::{OpenTaflGame, TimeUnix},
     glicko::Outcome,
     invalid_username,
     play::{Plae, Vertex},
@@ -347,7 +347,9 @@ fn login(
         // game that does not automatically quit.
         let words: Vec<_> = buf_str.split_whitespace().collect();
         if let Some(first) = words.first() {
-            if (*first == "join_game" || *first == "resume_game")
+            if (*first == "join_game"
+                || *first == "resume_game"
+                || *first == "resume_game_opentafl")
                 && let Some(second) = words.get(1)
                 && let Ok(id) = u128::from_str(second)
             {
@@ -1456,6 +1458,7 @@ impl Server {
                 && *command != "logout"
                 && *command != "ping"
                 && *command != "resume_game"
+                && *command != "resume_game_opentafl"
             {
                 debug!("{index_supplied} {username} {command}");
             }
@@ -1776,7 +1779,9 @@ impl Server {
 
                     None
                 }
-                "resume_game" => self.resume_game(username, index_supplied, command, &the_rest),
+                "resume_game" | "resume_game_opentafl" => {
+                    self.resume_game(username, index_supplied, command, &the_rest)
+                }
                 "request_draw" => self.request_draw(username, index_supplied, command, &the_rest),
                 "save" => {
                     debug!("saving users file...");
@@ -2578,9 +2583,22 @@ impl Server {
         };
 
         let game = &server_game.game;
-        let Ok(board) = ron::ser::to_string(game) else {
-            unreachable!()
+        let game_se = if command == "resume_game_opentafl" {
+            let game_opentafl = OpenTaflGame::from(game);
+
+            let Ok(game_se) = ron::ser::to_string(&game_opentafl) else {
+                unreachable!()
+            };
+
+            game_se
+        } else {
+            let Ok(game_se) = ron::ser::to_string(&game) else {
+                unreachable!()
+            };
+
+            game_se
         };
+
         let texts = &server_game.texts;
         let Ok(texts) = ron::ser::to_string(&texts) else {
             unreachable!()
@@ -2620,12 +2638,12 @@ impl Server {
                 }
             }
         }
-
+        //
         let client = self.clients.get(&index_supplied)?;
 
         client
             .send(format!(
-                "= resume_game {} {} {} {:?} {} {board} {texts}",
+                "= resume_game {} {} {} {:?} {} {game_se} {texts}",
                 game_light.attacker.clone()?,
                 game_light.defender.clone()?,
                 game_light.rated,

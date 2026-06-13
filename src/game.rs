@@ -35,7 +35,7 @@ use wasm_bindgen::prelude::wasm_bindgen;
 
 use crate::{
     ai::{AI, AiBasic},
-    board::{Board, BoardSize, Captured, InvalidMove},
+    board::{Board, BoardSize, Captured, InvalidMove, OpenTaflBoard},
     characters::Characters,
     message::{COMMANDS, Message},
     play::{Captures, Plae, Play, PlayRecordTimed, Plays, Vertex},
@@ -58,6 +58,67 @@ pub struct Game {
     pub turn: Role,
     #[serde(skip)]
     pub chars: Characters,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct OpenTaflGame {
+    pub board: OpenTaflBoard,
+    pub plays: Plays,
+    pub previous_boards: Vec<OpenTaflBoard>,
+    pub status: Status,
+    pub time: TimeUnix,
+    pub attacker_time: TimeSettings,
+    pub defender_time: TimeSettings,
+    pub turn: Role,
+    #[serde(skip)]
+    pub chars: Characters,
+}
+
+impl From<&Game> for OpenTaflGame {
+    fn from(game: &Game) -> Self {
+        let mut previous_boards = Vec::with_capacity(game.previous_boards.0.len());
+        for board in &game.previous_boards.0 {
+            previous_boards.push(OpenTaflBoard {
+                board: board.clone(),
+            });
+        }
+
+        Self {
+            board: OpenTaflBoard {
+                board: game.board.clone(),
+            },
+            plays: game.plays.clone(),
+            previous_boards,
+            status: game.status.clone(),
+            time: game.time.clone(),
+            attacker_time: game.attacker_time,
+            defender_time: game.defender_time,
+            turn: game.turn,
+            chars: game.chars.clone(),
+        }
+    }
+}
+
+impl From<OpenTaflGame> for Game {
+    fn from(game: OpenTaflGame) -> Self {
+        let mut previous_boards = Vec::with_capacity(game.previous_boards.len());
+        for board in game.previous_boards {
+            previous_boards.push(board.board);
+        }
+        let previous_boards = PreviousBoards(previous_boards);
+
+        Self {
+            board: game.board.board,
+            plays: game.plays,
+            previous_boards,
+            status: game.status,
+            time: game.time,
+            attacker_time: game.attacker_time,
+            defender_time: game.defender_time,
+            turn: game.turn,
+            chars: game.chars,
+        }
+    }
 }
 
 #[cfg(feature = "js")]

@@ -53,7 +53,7 @@ use hnefatafl_copenhagen::{
     characters::Characters,
     draw::Draw,
     email::Email,
-    game::{Game, LegalMoves, TimeUnix},
+    game::{Game, LegalMoves, OpenTaflGame, TimeUnix},
     heat_map::{Heat, HeatMap},
     invalid_username,
     locale::Locale,
@@ -1709,7 +1709,7 @@ impl<'a> Client {
 
     fn resume(&mut self, id: u128) {
         self.game_id = id;
-        self.send(&format!("resume_game {id}\n"));
+        self.send(&format!("resume_game_opentafl {id}\n"));
     }
 
     fn watch(&mut self, id: u128) {
@@ -3289,10 +3289,11 @@ impl<'a> Client {
                                 self.time_defender = timed;
 
                                 if let Some(game_serialized) = text.next() {
-                                    let game_deserialized = ron::from_str(game_serialized)
-                                        .expect("we should be able to deserialize the game");
+                                    let game_deserialized: OpenTaflGame =
+                                        ron::from_str(game_serialized)
+                                            .expect("we should be able to deserialize the game");
 
-                                    game = game_deserialized;
+                                    game = Game::from(game_deserialized);
 
                                     let size = game.board.size();
                                     let size_usize: usize = size.into();
