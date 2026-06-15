@@ -29,7 +29,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     Id,
     board::{Board, BoardSize},
-    game::{Game, TimeUnix},
+    game::{Game, OpenTaflGame, TimeUnix},
     glicko::Rating,
     play::{PlayRecordTimed, Plays},
     rating::Rated,
@@ -556,4 +556,14 @@ impl fmt::Debug for ServerGamesLightVec {
 
         Ok(())
     }
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct ResumeGame {
+    pub attacker: Option<String>,
+    pub defender: Option<String>,
+    pub rated: Rated,
+    pub time_settings: TimeSettings,
+    pub game: OpenTaflGame,
+    pub texts: VecDeque<String>,
 }
