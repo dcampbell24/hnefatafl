@@ -563,7 +563,6 @@ pub struct ResumeGame {
     pub attacker: Option<String>,
     pub defender: Option<String>,
     pub rated: Rated,
-    pub time_settings: TimeSettings,
     pub game: OpenTaflGame,
     pub texts: VecDeque<String>,
 }

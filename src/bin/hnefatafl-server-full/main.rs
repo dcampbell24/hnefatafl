@@ -2628,7 +2628,6 @@ impl Server {
                 attacker: game_light.attacker.clone(),
                 defender: game_light.defender.clone(),
                 rated: game_light.rated,
-                time_settings: game_light.timed,
                 game,
                 texts: texts.clone(),
             };
@@ -3015,7 +3014,6 @@ impl Server {
                 attacker: game.attacker.clone(),
                 defender: game.defender.clone(),
                 rated: game.rated,
-                time_settings: game.timed,
                 game: game_opentafl,
                 texts: texts.clone(),
             };
@@ -3035,7 +3033,6 @@ impl Server {
                 attacker: game.attacker.clone(),
                 defender: game.defender.clone(),
                 rated: game.rated,
-                time_settings: game.timed,
                 game: game_opentafl,
                 texts: texts.clone(),
             };
