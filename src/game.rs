@@ -62,17 +62,11 @@ pub struct Game {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct OpenTaflGame {
-    pub start: OpenTaflBoard,
-    pub board: OpenTaflBoard,
+    pub dim: usize,
     pub plays: Plays,
-    pub previous_boards: Vec<OpenTaflBoard>,
-    pub status: Status,
     pub time: TimeUnix,
     pub attacker_time: TimeSettings,
     pub defender_time: TimeSettings,
-    pub turn: Role,
-    #[serde(skip)]
-    pub chars: Characters,
 }
 
 impl From<&Game> for OpenTaflGame {
@@ -84,44 +78,40 @@ impl From<&Game> for OpenTaflGame {
             });
         }
 
+        let dim = usize::from(game.board.size());
+
         Self {
-            start: OpenTaflBoard {
-                board: Board::new(game.board.size()),
-            },
-            board: OpenTaflBoard {
-                board: game.board.clone(),
-            },
+            dim,
             plays: game.plays.clone(),
-            previous_boards,
-            status: game.status.clone(),
             time: game.time.clone(),
             attacker_time: game.attacker_time,
             defender_time: game.defender_time,
-            turn: game.turn,
-            chars: game.chars.clone(),
         }
     }
 }
 
 impl From<OpenTaflGame> for Game {
-    fn from(game: OpenTaflGame) -> Self {
-        let mut previous_boards = Vec::with_capacity(game.previous_boards.len());
-        for board in game.previous_boards {
-            previous_boards.push(board.board);
-        }
-        let previous_boards = PreviousBoards(previous_boards);
+    fn from(game_opentafl: OpenTaflGame) -> Self {
+        let mut game = Game::make(
+            BoardSize::try_from(game_opentafl.dim).expect("The board size must be 11 or 13!"),
+            &game_opentafl.attacker_time,
+        );
 
-        Self {
-            board: game.board.board,
-            plays: game.plays,
-            previous_boards,
-            status: game.status,
-            time: game.time,
-            attacker_time: game.attacker_time,
-            defender_time: game.defender_time,
-            turn: game.turn,
-            chars: game.chars,
+        let plays = match game_opentafl.plays {
+            Plays::PlayRecordsTimed(plays) => plays.iter().map(|play| play.play.clone()).collect(),
+            Plays::PlayRecords(plays) => plays,
+        };
+
+        for play in plays.into_iter().flatten() {
+            game.play(&play)
+                .expect("The play was valid when it was first played.");
         }
+
+        game.time = game_opentafl.time;
+        game.attacker_time = game_opentafl.attacker_time;
+        game.defender_time = game_opentafl.defender_time;
+
+        game
     }
 }
 
