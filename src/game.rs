@@ -63,7 +63,7 @@ pub struct Game {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct OpenTaflGame {
     pub dim: usize,
-    pub plays: Plays,
+    pub plays: Vec<Plae>,
     pub time: TimeUnix,
     pub attacker_time: TimeSettings,
     pub defender_time: TimeSettings,
@@ -80,9 +80,17 @@ impl From<&Game> for OpenTaflGame {
 
         let dim = usize::from(game.board.size());
 
+        let plays = match &game.plays {
+            Plays::PlayRecordsTimed(plays) => plays
+                .iter()
+                .filter_map(|play_record| play_record.play.clone())
+                .collect(),
+            Plays::PlayRecords(plays) => plays.iter().flatten().cloned().collect(),
+        };
+
         Self {
             dim,
-            plays: game.plays.clone(),
+            plays,
             time: game.time.clone(),
             attacker_time: game.attacker_time,
             defender_time: game.defender_time,
@@ -97,12 +105,7 @@ impl From<OpenTaflGame> for Game {
             &game_opentafl.attacker_time,
         );
 
-        let plays = match game_opentafl.plays {
-            Plays::PlayRecordsTimed(plays) => plays.iter().map(|play| play.play.clone()).collect(),
-            Plays::PlayRecords(plays) => plays,
-        };
-
-        for play in plays.into_iter().flatten() {
+        for play in game_opentafl.plays {
             game.play(&play)
                 .expect("The play was valid when it was first played.");
         }
