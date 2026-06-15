@@ -3317,8 +3317,13 @@ impl<'a> Client {
 
                                 if let Some(game_serialized) = text.next() {
                                     let game_deserialized: ResumeGame =
-                                        serde_json::from_str(game_serialized)
-                                            .expect("we should be able to deserialize the game");
+                                        if text_next == Some("resume_game") {
+                                            serde_json::from_str(game_serialized)
+                                                .expect("we should be able to deserialize the game")
+                                        } else {
+                                            ron::from_str(game_serialized)
+                                                .expect("we should be able to deserialize the game")
+                                        };
 
                                     let attacker = game_deserialized.attacker;
                                     let defender = game_deserialized.defender;
