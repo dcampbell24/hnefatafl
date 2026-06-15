@@ -42,7 +42,7 @@ use crate::{
     play::{Captures, Plae, Play, PlayRecordTimed, Plays, Vertex},
     role::Role,
     status::Status,
-    time::TimeSettings,
+    time::{Time, TimeSettings},
     tree::Tree,
 };
 
@@ -65,11 +65,13 @@ pub struct Game {
 pub struct OpenTaflGame {
     pub dim: usize,
     pub plays: String,
-    pub time: TimeUnix,
-    pub attacker_time: TimeSettings,
-    pub defender_time: TimeSettings,
+    pub time_unix: TimeUnix,
+    pub time_control: Option<(i64, i64)>,
+    pub time_remaining: Option<(f64, f64)>,
 }
 
+// Fixme: This is wrong, but I have to make breaking changes to fix it.
+#[allow(clippy::cast_precision_loss)]
 impl From<&Game> for OpenTaflGame {
     fn from(game: &Game) -> Self {
         let dim = usize::from(game.board.size());
@@ -90,21 +92,64 @@ impl From<&Game> for OpenTaflGame {
             })
             .join(" ");
 
+        let time_control = if let Plays::PlayRecordsTimed(plays) = &game.plays
+            && let Some(play) = plays.first()
+            && let TimeSettings::Timed(time_settings) = game.defender_time
+        {
+            Some((
+                play.defender_time.milliseconds_left,
+                time_settings.add_seconds,
+            ))
+        } else {
+            None
+        };
+
+        let time_remaining =
+            if let (TimeSettings::Timed(attacker_time), TimeSettings::Timed(defender_time)) =
+                (&game.attacker_time, &game.defender_time)
+            {
+                Some((
+                    attacker_time.milliseconds_left as f64 / 1_000.0,
+                    defender_time.milliseconds_left as f64 / 1_000.0,
+                ))
+            } else {
+                None
+            };
+
         Self {
             dim,
             plays,
-            time: game.time.clone(),
-            attacker_time: game.attacker_time,
-            defender_time: game.defender_time,
+            time_unix: game.time.clone(),
+            time_control,
+            time_remaining,
         }
     }
 }
 
+#[allow(clippy::cast_possible_truncation)]
 impl From<OpenTaflGame> for Game {
     fn from(game_opentafl: OpenTaflGame) -> Self {
+        let (attacker_time, defender_time) =
+            if let (Some((attacker_time, defender_time)), Some((_main_time, time_increment))) =
+                (game_opentafl.time_remaining, game_opentafl.time_control)
+            {
+                (
+                    TimeSettings::Timed(Time {
+                        milliseconds_left: (attacker_time * 1_000.0) as i64,
+                        add_seconds: time_increment,
+                    }),
+                    TimeSettings::Timed(Time {
+                        milliseconds_left: (defender_time * 1_000.0) as i64,
+                        add_seconds: time_increment,
+                    }),
+                )
+            } else {
+                (TimeSettings::UnTimed, TimeSettings::UnTimed)
+            };
+
         let mut game = Game::make(
             BoardSize::try_from(game_opentafl.dim).expect("The board size must be 11 or 13!"),
-            &game_opentafl.attacker_time,
+            &attacker_time,
         );
 
         let mut plays = Vec::with_capacity(game_opentafl.plays.len());
@@ -134,9 +179,9 @@ impl From<OpenTaflGame> for Game {
                 .expect("The play was valid when it was first played.");
         }
 
-        game.time = game_opentafl.time;
-        game.attacker_time = game_opentafl.attacker_time;
-        game.defender_time = game_opentafl.defender_time;
+        game.time = game_opentafl.time_unix;
+        game.attacker_time = attacker_time;
+        game.defender_time = defender_time;
 
         game
     }

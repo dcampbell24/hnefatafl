@@ -3343,12 +3343,10 @@ impl<'a> Client {
                                 let rated = game_deserialized.rated;
                                 self.game_settings.rated = rated;
 
-                                let timed = game_deserialized.time_settings;
-
-                                self.time_attacker = timed;
-                                self.time_defender = timed;
-
                                 let mut game = Game::from(game_deserialized.game);
+
+                                self.time_attacker = game.attacker_time;
+                                self.time_defender = game.defender_time;
 
                                 let size = game.board.size();
                                 let size_usize: usize = size.into();
