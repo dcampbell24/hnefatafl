@@ -35,7 +35,7 @@ use wasm_bindgen::prelude::wasm_bindgen;
 
 use crate::{
     ai::{AI, AiBasic},
-    board::{Board, BoardSize, Captured, InvalidMove, OpenTaflBoard},
+    board::{Board, BoardSize, Captured, InvalidMove},
     characters::Characters,
     message::{COMMANDS, Message},
     play::{Captures, Plae, Play, PlayRecordTimed, Plays, Vertex},
@@ -71,13 +71,6 @@ pub struct OpenTaflGame {
 
 impl From<&Game> for OpenTaflGame {
     fn from(game: &Game) -> Self {
-        let mut previous_boards = Vec::with_capacity(game.previous_boards.0.len());
-        for board in &game.previous_boards.0 {
-            previous_boards.push(OpenTaflBoard {
-                board: board.clone(),
-            });
-        }
-
         let dim = usize::from(game.board.size());
 
         let plays = match &game.plays {
