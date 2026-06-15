@@ -59,8 +59,8 @@ use hnefatafl_copenhagen::{
     rating::Rated,
     role::Role,
     server_game::{
-        ArchivedGame, Challenger, Messenger, ServerGame, ServerGameLight, ServerGameSerialized,
-        ServerGames, ServerGamesLight, ServerGamesLightVec,
+        ArchivedGame, Challenger, Messenger, ResumeGame, ServerGame, ServerGameLight,
+        ServerGameSerialized, ServerGames, ServerGamesLight, ServerGamesLightVec,
     },
     space::Space,
     status::Status,
@@ -2578,31 +2578,12 @@ impl Server {
             ));
         };
 
-        let Some(server_game) = self.games.0.get(&id) else {
+        let Some(server_game) = self.games.0.get_mut(&id) else {
             unreachable!()
         };
 
         let game = &server_game.game;
-        let game_se = if command == "resume_game_opentafl" {
-            let game_opentafl = OpenTaflGame::from(game);
-
-            let Ok(game_se) = ron::ser::to_string(&game_opentafl) else {
-                unreachable!()
-            };
-
-            game_se
-        } else {
-            let Ok(game_se) = ron::ser::to_string(&game) else {
-                unreachable!()
-            };
-
-            game_se
-        };
-
         let texts = &server_game.texts;
-        let Ok(texts) = ron::ser::to_string(&texts) else {
-            unreachable!()
-        };
 
         info!("{index_supplied} {username} {command} {id}");
 
@@ -2621,36 +2602,60 @@ impl Server {
             .insert(username.to_string(), channel_id);
 
         let mut request_draw = Role::Roleless;
-        if let Some(server_game) = self.games.0.get_mut(&id) {
-            if Some(username) == game_light.attacker.as_deref() {
-                server_game.attacker_tx =
-                    Messenger::new(self.clients.get(&index_supplied)?.clone());
 
-                if server_game.draw_requested == Role::Defender {
-                    request_draw = Role::Attacker;
-                }
-            } else if Some(username) == game_light.defender.as_deref() {
-                server_game.defender_tx =
-                    Messenger::new(self.clients.get(&index_supplied)?.clone());
+        if Some(username) == game_light.attacker.as_deref() {
+            server_game.attacker_tx = Messenger::new(self.clients.get(&index_supplied)?.clone());
 
-                if server_game.draw_requested == Role::Attacker {
-                    request_draw = Role::Defender;
-                }
+            if server_game.draw_requested == Role::Defender {
+                request_draw = Role::Attacker;
+            }
+        } else if Some(username) == game_light.defender.as_deref() {
+            server_game.defender_tx = Messenger::new(self.clients.get(&index_supplied)?.clone());
+
+            if server_game.draw_requested == Role::Attacker {
+                request_draw = Role::Defender;
             }
         }
-        //
+
         let client = self.clients.get(&index_supplied)?;
 
-        client
-            .send(format!(
-                "= resume_game {} {} {} {:?} {} {game_se} {texts}",
-                game_light.attacker.clone()?,
-                game_light.defender.clone()?,
-                game_light.rated,
-                game_light.timed,
-                game_light.board_size,
-            ))
-            .ok()?;
+        if command == "resume_game_opentafl" {
+            let game = OpenTaflGame::from(game);
+
+            let resume_game = ResumeGame {
+                attacker: game_light.attacker.clone(),
+                defender: game_light.defender.clone(),
+                rated: game_light.rated,
+                time_settings: game_light.timed,
+                game,
+                texts: texts.clone(),
+            };
+
+            let Ok(resume_game) = serde_json::to_string(&resume_game) else {
+                unreachable!()
+            };
+
+            client.send(format!("= resume_game {resume_game}")).ok()?;
+        } else {
+            let Ok(game_se) = ron::ser::to_string(&game) else {
+                unreachable!()
+            };
+
+            let Ok(texts_se) = ron::ser::to_string(&texts) else {
+                unreachable!()
+            };
+
+            client
+                .send(format!(
+                    "= resume_game {} {} {} {:?} {} {game_se} {texts_se}",
+                    game_light.attacker.clone()?,
+                    game_light.defender.clone()?,
+                    game_light.rated,
+                    game_light.timed,
+                    game_light.board_size,
+                ))
+                .ok()?;
+        };
 
         if request_draw != Role::Roleless {
             client

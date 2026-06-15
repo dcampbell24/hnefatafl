@@ -62,6 +62,7 @@ pub struct Game {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct OpenTaflGame {
+    pub start: OpenTaflBoard,
     pub board: OpenTaflBoard,
     pub plays: Plays,
     pub previous_boards: Vec<OpenTaflBoard>,
@@ -84,6 +85,9 @@ impl From<&Game> for OpenTaflGame {
         }
 
         Self {
+            start: OpenTaflBoard {
+                board: Board::new(game.board.size()),
+            },
             board: OpenTaflBoard {
                 board: game.board.clone(),
             },

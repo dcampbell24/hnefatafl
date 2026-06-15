@@ -53,14 +53,14 @@ use hnefatafl_copenhagen::{
     characters::Characters,
     draw::Draw,
     email::Email,
-    game::{Game, LegalMoves, OpenTaflGame, TimeUnix},
+    game::{Game, LegalMoves, TimeUnix},
     heat_map::{Heat, HeatMap},
     invalid_username,
     locale::Locale,
     play::{BOARD_LETTERS, Plae, Vertex},
     rating::Rated,
     role::Role,
-    server_game::{ArchivedGame, Challenger, ServerGameLight, ServerGamesLight},
+    server_game::{ArchivedGame, Challenger, ResumeGame, ServerGameLight, ServerGamesLight},
     space::Space,
     status::Status,
     tcp_keep_alive,
@@ -3237,7 +3237,7 @@ impl<'a> Client {
                                 }
                             }
                             // = join_game david abby rated fischer 900_000 10
-                            Some("join_game" | "resume_game" | "watch_game") => {
+                            Some("join_game" | "watch_game") => {
                                 self.screen = Screen::Game;
                                 self.status = Status::Ongoing;
                                 self.captures = HashSet::new();
@@ -3283,17 +3283,60 @@ impl<'a> Client {
                                 let board_size = BoardSize::from_str(board_size)
                                     .expect("there should be a valid board size");
 
-                                let mut game = Game::make(board_size, &timed);
+                                let game = Game::make(board_size, &timed);
 
                                 self.time_attacker = timed;
                                 self.time_defender = timed;
 
+                                let texts: Vec<&str> = text.collect();
+                                let texts = texts.join(" ");
+                                if !texts.is_empty() {
+                                    let texts = ron::from_str(&texts)
+                                        .expect("we should be able to deserialize the text");
+
+                                    self.texts_game = texts;
+                                }
+
+                                if (self.username == attacker && game.turn == Role::Attacker)
+                                    || (self.username == defender && game.turn == Role::Defender)
+                                {
+                                    self.my_turn = true;
+                                }
+
+                                self.game = Some(game);
+                            }
+                            Some("resume_game") => {
+                                self.screen = Screen::Game;
+                                self.status = Status::Ongoing;
+                                self.captures = HashSet::new();
+                                self.play_from = None;
+                                self.play_from_previous = None;
+                                self.play_to_previous = None;
+                                self.texts_game = VecDeque::new();
+                                self.archived_game_handle = None;
+
                                 if let Some(game_serialized) = text.next() {
-                                    let game_deserialized: OpenTaflGame =
-                                        ron::from_str(game_serialized)
+                                    let game_deserialized: ResumeGame =
+                                        serde_json::from_str(game_serialized)
                                             .expect("we should be able to deserialize the game");
 
-                                    game = Game::from(game_deserialized);
+                                    let attacker = game_deserialized.attacker;
+                                    let defender = game_deserialized.defender;
+
+                                    let attacker = attacker.expect("The game has already started!");
+                                    let defender = defender.expect("The game has already started!");
+                                    self.attacker = attacker.clone();
+                                    self.defender = defender.clone();
+
+                                    let rated = game_deserialized.rated;
+                                    self.game_settings.rated = rated;
+
+                                    let timed = game_deserialized.time_settings;
+
+                                    self.time_attacker = timed;
+                                    self.time_defender = timed;
+
+                                    let mut game = Game::from(game_deserialized.game);
 
                                     let size = game.board.size();
                                     let size_usize: usize = size.into();
@@ -3340,24 +3383,18 @@ impl<'a> Client {
                                             }
                                         }
                                     }
+
+                                    self.texts_game = game_deserialized.texts;
+
+                                    if (self.username == attacker && game.turn == Role::Attacker)
+                                        || (self.username == defender
+                                            && game.turn == Role::Defender)
+                                    {
+                                        self.my_turn = true;
+                                    }
+
+                                    self.game = Some(game);
                                 }
-
-                                let texts: Vec<&str> = text.collect();
-                                let texts = texts.join(" ");
-                                if !texts.is_empty() {
-                                    let texts = ron::from_str(&texts)
-                                        .expect("we should be able to deserialize the text");
-
-                                    self.texts_game = texts;
-                                }
-
-                                if (self.username == attacker && game.turn == Role::Attacker)
-                                    || (self.username == defender && game.turn == Role::Defender)
-                                {
-                                    self.my_turn = true;
-                                }
-
-                                self.game = Some(game);
                             }
                             Some("join_game_pending") => {
                                 let id = text.next().expect("there should be an id supplied");

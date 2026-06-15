@@ -2357,6 +2357,7 @@ dependencies = [
  "rustc-hash 2.1.2",
  "rustrict",
  "serde",
+ "serde_json",
  "smol_str 0.3.6",
  "socket2",
  "sys-locale",
