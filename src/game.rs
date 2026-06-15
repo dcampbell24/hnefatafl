@@ -62,11 +62,17 @@ pub struct Game {
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct TimeControl {
+    main_time_seconds: i64,
+    increment_length: i64,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct OpenTaflGame {
     pub dim: usize,
     pub plays: String,
     pub time_unix: TimeUnix,
-    pub time_control: Option<(i64, i64)>,
+    pub time_control: Option<TimeControl>,
     pub time_remaining: Option<(f64, f64)>,
 }
 
@@ -96,10 +102,10 @@ impl From<&Game> for OpenTaflGame {
             && let Some(play) = plays.first()
             && let TimeSettings::Timed(time_settings) = game.defender_time
         {
-            Some((
-                play.defender_time.milliseconds_left,
-                time_settings.add_seconds,
-            ))
+            Some(TimeControl {
+                main_time_seconds: play.defender_time.milliseconds_left / 1_000,
+                increment_length: time_settings.add_seconds,
+            })
         } else {
             None
         };
@@ -129,23 +135,28 @@ impl From<&Game> for OpenTaflGame {
 #[allow(clippy::cast_possible_truncation)]
 impl From<OpenTaflGame> for Game {
     fn from(game_opentafl: OpenTaflGame) -> Self {
-        let (attacker_time, defender_time) =
-            if let (Some((attacker_time, defender_time)), Some((_main_time, time_increment))) =
-                (game_opentafl.time_remaining, game_opentafl.time_control)
-            {
-                (
-                    TimeSettings::Timed(Time {
-                        milliseconds_left: (attacker_time * 1_000.0) as i64,
-                        add_seconds: time_increment,
-                    }),
-                    TimeSettings::Timed(Time {
-                        milliseconds_left: (defender_time * 1_000.0) as i64,
-                        add_seconds: time_increment,
-                    }),
-                )
-            } else {
-                (TimeSettings::UnTimed, TimeSettings::UnTimed)
-            };
+        let (attacker_time, defender_time) = if let (
+            Some((attacker_time, defender_time)),
+            Some(TimeControl {
+                main_time_seconds: _,
+                increment_length,
+            }),
+        ) =
+            (game_opentafl.time_remaining, game_opentafl.time_control)
+        {
+            (
+                TimeSettings::Timed(Time {
+                    milliseconds_left: (attacker_time * 1_000.0) as i64,
+                    add_seconds: increment_length,
+                }),
+                TimeSettings::Timed(Time {
+                    milliseconds_left: (defender_time * 1_000.0) as i64,
+                    add_seconds: increment_length,
+                }),
+            )
+        } else {
+            (TimeSettings::UnTimed, TimeSettings::UnTimed)
+        };
 
         let mut game = Game::make(
             BoardSize::try_from(game_opentafl.dim).expect("The board size must be 11 or 13!"),
