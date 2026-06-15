@@ -3006,7 +3006,7 @@ impl Server {
                 texts: texts.clone(),
             };
 
-            let Ok(resume_game) = serde_json::to_string(&resume_game) else {
+            let Ok(resume_game) = ron::to_string(&resume_game) else {
                 unreachable!()
             };
 
