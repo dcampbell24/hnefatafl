@@ -349,7 +349,8 @@ fn login(
         if let Some(first) = words.first() {
             if (*first == "join_game"
                 || *first == "resume_game"
-                || *first == "resume_game_opentafl")
+                || *first == "resume_game_json"
+                || *first == "resume_game_ron")
                 && let Some(second) = words.get(1)
                 && let Ok(id) = u128::from_str(second)
             {
@@ -1458,7 +1459,8 @@ impl Server {
                 && *command != "logout"
                 && *command != "ping"
                 && *command != "resume_game"
-                && *command != "resume_game_opentafl"
+                && *command != "resume_game_json"
+                && *command != "resume_game_ron"
             {
                 debug!("{index_supplied} {username} {command}");
             }
@@ -1779,7 +1781,7 @@ impl Server {
 
                     None
                 }
-                "resume_game" | "resume_game_opentafl" => {
+                "resume_game" | "resume_game_json" | "resume_game_ron" => {
                     self.resume_game(username, index_supplied, command, &the_rest)
                 }
                 "request_draw" => self.request_draw(username, index_supplied, command, &the_rest),
@@ -1968,7 +1970,7 @@ impl Server {
 
                     None
                 }
-                "watch_game" | "watch_game_opentafl" => self.watch_game(
+                "watch_game" | "watch_game_json" | "watch_game_ron" => self.watch_game(
                     username,
                     index_supplied,
                     (*command).to_string(),
@@ -2619,7 +2621,7 @@ impl Server {
 
         let client = self.clients.get(&index_supplied)?;
 
-        if command == "resume_game_opentafl" {
+        if command == "resume_game_json" || command == "resume_game_ron" {
             let game = OpenTaflGame::from(game);
 
             let resume_game = ResumeGame {
@@ -2631,11 +2633,23 @@ impl Server {
                 texts: texts.clone(),
             };
 
-            let Ok(resume_game) = serde_json::to_string(&resume_game) else {
-                unreachable!()
-            };
+            if command == "resume_game_json" {
+                let Ok(resume_game) = serde_json::to_string(&resume_game) else {
+                    unreachable!()
+                };
 
-            client.send(format!("= resume_game {resume_game}")).ok()?;
+                client
+                    .send(format!("= resume_game_json {resume_game}"))
+                    .ok()?;
+            } else {
+                let Ok(resume_game) = ron::to_string(&resume_game) else {
+                    unreachable!()
+                };
+
+                client
+                    .send(format!("= resume_game_json {resume_game}"))
+                    .ok()?;
+            }
         } else {
             let Ok(game_se) = ron::ser::to_string(&game) else {
                 unreachable!()
@@ -2994,7 +3008,27 @@ impl Server {
             unreachable!()
         };
 
-        if command == "watch_game_opentafl" {
+        if command == "watch_game_json" {
+            let game_opentafl = OpenTaflGame::from(&server_game.game);
+
+            let resume_game = ResumeGame {
+                attacker: game.attacker.clone(),
+                defender: game.defender.clone(),
+                rated: game.rated,
+                time_settings: game.timed,
+                game: game_opentafl,
+                texts: texts.clone(),
+            };
+
+            let Ok(resume_game) = serde_json::to_string(&resume_game) else {
+                unreachable!()
+            };
+
+            self.clients
+                .get(&index_supplied)?
+                .send(format!("= watch_game_json {resume_game}"))
+                .ok()?;
+        } else if command == "watch_game_ron" {
             let game_opentafl = OpenTaflGame::from(&server_game.game);
 
             let resume_game = ResumeGame {
@@ -3012,7 +3046,7 @@ impl Server {
 
             self.clients
                 .get(&index_supplied)?
-                .send(format!("= watch_game {resume_game}"))
+                .send(format!("= watch_game_ron {resume_game}"))
                 .ok()?;
         } else {
             self.clients

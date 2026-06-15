@@ -1709,12 +1709,12 @@ impl<'a> Client {
 
     fn resume(&mut self, id: u128) {
         self.game_id = id;
-        self.send(&format!("resume_game_opentafl {id}\n"));
+        self.send(&format!("resume_game_ron {id}\n"));
     }
 
     fn watch(&mut self, id: u128) {
         self.game_id = id;
-        self.send(&format!("watch_game_opentafl {id}\n"));
+        self.send(&format!("watch_game_ron {id}\n"));
     }
 
     fn login(&mut self) {
@@ -3305,7 +3305,10 @@ impl<'a> Client {
 
                                 self.game = Some(game);
                             }
-                            Some("resume_game" | "watch_game") => {
+                            Some(
+                                "resume_game_json" | "resume_game_ron" | "watch_game_json"
+                                | "watch_game_ron",
+                            ) => {
                                 self.screen = Screen::Game;
                                 self.status = Status::Ongoing;
                                 self.captures = HashSet::new();
@@ -3318,14 +3321,16 @@ impl<'a> Client {
                                 let texts: Vec<&str> = text.collect();
                                 let game_serialized = texts.join(" ");
 
-                                let game_deserialized: ResumeGame =
-                                    if text_next == Some("resume_game") {
-                                        serde_json::from_str(&game_serialized)
-                                            .expect("we should be able to deserialize the game")
-                                    } else {
-                                        ron::from_str(&game_serialized)
-                                            .expect("we should be able to deserialize the game")
-                                    };
+                                let game_deserialized: ResumeGame = if text_next
+                                    == Some("resume_game_json")
+                                    || text_next == Some("watch_game_json")
+                                {
+                                    serde_json::from_str(&game_serialized)
+                                        .expect("we should be able to deserialize the game")
+                                } else {
+                                    ron::from_str(&game_serialized)
+                                        .expect("we should be able to deserialize the game")
+                                };
 
                                 let attacker = game_deserialized.attacker;
                                 let defender = game_deserialized.defender;
