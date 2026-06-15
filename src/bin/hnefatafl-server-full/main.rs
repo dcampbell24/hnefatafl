@@ -2625,8 +2625,8 @@ impl Server {
             let game = OpenTaflGame::from(game);
 
             let resume_game = ResumeGame {
-                attacker: game_light.attacker.clone(),
-                defender: game_light.defender.clone(),
+                attackers: game_light.attacker.clone(),
+                defenders: game_light.defender.clone(),
                 rated: game_light.rated,
                 game,
                 texts: texts.clone(),
@@ -3011,8 +3011,8 @@ impl Server {
             let game_opentafl = OpenTaflGame::from(&server_game.game);
 
             let resume_game = ResumeGame {
-                attacker: game.attacker.clone(),
-                defender: game.defender.clone(),
+                attackers: game.attacker.clone(),
+                defenders: game.defender.clone(),
                 rated: game.rated,
                 game: game_opentafl,
                 texts: texts.clone(),
@@ -3030,8 +3030,8 @@ impl Server {
             let game_opentafl = OpenTaflGame::from(&server_game.game);
 
             let resume_game = ResumeGame {
-                attacker: game.attacker.clone(),
-                defender: game.defender.clone(),
+                attackers: game.attacker.clone(),
+                defenders: game.defender.clone(),
                 rated: game.rated,
                 game: game_opentafl,
                 texts: texts.clone(),

@@ -3332,8 +3332,8 @@ impl<'a> Client {
                                         .expect("we should be able to deserialize the game")
                                 };
 
-                                let attacker = game_deserialized.attacker;
-                                let defender = game_deserialized.defender;
+                                let attacker = game_deserialized.attackers;
+                                let defender = game_deserialized.defenders;
 
                                 let attacker = attacker.expect("The game has already started!");
                                 let defender = defender.expect("The game has already started!");
