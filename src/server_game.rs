@@ -560,9 +560,10 @@ impl fmt::Debug for ServerGamesLightVec {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct ResumeGame {
-    pub attacker: Option<String>,
-    pub defender: Option<String>,
+    pub attackers: Option<String>,
+    pub defenders: Option<String>,
     pub rated: Rated,
+    #[serde(flatten)]
     pub game: OpenTaflGame,
     pub texts: VecDeque<String>,
 }
