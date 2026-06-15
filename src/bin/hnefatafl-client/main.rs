@@ -3326,7 +3326,7 @@ impl<'a> Client {
                                     let attacker = attacker.expect("The game has already started!");
                                     let defender = defender.expect("The game has already started!");
                                     self.attacker.clone_from(&attacker);
-                                    self.attacker.clone_from(&defender);
+                                    self.defender.clone_from(&defender);
 
                                     let rated = game_deserialized.rated;
                                     self.game_settings.rated = rated;
