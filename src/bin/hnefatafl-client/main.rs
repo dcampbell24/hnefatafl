@@ -3315,91 +3315,91 @@ impl<'a> Client {
                                 self.texts_game = VecDeque::new();
                                 self.archived_game_handle = None;
 
-                                if let Some(game_serialized) = text.next() {
-                                    let game_deserialized: ResumeGame =
-                                        if text_next == Some("resume_game") {
-                                            serde_json::from_str(game_serialized)
-                                                .expect("we should be able to deserialize the game")
-                                        } else {
-                                            ron::from_str(game_serialized)
-                                                .expect("we should be able to deserialize the game")
-                                        };
+                                let texts: Vec<&str> = text.collect();
+                                let game_serialized = texts.join(" ");
 
-                                    let attacker = game_deserialized.attacker;
-                                    let defender = game_deserialized.defender;
+                                let game_deserialized: ResumeGame =
+                                    if text_next == Some("resume_game") {
+                                        serde_json::from_str(&game_serialized)
+                                            .expect("we should be able to deserialize the game")
+                                    } else {
+                                        ron::from_str(&game_serialized)
+                                            .expect("we should be able to deserialize the game")
+                                    };
 
-                                    let attacker = attacker.expect("The game has already started!");
-                                    let defender = defender.expect("The game has already started!");
-                                    self.attacker.clone_from(&attacker);
-                                    self.defender.clone_from(&defender);
+                                let attacker = game_deserialized.attacker;
+                                let defender = game_deserialized.defender;
 
-                                    let rated = game_deserialized.rated;
-                                    self.game_settings.rated = rated;
+                                let attacker = attacker.expect("The game has already started!");
+                                let defender = defender.expect("The game has already started!");
+                                self.attacker.clone_from(&attacker);
+                                self.defender.clone_from(&defender);
 
-                                    let timed = game_deserialized.time_settings;
+                                let rated = game_deserialized.rated;
+                                self.game_settings.rated = rated;
 
-                                    self.time_attacker = timed;
-                                    self.time_defender = timed;
+                                let timed = game_deserialized.time_settings;
 
-                                    let mut game = Game::from(game_deserialized.game);
+                                self.time_attacker = timed;
+                                self.time_defender = timed;
 
-                                    let size = game.board.size();
-                                    let size_usize: usize = size.into();
+                                let mut game = Game::from(game_deserialized.game);
 
-                                    for y in 0..size_usize {
-                                        for x in 0..size_usize {
-                                            let vertex = Vertex { size, x, y };
+                                let size = game.board.size();
+                                let size_usize: usize = size.into();
 
-                                            if let Space::King = game.board.get(&vertex) {
-                                                game.board.king = Some(vertex);
-                                            }
+                                for y in 0..size_usize {
+                                    for x in 0..size_usize {
+                                        let vertex = Vertex { size, x, y };
+
+                                        if let Space::King = game.board.get(&vertex) {
+                                            game.board.king = Some(vertex);
                                         }
                                     }
-
-                                    self.time_attacker = game.attacker_time;
-                                    self.time_defender = game.defender_time;
-
-                                    match game.turn {
-                                        Role::Attacker => {
-                                            if let (
-                                                TimeSettings::Timed(time),
-                                                TimeUnix::Time(time_ago),
-                                            ) = (&mut self.time_attacker, &game.time)
-                                            {
-                                                let now = Timestamp::now().as_millisecond();
-                                                time.milliseconds_left -= now - time_ago;
-                                                if time.milliseconds_left < 0 {
-                                                    time.milliseconds_left = 0;
-                                                }
-                                            }
-                                        }
-                                        Role::Roleless => {}
-                                        Role::Defender => {
-                                            if let (
-                                                TimeSettings::Timed(time),
-                                                TimeUnix::Time(time_ago),
-                                            ) = (&mut self.time_defender, &game.time)
-                                            {
-                                                let now = Timestamp::now().as_millisecond();
-                                                time.milliseconds_left -= now - time_ago;
-                                                if time.milliseconds_left < 0 {
-                                                    time.milliseconds_left = 0;
-                                                }
-                                            }
-                                        }
-                                    }
-
-                                    self.texts_game = game_deserialized.texts;
-
-                                    if (self.username == attacker && game.turn == Role::Attacker)
-                                        || (self.username == defender
-                                            && game.turn == Role::Defender)
-                                    {
-                                        self.my_turn = true;
-                                    }
-
-                                    self.game = Some(game);
                                 }
+
+                                self.time_attacker = game.attacker_time;
+                                self.time_defender = game.defender_time;
+
+                                match game.turn {
+                                    Role::Attacker => {
+                                        if let (
+                                            TimeSettings::Timed(time),
+                                            TimeUnix::Time(time_ago),
+                                        ) = (&mut self.time_attacker, &game.time)
+                                        {
+                                            let now = Timestamp::now().as_millisecond();
+                                            time.milliseconds_left -= now - time_ago;
+                                            if time.milliseconds_left < 0 {
+                                                time.milliseconds_left = 0;
+                                            }
+                                        }
+                                    }
+                                    Role::Roleless => {}
+                                    Role::Defender => {
+                                        if let (
+                                            TimeSettings::Timed(time),
+                                            TimeUnix::Time(time_ago),
+                                        ) = (&mut self.time_defender, &game.time)
+                                        {
+                                            let now = Timestamp::now().as_millisecond();
+                                            time.milliseconds_left -= now - time_ago;
+                                            if time.milliseconds_left < 0 {
+                                                time.milliseconds_left = 0;
+                                            }
+                                        }
+                                    }
+                                }
+
+                                self.texts_game = game_deserialized.texts;
+
+                                if (self.username == attacker && game.turn == Role::Attacker)
+                                    || (self.username == defender && game.turn == Role::Defender)
+                                {
+                                    self.my_turn = true;
+                                }
+
+                                self.game = Some(game);
                             }
                             Some("join_game_pending") => {
                                 let id = text.next().expect("there should be an id supplied");
