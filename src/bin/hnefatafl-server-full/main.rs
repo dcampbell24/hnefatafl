@@ -1968,7 +1968,7 @@ impl Server {
 
                     None
                 }
-                "watch_game" => self.watch_game(
+                "watch_game" | "watch_game_opentafl" => self.watch_game(
                     username,
                     index_supplied,
                     (*command).to_string(),
@@ -2655,7 +2655,7 @@ impl Server {
                     game_light.board_size,
                 ))
                 .ok()?;
-        };
+        }
 
         if request_draw != Role::Roleless {
             client
@@ -2985,7 +2985,7 @@ impl Server {
             unreachable!()
         };
         let texts = &server_game.texts;
-        let Ok(texts) = ron::ser::to_string(&texts) else {
+        let Ok(texts_se) = ron::ser::to_string(texts) else {
             unreachable!()
         };
 
@@ -2994,17 +2994,39 @@ impl Server {
             unreachable!()
         };
 
-        self.clients
-            .get(&index_supplied)?
-            .send(format!(
-                "= watch_game {} {} {} {:?} {} {board} {texts}",
-                game.attacker.clone()?,
-                game.defender.clone()?,
-                game.rated,
-                game.timed,
-                game.board_size,
-            ))
-            .ok()?;
+        if command == "watch_game_opentafl" {
+            let game_opentafl = OpenTaflGame::from(&server_game.game);
+
+            let resume_game = ResumeGame {
+                attacker: game.attacker.clone(),
+                defender: game.defender.clone(),
+                rated: game.rated,
+                time_settings: game.timed,
+                game: game_opentafl,
+                texts: texts.clone(),
+            };
+
+            let Ok(resume_game) = serde_json::to_string(&resume_game) else {
+                unreachable!()
+            };
+
+            self.clients
+                .get(&index_supplied)?
+                .send(format!("= watch_game {resume_game}"))
+                .ok()?;
+        } else {
+            self.clients
+                .get(&index_supplied)?
+                .send(format!(
+                    "= watch_game {} {} {} {:?} {} {board} {texts_se}",
+                    game.attacker.clone()?,
+                    game.defender.clone()?,
+                    game.rated,
+                    game.timed,
+                    game.board_size,
+                ))
+                .ok()?;
+        }
 
         None
     }

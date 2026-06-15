@@ -1714,7 +1714,7 @@ impl<'a> Client {
 
     fn watch(&mut self, id: u128) {
         self.game_id = id;
-        self.send(&format!("watch_game {id}\n"));
+        self.send(&format!("watch_game_opentafl {id}\n"));
     }
 
     fn login(&mut self) {
@@ -3237,7 +3237,7 @@ impl<'a> Client {
                                 }
                             }
                             // = join_game david abby rated fischer 900_000 10
-                            Some("join_game" | "watch_game") => {
+                            Some("join_game") => {
                                 self.screen = Screen::Game;
                                 self.status = Status::Ongoing;
                                 self.captures = HashSet::new();
@@ -3305,7 +3305,7 @@ impl<'a> Client {
 
                                 self.game = Some(game);
                             }
-                            Some("resume_game") => {
+                            Some("resume_game" | "watch_game") => {
                                 self.screen = Screen::Game;
                                 self.status = Status::Ongoing;
                                 self.captures = HashSet::new();
@@ -3325,8 +3325,8 @@ impl<'a> Client {
 
                                     let attacker = attacker.expect("The game has already started!");
                                     let defender = defender.expect("The game has already started!");
-                                    self.attacker = attacker.clone();
-                                    self.defender = defender.clone();
+                                    self.attacker.clone_from(&attacker);
+                                    self.attacker.clone_from(&defender);
 
                                     let rated = game_deserialized.rated;
                                     self.game_settings.rated = rated;
