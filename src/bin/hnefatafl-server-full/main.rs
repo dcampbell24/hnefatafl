@@ -2647,7 +2647,7 @@ impl Server {
                 };
 
                 client
-                    .send(format!("= resume_game_json {resume_game}"))
+                    .send(format!("= resume_game_ron {resume_game}"))
                     .ok()?;
             }
         } else {
