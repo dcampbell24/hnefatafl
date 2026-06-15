@@ -26,6 +26,7 @@ use std::{
 };
 
 use colored::Colorize;
+use itertools::Itertools;
 use jiff::Timestamp;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use rustc_hash::FxHashMap;
@@ -63,7 +64,7 @@ pub struct Game {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct OpenTaflGame {
     pub dim: usize,
-    pub plays: Vec<Plae>,
+    pub plays: String,
     pub time: TimeUnix,
     pub attacker_time: TimeSettings,
     pub defender_time: TimeSettings,
@@ -73,13 +74,21 @@ impl From<&Game> for OpenTaflGame {
     fn from(game: &Game) -> Self {
         let dim = usize::from(game.board.size());
 
-        let plays = match &game.plays {
+        let plays: Vec<Plae> = match &game.plays {
             Plays::PlayRecordsTimed(plays) => plays
                 .iter()
                 .filter_map(|play_record| play_record.play.clone())
                 .collect(),
             Plays::PlayRecords(plays) => plays.iter().flatten().cloned().collect(),
         };
+
+        let plays = plays
+            .iter()
+            .map(|play| match play {
+                Plae::Play(play) => format!("{}-{}", play.from, play.to),
+                Plae::AttackerResigns | Plae::DefenderResigns => "resigns".to_string(),
+            })
+            .join(" ");
 
         Self {
             dim,
@@ -98,7 +107,29 @@ impl From<OpenTaflGame> for Game {
             &game_opentafl.attacker_time,
         );
 
-        for play in game_opentafl.plays {
+        let mut plays = Vec::with_capacity(game_opentafl.plays.len());
+        let mut role = Role::Attacker;
+
+        for play in &mut game_opentafl.plays.split_whitespace() {
+            let role_str = role.to_string();
+
+            let play = if play == "resigns" {
+                match role {
+                    Role::Attacker => vec!["play", "attacker", "resigns"],
+                    Role::Defender => vec!["play", "defender", "resigns"],
+                    Role::Roleless => unreachable!(),
+                }
+            } else {
+                let play_vec: Vec<_> = play.splitn(2, '-').collect();
+                vec!["play", &role_str, play_vec[0], play_vec[1]]
+            };
+
+            plays.push(Plae::try_from(play).expect("This must work!"));
+
+            role = role.opposite();
+        }
+
+        for play in plays {
             game.play(&play)
                 .expect("The play was valid when it was first played.");
         }
