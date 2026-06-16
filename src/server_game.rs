@@ -23,6 +23,7 @@ use std::{
     sync::mpsc::Sender,
 };
 
+use jiff::Timestamp;
 use rust_i18n::t;
 use serde::{Deserialize, Serialize};
 
@@ -64,7 +65,7 @@ impl ArchivedGame {
             rated: game.rated,
             plays: game.game.plays,
             status: game.game.status,
-            texts: game.texts,
+            texts: game.texts.iter().map(ToString::to_string).collect(),
             board_size: game.game.board.size(),
         }
     }
@@ -148,6 +149,28 @@ impl Messenger {
     }
 }
 
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct Text {
+    pub username: String,
+    pub timestamp: Timestamp,
+    pub message: String,
+}
+impl fmt::Display for Text {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if &self.username == "𓇳" {
+            write!(f, "𓇳 {}", self.timestamp.strftime("%F %T %z"))
+        } else {
+            write!(
+                f,
+                "{} {}:: {} ",
+                self.username,
+                self.timestamp.strftime("%m-%d %H:%M UTC"),
+                self.message,
+            )
+        }
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct ServerGame {
     pub id: Id,
@@ -159,7 +182,7 @@ pub struct ServerGame {
     pub elapsed_time: i64,
     pub rated: Rated,
     pub game: Game,
-    pub texts: VecDeque<String>,
+    pub texts: VecDeque<Text>,
 }
 
 impl From<ServerGameSerialized> for ServerGame {
@@ -174,7 +197,8 @@ impl From<ServerGameSerialized> for ServerGame {
             elapsed_time: 0,
             rated: server_game.rated,
             game: server_game.game,
-            texts: server_game.texts,
+            //texts: server_game.texts.map(|tex
+            texts: VecDeque::new(),
         }
     }
 }
@@ -267,7 +291,7 @@ impl From<&ServerGame> for ServerGameSerialized {
             defender: game.defender.clone(),
             rated: game.rated,
             game: game.game.clone(),
-            texts: game.texts.clone(),
+            texts: game.texts.iter().map(ToString::to_string).collect(),
             timed: TimeSettings::default(),
         }
     }
@@ -565,5 +589,5 @@ pub struct ResumeGame {
     pub rated: bool,
     #[serde(flatten)]
     pub game: OpenTaflGame,
-    pub texts: VecDeque<String>,
+    pub texts: VecDeque<Text>,
 }

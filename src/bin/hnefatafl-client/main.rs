@@ -1829,7 +1829,7 @@ impl<'a> Client {
             attacker_rating = game_handle.game.attacker_rating.to_string_rounded();
             defender_rating = game_handle.game.defender_rating.to_string_rounded();
 
-            let status = if game_handle.play == game_handle.game.plays.len() - 1 {
+            let status = if game_handle.play == game_handle.game.plays.len().saturating_sub(1) {
                 &game_handle.game.status
             } else {
                 &Status::Ongoing
@@ -3394,7 +3394,11 @@ impl<'a> Client {
                                     }
                                 }
 
-                                self.texts_game = game_deserialized.texts;
+                                self.texts_game = game_deserialized
+                                    .texts
+                                    .iter()
+                                    .map(ToString::to_string)
+                                    .collect();
 
                                 if (self.username == attacker && game.turn == Role::Attacker)
                                     || (self.username == defender && game.turn == Role::Defender)
