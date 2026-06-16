@@ -1709,7 +1709,7 @@ impl<'a> Client {
 
     fn resume(&mut self, id: u128) {
         self.game_id = id;
-        self.send(&format!("resume_game_ron {id}\n"));
+        self.send(&format!("resume_game_json {id}\n"));
     }
 
     fn watch(&mut self, id: u128) {
@@ -3341,7 +3341,7 @@ impl<'a> Client {
                                 self.defender.clone_from(&defender);
 
                                 let rated = game_deserialized.rated;
-                                self.game_settings.rated = rated;
+                                self.game_settings.rated = rated.into();
 
                                 let mut game = Game::from(game_deserialized.game);
 
