@@ -71,7 +71,7 @@ pub struct TimeControl {
 pub struct OpenTaflGame {
     pub dim: usize,
     pub plays: String,
-    pub time_unix: TimeUnix,
+    pub last_play: Option<Timestamp>,
     pub time_control: Option<TimeControl>,
     pub time_remaining: Option<(f64, f64)>,
 }
@@ -124,10 +124,16 @@ impl From<&Game> for OpenTaflGame {
                 None
             };
 
+        let last_play = if let TimeUnix::Time(time) = game.time {
+            Some(Timestamp::from_millisecond(time).expect("This coversion works!"))
+        } else {
+            None
+        };
+
         Self {
             dim,
             plays,
-            time_unix: game.time.clone(),
+            last_play,
             time_control,
             time_remaining,
         }
@@ -192,7 +198,13 @@ impl From<OpenTaflGame> for Game {
                 .expect("The play was valid when it was first played.");
         }
 
-        game.time = game_opentafl.time_unix;
+        let time = if let Some(timestamp) = game_opentafl.last_play {
+            TimeUnix::Time(timestamp.as_millisecond())
+        } else {
+            TimeUnix::UnTimed
+        };
+
+        game.time = time;
         game.attacker_time = attacker_time;
         game.defender_time = defender_time;
 
