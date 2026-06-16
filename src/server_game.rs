@@ -185,8 +185,43 @@ pub struct ServerGame {
     pub texts: VecDeque<Text>,
 }
 
+// Fixme!
 impl From<ServerGameSerialized> for ServerGame {
     fn from(server_game: ServerGameSerialized) -> Self {
+        let texts = server_game
+            .texts
+            .iter()
+            .filter_map(|text| {
+                if let Some((username_timestamp, message)) = text.split_once("::") {
+                    let mut username_timestamp = username_timestamp.split_whitespace();
+
+                    let username = if let Some(username) = username_timestamp.next() {
+                        username.to_string()
+                    } else {
+                        String::new()
+                    };
+
+                    let timestamp = if let Some(timestamp) = username_timestamp.next()
+                        && !timestamp.is_empty()
+                    {
+                        timestamp.parse().unwrap_or(Timestamp::now())
+                    } else {
+                        Timestamp::now()
+                    };
+
+                    let message = message.to_string();
+
+                    Some(Text {
+                        username,
+                        timestamp,
+                        message,
+                    })
+                } else {
+                    None
+                }
+            })
+            .collect();
+
         Self {
             id: server_game.id,
             attacker: server_game.attacker,
@@ -197,8 +232,7 @@ impl From<ServerGameSerialized> for ServerGame {
             elapsed_time: 0,
             rated: server_game.rated,
             game: server_game.game,
-            //texts: server_game.texts.map(|tex
-            texts: VecDeque::new(),
+            texts,
         }
     }
 }
