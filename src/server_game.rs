@@ -185,7 +185,6 @@ pub struct ServerGame {
     pub texts: VecDeque<Text>,
 }
 
-// Fixme!
 impl From<ServerGameSerialized> for ServerGame {
     fn from(server_game: ServerGameSerialized) -> Self {
         let texts = server_game
