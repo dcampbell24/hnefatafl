@@ -2627,7 +2627,7 @@ impl Server {
             let resume_game = ResumeGame {
                 attackers: game_light.attacker.clone(),
                 defenders: game_light.defender.clone(),
-                rated: game_light.rated,
+                rated: game_light.rated.into(),
                 game,
                 texts: texts.clone(),
             };
@@ -3013,7 +3013,7 @@ impl Server {
             let resume_game = ResumeGame {
                 attackers: game.attacker.clone(),
                 defenders: game.defender.clone(),
-                rated: game.rated,
+                rated: game.rated.into(),
                 game: game_opentafl,
                 texts: texts.clone(),
             };
@@ -3032,7 +3032,7 @@ impl Server {
             let resume_game = ResumeGame {
                 attackers: game.attacker.clone(),
                 defenders: game.defender.clone(),
-                rated: game.rated,
+                rated: game.rated.into(),
                 game: game_opentafl,
                 texts: texts.clone(),
             };

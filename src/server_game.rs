@@ -562,7 +562,7 @@ impl fmt::Debug for ServerGamesLightVec {
 pub struct ResumeGame {
     pub attackers: Option<String>,
     pub defenders: Option<String>,
-    pub rated: Rated,
+    pub rated: bool,
     #[serde(flatten)]
     pub game: OpenTaflGame,
     pub texts: VecDeque<String>,
