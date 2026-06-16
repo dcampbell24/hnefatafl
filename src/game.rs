@@ -70,8 +70,8 @@ pub struct TimeControl {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct OpenTaflGame {
     pub dim: usize,
-    pub plays: String,
-    pub last_play: Option<Timestamp>,
+    pub last_move: Option<Timestamp>,
+    pub moves: String,
     pub time_control: Option<TimeControl>,
     pub time_remaining: Option<(f64, f64)>,
 }
@@ -84,7 +84,7 @@ impl From<&Game> for OpenTaflGame {
     fn from(game: &Game) -> Self {
         let dim = usize::from(game.board.size());
 
-        let plays: Vec<Plae> = match &game.plays {
+        let moves: Vec<Plae> = match &game.plays {
             Plays::PlayRecordsTimed(plays) => plays
                 .iter()
                 .filter_map(|play_record| play_record.play.clone())
@@ -92,7 +92,7 @@ impl From<&Game> for OpenTaflGame {
             Plays::PlayRecords(plays) => plays.iter().flatten().cloned().collect(),
         };
 
-        let plays = plays
+        let moves = moves
             .iter()
             .map(|play| match play {
                 Plae::Play(play) => format!("{}-{}", play.from, play.to),
@@ -124,7 +124,7 @@ impl From<&Game> for OpenTaflGame {
                 None
             };
 
-        let last_play = if let TimeUnix::Time(time) = game.time {
+        let last_move = if let TimeUnix::Time(time) = game.time {
             Some(Timestamp::from_millisecond(time).expect("This coversion works!"))
         } else {
             None
@@ -132,8 +132,8 @@ impl From<&Game> for OpenTaflGame {
 
         Self {
             dim,
-            plays,
-            last_play,
+            last_move,
+            moves,
             time_control,
             time_remaining,
         }
@@ -171,10 +171,10 @@ impl From<OpenTaflGame> for Game {
             &attacker_time,
         );
 
-        let mut plays = Vec::with_capacity(game_opentafl.plays.len());
+        let mut plays = Vec::with_capacity(game_opentafl.moves.len());
         let mut role = Role::Attacker;
 
-        for play in &mut game_opentafl.plays.split_whitespace() {
+        for play in &mut game_opentafl.moves.split_whitespace() {
             let role_str = role.to_string();
 
             let play = if play == "resigns" {
@@ -198,7 +198,7 @@ impl From<OpenTaflGame> for Game {
                 .expect("The play was valid when it was first played.");
         }
 
-        let time = if let Some(timestamp) = game_opentafl.last_play {
+        let time = if let Some(timestamp) = game_opentafl.last_move {
             TimeUnix::Time(timestamp.as_millisecond())
         } else {
             TimeUnix::UnTimed
