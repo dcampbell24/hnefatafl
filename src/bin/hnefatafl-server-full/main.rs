@@ -60,7 +60,7 @@ use hnefatafl_copenhagen::{
     role::Role,
     server_game::{
         ArchivedGame, Challenger, Messenger, ResumeGame, ServerGame, ServerGameLight,
-        ServerGameSerialized, ServerGames, ServerGamesLight, ServerGamesLightVec,
+        ServerGameSerialized, ServerGames, ServerGamesLight, ServerGamesLightVec, Text,
     },
     space::Space,
     status::Status,
@@ -1244,20 +1244,23 @@ impl Server {
                 unreachable!()
             };
 
-            let timestamp = Timestamp::now().strftime("𓇳 %F %T %z");
-            let timestamp = format!("{timestamp}");
+            let text = Text {
+                username: "𓇳".to_string(),
+                timestamp: Timestamp::now(),
+                message: String::new(),
+            };
 
             if let Some(game_light) = self.games_light.0.get_mut(&index) {
                 for id in game_light.spectators.values() {
                     if let Some(sender) = self.clients.get(id) {
-                        let _ok = sender.send(format!("= text_game {timestamp}"));
+                        let _ok = sender.send(format!("= text_game {text}"));
                     }
                 }
 
                 game_light.game_over = true;
             }
 
-            game.texts.push_front(timestamp);
+            game.texts.push_front(text);
 
             if let Some(tournament) = &mut self.tournament.tournament
                 && tournament.is_tournament_game(&game.id)
@@ -2828,6 +2831,7 @@ impl Server {
                 (*command).to_string(),
             ));
         };
+
         let Ok(id) = id.parse::<Id>() else {
             return Some((
                 self.clients.get(&index_supplied)?.clone(),
@@ -2836,29 +2840,31 @@ impl Server {
             ));
         };
 
-        let timestamp = Timestamp::now().strftime("%m-%d %H:%M UTC");
-        let text = the_rest.split_off(1);
-        let mut text = text.join(" ");
+        let mut message = the_rest.split_off(1).join(" ");
 
-        text = self.censor(&text);
-
-        if text.is_empty() {
+        if message.is_empty() {
             return None;
         }
 
-        text = format!("{username} {timestamp}:: {text}");
+        message = self.censor(&message);
+
+        let text = Text {
+            username: username.to_string(),
+            timestamp: Timestamp::now(),
+            message,
+        };
+
+        let text_string = format!("= text_game {text}");
+
         info!("{index_supplied} {username} text_game {id} {text}");
-
         if let Some(game) = self.games.0.get_mut(&id) {
-            game.texts.push_front(text.clone());
+            game.texts.push_front(text);
         }
-
-        text = format!("= text_game {text}");
 
         if let Some(game) = self.games_light.0.get(&id) {
             for index in game.spectators.values() {
                 if let Some(sender) = self.clients.get(index) {
-                    let _ok = sender.send(text.clone());
+                    let _ok = sender.send(text_string.clone());
                 }
             }
         }

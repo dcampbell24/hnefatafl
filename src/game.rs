@@ -73,13 +73,12 @@ pub struct OpenTaflGame {
     pub last_move: Option<Timestamp>,
     pub moves: String,
     pub time_control: Option<TimeControl>,
-    pub time_remaining: Option<(f64, f64)>,
+    pub time_remaining_ms: Option<(i64, i64)>,
 }
 
 // Fixme: This is wrong, but I have to make breaking changes to fix it.The
 // plays should not store the increment_length, but the main_time_seconds
 // and increment_length should be stored seperately.
-#[allow(clippy::cast_precision_loss)]
 impl From<&Game> for OpenTaflGame {
     fn from(game: &Game) -> Self {
         let dim = usize::from(game.board.size());
@@ -112,13 +111,13 @@ impl From<&Game> for OpenTaflGame {
             None
         };
 
-        let time_remaining =
+        let time_remaining_ms =
             if let (TimeSettings::Timed(attacker_time), TimeSettings::Timed(defender_time)) =
                 (&game.attacker_time, &game.defender_time)
             {
                 Some((
-                    attacker_time.milliseconds_left as f64 / 1_000.0,
-                    defender_time.milliseconds_left as f64 / 1_000.0,
+                    attacker_time.milliseconds_left,
+                    defender_time.milliseconds_left,
                 ))
             } else {
                 None
@@ -135,12 +134,11 @@ impl From<&Game> for OpenTaflGame {
             last_move,
             moves,
             time_control,
-            time_remaining,
+            time_remaining_ms,
         }
     }
 }
 
-#[allow(clippy::cast_possible_truncation)]
 impl From<OpenTaflGame> for Game {
     fn from(game_opentafl: OpenTaflGame) -> Self {
         let (attacker_time, defender_time) = if let (
@@ -150,15 +148,15 @@ impl From<OpenTaflGame> for Game {
                 increment_length,
             }),
         ) =
-            (game_opentafl.time_remaining, game_opentafl.time_control)
+            (game_opentafl.time_remaining_ms, game_opentafl.time_control)
         {
             (
                 TimeSettings::Timed(Time {
-                    milliseconds_left: (attacker_time * 1_000.0) as i64,
+                    milliseconds_left: attacker_time,
                     add_seconds: increment_length,
                 }),
                 TimeSettings::Timed(Time {
-                    milliseconds_left: (defender_time * 1_000.0) as i64,
+                    milliseconds_left: defender_time,
                     add_seconds: increment_length,
                 }),
             )

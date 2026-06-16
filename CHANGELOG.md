@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- resume_game{json,ron} watch_game{json,ron}.
 - taflzero: join_tournament.
 
 ### Breaking
@@ -31,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- ReviewGame: fix underflow error.
 - Restore the king's position when restoring a game.
 - hnefatafl-server-full: handle_messages.
 - hnefatafl-client: disable rfd on redox.
