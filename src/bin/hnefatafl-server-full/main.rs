@@ -2635,6 +2635,15 @@ impl Server {
                 texts: texts.clone(),
             };
 
+            // DEBUG!
+            /*
+            let Ok(resume_game_pretty) = serde_json::to_string_pretty(&resume_game) else {
+                unreachable!()
+            };
+
+            println!("{resume_game_pretty}");
+            */
+
             if command == "resume_game_json" {
                 let Ok(resume_game) = serde_json::to_string(&resume_game) else {
                     unreachable!()
