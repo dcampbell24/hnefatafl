@@ -70,6 +70,8 @@ pub struct TimeControl {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct OpenTaflGame {
     pub dim: usize,
+    pub sw: bool,
+    pub efe: bool,
     pub last_move: Option<Timestamp>,
     pub moves: String,
     pub time_control: Option<TimeControl>,
@@ -145,6 +147,8 @@ impl From<&Game> for OpenTaflGame {
 
         Self {
             dim,
+            sw: true,
+            efe: true,
             last_move,
             moves,
             time_control,
