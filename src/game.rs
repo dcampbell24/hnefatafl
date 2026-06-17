@@ -67,14 +67,24 @@ pub struct TimeControl {
     increment_length: i64,
 }
 
+const fn default_true() -> bool {
+    true
+}
+
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct OpenTaflGame {
     pub dim: usize,
+    #[serde(default = "default_true")]
     pub sw: bool,
+    #[serde(default = "default_true")]
     pub efe: bool,
+    pub start: String,
+    #[serde(default)]
     pub last_move: Option<Timestamp>,
     pub moves: String,
+    #[serde(default)]
     pub time_control: Option<TimeControl>,
+    #[serde(default)]
     pub time_remaining_ms: Option<(i64, i64)>,
 }
 
@@ -94,6 +104,7 @@ impl From<&Game> for OpenTaflGame {
         };
 
         let mut game_play = Game::make(game.board.size(), &TimeSettings::UnTimed);
+        let start = game_play.board.open_tafl_serialize();
 
         let moves = moves
             .iter()
@@ -149,6 +160,7 @@ impl From<&Game> for OpenTaflGame {
             dim,
             sw: true,
             efe: true,
+            start,
             last_move,
             moves,
             time_control,
