@@ -49,7 +49,8 @@ pub struct ArchivedGame {
     pub rated: Rated,
     pub plays: Plays,
     pub status: Status,
-    pub texts: VecDeque<String>,
+    #[serde(default)]
+    pub messages: VecDeque<Message>,
     pub board_size: BoardSize,
 }
 
@@ -65,7 +66,7 @@ impl ArchivedGame {
             rated: game.rated,
             plays: game.game.plays,
             status: game.game.status,
-            texts: game.texts.iter().map(ToString::to_string).collect(),
+            messages: game.messages,
             board_size: game.game.board.size(),
         }
     }
@@ -149,13 +150,14 @@ impl Messenger {
     }
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct Text {
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+pub struct Message {
     pub username: String,
     pub timestamp: Timestamp,
-    pub message: String,
+    pub content: String,
 }
-impl fmt::Display for Text {
+
+impl fmt::Display for Message {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if &self.username == "𓇳" {
             write!(f, "𓇳 {}", self.timestamp.strftime("%F %T %z"))
@@ -165,7 +167,7 @@ impl fmt::Display for Text {
                 "{} {}:: {}",
                 self.username,
                 self.timestamp.strftime("%m-%d %H:%M UTC"),
-                self.message,
+                self.content,
             )
         }
     }
@@ -182,47 +184,13 @@ pub struct ServerGame {
     pub elapsed_time: i64,
     pub rated: Rated,
     pub game: Game,
-    pub texts: VecDeque<Text>,
+    pub messages: VecDeque<Message>,
 }
 
 // Fixme: we have to store Text instead of String to get the timestamp back,
 // but it is a breaking change.
 impl From<ServerGameSerialized> for ServerGame {
     fn from(server_game: ServerGameSerialized) -> Self {
-        let texts = server_game
-            .texts
-            .iter()
-            .filter_map(|text| {
-                if let Some((username_timestamp, message)) = text.split_once(":: ") {
-                    let mut username_timestamp = username_timestamp.split_whitespace();
-
-                    let username = if let Some(username) = username_timestamp.next() {
-                        username.to_string()
-                    } else {
-                        String::new()
-                    };
-
-                    let timestamp = if let Some(timestamp) = username_timestamp.next()
-                        && !timestamp.is_empty()
-                    {
-                        timestamp.parse().unwrap_or(Timestamp::now())
-                    } else {
-                        Timestamp::now()
-                    };
-
-                    let message = message.to_string();
-
-                    Some(Text {
-                        username,
-                        timestamp,
-                        message,
-                    })
-                } else {
-                    None
-                }
-            })
-            .collect();
-
         Self {
             id: server_game.id,
             attacker: server_game.attacker,
@@ -233,7 +201,7 @@ impl From<ServerGameSerialized> for ServerGame {
             elapsed_time: 0,
             rated: server_game.rated,
             game: server_game.game,
-            texts,
+            messages: server_game.messages.clone(),
         }
     }
 }
@@ -292,7 +260,7 @@ impl ServerGame {
                 plays,
                 ..Game::default()
             },
-            texts: VecDeque::new(),
+            messages: VecDeque::new(),
         }
     }
 }
@@ -314,7 +282,8 @@ pub struct ServerGameSerialized {
     pub defender: String,
     pub rated: Rated,
     pub game: Game,
-    pub texts: VecDeque<String>,
+    #[serde(default)]
+    pub messages: VecDeque<Message>,
     pub timed: TimeSettings,
 }
 
@@ -326,7 +295,7 @@ impl From<&ServerGame> for ServerGameSerialized {
             defender: game.defender.clone(),
             rated: game.rated,
             game: game.game.clone(),
-            texts: game.texts.iter().map(ToString::to_string).collect(),
+            messages: game.messages.clone(),
             timed: TimeSettings::default(),
         }
     }
@@ -624,5 +593,5 @@ pub struct ResumeGame {
     pub rated: bool,
     #[serde(flatten)]
     pub game: OpenTaflGame,
-    pub texts: VecDeque<Text>,
+    pub messages: VecDeque<Message>,
 }

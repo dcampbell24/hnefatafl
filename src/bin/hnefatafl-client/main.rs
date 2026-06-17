@@ -60,7 +60,7 @@ use hnefatafl_copenhagen::{
     play::{BOARD_LETTERS, Plae, Vertex},
     rating::Rated,
     role::Role,
-    server_game::{ArchivedGame, Challenger, ResumeGame, ServerGameLight, ServerGamesLight},
+    server_game::{self, ArchivedGame, Challenger, ResumeGame, ServerGameLight, ServerGamesLight},
     space::Space,
     status::Status,
     tcp_keep_alive,
@@ -627,9 +627,10 @@ fn pass_messages() -> impl Stream<Item = Message> {
     )
 }
 
-fn text_collect(text: SplitAsciiWhitespace<'_>) -> String {
-    let text: Vec<&str> = text.collect();
-    text.join(" ")
+fn message_collect(message: SplitAsciiWhitespace<'_>) -> server_game::Message {
+    let message: Vec<_> = message.collect();
+    let message = message.join(" ");
+    ron::de::from_str(&message).expect("Deserialization has to work!!")
 }
 
 #[allow(clippy::struct_excessive_bools)]
@@ -756,9 +757,9 @@ struct Client {
     #[serde(skip)]
     status: Status,
     #[serde(skip)]
-    texts: VecDeque<String>,
+    texts: VecDeque<server_game::Message>,
     #[serde(skip)]
-    texts_game: VecDeque<String>,
+    texts_game: VecDeque<server_game::Message>,
     #[serde(skip)]
     text_input: String,
     #[serde(default)]
@@ -1850,7 +1851,7 @@ impl<'a> Client {
                 &game_handle.boards.here().board,
                 game_handle.play,
                 status,
-                &game_handle.game.texts,
+                &game_handle.game.messages,
             )
         } else {
             if self.admin {
@@ -2325,34 +2326,25 @@ impl<'a> Client {
 
     fn texting(
         &'a self,
-        messages: &'a VecDeque<String>,
+        messages: &'a VecDeque<server_game::Message>,
         enable_texting: bool,
     ) -> Container<'a, Message> {
         let mut text_box = Column::new().spacing(SPACING).padding(PADDING_SMALL);
         let mut texts = Column::new();
 
         for message in messages.iter().rev() {
-            match message.split_once("::") {
-                Some((header, message)) => {
-                    if let Some((name, date)) = header.split_once(' ') {
-                        texts = texts.push(
-                            row![
-                                text(name).font(Font {
-                                    weight: Weight::Bold,
-                                    ..Font::DEFAULT
-                                }),
-                                text(date).color(GREY)
-                            ]
-                            .spacing(SPACING),
-                        );
-                    } else {
-                        texts = texts.push(text(header));
-                    }
+            texts = texts.push(
+                row![
+                    text(message.username.clone()).font(Font {
+                        weight: Weight::Bold,
+                        ..Font::DEFAULT
+                    }),
+                    text(message.timestamp.to_string()).color(GREY)
+                ]
+                .spacing(SPACING),
+            );
 
-                    texts = texts.push(text(message.trim()));
-                }
-                None => texts = texts.push(text(message)),
-            }
+            texts = texts.push(text(message.content.clone()));
         }
 
         text_box = text_box.push(texts);
@@ -3394,11 +3386,7 @@ impl<'a> Client {
                                     }
                                 }
 
-                                self.texts_game = game_deserialized
-                                    .texts
-                                    .iter()
-                                    .map(ToString::to_string)
-                                    .collect();
+                                self.texts_game = game_deserialized.messages;
 
                                 if (self.username == attacker && game.turn == Role::Attacker)
                                     || (self.username == defender && game.turn == Role::Defender)
@@ -3432,8 +3420,9 @@ impl<'a> Client {
                                 let after = Timestamp::now().as_millisecond();
                                 self.now_diff = after - self.now;
                             }
-                            Some("text") => self.texts.push_front(text_collect(text)),
-                            Some("text_game") => self.texts_game.push_front(text_collect(text)),
+                            // Fixme!
+                            //Some("text") => self.texts.push_front(text_collect(text)),
+                            Some("text_game") => self.texts_game.push_front(message_collect(text)),
                             Some("tournament_status_2") => {
                                 if let Some(tournament) = text.next() {
                                     let tournament: TournamentFull = ron::from_str(tournament)
