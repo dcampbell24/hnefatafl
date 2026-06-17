@@ -59,8 +59,8 @@ use hnefatafl_copenhagen::{
     rating::Rated,
     role::Role,
     server_game::{
-        ArchivedGame, Challenger, Messenger, ResumeGame, ServerGame, ServerGameLight,
-        ServerGameSerialized, ServerGames, ServerGamesLight, ServerGamesLightVec, Text,
+        ArchivedGame, Challenger, Message, Messenger, ResumeGame, ServerGame, ServerGameLight,
+        ServerGameSerialized, ServerGames, ServerGamesLight, ServerGamesLightVec,
     },
     space::Space,
     status::Status,
@@ -1244,23 +1244,27 @@ impl Server {
                 unreachable!()
             };
 
-            let text = Text {
+            let message = Message {
                 username: "𓇳".to_string(),
                 timestamp: Timestamp::now(),
-                message: String::new(),
+                content: String::new(),
+            };
+
+            let Ok(message_se) = ron::ser::to_string(&message) else {
+                unreachable!();
             };
 
             if let Some(game_light) = self.games_light.0.get_mut(&index) {
                 for id in game_light.spectators.values() {
                     if let Some(sender) = self.clients.get(id) {
-                        let _ok = sender.send(format!("= text_game {text}"));
+                        let _ok = sender.send(format!("= text_game {message_se}"));
                     }
                 }
 
                 game_light.game_over = true;
             }
 
-            game.texts.push_front(text);
+            game.messages.push_front(message);
 
             if let Some(tournament) = &mut self.tournament.tournament
                 && tournament.is_tournament_game(&game.id)
@@ -1804,6 +1808,7 @@ impl Server {
 
                     None
                 }
+                // Fixme!
                 "text" => {
                     let timestamp = Timestamp::now().strftime("%Y-%m-%d %H:%M:%S UTC");
                     let text = the_rest.join(" ");
@@ -2588,7 +2593,7 @@ impl Server {
         };
 
         let game = &server_game.game;
-        let texts = &server_game.texts;
+        let messages = &server_game.messages;
 
         info!("{index_supplied} {username} {command} {id}");
 
@@ -2632,7 +2637,7 @@ impl Server {
                 defenders: game_light.defender.clone(),
                 rated: game_light.rated.into(),
                 game,
-                texts: texts.clone(),
+                messages: messages.clone(),
             };
 
             // DEBUG!
@@ -2666,13 +2671,13 @@ impl Server {
                 unreachable!()
             };
 
-            let Ok(texts_se) = ron::ser::to_string(&texts) else {
+            let Ok(messages_se) = ron::ser::to_string(&messages) else {
                 unreachable!()
             };
 
             client
                 .send(format!(
-                    "= resume_game {} {} {} {:?} {} {game_se} {texts_se}",
+                    "= resume_game {} {} {} {:?} {} {game_se} {messages_se}",
                     game_light.attacker.clone()?,
                     game_light.defender.clone()?,
                     game_light.rated,
@@ -2849,31 +2854,35 @@ impl Server {
             ));
         };
 
-        let mut message = the_rest.split_off(1).join(" ");
+        let mut content = the_rest.split_off(1).join(" ");
 
-        if message.is_empty() {
+        if content.is_empty() {
             return None;
         }
 
-        message = self.censor(&message);
+        content = self.censor(&content);
 
-        let text = Text {
+        let message = Message {
             username: username.to_string(),
             timestamp: Timestamp::now(),
-            message,
+            content,
         };
 
-        let text_string = format!("= text_game {text}");
+        let Ok(message_se) = ron::ser::to_string(&message) else {
+            unreachable!();
+        };
 
-        info!("{index_supplied} {username} text_game {id} {text}");
+        let message_string = format!("= text_game {message_se}");
+
+        info!("{index_supplied} {username} text_game {id} {message_se}");
         if let Some(game) = self.games.0.get_mut(&id) {
-            game.texts.push_front(text);
+            game.messages.push_front(message);
         }
 
         if let Some(game) = self.games_light.0.get(&id) {
             for index in game.spectators.values() {
                 if let Some(sender) = self.clients.get(index) {
-                    let _ok = sender.send(text_string.clone());
+                    let _ok = sender.send(message_string.clone());
                 }
             }
         }
@@ -3012,8 +3021,8 @@ impl Server {
         let Ok(board) = ron::ser::to_string(game) else {
             unreachable!()
         };
-        let texts = &server_game.texts;
-        let Ok(texts_se) = ron::ser::to_string(texts) else {
+        let messages = &server_game.messages;
+        let Ok(texts_se) = ron::ser::to_string(messages) else {
             unreachable!()
         };
 
@@ -3030,7 +3039,7 @@ impl Server {
                 defenders: game.defender.clone(),
                 rated: game.rated.into(),
                 game: game_opentafl,
-                texts: texts.clone(),
+                messages: messages.clone(),
             };
 
             let Ok(resume_game) = serde_json::to_string(&resume_game) else {
@@ -3049,7 +3058,7 @@ impl Server {
                 defenders: game.defender.clone(),
                 rated: game.rated.into(),
                 game: game_opentafl,
-                texts: texts.clone(),
+                messages: messages.clone(),
             };
 
             let Ok(resume_game) = ron::to_string(&resume_game) else {

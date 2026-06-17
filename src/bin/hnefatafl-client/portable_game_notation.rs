@@ -35,7 +35,6 @@ use hnefatafl_copenhagen::{
     server_game::{ArchivedGame, ServerGame, ServerGameSerialized},
     time::TimeSettings,
 };
-use jiff::Timestamp;
 use rfd::FileDialog;
 
 pub fn read_portable_game_notation() -> anyhow::Result<ArchivedGame> {
@@ -130,7 +129,7 @@ fn archived_game_from_pgn(mut file: File) -> anyhow::Result<ArchivedGame> {
         defender: "defender".to_string(),
         rated: Rated::No,
         game,
-        texts: VecDeque::new(),
+        messages: VecDeque::new(),
         timed: TimeSettings::UnTimed,
     };
 
@@ -170,18 +169,6 @@ pub fn write_portable_game_notation(archived_game: &ArchivedGame) -> anyhow::Res
 
 #[must_use]
 fn portable_game_notation_from_archived_game(archived_game: &ArchivedGame) -> String {
-    let date = if let Some(text) = archived_game.texts.front() {
-        match Timestamp::strptime("𓇳 %F %T %z", text) {
-            Ok(time) => time.strftime("[Date \"%F %T %z\"]\n").to_string(),
-            Err(error) => {
-                println!("error: {error}");
-                String::new()
-            }
-        }
-    } else {
-        String::new()
-    };
-
     let plays = match &archived_game.plays {
         Plays::PlayRecordsTimed(plays) => {
             let mut vec = Vec::new();
@@ -214,17 +201,22 @@ fn portable_game_notation_from_archived_game(archived_game: &ArchivedGame) -> St
         plays_2.push(play);
     }
 
-    let plays = plays_2.join(" ");
-
-    let string = format!(
-        "\
-[Event \"Game {}\"]
-[Site \"hnefatafl.org\"]
-{date}
-{plays}
-",
+    let mut string = format!(
+        "[Event \"Game {}\"]\n[Site \"hnefatafl.org\"]\n",
         archived_game.id,
     );
+
+    if let Some(message) = archived_game.messages.front()
+        && "𓇳" == &message.username
+    {
+        let date = message
+            .timestamp
+            .strftime("[Date \"%F %T %z\"]\n")
+            .to_string();
+        string.push_str(&date);
+    }
+
+    string.push_str(&plays_2.join(" "));
 
     string
 }
