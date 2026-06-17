@@ -162,7 +162,7 @@ impl fmt::Display for Text {
         } else {
             write!(
                 f,
-                "{} {}:: {} ",
+                "{} {}:: {}",
                 self.username,
                 self.timestamp.strftime("%m-%d %H:%M UTC"),
                 self.message,
