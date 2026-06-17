@@ -170,7 +170,7 @@ pub fn write_portable_game_notation(archived_game: &ArchivedGame) -> anyhow::Res
 
 #[must_use]
 fn portable_game_notation_from_archived_game(archived_game: &ArchivedGame) -> String {
-    let date = if let Some(text) = archived_game.texts.back() {
+    let date = if let Some(text) = archived_game.texts.front() {
         match Timestamp::strptime("𓇳 %F %T %z", text) {
             Ok(time) => time.strftime("[Date \"%F %T %z\"]\n").to_string(),
             Err(error) => {
