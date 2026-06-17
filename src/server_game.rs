@@ -191,7 +191,7 @@ impl From<ServerGameSerialized> for ServerGame {
             .texts
             .iter()
             .filter_map(|text| {
-                if let Some((username_timestamp, message)) = text.split_once("::") {
+                if let Some((username_timestamp, message)) = text.split_once(":: ") {
                     let mut username_timestamp = username_timestamp.split_whitespace();
 
                     let username = if let Some(username) = username_timestamp.next() {

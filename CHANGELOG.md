@@ -32,6 +32,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Don't add spaces to the texts when resuming game.
+- Get the date right for PGN when we have messages.
 - ReviewGame: fix underflow error.
 - Restore the king's position when restoring a game.
 - hnefatafl-server-full: handle_messages.
