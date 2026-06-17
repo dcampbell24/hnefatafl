@@ -185,6 +185,8 @@ pub struct ServerGame {
     pub texts: VecDeque<Text>,
 }
 
+// Fixme: we have to store Text instead of String to get the timestamp back,
+// but it is a breaking change.
 impl From<ServerGameSerialized> for ServerGame {
     fn from(server_game: ServerGameSerialized) -> Self {
         let texts = server_game
