@@ -67,24 +67,30 @@ pub struct TimeControl {
     increment_length: i64,
 }
 
-const fn default_true() -> bool {
+const fn _default_true() -> bool {
     true
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum Variant {
+    #[default]
+    Copenhagen,
+}
+
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct OpenTaflGame {
+    // #[serde(default)]
+    // pub variant: Variant,
     pub dim: usize,
-    #[serde(default = "default_true")]
-    pub sw: bool,
-    #[serde(default = "default_true")]
-    pub efe: bool,
+    // #[serde(default = "default_true")]
+    // pub sw: bool,
+    // #[serde(default = "default_true")]
+    // pub efe: bool,
     pub start: String,
-    #[serde(default)]
     pub last_move: Option<Timestamp>,
     pub moves: String,
-    #[serde(default)]
     pub time_control: Option<TimeControl>,
-    #[serde(default)]
     pub time_remaining_ms: Option<(i64, i64)>,
 }
 
@@ -158,8 +164,6 @@ impl From<&Game> for OpenTaflGame {
 
         Self {
             dim,
-            sw: true,
-            efe: true,
             start,
             last_move,
             moves,

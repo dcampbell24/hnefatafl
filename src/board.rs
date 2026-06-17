@@ -1436,7 +1436,7 @@ impl Board {
                             empty_spaces = None;
                         }
 
-                        open_tafl.push('t');
+                        open_tafl.push('a');
                     }
                     Space::King => {
                         if let Some(spaces) = empty_spaces {
@@ -1444,7 +1444,7 @@ impl Board {
                             empty_spaces = None;
                         }
 
-                        open_tafl.push('K');
+                        open_tafl.push('k');
                     }
                     Space::Defender => {
                         if let Some(spaces) = empty_spaces {
@@ -1452,7 +1452,7 @@ impl Board {
                             empty_spaces = None;
                         }
 
-                        open_tafl.push('T');
+                        open_tafl.push('d');
                     }
                 }
             }
