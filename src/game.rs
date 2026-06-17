@@ -19,7 +19,7 @@
 use std::{
     borrow::Cow,
     collections::{BinaryHeap, HashMap},
-    fmt,
+    fmt::{self, Write},
     hash::{DefaultHasher, Hash, Hasher},
     process::exit,
     str::FromStr,
@@ -91,11 +91,25 @@ impl From<&Game> for OpenTaflGame {
             Plays::PlayRecords(plays) => plays.iter().flatten().cloned().collect(),
         };
 
+        let mut game_play = Game::make(game.board.size(), &TimeSettings::UnTimed);
+
         let moves = moves
             .iter()
-            .map(|play| match play {
-                Plae::Play(play) => format!("{}-{}", play.from, play.to),
-                Plae::AttackerResigns | Plae::DefenderResigns => "resigns".to_string(),
+            .map(|play| {
+                let captures = game_play.play(play).expect("This must be a valid move!");
+                let mut play_string = match play {
+                    Plae::Play(play) => {
+                        format!("{}-{}", play.from, play.to)
+                    }
+
+                    Plae::AttackerResigns | Plae::DefenderResigns => "---".to_string(),
+                };
+
+                for capture in captures.0 {
+                    let _ = write!(play_string, "x{capture}");
+                }
+
+                play_string
             })
             .join(" ");
 
@@ -172,7 +186,8 @@ impl From<OpenTaflGame> for Game {
         let mut plays = Vec::with_capacity(game_opentafl.moves.len());
         let mut role = Role::Attacker;
 
-        for play in &mut game_opentafl.moves.split_whitespace() {
+        for play in game_opentafl.moves.split_whitespace() {
+            let mut play = play.to_string();
             let role_str = role.to_string();
 
             let play = if play == "resigns" {
@@ -182,6 +197,12 @@ impl From<OpenTaflGame> for Game {
                     Role::Roleless => unreachable!(),
                 }
             } else {
+                if play.contains('x')
+                    && let Some(play_capture) = play.split('x').next()
+                {
+                    play = play_capture.to_string();
+                }
+
                 let play_vec: Vec<_> = play.splitn(2, '-').collect();
                 vec!["play", &role_str, play_vec[0], play_vec[1]]
             };
