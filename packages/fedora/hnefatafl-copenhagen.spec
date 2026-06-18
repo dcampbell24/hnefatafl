@@ -42,7 +42,7 @@ default it connects to the server running at hnefatafl.org.}
 %setup -q -n hnefatafl
 
 %build
-sed -i 's/cargo-/fedora-/' src/bin/hnefatafl-client/main.rs;
+sed -i 's/cargo-/fedora-/' src/lib.rs;
 RUST_MIN_STACK=2147483648 cargo build --release --examples
 RUST_MIN_STACK=2147483648 cargo build --release
 
