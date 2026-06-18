@@ -157,22 +157,6 @@ pub struct Message {
     pub content: String,
 }
 
-impl fmt::Display for Message {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if &self.username == "𓇳" {
-            write!(f, "𓇳 {}", self.timestamp.strftime("%F %T %z"))
-        } else {
-            write!(
-                f,
-                "{} {}:: {}",
-                self.username,
-                self.timestamp.strftime("%m-%d %H:%M UTC"),
-                self.content,
-            )
-        }
-    }
-}
-
 #[derive(Clone, Debug)]
 pub struct ServerGame {
     pub id: Id,

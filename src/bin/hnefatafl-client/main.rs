@@ -630,7 +630,17 @@ fn pass_messages() -> impl Stream<Item = Message> {
 fn message_collect(message: SplitAsciiWhitespace<'_>) -> server_game::Message {
     let message: Vec<_> = message.collect();
     let message = message.join(" ");
+
     ron::de::from_str(&message).expect("Deserialization has to work!!")
+}
+
+fn messages_collect(message: SplitAsciiWhitespace<'_>) -> VecDeque<server_game::Message> {
+    let message: Vec<_> = message.collect();
+    let message = message.join(" ");
+    let messages: Vec<server_game::Message> =
+        ron::de::from_str(&message).expect("Deserialization has to work!!");
+
+    messages.iter().rev().cloned().collect()
 }
 
 #[allow(clippy::struct_excessive_bools)]
@@ -1118,7 +1128,7 @@ impl<'a> Client {
     fn chat_view(&self) -> Column<'_, Message> {
         column![
             button(text!("{} (Esc)", t!("Quit"))).on_press(Message::Leave),
-            self.texting(&self.texts, true),
+            self.texting(&self.texts, true, false),
         ]
         .spacing(SPACING)
         .padding(PADDING)
@@ -2130,9 +2140,9 @@ impl<'a> Client {
         }
 
         if self.archived_game_handle.is_some() {
-            user_area = user_area.push(self.texting(texts, false));
+            user_area = user_area.push(self.texting(texts, false, true));
         } else {
-            user_area = user_area.push(self.texting(texts, true));
+            user_area = user_area.push(self.texting(texts, true, true));
         }
 
         let user_area = container(user_area)
@@ -2328,21 +2338,25 @@ impl<'a> Client {
         &'a self,
         messages: &'a VecDeque<server_game::Message>,
         enable_texting: bool,
+        is_game: bool,
     ) -> Container<'a, Message> {
         let mut text_box = Column::new().spacing(SPACING).padding(PADDING_SMALL);
         let mut texts = Column::new();
 
         for message in messages.iter().rev() {
-            texts = texts.push(
-                row![
-                    text(message.username.clone()).font(Font {
-                        weight: Weight::Bold,
-                        ..Font::DEFAULT
-                    }),
-                    text(message.timestamp.to_string()).color(GREY)
-                ]
-                .spacing(SPACING),
-            );
+            let timestamp = message.timestamp.strftime("%F %T UTC").to_string();
+            let timestamp = text(timestamp).color(GREY);
+
+            let username = text(message.username.clone()).font(Font {
+                weight: Weight::Bold,
+                ..Font::DEFAULT
+            });
+
+            if is_game {
+                texts = texts.push(column![username, timestamp]);
+            } else {
+                texts = texts.push(row![username, timestamp].spacing(SPACING));
+            }
 
             texts = texts.push(text(message.content.clone()));
         }
@@ -3420,8 +3434,7 @@ impl<'a> Client {
                                 let after = Timestamp::now().as_millisecond();
                                 self.now_diff = after - self.now;
                             }
-                            // Fixme!
-                            //Some("text") => self.texts.push_front(text_collect(text)),
+                            Some("texts") => self.texts = messages_collect(text),
                             Some("text_game") => self.texts_game.push_front(message_collect(text)),
                             Some("tournament_status_2") => {
                                 if let Some(tournament) = text.next() {
