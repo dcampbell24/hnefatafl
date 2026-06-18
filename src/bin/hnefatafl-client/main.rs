@@ -47,7 +47,7 @@ use std::{
 use ::serde::{Deserialize, Serialize};
 use clap::{CommandFactory, Parser};
 use hnefatafl_copenhagen::{
-    COPYRIGHT, Id, SERVER_PORT, VERSION_ID,
+    COPYRIGHT, Id, SERVER_PORT, SOFTWARE_ID, VERSION_ID,
     accounts::{Account, Accounts},
     board::{Board, BoardSize},
     characters::Characters,
@@ -113,9 +113,6 @@ use crate::{
 
 #[cfg(not(target_os = "redox"))]
 use crate::portable_game_notation::{read_portable_game_notation, write_portable_game_notation};
-
-/// The software package that this is.
-const SOFTWARE_ID: &str = concat!("cargo-", env!("CARGO_PKG_VERSION"));
 
 /// The Muted qualitative color scheme of [Tol]. A color scheme for the
 /// color blind.

@@ -34,7 +34,7 @@ build() {
     tar -xvzf v$pkgver-$real_pkgrel.tar.gz
     cd "hnefatafl"
 
-    sed -i 's/cargo-/arch-/' src/bin/hnefatafl-client/main.rs;
+    sed -i 's/cargo-/arch-/' src/lib.rs;
 
     sed -i 's/opt/usr\/share/' examples/taflzero.rs;
 

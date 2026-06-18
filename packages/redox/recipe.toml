@@ -9,6 +9,8 @@ git = "https://github.com/dcampbell24/hnefatafl"
 
 [build]
 template = "custom"
+# Set the version!
+# sed -i 's/cargo-/redox-/' src/lib.rs;
 script = """
 "${COOKBOOK_CARGO}" build \
     --manifest-path "${COOKBOOK_SOURCE}/${PACKAGE_PATH}/Cargo.toml" \

@@ -2,7 +2,7 @@
 
 export RUST_MIN_STACK=67108864
 
-sed -i 's/cargo-/debian-/' src/bin/hnefatafl-client/main.rs;
+sed -i 's/cargo-/debian-/' src/lib.rs;
 
 cargo build --release --examples
 cargo build --release

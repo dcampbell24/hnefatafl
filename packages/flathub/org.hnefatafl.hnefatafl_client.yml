@@ -37,7 +37,7 @@ modules:
         CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER: clang
         CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUSTFLAGS: -C link-arg=-fuse-ld=/usr/lib/sdk/rust-stable/bin/mold
     build-commands:
-      - sed -i 's/cargo-/flathub-/' src/bin/hnefatafl-client/main.rs
+      - sed -i 's/cargo-/flathub-/' src/lib.rs
       - source /usr/lib/sdk/rust-stable/enable.sh && cargo --offline build --release --bin hnefatafl-client --features client,icon_2 --no-default-features
       - install -Dm755 target/release/hnefatafl-client /app/bin/$FLATPAK_ID
       - install -Dm644 website/src/images/helmet.svg /app/share/icons/hicolor/scalable/apps/$FLATPAK_ID.svg

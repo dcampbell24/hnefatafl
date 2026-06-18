@@ -31,7 +31,7 @@ use clap::{CommandFactory, Parser};
 use colored::Colorize;
 use env_logger::Builder;
 use hnefatafl_copenhagen::{
-    COPYRIGHT, VERSION_ID,
+    COPYRIGHT, SOFTWARE_ID, VERSION_ID,
     ai::{AI, AiMonteCarlo},
     game::Game,
     play::{Plae, Play, Vertex},
@@ -163,6 +163,7 @@ fn main() -> anyhow::Result<()> {
     let mut reader = BufReader::new(tcp.try_clone()?);
 
     tcp.write_all(format!("{VERSION_ID} login {username} {}\n", args.password).as_bytes())?;
+    tcp.write_all(format!("software_id {SOFTWARE_ID}\n").as_bytes())?;
 
     if args.join_tournament {
         tcp.write_all("join_tournament\n".as_bytes())?;
@@ -183,35 +184,26 @@ fn main() -> anyhow::Result<()> {
     };
 
     let mut engine = Engine::new(onnx_path.to_string());
+    let mut game_id = None;
+    let mut game = Game::default();
+
+    log::debug!("{game}");
+
+    if let Some(id) = args.join_game {
+        let id = id.to_string();
+        tcp.write_all(format!("join_game_pending {id}\n").as_bytes())?;
+
+        game_id = Some(0);
+    }
+
+    let mut ai = AiMonteCarlo::new(Duration::from_secs(MONTE_CARLO_SECONDS), MONTE_CARLO_DEPTH);
 
     loop {
-        let game_id;
-
-        if let Some(game_id_) = args.join_game {
-            game_id = game_id_.to_string();
-            tcp.write_all(format!("join_game_pending {game_id}\n").as_bytes())?;
-        } else {
-            new_game(&mut tcp, args.role, &mut reader, &mut buf)?;
-
-            let message: Vec<_> = buf.split_ascii_whitespace().collect();
-            log::info!("{message:?}");
-            game_id = message[3].to_string();
-            buf.clear();
-
-            wait_for_challenger(&mut reader, &mut buf, &mut tcp, &game_id)?;
-        }
-
-        let game = Game::default();
-        let ai = AiMonteCarlo::new(Duration::from_secs(MONTE_CARLO_SECONDS), MONTE_CARLO_DEPTH);
-        engine.set_start_position();
-
-        log::debug!("\n{}", game.board);
-
-        handle_messages(
-            ai,
-            game,
+        game = handle_messages(
+            &mut ai,
             &mut engine,
-            &game_id,
+            &mut game_id,
+            game,
             *role,
             &mut reader,
             &mut tcp,
@@ -248,92 +240,109 @@ fn new_game(
     }
 }
 
-fn wait_for_challenger(
-    reader: &mut BufReader<TcpStream>,
-    buf: &mut String,
-    tcp: &mut TcpStream,
-    game_id: &str,
-) -> anyhow::Result<()> {
-    loop {
-        reader.read_line(buf)?;
-
-        if buf.trim().is_empty() {
-            return Err(Error::msg("the TCP stream has closed"));
-        }
-
-        let message: Vec<_> = buf.split_ascii_whitespace().collect();
-
-        if Some("challenge_requested") == message.get(1).copied() {
-            log::info!("{message:?}");
-            buf.clear();
-
-            break;
-        }
-
-        buf.clear();
-    }
-
-    tcp.write_all(format!("join_game {game_id}\n").as_bytes())?;
-
-    Ok(())
-}
-
 #[allow(clippy::too_many_arguments)]
 fn handle_messages(
-    mut ai: AiMonteCarlo,
-    mut game: Game,
+    ai: &mut AiMonteCarlo,
     engine: &mut Engine,
-    game_id: &str,
+    mut game_id: &mut Option<u128>,
+    mut game: Game,
     role: Role,
     reader: &mut BufReader<TcpStream>,
     tcp: &mut TcpStream,
     search_ms: u64,
-) -> anyhow::Result<()> {
+) -> anyhow::Result<Game> {
     let mut buf = String::new();
 
-    loop {
-        reader.read_line(&mut buf)?;
-
-        if buf.trim().is_empty() {
-            return Err(Error::msg("the TCP stream has closed"));
-        }
+    if game_id.is_none() {
+        new_game(tcp, role, reader, &mut buf)?;
+        game = Game::default();
+        engine.set_start_position();
 
         let message: Vec<_> = buf.split_ascii_whitespace().collect();
+        log::info!("{message:?}");
 
-        if Some("generate_move") == message.get(2).copied() {
-            generate_move(&mut ai, &mut game, engine, game_id, role, tcp, search_ms)?;
-        } else if Some("play") == message.get(2).copied() {
-            let play =
-                Plae::try_from(message[2..].to_vec()).expect("we should be getting a valid play");
-
-            log_play(&play, false);
-            game.play(&play)?;
-
-            if game.status != Status::Ongoing {
-                return Ok(());
-            }
-
-            let Plae::Play(play) = play else {
-                unreachable!();
-            };
-
-            let mv = format!("{}{}", play.from, play.to);
-            let mv = create_move_from_algebraic(&mv).unwrap();
-
-            if let Err(invalid_play) = engine.make_move(mv) {
-                log::error!("invalid_play: {invalid_play:?}");
-
-                tcp.write_all(format!("game {game_id} play {role} resigns _\n").as_bytes())?;
-                return Ok(());
-            }
-
-            log::debug!("{}", game.board);
-        } else if Some("game_over") == message.get(1).copied() {
-            return Ok(());
-        }
-
+        *game_id = Some(message[3].parse()?);
         buf.clear();
     }
+
+    reader.read_line(&mut buf)?;
+    if buf.trim().is_empty() {
+        return Err(Error::msg("the TCP stream has closed"));
+    }
+
+    let message: Vec<_> = buf.split_ascii_whitespace().collect();
+
+    match (message.get(1).copied(), message.get(2).copied()) {
+        (Some("game_over"), id) => {
+            if let (Some(id_1), Some(id_2)) = (id, &mut game_id)
+                && let Ok(id_1) = id_1.parse::<u128>()
+                && id_1 == *id_2
+            {
+                *game_id = None;
+            }
+
+            game = Game::default();
+            log::debug!("{game}");
+        }
+        (Some("tournament_status_2"), _) => {
+            println!("{message:?}");
+        }
+        (Some("challenge_requested"), _) => {
+            log::info!("{message:?}");
+
+            if let Some(game_id) = game_id {
+                tcp.write_all(format!("join_game {game_id}\n").as_bytes())?;
+
+                let game = Game::default();
+                engine.set_start_position();
+
+                log::debug!("\n{}", game.board);
+            }
+        }
+        (_, Some("generate_move")) => {
+            if let Some(game_id) = game_id {
+                generate_move(ai, &mut game, engine, *game_id, role, tcp, search_ms)?;
+                log::debug!("{game}");
+            }
+        }
+        (_, Some("play")) => {
+            if let Some(game_id) = game_id {
+                let play = Plae::try_from(message[2..].to_vec())
+                    .expect("we should be getting a valid play");
+
+                log_play(&play, false);
+                game.play(&play)?;
+
+                if game.status != Status::Ongoing {
+                    return Ok(game);
+                }
+
+                let Plae::Play(play) = play else {
+                    unreachable!();
+                };
+
+                let mv = format!("{}{}", play.from, play.to);
+                let mv = create_move_from_algebraic(&mv).unwrap();
+
+                if let Err(invalid_play) = engine.make_move(mv) {
+                    log::error!("invalid_play: {invalid_play:?}");
+
+                    tcp.write_all(format!("game {game_id} play {role} resigns _\n").as_bytes())?;
+                    return Ok(game);
+                }
+
+                log::debug!("{game}");
+            }
+        }
+        (_, Some("tournament_status_2")) => {
+            println!("{message:?}");
+        }
+        _ => {}
+    }
+
+    buf.clear();
+
+    Ok(game)
 }
 
 fn systemd_delay_restart(args: &Args) -> anyhow::Result<()> {
@@ -388,7 +397,7 @@ fn generate_move(
     ai: &mut AiMonteCarlo,
     game: &mut Game,
     engine: &mut Engine,
-    game_id: &str,
+    game_id: u128,
     role: Role,
     tcp: &mut TcpStream,
     search_ms: u64,
@@ -458,7 +467,7 @@ fn generate_move(
     Ok(())
 }
 
-fn player_resigns(tcp: &mut TcpStream, game_id: &str, role: Role) -> anyhow::Result<()> {
+fn player_resigns(tcp: &mut TcpStream, game_id: u128, role: Role) -> anyhow::Result<()> {
     tcp.write_all(format!("game {game_id} play {role} resigns _\n").as_bytes())?;
     Err(anyhow::Error::msg("The player resigned!"))
 }
