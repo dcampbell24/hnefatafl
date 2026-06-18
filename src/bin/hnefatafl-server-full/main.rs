@@ -454,7 +454,7 @@ struct Server {
     #[serde(skip)]
     skip_the_data_files: bool,
     #[serde(default)]
-    texts: VecDeque<String>,
+    texts: VecDeque<Message>,
     #[serde(skip)]
     tx: Option<mpsc::Sender<(String, Option<mpsc::Sender<String>>)>>,
     #[serde(default)]
@@ -1808,38 +1808,51 @@ impl Server {
 
                     None
                 }
-                // Fixme!
                 "text" => {
-                    let timestamp = Timestamp::now().strftime("%Y-%m-%d %H:%M:%S UTC");
-                    let text = the_rest.join(" ");
+                    let timestamp = Timestamp::now();
+                    let mut content = the_rest.join(" ");
+                    content = self.censor(&content);
 
-                    info!("{index_supplied} {timestamp} {username} text {text}");
+                    let message = Message {
+                        username: username.to_string(),
+                        timestamp,
+                        content,
+                    };
 
-                    let text = self.censor(&text);
+                    info!("{index_supplied} text {message:?}");
 
-                    if text.is_empty() {
+                    if message.content.is_empty() {
                         return None;
                     }
 
-                    let text = format!("= text {username} {timestamp}:: {text}");
+                    let Ok(message_se) = ron::ser::to_string(&message) else {
+                        return None;
+                    };
+
+                    let message_se = format!("= text {message_se}");
 
                     if self.texts.len() >= KEEP_TEXTS {
                         self.texts.pop_front();
                     }
 
                     for tx in &mut self.clients.values() {
-                        let _ok = tx.send(text.clone());
+                        let _ok = tx.send(message_se.clone());
                     }
 
-                    self.texts.push_back(text);
+                    self.texts.push_back(message);
 
                     None
                 }
                 "texts" => {
                     if !self.texts.is_empty() {
-                        let string = Vec::from(self.texts.clone()).join("\n");
+                        let Ok(string) = ron::ser::to_string(&self.texts) else {
+                            unreachable!()
+                        };
 
-                        self.clients.get(&index_supplied)?.send(string).ok()?;
+                        self.clients
+                            .get(&index_supplied)?
+                            .send(format!("= texts {string}"))
+                            .ok()?;
                     }
 
                     None
