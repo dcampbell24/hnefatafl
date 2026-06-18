@@ -94,9 +94,6 @@ pub struct OpenTaflGame {
     pub time_remaining_ms: Option<(i64, i64)>,
 }
 
-// Fixme: This is wrong, but I have to make breaking changes to fix it.The
-// plays should not store the increment_length, but the main_time_seconds
-// and increment_length should be stored seperately.
 impl From<&Game> for OpenTaflGame {
     fn from(game: &Game) -> Self {
         let dim = usize::from(game.board.size());
