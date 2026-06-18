@@ -1720,7 +1720,7 @@ impl<'a> Client {
 
     fn resume(&mut self, id: u128) {
         self.game_id = id;
-        self.send(&format!("resume_game_json {id}\n"));
+        self.send(&format!("resume_game_ron {id}\n"));
     }
 
     fn watch(&mut self, id: u128) {
