@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Improve tournament.
 - Change the message format.
+- Changed the format of display_game to JSON.
 
 ### Changed
 
