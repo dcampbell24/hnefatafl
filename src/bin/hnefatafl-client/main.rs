@@ -53,7 +53,7 @@ use hnefatafl_copenhagen::{
     characters::Characters,
     draw::Draw,
     email::Email,
-    game::{Game, LegalMoves, TimeUnix},
+    game::{Game, GameTime, LegalMoves, TimeUnix},
     heat_map::{Heat, HeatMap},
     invalid_username,
     locale::Locale,
@@ -3230,6 +3230,34 @@ impl<'a> Client {
                                         stream.log_on_drop(false);
                                         Ok::<(), anyhow::Error>(())
                                     });
+                                }
+                            }
+                            Some("game_time") => {
+                                let texts: Vec<&str> = text.collect();
+                                let game_time = texts.join(" ");
+                                let game_time: GameTime = serde_json::de::from_str(&game_time)
+                                    .expect("Deserialization should work!");
+
+                                if self.game_id == game_time.id
+                                    && let (
+                                        TimeSettings::Timed(attacker_time),
+                                        TimeSettings::Timed(defender_time),
+                                    ) = (&mut self.time_attacker, &mut self.time_defender)
+                                {
+                                    debug!(
+                                        "Attacker time difference (ms): {}",
+                                        attacker_time.milliseconds_left
+                                            - game_time.attacker_ms_left
+                                    );
+
+                                    debug!(
+                                        "Defender time difference (ms): {}",
+                                        defender_time.milliseconds_left
+                                            - game_time.defender_ms_left
+                                    );
+
+                                    attacker_time.milliseconds_left = game_time.attacker_ms_left;
+                                    defender_time.milliseconds_left = game_time.defender_ms_left;
                                 }
                             }
                             // = join_game david abby rated fischer 900_000 10
