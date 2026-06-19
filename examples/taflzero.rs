@@ -20,6 +20,7 @@
 // starting with the game with the least time left, play.
 
 use std::{
+    collections::BTreeMap,
     env, fs,
     io::{BufRead, BufReader, Write},
     net::{TcpStream, ToSocketAddrs},
@@ -36,7 +37,7 @@ use env_logger::Builder;
 use hnefatafl_copenhagen::{
     COPYRIGHT, SOFTWARE_ID, VERSION_ID,
     ai::{AI, AiMonteCarlo},
-    game::Game,
+    game::{Game, GameTime},
     play::{Plae, Play, Vertex},
     role::Role,
     server_game::ServerGameLight,
@@ -99,10 +100,12 @@ struct Args {
 }
 
 struct TaflZero {
+    username: String,
     ai: AiMonteCarlo,
     engine: Engine,
     game_id: Option<u128>,
     game: Game,
+    games_time_left: BTreeMap<u128, i64>,
     role: Role,
     reader: BufReader<TcpStream>,
     tcp: TcpStream,
@@ -215,10 +218,12 @@ fn main() -> anyhow::Result<()> {
     let ai = AiMonteCarlo::new(Duration::from_secs(MONTE_CARLO_SECONDS), MONTE_CARLO_DEPTH);
 
     let mut taflzero = TaflZero {
+        username,
         ai,
         engine,
         game_id,
         game,
+        games_time_left: BTreeMap::new(),
         role: *role,
         reader,
         tcp,
@@ -235,6 +240,7 @@ fn main() -> anyhow::Result<()> {
     }
 }
 
+#[allow(clippy::too_many_lines)]
 fn handle_messages(taflzero: &mut TaflZero) -> anyhow::Result<Game> {
     let mut buf = String::new();
 
@@ -254,11 +260,17 @@ fn handle_messages(taflzero: &mut TaflZero) -> anyhow::Result<Game> {
 
     match (message.get(1).copied(), message.get(2).copied()) {
         (Some("display_games"), _) => {
-            let display_games: Vec<_> = message.iter().skip(2).copied().collect();
-            let display_games = display_games.join(" ");
-            let display_games: Vec<ServerGameLight> = serde_json::de::from_str(&display_games)?;
+            let games: Vec<_> = message.iter().skip(2).copied().collect();
+            let games = games.join(" ");
+            let games: Vec<ServerGameLight> = serde_json::de::from_str(&games)?;
 
-            log::debug!("{display_games:#?}");
+            for game in games {
+                if game.attacker.as_ref() == Some(&taflzero.username)
+                    || game.defender.as_ref() == Some(&taflzero.username)
+                {
+                    log::info!("{game:?}");
+                }
+            }
         }
         (Some("new_game"), _) => {
             log::info!("{message:?}");
@@ -281,6 +293,34 @@ fn handle_messages(taflzero: &mut TaflZero) -> anyhow::Result<Game> {
 
             log::debug!("{}", taflzero.game);
         }
+        (Some("game_time"), Some(game_time)) => {
+            let game_time: GameTime = serde_json::de::from_str(game_time)?;
+
+            println!("{game_time:?}");
+
+            if let Some(id) = taflzero.game_id
+                && id == game_time.id
+            {
+                let ms_left_1 = match taflzero.role {
+                    Role::Attacker => game_time.attacker_ms_left,
+                    Role::Defender => game_time.defender_ms_left,
+                    Role::Roleless => unreachable!(),
+                };
+
+                if let Some(ms_left_2) = taflzero.games_time_left.get(&id) {
+                    if ms_left_1 != *ms_left_2 {
+                        taflzero.games_time_left.insert(id, ms_left_1);
+
+                        log::info!("id: {id}, ms_left: {ms_left_1}");
+                    }
+                } else {
+                    taflzero.games_time_left.insert(id, ms_left_1);
+
+                    log::info!("id: {id}, ms_left: {ms_left_1}");
+                }
+            }
+        }
+
         (Some("tournament_status"), _) => {
             let tournament_full: Vec<_> = message.iter().skip(2).copied().collect();
             let tournament_full = tournament_full.join(" ");
@@ -343,7 +383,7 @@ fn handle_messages(taflzero: &mut TaflZero) -> anyhow::Result<Game> {
                 }
             }
         }
-        _ => {}
+        _ => log::debug!("{buf}"),
     }
 
     buf.clear();
