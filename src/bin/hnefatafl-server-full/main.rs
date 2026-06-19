@@ -1306,8 +1306,11 @@ impl Server {
             if let Ok(string) = serde_json::ser::to_string(&game_time) {
                 let message = format!("= game_time {string}");
 
-                for id in game_light.spectators.values() {
-                    if let Some(sender) = self.clients.get(id) {
+                game.attacker_tx.send(message.clone());
+                game.defender_tx.send(message.clone());
+
+                for id in game_light.spectators() {
+                    if let Some(sender) = self.clients.get(&id) {
                         let _ok = sender.send(message.clone());
                     }
                 }
