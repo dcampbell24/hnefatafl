@@ -16,6 +16,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // SPDX-FileCopyrightText: 2026 David Campbell <david@hnefatafl.org>
 
+// Need to keep track of all the active games in which it is my turn, then
+// starting with the game with the least time left, play.
+
 use std::{
     env, fs,
     io::{BufRead, BufReader, Write},
@@ -93,6 +96,17 @@ struct Args {
     /// Build the man page
     #[arg(long)]
     man: bool,
+}
+
+struct TaflZero {
+    ai: AiMonteCarlo,
+    engine: Engine,
+    game_id: Option<u128>,
+    game: Game,
+    role: Role,
+    reader: BufReader<TcpStream>,
+    tcp: TcpStream,
+    search_ms: u64,
 }
 
 fn main() -> anyhow::Result<()> {
@@ -185,7 +199,7 @@ fn main() -> anyhow::Result<()> {
         "default_nn.onnx"
     };
 
-    let mut engine = Engine::new(onnx_path.to_string());
+    let engine = Engine::new(onnx_path.to_string());
     let mut game_id = None;
     let mut game = Game::default();
 
@@ -198,19 +212,22 @@ fn main() -> anyhow::Result<()> {
         game_id = Some(0);
     }
 
-    let mut ai = AiMonteCarlo::new(Duration::from_secs(MONTE_CARLO_SECONDS), MONTE_CARLO_DEPTH);
+    let ai = AiMonteCarlo::new(Duration::from_secs(MONTE_CARLO_SECONDS), MONTE_CARLO_DEPTH);
+
+    let mut taflzero = TaflZero {
+        ai,
+        engine,
+        game_id,
+        game,
+        role: *role,
+        reader,
+        tcp,
+        search_ms: args.search_ms,
+    };
 
     loop {
-        game = handle_messages(
-            &mut ai,
-            &mut engine,
-            &mut game_id,
-            game,
-            *role,
-            &mut reader,
-            &mut tcp,
-            args.search_ms,
-        )?;
+        game = handle_messages(&mut taflzero)?;
+        taflzero.game = game;
 
         if args.join_game.is_some() {
             return Ok(());
@@ -218,25 +235,17 @@ fn main() -> anyhow::Result<()> {
     }
 }
 
-#[allow(clippy::too_many_arguments)]
-fn handle_messages(
-    ai: &mut AiMonteCarlo,
-    engine: &mut Engine,
-    mut game_id: &mut Option<u128>,
-    mut game: Game,
-    role: Role,
-    reader: &mut BufReader<TcpStream>,
-    tcp: &mut TcpStream,
-    search_ms: u64,
-) -> anyhow::Result<Game> {
+fn handle_messages(taflzero: &mut TaflZero) -> anyhow::Result<Game> {
     let mut buf = String::new();
 
-    if game_id.is_none() {
-        tcp.write_all(format!("new_game {role} rated fischer 900000 10 11\n").as_bytes())?;
-        *game_id = Some(0);
+    if taflzero.game_id.is_none() {
+        taflzero.tcp.write_all(
+            format!("new_game {} rated fischer 900000 10 11\n", taflzero.role).as_bytes(),
+        )?;
+        taflzero.game_id = Some(0);
     }
 
-    reader.read_line(&mut buf)?;
+    taflzero.reader.read_line(&mut buf)?;
     if buf.trim().is_empty() {
         return Err(Error::msg("the TCP stream has closed"));
     }
@@ -254,23 +263,23 @@ fn handle_messages(
         (Some("new_game"), _) => {
             log::info!("{message:?}");
 
-            game = Game::default();
-            engine.set_start_position();
-            *game_id = Some(message[3].parse()?);
+            taflzero.game = Game::default();
+            taflzero.engine.set_start_position();
+            taflzero.game_id = Some(message[3].parse()?);
         }
         (Some("game_over"), id) => {
             log::info!("Game Over");
 
-            if let (Some(id_1), Some(id_2)) = (id, &mut game_id)
+            if let (Some(id_1), Some(id_2)) = (id, taflzero.game_id)
                 && let Ok(id_1) = id_1.parse::<u128>()
-                && id_1 == *id_2
+                && id_1 == id_2
             {
-                *game_id = None;
+                taflzero.game_id = None;
             }
 
-            game = Game::default();
+            taflzero.game = Game::default();
 
-            log::debug!("{game}");
+            log::debug!("{}", taflzero.game);
         }
         (Some("tournament_status"), _) => {
             let tournament_full: Vec<_> = message.iter().skip(2).copied().collect();
@@ -282,32 +291,34 @@ fn handle_messages(
         (Some("challenge_requested"), _) => {
             log::info!("{message:?}");
 
-            if let Some(game_id) = game_id {
-                tcp.write_all(format!("join_game {game_id}\n").as_bytes())?;
+            if let Some(game_id) = taflzero.game_id {
+                taflzero
+                    .tcp
+                    .write_all(format!("join_game {game_id}\n").as_bytes())?;
 
                 let game = Game::default();
-                engine.set_start_position();
+                taflzero.engine.set_start_position();
 
                 log::debug!("\n{}", game.board);
             }
         }
         (_, Some("generate_move")) => {
-            if let Some(game_id) = game_id {
-                generate_move(ai, &mut game, engine, *game_id, role, tcp, search_ms)?;
+            if let Some(game_id) = taflzero.game_id {
+                generate_move(taflzero, game_id)?;
 
-                log::debug!("{game}");
+                log::debug!("{}", taflzero.game);
             }
         }
         (_, Some("play")) => {
-            if let Some(game_id) = game_id {
+            if let Some(game_id) = taflzero.game_id {
                 let play = Plae::try_from(message[2..].to_vec())
                     .expect("we should be getting a valid play");
 
                 log_play(&play, false);
-                game.play(&play)?;
+                taflzero.game.play(&play)?;
 
-                if game.status != Status::Ongoing {
-                    return Ok(game);
+                if taflzero.game.status != Status::Ongoing {
+                    return Ok(taflzero.game.clone());
                 }
 
                 let Plae::Play(play) = play else {
@@ -317,14 +328,16 @@ fn handle_messages(
                 let mv = format!("{}{}", play.from, play.to);
                 let mv = create_move_from_algebraic(&mv).unwrap();
 
-                if let Err(invalid_play) = engine.make_move(mv) {
+                if let Err(invalid_play) = taflzero.engine.make_move(mv) {
                     log::error!("invalid_play: {invalid_play:?}");
 
-                    tcp.write_all(format!("game {game_id} play {role} resigns _\n").as_bytes())?;
-                    return Ok(game);
+                    taflzero.tcp.write_all(
+                        format!("game {game_id} play {} resigns _\n", taflzero.role).as_bytes(),
+                    )?;
+                    return Ok(taflzero.game.clone());
                 }
 
-                log::debug!("{game}");
+                log::debug!("{}", taflzero.game);
             }
         }
         _ => {}
@@ -332,7 +345,7 @@ fn handle_messages(
 
     buf.clear();
 
-    Ok(game)
+    Ok(taflzero.game.clone())
 }
 
 fn systemd_delay_restart(args: &Args) -> anyhow::Result<()> {
@@ -383,18 +396,10 @@ fn init_logger(debug: bool, systemd: bool) {
     builder.init();
 }
 
-fn generate_move(
-    ai: &mut AiMonteCarlo,
-    game: &mut Game,
-    engine: &mut Engine,
-    game_id: u128,
-    role: Role,
-    tcp: &mut TcpStream,
-    search_ms: u64,
-) -> anyhow::Result<()> {
-    engine.make_search(search_ms, None);
+fn generate_move(taflzero: &mut TaflZero, game_id: u128) -> anyhow::Result<()> {
+    taflzero.engine.make_search(taflzero.search_ms, None);
 
-    if let Some(mv) = engine.best_move() {
+    if let Some(mv) = taflzero.engine.best_move() {
         let play = mv.to_string();
         let mut play = play.chars();
         let mut from = Vec::new();
@@ -416,12 +421,16 @@ fn generate_move(
         let from: String = from.iter().collect();
         let from = Vertex::from_str(&from)?;
         let to = Vertex::from_str(&to)?;
-        let play = Plae::Play(Play { role, from, to });
+        let play = Plae::Play(Play {
+            role: taflzero.role,
+            from,
+            to,
+        });
 
         log_play(&play, true);
 
-        if game.play(&play).is_err() {
-            let generate_move = ai.generate_move(game)?;
+        if taflzero.game.play(&play).is_err() {
+            let generate_move = taflzero.ai.generate_move(&mut taflzero.game)?;
             log::info!("changed play to: {generate_move}");
 
             match &generate_move.play {
@@ -429,30 +438,34 @@ fn generate_move(
                     let mv =
                         create_move_from_algebraic(&format!("{}{}", play.from, play.to)).unwrap();
 
-                    if let Err(invalid_play) = engine.make_move(mv) {
+                    if let Err(invalid_play) = taflzero.engine.make_move(mv) {
                         log::error!("invalid_play: {invalid_play:?}");
-                        player_resigns(tcp, game_id, role)?;
+                        player_resigns(&mut taflzero.tcp, game_id, taflzero.role)?;
                     }
 
-                    tcp.write_all(format!("game {game_id} {full_play}\n").as_bytes())?;
+                    taflzero
+                        .tcp
+                        .write_all(format!("game {game_id} {full_play}\n").as_bytes())?;
                 }
                 Plae::AttackerResigns | Plae::DefenderResigns => {
-                    player_resigns(tcp, game_id, role)?;
+                    player_resigns(&mut taflzero.tcp, game_id, taflzero.role)?;
                 }
             }
         } else {
-            if let Err(invalid_play) = engine.make_move(mv) {
+            if let Err(invalid_play) = taflzero.engine.make_move(mv) {
                 log::error!("invalid_play: {invalid_play:?}");
-                player_resigns(tcp, game_id, role)?;
+                player_resigns(&mut taflzero.tcp, game_id, taflzero.role)?;
             }
 
-            tcp.write_all(format!("game {game_id} {play}\n").as_bytes())?;
+            taflzero
+                .tcp
+                .write_all(format!("game {game_id} {play}\n").as_bytes())?;
         }
     } else {
-        player_resigns(tcp, game_id, role)?;
+        player_resigns(&mut taflzero.tcp, game_id, taflzero.role)?;
     }
 
-    log::debug!("{}", game.board);
+    log::debug!("{}", taflzero.game);
 
     Ok(())
 }
