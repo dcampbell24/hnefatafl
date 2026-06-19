@@ -39,7 +39,7 @@ use crate::{
     board::{Board, BoardSize, Captured, InvalidMove},
     characters::Characters,
     message::{COMMANDS, Message},
-    play::{Captures, Plae, Play, PlayRecordTimed, Plays, Vertex},
+    play::{Moved, Plae, Play, PlayRecordTimed, Plays, Vertex},
     role::Role,
     status::Status,
     time::{Time, TimeSettings},
@@ -121,7 +121,7 @@ impl From<&Game> for OpenTaflGame {
                     Plae::AttackerResigns | Plae::DefenderResigns => "---".to_string(),
                 };
 
-                for capture in captures.0 {
+                for capture in captures.captures {
                     let _ = write!(play_string, "x{capture}");
                 }
 
@@ -907,34 +907,41 @@ impl Game {
     ///
     /// If the game is already over or the move is illegal.
     #[allow(clippy::too_many_lines)]
-    pub fn play(&mut self, play: &Plae) -> Result<Captures, InvalidMove> {
+    pub fn play(&mut self, play: &Plae) -> Result<Moved, InvalidMove> {
         if self.status == Status::Ongoing {
-            if let (status, TimeSettings::Timed(timer), TimeUnix::Time(time)) = match self.turn {
-                Role::Attacker => (
-                    Status::DefenderWins,
-                    &mut self.attacker_time,
-                    &mut self.time,
-                ),
-                Role::Roleless => {
-                    unreachable!("It can't be no one's turn when the game is ongoing!")
-                }
-                Role::Defender => (
-                    Status::AttackerWins,
-                    &mut self.defender_time,
-                    &mut self.time,
-                ),
-            } {
-                let now = Timestamp::now().as_millisecond();
-                timer.milliseconds_left -= now - *time;
-                *time = now;
+            let milliseconds_left =
+                if let (status, TimeSettings::Timed(timer), TimeUnix::Time(time)) = match self.turn
+                {
+                    Role::Attacker => (
+                        Status::DefenderWins,
+                        &mut self.attacker_time,
+                        &mut self.time,
+                    ),
+                    Role::Roleless => {
+                        unreachable!("It can't be no one's turn when the game is ongoing!")
+                    }
+                    Role::Defender => (
+                        Status::AttackerWins,
+                        &mut self.defender_time,
+                        &mut self.time,
+                    ),
+                } {
+                    let now = Timestamp::now().as_millisecond();
+                    timer.milliseconds_left -= now - *time;
+                    *time = now;
 
-                if timer.milliseconds_left <= 0 {
-                    self.status = status;
-                    return Ok(Captures::default());
-                }
+                    if timer.milliseconds_left <= 0 {
+                        self.status = status;
 
-                timer.milliseconds_left += timer.add_seconds * 1_000;
-            }
+                        return Ok(Moved::out_of_time());
+                    }
+
+                    timer.milliseconds_left += timer.add_seconds * 1_000;
+
+                    Some(timer.milliseconds_left)
+                } else {
+                    None
+                };
 
             match play {
                 Plae::AttackerResigns => {
@@ -952,7 +959,10 @@ impl Game {
                             Plays::PlayRecords(plays) => plays.push(Some(play.clone())),
                         }
 
-                        Ok(Captures::default())
+                        Ok(Moved {
+                            captures: Vec::new(),
+                            milliseconds_left,
+                        })
                     } else {
                         Err(InvalidMove::InvalidResign)
                     }
@@ -972,7 +982,10 @@ impl Game {
                             Plays::PlayRecords(plays) => plays.push(Some(play.clone())),
                         }
 
-                        Ok(Captures::default())
+                        Ok(Moved {
+                            captures: Vec::new(),
+                            milliseconds_left,
+                        })
                     } else {
                         Err(InvalidMove::InvalidResign)
                     }
@@ -1027,7 +1040,10 @@ impl Game {
                         }
                     }
 
-                    let captures = Captures(captures);
+                    let captures = Moved {
+                        captures,
+                        milliseconds_left,
+                    };
                     Ok(captures)
                 }
             }

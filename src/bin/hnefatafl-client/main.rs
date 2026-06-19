@@ -3608,6 +3608,7 @@ impl<'a> Client {
             Message::Tick => {
                 self.counter = self.counter.wrapping_add(1);
 
+                // Fixme!
                 if self.counter.is_multiple_of(25) {
                     self.now = Timestamp::now().as_millisecond();
                     self.send("ping\n");
@@ -3964,9 +3965,9 @@ impl<'a> Client {
         let play = Plae::try_from(vec!["play", &role.to_string(), from, to])
             .expect("This is a valid plae.");
 
-        let captures = game.play(&play).expect("This should be a legal play.");
-        for vertex in captures.0 {
-            self.captures.insert(vertex);
+        let moved = game.play(&play).expect("This should be a legal play.");
+        for capture in moved.captures {
+            self.captures.insert(capture);
         }
 
         if let Some(handle) = &mut self.archived_game_handle {
