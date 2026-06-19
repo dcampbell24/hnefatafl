@@ -31,13 +31,17 @@ use clap::{CommandFactory, Parser};
 use colored::Colorize;
 use env_logger::Builder;
 use hnefatafl_copenhagen::{
-    COPYRIGHT, SOFTWARE_ID, VERSION_ID,
+    COPYRIGHT,
+    SOFTWARE_ID,
+    VERSION_ID,
     ai::{AI, AiMonteCarlo},
     game::Game,
     play::{Plae, Play, Vertex},
     role::Role,
-    status::Status,
+    server_game::ServerGameLight,
+    status::Status, //    tournament::TournamentFull,
 };
+// use itertools::Itertools;
 use log::LevelFilter;
 use socket2::{Domain, SockAddr, Socket, TcpKeepalive, Type};
 use taflzero::{Engine, moves::mv::create_move_from_algebraic};
@@ -216,30 +220,6 @@ fn main() -> anyhow::Result<()> {
     }
 }
 
-fn new_game(
-    tcp: &mut TcpStream,
-    role: Role,
-    reader: &mut BufReader<TcpStream>,
-    buf: &mut String,
-) -> anyhow::Result<()> {
-    tcp.write_all(format!("new_game {role} rated fischer 900000 10 11\n").as_bytes())?;
-
-    loop {
-        reader.read_line(buf)?;
-
-        if buf.trim().is_empty() {
-            return Err(Error::msg("the TCP stream has closed"));
-        }
-
-        let message: Vec<_> = buf.split_ascii_whitespace().collect();
-        if message[1] == "new_game" {
-            return Ok(());
-        }
-
-        buf.clear();
-    }
-}
-
 #[allow(clippy::too_many_arguments)]
 fn handle_messages(
     ai: &mut AiMonteCarlo,
@@ -254,15 +234,8 @@ fn handle_messages(
     let mut buf = String::new();
 
     if game_id.is_none() {
-        new_game(tcp, role, reader, &mut buf)?;
-        game = Game::default();
-        engine.set_start_position();
-
-        let message: Vec<_> = buf.split_ascii_whitespace().collect();
-        log::info!("{message:?}");
-
-        *game_id = Some(message[3].parse()?);
-        buf.clear();
+        tcp.write_all(format!("new_game {role} rated fischer 900000 10 11\n").as_bytes())?;
+        *game_id = Some(0);
     }
 
     reader.read_line(&mut buf)?;
@@ -273,7 +246,23 @@ fn handle_messages(
     let message: Vec<_> = buf.split_ascii_whitespace().collect();
 
     match (message.get(1).copied(), message.get(2).copied()) {
+        (Some("display_games"), _) => {
+            let display_games: Vec<_> = message.iter().skip(2).copied().collect();
+            let display_games = display_games.join(" ");
+            let display_games: Vec<ServerGameLight> = serde_json::de::from_str(&display_games)?;
+
+            log::debug!("{display_games:#?}");
+        }
+        (Some("new_game"), _) => {
+            log::info!("{message:?}");
+
+            game = Game::default();
+            engine.set_start_position();
+            *game_id = Some(message[3].parse()?);
+        }
         (Some("game_over"), id) => {
+            log::info!("Game Over");
+
             if let (Some(id_1), Some(id_2)) = (id, &mut game_id)
                 && let Ok(id_1) = id_1.parse::<u128>()
                 && id_1 == *id_2
@@ -282,10 +271,12 @@ fn handle_messages(
             }
 
             game = Game::default();
+
             log::debug!("{game}");
         }
-        (Some("tournament_status_2"), _) => {
-            println!("{message:?}");
+        (Some("tournament_status"), _) => {
+            // let tournament_full = message.iter().skip(2).join(" ");
+            // let tournament_full: TournamentFull = serde_json::de::from_str(&tournament_full)?;
         }
         (Some("challenge_requested"), _) => {
             log::info!("{message:?}");
@@ -302,6 +293,7 @@ fn handle_messages(
         (_, Some("generate_move")) => {
             if let Some(game_id) = game_id {
                 generate_move(ai, &mut game, engine, *game_id, role, tcp, search_ms)?;
+
                 log::debug!("{game}");
             }
         }
@@ -333,9 +325,6 @@ fn handle_messages(
 
                 log::debug!("{game}");
             }
-        }
-        (_, Some("tournament_status_2")) => {
-            println!("{message:?}");
         }
         _ => {}
     }

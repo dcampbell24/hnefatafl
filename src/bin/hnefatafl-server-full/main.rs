@@ -290,8 +290,6 @@ fn login(
                     break;
                 }
 
-                println!("{message}");
-
                 message.push('\n');
                 stream.write_all(message.as_bytes())?;
                 continue;
@@ -318,7 +316,7 @@ fn login(
     tx.send((format!("{id} {username_proper} email_get"), None))?;
     tx.send((format!("{id} {username_proper} texts"), None))?;
     tx.send((format!("{id} {username_proper} display_games"), None))?;
-    tx.send((format!("{id} {username_proper} tournament_status_2"), None))?;
+    tx.send((format!("{id} {username_proper} tournament_status"), None))?;
     tx.send((format!("{id} {username_proper} admin"), None))?;
     tx.send((format!("{id} {username_proper} admin_tournament"), None))?;
     tx.send((format!("{id} {username_proper} version"), None))?;
@@ -767,14 +765,18 @@ impl Server {
             }
 
             for (id, tx) in &mut self.clients {
-                let Ok(games) = self
+                let games = self
                     .games_light_vec
-                    .display_games(names.get(id).map(|s| s.as_str()))
-                else {
-                    continue;
-                };
+                    .display_games(names.get(id).map(|s| s.as_str()));
 
-                let _ok = tx.send(format!("= display_games {games}"));
+                match serde_json::ser::to_string(&games) {
+                    Ok(games) => {
+                        let _ok = tx.send(format!("= display_games {games}"));
+                    }
+                    Err(error) => {
+                        error!("error serializing games: {error}");
+                    }
+                }
             }
         }
 
@@ -1539,11 +1541,12 @@ impl Server {
                         None
                     } else {
                         self.clients.get(&index_supplied).map(|tx| {
-                            (
-                                tx.clone(),
-                                Ok(()),
-                                format!("display_games {:?}", &self.games_light_vec),
-                            )
+                            let games = self.games_light_vec.display_games(Some(username));
+                            let Ok(games) = serde_json::ser::to_string(&games) else {
+                                unreachable!();
+                            };
+
+                            (tx.clone(), Ok(()), format!("display_games {games}"))
                         })
                     }
                 }
@@ -1931,19 +1934,19 @@ impl Server {
 
                     None
                 }
-                "tournament_status_2" => {
+                "tournament_status" => {
                     trace!("tournament_status: {:#?}", self.tournament);
 
                     if args.skip_advertising_updates {
                         None
                     } else {
                         let tx = self.clients.get(&index_supplied)?;
-                        let tournament = ron::ser::to_string(&self.tournament).ok()?;
+                        let tournament = serde_json::ser::to_string(&self.tournament).ok()?;
 
                         Some((
                             tx.clone(),
                             Ok(()),
-                            format!("tournament_status_2 {tournament}"),
+                            format!("tournament_status {tournament}"),
                         ))
                     }
                 }
@@ -2991,8 +2994,8 @@ impl Server {
     fn tournament_status_all(&self) {
         trace!("tournament_status: {:#?}", self.tournament);
 
-        if let Ok(mut tournament) = ron::ser::to_string(&self.tournament) {
-            tournament = format!("= tournament_status_2 {tournament}");
+        if let Ok(mut tournament) = serde_json::ser::to_string(&self.tournament) {
+            tournament = format!("= tournament_status {tournament}");
 
             for tx in self.clients.values() {
                 let _ok = tx.send(tournament.clone());

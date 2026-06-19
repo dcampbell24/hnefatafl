@@ -18,7 +18,7 @@
 
 use std::{
     collections::{HashMap, VecDeque},
-    fmt::{self, Write},
+    fmt,
     str::FromStr,
     sync::mpsc::Sender,
 };
@@ -286,7 +286,7 @@ impl From<&ServerGame> for ServerGameSerialized {
 #[derive(Clone, Debug, Default)]
 pub struct ServerGames(pub HashMap<Id, ServerGame>);
 
-#[derive(Clone, Default, Eq, PartialEq)]
+#[derive(Clone, Default, Deserialize, Eq, PartialEq, Serialize)]
 pub struct Challenger(pub Option<String>);
 
 impl fmt::Debug for Challenger {
@@ -314,7 +314,7 @@ impl fmt::Display for Challenger {
     }
 }
 
-#[derive(Clone, Eq, PartialEq)]
+#[derive(Clone, Deserialize, Eq, PartialEq, Serialize)]
 pub struct ServerGameLight {
     pub id: Id,
     pub attacker: Option<String>,
@@ -540,21 +540,21 @@ impl fmt::Debug for ServerGamesLight {
 pub struct ServerGamesLightVec(pub Vec<ServerGameLight>);
 
 impl ServerGamesLightVec {
-    #[allow(clippy::missing_errors_doc)]
-    pub fn display_games(&self, username: Option<&str>) -> anyhow::Result<String> {
-        let mut output = String::new();
+    #[must_use]
+    pub fn display_games(&self, username: Option<&str>) -> Vec<ServerGameLight> {
+        let mut vec = Vec::new();
 
         for game in &self.0 {
             if !game.game_over {
-                write!(output, "{game:?} ")?;
+                vec.push(game.clone());
             } else if let Some(username) = username
                 && game.spectators.contains_key(username)
             {
-                write!(output, "{game:?} ")?;
+                vec.push(game.clone());
             }
         }
 
-        Ok(output)
+        vec
     }
 }
 

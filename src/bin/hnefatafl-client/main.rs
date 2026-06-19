@@ -60,7 +60,7 @@ use hnefatafl_copenhagen::{
     play::{BOARD_LETTERS, Plae, Vertex},
     rating::Rated,
     role::Role,
-    server_game::{self, ArchivedGame, Challenger, ResumeGame, ServerGameLight, ServerGamesLight},
+    server_game::{self, ArchivedGame, ResumeGame, ServerGameLight, ServerGamesLight},
     space::Space,
     status::Status,
     tcp_keep_alive,
@@ -587,10 +587,7 @@ fn pass_messages() -> impl Stream<Item = Message> {
                             let buffer_trim_vec: Vec<_> =
                                 buffer_trim.split_ascii_whitespace().collect();
 
-                            if buffer_trim_vec[1] == "display_users"
-                                || buffer_trim_vec[1] == "display_games"
-                                || buffer_trim_vec[1] == "ping"
-                            {
+                            if buffer_trim_vec[1] == "ping" {
                                 trace!("-> {buffer_trim}");
                             } else {
                                 debug!("-> {buffer_trim}");
@@ -3123,15 +3120,12 @@ impl<'a> Client {
                                 self.games_light_vec.clear();
 
                                 let games: Vec<&str> = text.collect();
+                                let games = games.join(" ");
+                                println!("{games}");
+                                let games: Vec<ServerGameLight> = serde_json::de::from_str(&games)
+                                    .expect("We should be able to deserialse into Vec<ServerGameLight>!");
 
-                                let (chunks, []) = games.as_chunks::<12>() else {
-                                    panic!("chunks is an exact multiple of 12");
-                                };
-
-                                for chunks in chunks {
-                                    let game = ServerGameLight::try_from(chunks)
-                                        .expect("the value should be a valid ServerGameLight");
-
+                                for game in games {
                                     self.games_light.0.insert(game.id, game.clone());
                                     self.games_light_vec.push(game);
                                 }
@@ -3433,10 +3427,11 @@ impl<'a> Client {
                             }
                             Some("texts") => self.texts = messages_collect(text),
                             Some("text_game") => self.texts_game.push_front(message_collect(text)),
-                            Some("tournament_status_2") => {
+                            Some("tournament_status") => {
                                 if let Some(tournament) = text.next() {
-                                    let tournament: TournamentFull = ron::from_str(tournament)
-                                        .expect("This is a valid tournament.");
+                                    let tournament: TournamentFull =
+                                        serde_json::from_str(tournament)
+                                            .expect("This is a valid tournament.");
 
                                     self.tournament = tournament;
                                 }
@@ -3774,10 +3769,7 @@ impl<'a> Client {
                     }
                 };
 
-                if game.challenge_accepted
-                    && let Challenger(Some(name)) = &game.challenger
-                    && name == "A"
-                {
+                if game.challenge_accepted && game.turn == Role::Attacker {
                     attacker = attacker.style(text::success);
                 }
 
@@ -3801,10 +3793,7 @@ impl<'a> Client {
                     }
                 };
 
-                if game.challenge_accepted
-                    && let Challenger(Some(name)) = &game.challenger
-                    && name == "D"
-                {
+                if game.challenge_accepted && game.turn == Role::Defender {
                     defender = defender.style(text::success);
                 }
 
