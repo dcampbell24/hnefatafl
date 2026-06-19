@@ -206,7 +206,7 @@ fn main() -> anyhow::Result<()> {
     let mut game_id = None;
     let mut game = Game::default();
 
-    log::debug!("{game}");
+    log::debug!("\n{game}");
 
     if let Some(id) = args.join_game {
         let id = id.to_string();
@@ -291,7 +291,7 @@ fn handle_messages(taflzero: &mut TaflZero) -> anyhow::Result<Game> {
 
             taflzero.game = Game::default();
 
-            log::debug!("{}", taflzero.game);
+            log::debug!("\n{}", taflzero.game);
         }
         (Some("game_time"), Some(game_time)) => {
             let game_time: GameTime = serde_json::de::from_str(game_time)?;
@@ -508,7 +508,7 @@ fn generate_move(taflzero: &mut TaflZero, game_id: u128) -> anyhow::Result<()> {
         player_resigns(&mut taflzero.tcp, game_id, taflzero.role)?;
     }
 
-    log::debug!("{}", taflzero.game);
+    log::debug!("\n{}", taflzero.game);
 
     Ok(())
 }
