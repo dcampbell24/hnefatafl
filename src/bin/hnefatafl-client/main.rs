@@ -3121,7 +3121,6 @@ impl<'a> Client {
 
                                 let games: Vec<&str> = text.collect();
                                 let games = games.join(" ");
-                                println!("{games}");
                                 let games: Vec<ServerGameLight> = serde_json::de::from_str(&games)
                                     .expect("We should be able to deserialse into Vec<ServerGameLight>!");
 
