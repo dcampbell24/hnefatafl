@@ -174,9 +174,9 @@ fn server_full() -> anyhow::Result<()> {
     assert_eq!(buf, "= game_over 0 defender_wins\n");
     buf.clear();
 
-    // Fixme: the time is not always the same!
+    // Fixme: Why is the '_' missing?
     reader_2.read_line(&mut buf)?;
-    // assert_eq!(buf, "game 0 play attacker resigns  909958\n");
+    assert_eq!(buf, "game 0 play attacker resigns \n");
     buf.clear();
 
     reader_2.read_line(&mut buf)?;

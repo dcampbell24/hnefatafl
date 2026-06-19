@@ -1242,6 +1242,13 @@ impl Game {
     }
 }
 
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct GameTime {
+    pub id: u128,
+    pub attacker_ms_left: i64,
+    pub defender_ms_left: i64,
+}
+
 #[derive(Clone, Debug)]
 pub struct EscapeVec {
     spaces: Vec<Option<u8>>,

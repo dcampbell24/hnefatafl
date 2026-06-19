@@ -52,7 +52,7 @@ use hnefatafl_copenhagen::{
     board::{BoardSize, InvalidMove},
     draw::Draw,
     email::Email,
-    game::{OpenTaflGame, TimeUnix},
+    game::{GameTime, OpenTaflGame, TimeUnix},
     glicko::Outcome,
     invalid_username,
     play::{Plae, Vertex},
@@ -64,7 +64,10 @@ use hnefatafl_copenhagen::{
     },
     space::Space,
     status::Status,
-    time::{Time, TimeSettings},
+    time::{
+        Time,
+        TimeSettings::{self, Timed},
+    },
     tournament::{Tournament, TournamentFull},
     utils::{self, create_data_folder, data_file},
 };
@@ -1068,11 +1071,8 @@ impl Server {
                     };
 
                 match game.game.play(&play) {
-                    Ok(moved) => {
-                        let message = format!(
-                            "game {index} play attacker {from} {to} {}",
-                            moved.time_left()
-                        );
+                    Ok(_moved) => {
+                        let message = format!("game {index} play attacker {from} {to}");
 
                         for spectator in game_light.spectators() {
                             if let Some(client) = self.clients.get(&spectator) {
@@ -1117,11 +1117,8 @@ impl Server {
             };
 
             match game.game.play(&play) {
-                Ok(moved) => {
-                    let message = format!(
-                        "game {index} play defender {from} {to} {}",
-                        moved.time_left()
-                    );
+                Ok(_moved) => {
+                    let message = format!("game {index} play defender {from} {to}");
 
                     for spectator in game_light.spectators() {
                         if let Some(client) = self.clients.get(&spectator) {
@@ -1299,14 +1296,20 @@ impl Server {
             return None;
         }
 
-        if let Ok(string) =
-            serde_json::ser::to_string(&(game.id, game.game.attacker_time, game.game.defender_time))
-        {
-            let message = format!("game_time {string}");
+        if let (Timed(time_1), Timed(time_2)) = (game.game.attacker_time, game.game.defender_time) {
+            let game_time = GameTime {
+                id: game.id,
+                attacker_ms_left: time_1.milliseconds_left,
+                defender_ms_left: time_2.milliseconds_left,
+            };
 
-            for id in game_light.spectators.values() {
-                if let Some(sender) = self.clients.get(id) {
-                    let _ok = sender.send(message.clone());
+            if let Ok(string) = serde_json::ser::to_string(&game_time) {
+                let message = format!("= game_time {string}");
+
+                for id in game_light.spectators.values() {
+                    if let Some(sender) = self.clients.get(id) {
+                        let _ok = sender.send(message.clone());
+                    }
                 }
             }
         }
