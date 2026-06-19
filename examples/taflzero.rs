@@ -321,23 +321,26 @@ fn handle_messages(taflzero: &mut TaflZero) -> anyhow::Result<Game> {
                     return Ok(taflzero.game.clone());
                 }
 
-                let Plae::Play(play) = play else {
-                    unreachable!();
-                };
+                match play {
+                    Plae::Play(play) => {
+                        let mv = format!("{}{}", play.from, play.to);
+                        let mv = create_move_from_algebraic(&mv).unwrap();
 
-                let mv = format!("{}{}", play.from, play.to);
-                let mv = create_move_from_algebraic(&mv).unwrap();
+                        if let Err(invalid_play) = taflzero.engine.make_move(mv) {
+                            log::error!("invalid_play: {invalid_play:?}");
 
-                if let Err(invalid_play) = taflzero.engine.make_move(mv) {
-                    log::error!("invalid_play: {invalid_play:?}");
+                            taflzero.tcp.write_all(
+                                format!("game {game_id} play {} resigns _\n", taflzero.role)
+                                    .as_bytes(),
+                            )?;
+                            return Ok(taflzero.game.clone());
+                        }
 
-                    taflzero.tcp.write_all(
-                        format!("game {game_id} play {} resigns _\n", taflzero.role).as_bytes(),
-                    )?;
-                    return Ok(taflzero.game.clone());
+                        log::debug!("{}", taflzero.game);
+                    }
+                    Plae::AttackerResigns => log::info!("The attackers resinged."),
+                    Plae::DefenderResigns => log::info!("The defenders resigned."),
                 }
-
-                log::debug!("{}", taflzero.game);
             }
         }
         _ => {}

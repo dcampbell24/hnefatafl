@@ -1067,28 +1067,33 @@ impl Server {
                         }
                     };
 
-                let result = game.game.play(&play);
-                if result.is_err() {
-                    error!("play attacker {from} {to}: {result:?}");
-                    let error = result.map(|_string| ());
+                match game.game.play(&play) {
+                    Ok(moved) => {
+                        let message = format!(
+                            "game {index} play attacker {from} {to} {}",
+                            moved.time_left()
+                        );
 
-                    return Some((
-                        self.clients.get(&index_supplied)?.clone(),
-                        error,
-                        (*command).to_string(),
-                    ));
-                }
+                        for spectator in game_light.spectators() {
+                            if let Some(client) = self.clients.get(&spectator) {
+                                let _ok = client.send(message.clone());
+                            }
+                        }
 
-                attackers_turn_next = false;
+                        game.defender_tx.send(message);
+                    }
+                    Err(error) => {
+                        error!("play defender {from} {to}: {error:?}");
 
-                let message = format!("game {index} play attacker {from} {to}");
-                for spectator in game_light.spectators() {
-                    if let Some(client) = self.clients.get(&spectator) {
-                        let _ok = client.send(message.clone());
+                        return Some((
+                            self.clients.get(&index_supplied)?.clone(),
+                            Err(error),
+                            (*command).to_string(),
+                        ));
                     }
                 }
 
-                game.defender_tx.send(message);
+                attackers_turn_next = false;
             } else {
                 return Some((
                     self.clients.get(&index_supplied)?.clone(),
@@ -1111,26 +1116,31 @@ impl Server {
                 }
             };
 
-            let result = game.game.play(&play);
-            if result.is_err() {
-                error!("play defender {from} {to}: {result:?}");
-                let error = result.map(|_string| ());
+            match game.game.play(&play) {
+                Ok(moved) => {
+                    let message = format!(
+                        "game {index} play defender {from} {to} {}",
+                        moved.time_left()
+                    );
 
-                return Some((
-                    self.clients.get(&index_supplied)?.clone(),
-                    error,
-                    (*command).to_string(),
-                ));
-            }
+                    for spectator in game_light.spectators() {
+                        if let Some(client) = self.clients.get(&spectator) {
+                            let _ok = client.send(message.clone());
+                        }
+                    }
 
-            let message = format!("game {index} play defender {from} {to}");
-            for spectator in game_light.spectators() {
-                if let Some(client) = self.clients.get(&spectator) {
-                    let _ok = client.send(message.clone());
+                    game.attacker_tx.send(message);
+                }
+                Err(error) => {
+                    error!("play defender {from} {to}: {error:?}");
+
+                    return Some((
+                        self.clients.get(&index_supplied)?.clone(),
+                        Err(error),
+                        (*command).to_string(),
+                    ));
                 }
             }
-
-            game.attacker_tx.send(message);
         } else {
             return Some((
                 self.clients.get(&index_supplied)?.clone(),
@@ -1287,6 +1297,18 @@ impl Server {
             }
 
             return None;
+        }
+
+        if let Ok(string) =
+            serde_json::ser::to_string(&(game.id, game.game.attacker_time, game.game.defender_time))
+        {
+            let message = format!("game_time {string}");
+
+            for id in game_light.spectators.values() {
+                if let Some(sender) = self.clients.get(id) {
+                    let _ok = sender.send(message.clone());
+                }
+            }
         }
 
         Some((

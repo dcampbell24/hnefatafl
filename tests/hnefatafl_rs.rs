@@ -63,10 +63,10 @@ fn play_game(i: usize, record: &GameRecord) -> Result<(usize, Game), anyhow::Err
 
     for (play, captures_1) in record.clone().plays {
         let mut captures_2 = FxHashSet::default();
-        let captures = game.play(&Plae::Play(play))?;
+        let moved = game.play(&Plae::Play(play))?;
 
-        for vertex in captures.0 {
-            captures_2.insert(vertex);
+        for capture in moved.captures {
+            captures_2.insert(capture);
         }
 
         if game.board.king.is_some() {
