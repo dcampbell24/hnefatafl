@@ -31,17 +31,15 @@ use clap::{CommandFactory, Parser};
 use colored::Colorize;
 use env_logger::Builder;
 use hnefatafl_copenhagen::{
-    COPYRIGHT,
-    SOFTWARE_ID,
-    VERSION_ID,
+    COPYRIGHT, SOFTWARE_ID, VERSION_ID,
     ai::{AI, AiMonteCarlo},
     game::Game,
     play::{Plae, Play, Vertex},
     role::Role,
     server_game::ServerGameLight,
-    status::Status, //    tournament::TournamentFull,
+    status::Status,
+    tournament::TournamentFull,
 };
-// use itertools::Itertools;
 use log::LevelFilter;
 use socket2::{Domain, SockAddr, Socket, TcpKeepalive, Type};
 use taflzero::{Engine, moves::mv::create_move_from_algebraic};
@@ -275,8 +273,11 @@ fn handle_messages(
             log::debug!("{game}");
         }
         (Some("tournament_status"), _) => {
-            // let tournament_full = message.iter().skip(2).join(" ");
-            // let tournament_full: TournamentFull = serde_json::de::from_str(&tournament_full)?;
+            let tournament_full: Vec<_> = message.iter().skip(2).copied().collect();
+            let tournament_full = tournament_full.join(" ");
+            let tournament_full: TournamentFull = serde_json::de::from_str(&tournament_full)?;
+
+            log::trace!("{tournament_full:#?}");
         }
         (Some("challenge_requested"), _) => {
             log::info!("{message:?}");
