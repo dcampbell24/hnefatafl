@@ -36,7 +36,7 @@ pub struct TimeControl {
     increment_length: i64,
 }
 
-const fn _default_true() -> bool {
+const fn default_true() -> bool {
     true
 }
 
@@ -64,6 +64,7 @@ pub struct OpenTaflGame {
     pub moves: String,
     //
     pub last_move: Option<Timestamp>,
+    #[serde(default = "default_true")]
     pub rated: bool,
     pub messages: VecDeque<Message>,
 }
