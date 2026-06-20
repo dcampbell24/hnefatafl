@@ -3359,14 +3359,11 @@ impl<'a> Client {
 
                                 let attacker = game_deserialized.attackers.clone();
                                 let defender = game_deserialized.defenders.clone();
-                                self.texts_game = game_deserialized.messages.clone();
+                                let rated = game_deserialized.rated;
 
-                                let attacker = attacker.expect("The game has already started!");
-                                let defender = defender.expect("The game has already started!");
                                 self.attacker.clone_from(&attacker);
                                 self.defender.clone_from(&defender);
-
-                                let rated = game_deserialized.rated;
+                                self.texts_game = game_deserialized.messages.clone();
                                 self.game_settings.rated = rated.into();
 
                                 let mut game = Game::from(game_deserialized);
