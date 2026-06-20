@@ -49,8 +49,8 @@ pub enum Variant {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct OpenTaflGame {
-    pub attackers: Option<String>,
-    pub defenders: Option<String>,
+    pub attackers: String,
+    pub defenders: String,
     pub rated: bool,
     pub messages: VecDeque<Message>,
     // #[serde(default)]
@@ -134,8 +134,8 @@ impl From<&ServerGame> for OpenTaflGame {
         };
 
         Self {
-            attackers: Some(server_game.attacker.clone()),
-            defenders: Some(server_game.defender.clone()),
+            attackers: server_game.attacker.clone(),
+            defenders: server_game.defender.clone(),
             rated: server_game.rated.into(),
             messages: server_game.messages.clone(),
             dim,
