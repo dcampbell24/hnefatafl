@@ -60,6 +60,7 @@ pub mod glicko;
 pub mod heat_map;
 pub mod locale;
 pub mod message;
+pub mod opentafl;
 pub mod play;
 pub mod rating;
 pub mod role;

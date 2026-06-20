@@ -52,14 +52,15 @@ use hnefatafl_copenhagen::{
     board::{BoardSize, InvalidMove},
     draw::Draw,
     email::Email,
-    game::{GameTime, OpenTaflGame, TimeUnix},
+    game::{GameTime, TimeUnix},
     glicko::Outcome,
     invalid_username,
+    opentafl::OpenTaflGame,
     play::{Plae, Vertex},
     rating::Rated,
     role::Role,
     server_game::{
-        ArchivedGame, Challenger, Message, Messenger, ResumeGame, ServerGame, ServerGameLight,
+        ArchivedGame, Challenger, Message, Messenger, ServerGame, ServerGameLight,
         ServerGameSerialized, ServerGames, ServerGamesLight, ServerGamesLightVec,
     },
     space::Space,
@@ -2674,15 +2675,7 @@ impl Server {
         let client = self.clients.get(&index_supplied)?;
 
         if command == "resume_game_json" || command == "resume_game_ron" {
-            let game = OpenTaflGame::from(game);
-
-            let resume_game = ResumeGame {
-                attackers: game_light.attacker.clone(),
-                defenders: game_light.defender.clone(),
-                rated: game_light.rated.into(),
-                game,
-                messages: messages.clone(),
-            };
+            let opentafl_game = OpenTaflGame::from(&*server_game);
 
             // DEBUG!
             /*
@@ -2694,15 +2687,15 @@ impl Server {
             */
 
             if command == "resume_game_json" {
-                let Ok(resume_game) = serde_json::to_string(&resume_game) else {
+                let Ok(opentafl_game) = serde_json::to_string(&opentafl_game) else {
                     unreachable!()
                 };
 
                 client
-                    .send(format!("= resume_game_json {resume_game}"))
+                    .send(format!("= resume_game_json {opentafl_game}"))
                     .ok()?;
             } else {
-                let Ok(resume_game) = ron::to_string(&resume_game) else {
+                let Ok(resume_game) = ron::to_string(&opentafl_game) else {
                     unreachable!()
                 };
 
@@ -3076,17 +3069,9 @@ impl Server {
         };
 
         if command == "watch_game_json" {
-            let game_opentafl = OpenTaflGame::from(&server_game.game);
+            let opentafl_game = OpenTaflGame::from(server_game);
 
-            let resume_game = ResumeGame {
-                attackers: game.attacker.clone(),
-                defenders: game.defender.clone(),
-                rated: game.rated.into(),
-                game: game_opentafl,
-                messages: messages.clone(),
-            };
-
-            let Ok(resume_game) = serde_json::to_string(&resume_game) else {
+            let Ok(resume_game) = serde_json::to_string(&opentafl_game) else {
                 unreachable!()
             };
 
@@ -3095,23 +3080,15 @@ impl Server {
                 .send(format!("= watch_game_json {resume_game}"))
                 .ok()?;
         } else if command == "watch_game_ron" {
-            let game_opentafl = OpenTaflGame::from(&server_game.game);
+            let opentafl_game = OpenTaflGame::from(server_game);
 
-            let resume_game = ResumeGame {
-                attackers: game.attacker.clone(),
-                defenders: game.defender.clone(),
-                rated: game.rated.into(),
-                game: game_opentafl,
-                messages: messages.clone(),
-            };
-
-            let Ok(resume_game) = ron::to_string(&resume_game) else {
+            let Ok(opentafl_game) = ron::to_string(&opentafl_game) else {
                 unreachable!()
             };
 
             self.clients
                 .get(&index_supplied)?
-                .send(format!("= watch_game_ron {resume_game}"))
+                .send(format!("= watch_game_ron {opentafl_game}"))
                 .ok()?;
         } else {
             self.clients
