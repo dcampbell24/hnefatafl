@@ -20,7 +20,6 @@
 // starting with the game with the least time left, play.
 
 use std::{
-    collections::BTreeMap,
     env, fs,
     io::{BufRead, BufReader, Write},
     net::{TcpStream, ToSocketAddrs},
@@ -105,11 +104,18 @@ struct TaflZero {
     engine: Engine,
     game_id: Option<u128>,
     game: Game,
-    games_time_left: BTreeMap<u128, i64>,
+    games_time_left: Vec<TimeLeft>,
     role: Role,
     reader: BufReader<TcpStream>,
     tcp: TcpStream,
     search_ms: u64,
+}
+
+#[derive(Clone, Debug)]
+struct TimeLeft {
+    game_id: u128,
+    ms_left: i64,
+    my_turn: bool,
 }
 
 fn main() -> anyhow::Result<()> {
@@ -223,7 +229,7 @@ fn main() -> anyhow::Result<()> {
         engine,
         game_id,
         game,
-        games_time_left: BTreeMap::new(),
+        games_time_left: Vec::new(),
         role: *role,
         reader,
         tcp,
@@ -296,27 +302,39 @@ fn handle_messages(taflzero: &mut TaflZero) -> anyhow::Result<Game> {
         (Some("game_time"), Some(game_time)) => {
             let game_time: GameTime = serde_json::de::from_str(game_time)?;
 
-            println!("{game_time:?}");
-
             if let Some(id) = taflzero.game_id
                 && id == game_time.id
             {
-                let ms_left_1 = match taflzero.role {
+                let ms_left = match taflzero.role {
                     Role::Attacker => game_time.attacker_ms_left,
                     Role::Defender => game_time.defender_ms_left,
                     Role::Roleless => unreachable!(),
                 };
 
-                if let Some(ms_left_2) = taflzero.games_time_left.get(&id) {
-                    if ms_left_1 != *ms_left_2 {
-                        taflzero.games_time_left.insert(id, ms_left_1);
+                let mut it_already_exists = false;
 
-                        log::info!("id: {id}, ms_left: {ms_left_1}");
+                for time_left in &mut taflzero.games_time_left {
+                    if game_time.id == time_left.game_id {
+                        it_already_exists = true;
+                        time_left.my_turn = false;
+
+                        if time_left.ms_left != ms_left {
+                            time_left.ms_left = ms_left;
+
+                            log::info!("time_left: {time_left:?}");
+                        }
                     }
-                } else {
-                    taflzero.games_time_left.insert(id, ms_left_1);
+                }
 
-                    log::info!("id: {id}, ms_left: {ms_left_1}");
+                if !it_already_exists {
+                    let time_left = TimeLeft {
+                        game_id: game_time.id,
+                        ms_left,
+                        my_turn: false,
+                    };
+
+                    log::info!("time_left: {time_left:?}");
+                    taflzero.games_time_left.push(time_left);
                 }
             }
         }
@@ -344,6 +362,15 @@ fn handle_messages(taflzero: &mut TaflZero) -> anyhow::Result<Game> {
         }
         (_, Some("generate_move")) => {
             if let Some(game_id) = taflzero.game_id {
+                for time_left in &mut taflzero.games_time_left {
+                    if game_id == time_left.game_id {
+                        time_left.my_turn = true;
+
+                        log::debug!("time_left: {time_left:?}");
+                    }
+                }
+
+                // Maybe!
                 generate_move(taflzero, game_id)?;
 
                 log::debug!("{}", taflzero.game);
