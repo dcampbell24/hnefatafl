@@ -96,7 +96,7 @@ impl From<&ServerGame> for OpenTaflGame {
                     Plae::AttackerResigns | Plae::DefenderResigns => "---".to_string(),
                 };
 
-                for capture in captures.captures {
+                for capture in captures.0 {
                     let _ = write!(play_string, "x{capture}");
                 }
 
