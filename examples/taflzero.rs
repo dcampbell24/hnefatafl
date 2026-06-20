@@ -37,6 +37,7 @@ use hnefatafl_copenhagen::{
     COPYRIGHT, SOFTWARE_ID, VERSION_ID,
     ai::{AI, AiMonteCarlo},
     game::{Game, GameTime},
+    opentafl::OpenTaflGame,
     play::{Plae, Play, Vertex},
     role::Role,
     server_game::ServerGameLight,
@@ -77,9 +78,13 @@ struct Args {
     #[arg(long)]
     join_game: Option<u64>,
 
-    /// Play in a tournament
+    /// Join a tournament
     #[arg(long)]
     join_tournament: bool,
+
+    /// Play in a tournament
+    #[arg(long)]
+    play_tournament: bool,
 
     /// Whether the application is being run by systemd
     #[arg(long)]
@@ -100,11 +105,12 @@ struct Args {
 
 struct TaflZero {
     username: String,
+    play_tournament: bool,
     ai: AiMonteCarlo,
     engine: Engine,
     game_id: Option<u128>,
     game: Game,
-    games_time_left: Vec<TimeLeft>,
+    games: Vec<GameTournament>,
     role: Role,
     reader: BufReader<TcpStream>,
     tcp: TcpStream,
@@ -112,7 +118,7 @@ struct TaflZero {
 }
 
 #[derive(Clone, Debug)]
-struct TimeLeft {
+struct GameTournament {
     game_id: u128,
     ms_left: i64,
     my_turn: bool,
@@ -225,11 +231,12 @@ fn main() -> anyhow::Result<()> {
 
     let mut taflzero = TaflZero {
         username,
+        play_tournament: args.play_tournament,
         ai,
         engine,
         game_id,
         game,
-        games_time_left: Vec::new(),
+        games: Vec::new(),
         role: *role,
         reader,
         tcp,
@@ -250,13 +257,14 @@ fn main() -> anyhow::Result<()> {
 fn handle_messages(taflzero: &mut TaflZero) -> anyhow::Result<Game> {
     let mut buf = String::new();
 
-    if taflzero.game_id.is_none() {
+    if !taflzero.play_tournament && taflzero.game_id.is_none() {
         taflzero.tcp.write_all(
             format!("new_game {} rated fischer 900000 10 11\n", taflzero.role).as_bytes(),
         )?;
         taflzero.game_id = Some(0);
     }
 
+    // Read line in another loop
     taflzero.reader.read_line(&mut buf)?;
     if buf.trim().is_empty() {
         return Err(Error::msg("the TCP stream has closed"));
@@ -265,6 +273,13 @@ fn handle_messages(taflzero: &mut TaflZero) -> anyhow::Result<Game> {
     let message: Vec<_> = buf.split_ascii_whitespace().collect();
 
     match (message.get(1).copied(), message.get(2).copied()) {
+        (Some("resume_game_json"), _) => {
+            let game: Vec<_> = message.iter().skip(2).copied().collect();
+            let game = game.join(" ");
+            let game: OpenTaflGame = serde_json::de::from_str(&game)?;
+
+            println!("{game:#?}");
+        }
         (Some("display_games"), _) => {
             let games: Vec<_> = message.iter().skip(2).copied().collect();
             let games = games.join(" ");
@@ -313,7 +328,7 @@ fn handle_messages(taflzero: &mut TaflZero) -> anyhow::Result<Game> {
 
                 let mut it_already_exists = false;
 
-                for time_left in &mut taflzero.games_time_left {
+                for time_left in &mut taflzero.games {
                     if game_time.id == time_left.game_id {
                         it_already_exists = true;
                         time_left.my_turn = false;
@@ -327,14 +342,14 @@ fn handle_messages(taflzero: &mut TaflZero) -> anyhow::Result<Game> {
                 }
 
                 if !it_already_exists {
-                    let time_left = TimeLeft {
+                    let time_left = GameTournament {
                         game_id: game_time.id,
                         ms_left,
                         my_turn: false,
                     };
 
                     log::info!("time_left: {time_left:?}");
-                    taflzero.games_time_left.push(time_left);
+                    taflzero.games.push(time_left);
                 }
             }
         }
@@ -360,21 +375,11 @@ fn handle_messages(taflzero: &mut TaflZero) -> anyhow::Result<Game> {
                 log::debug!("\n{}", game.board);
             }
         }
-        (_, Some("generate_move")) => {
-            if let Some(game_id) = taflzero.game_id {
-                for time_left in &mut taflzero.games_time_left {
-                    if game_id == time_left.game_id {
-                        time_left.my_turn = true;
-
-                        log::debug!("time_left: {time_left:?}");
-                    }
-                }
-
-                // Maybe!
-                generate_move(taflzero, game_id)?;
-
-                log::debug!("{}", taflzero.game);
-            }
+        (Some(id), Some("generate_move")) => {
+            taflzero
+                .tcp
+                .write_all(format!("resume_game_json {id}\n").as_bytes())?;
+            log::debug!("{}", taflzero.game);
         }
         (_, Some("play")) => {
             if let Some(game_id) = taflzero.game_id {

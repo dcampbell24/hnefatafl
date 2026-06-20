@@ -57,10 +57,11 @@ use hnefatafl_copenhagen::{
     heat_map::{Heat, HeatMap},
     invalid_username,
     locale::Locale,
+    opentafl::OpenTaflGame,
     play::{BOARD_LETTERS, Plae, Vertex},
     rating::Rated,
     role::Role,
-    server_game::{self, ArchivedGame, ResumeGame, ServerGameLight, ServerGamesLight},
+    server_game::{self, ArchivedGame, ServerGameLight, ServerGamesLight},
     space::Space,
     status::Status,
     tcp_keep_alive,
@@ -3345,7 +3346,7 @@ impl<'a> Client {
                                 let texts: Vec<&str> = text.collect();
                                 let game_serialized = texts.join(" ");
 
-                                let game_deserialized: ResumeGame = if text_next
+                                let game_deserialized: OpenTaflGame = if text_next
                                     == Some("resume_game_json")
                                     || text_next == Some("watch_game_json")
                                 {
@@ -3356,8 +3357,9 @@ impl<'a> Client {
                                         .expect("we should be able to deserialize the game")
                                 };
 
-                                let attacker = game_deserialized.attackers;
-                                let defender = game_deserialized.defenders;
+                                let attacker = game_deserialized.attackers.clone();
+                                let defender = game_deserialized.defenders.clone();
+                                self.texts_game = game_deserialized.messages.clone();
 
                                 let attacker = attacker.expect("The game has already started!");
                                 let defender = defender.expect("The game has already started!");
@@ -3367,7 +3369,7 @@ impl<'a> Client {
                                 let rated = game_deserialized.rated;
                                 self.game_settings.rated = rated.into();
 
-                                let mut game = Game::from(game_deserialized.game);
+                                let mut game = Game::from(game_deserialized);
 
                                 self.time_attacker = game.attacker_time;
                                 self.time_defender = game.defender_time;
@@ -3417,8 +3419,6 @@ impl<'a> Client {
                                         }
                                     }
                                 }
-
-                                self.texts_game = game_deserialized.messages;
 
                                 if (self.username == attacker && game.turn == Role::Attacker)
                                     || (self.username == defender && game.turn == Role::Defender)

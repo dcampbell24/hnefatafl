@@ -19,14 +19,13 @@
 use std::{
     borrow::Cow,
     collections::{BinaryHeap, HashMap},
-    fmt::{self, Write},
+    fmt,
     hash::{DefaultHasher, Hash, Hasher},
     process::exit,
     str::FromStr,
 };
 
 use colored::Colorize;
-use itertools::Itertools;
 use jiff::Timestamp;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use rustc_hash::FxHashMap;
@@ -42,7 +41,7 @@ use crate::{
     play::{Moved, Plae, Play, PlayRecordTimed, Plays, Vertex},
     role::Role,
     status::Status,
-    time::{Time, TimeSettings},
+    time::TimeSettings,
     tree::Tree,
 };
 
@@ -59,193 +58,6 @@ pub struct Game {
     pub turn: Role,
     #[serde(skip)]
     pub chars: Characters,
-}
-
-#[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct TimeControl {
-    main_time_seconds: i64,
-    increment_length: i64,
-}
-
-const fn _default_true() -> bool {
-    true
-}
-
-#[derive(Clone, Debug, Default, Deserialize, Serialize)]
-#[serde(rename_all = "snake_case")]
-pub enum Variant {
-    #[default]
-    Copenhagen,
-}
-
-#[derive(Clone, Debug, Default, Deserialize, Serialize)]
-pub struct OpenTaflGame {
-    // #[serde(default)]
-    // pub variant: Variant,
-    pub dim: usize,
-    // #[serde(default = "default_true")]
-    // pub sw: bool,
-    // #[serde(default = "default_true")]
-    // pub efe: bool,
-    pub start: String,
-    pub last_move: Option<Timestamp>,
-    pub moves: String,
-    pub time_control: Option<TimeControl>,
-    pub time_remaining_ms: Option<(i64, i64)>,
-}
-
-impl From<&Game> for OpenTaflGame {
-    fn from(game: &Game) -> Self {
-        let dim = usize::from(game.board.size());
-
-        let moves: Vec<Plae> = match &game.plays {
-            Plays::PlayRecordsTimed(plays) => plays
-                .iter()
-                .filter_map(|play_record| play_record.play.clone())
-                .collect(),
-            Plays::PlayRecords(plays) => plays.iter().flatten().cloned().collect(),
-        };
-
-        let mut game_play = Game::make(game.board.size(), &TimeSettings::UnTimed);
-        let start = game_play.board.open_tafl_serialize();
-
-        let moves = moves
-            .iter()
-            .map(|play| {
-                let captures = game_play.play(play).expect("This must be a valid move!");
-                let mut play_string = match play {
-                    Plae::Play(play) => {
-                        format!("{}-{}", play.from, play.to)
-                    }
-
-                    Plae::AttackerResigns | Plae::DefenderResigns => "---".to_string(),
-                };
-
-                for capture in captures.captures {
-                    let _ = write!(play_string, "x{capture}");
-                }
-
-                play_string
-            })
-            .join(" ");
-
-        let time_control = if let Plays::PlayRecordsTimed(plays) = &game.plays
-            && let Some(play) = plays.first()
-            && let TimeSettings::Timed(time_settings) = game.defender_time
-        {
-            Some(TimeControl {
-                main_time_seconds: play.defender_time.milliseconds_left / 1_000,
-                increment_length: time_settings.add_seconds,
-            })
-        } else {
-            None
-        };
-
-        let time_remaining_ms =
-            if let (TimeSettings::Timed(attacker_time), TimeSettings::Timed(defender_time)) =
-                (&game.attacker_time, &game.defender_time)
-            {
-                Some((
-                    attacker_time.milliseconds_left,
-                    defender_time.milliseconds_left,
-                ))
-            } else {
-                None
-            };
-
-        let last_move = if let TimeUnix::Time(time) = game.time {
-            Some(Timestamp::from_millisecond(time).expect("This coversion works!"))
-        } else {
-            None
-        };
-
-        Self {
-            dim,
-            start,
-            last_move,
-            moves,
-            time_control,
-            time_remaining_ms,
-        }
-    }
-}
-
-impl From<OpenTaflGame> for Game {
-    fn from(game_opentafl: OpenTaflGame) -> Self {
-        let (attacker_time, defender_time) = if let (
-            Some((attacker_time, defender_time)),
-            Some(TimeControl {
-                main_time_seconds: _,
-                increment_length,
-            }),
-        ) =
-            (game_opentafl.time_remaining_ms, game_opentafl.time_control)
-        {
-            (
-                TimeSettings::Timed(Time {
-                    milliseconds_left: attacker_time,
-                    add_seconds: increment_length,
-                }),
-                TimeSettings::Timed(Time {
-                    milliseconds_left: defender_time,
-                    add_seconds: increment_length,
-                }),
-            )
-        } else {
-            (TimeSettings::UnTimed, TimeSettings::UnTimed)
-        };
-
-        let mut game = Game::make(
-            BoardSize::try_from(game_opentafl.dim).expect("The board size must be 11 or 13!"),
-            &attacker_time,
-        );
-
-        let mut plays = Vec::with_capacity(game_opentafl.moves.len());
-        let mut role = Role::Attacker;
-
-        for play in game_opentafl.moves.split_whitespace() {
-            let mut play = play.to_string();
-            let role_str = role.to_string();
-
-            let play = if play == "resigns" {
-                match role {
-                    Role::Attacker => vec!["play", "attacker", "resigns"],
-                    Role::Defender => vec!["play", "defender", "resigns"],
-                    Role::Roleless => unreachable!(),
-                }
-            } else {
-                if play.contains('x')
-                    && let Some(play_capture) = play.split('x').next()
-                {
-                    play = play_capture.to_string();
-                }
-
-                let play_vec: Vec<_> = play.splitn(2, '-').collect();
-                vec!["play", &role_str, play_vec[0], play_vec[1]]
-            };
-
-            plays.push(Plae::try_from(play).expect("This must work!"));
-
-            role = role.opposite();
-        }
-
-        for play in plays {
-            game.play(&play)
-                .expect("The play was valid when it was first played.");
-        }
-
-        let time = if let Some(timestamp) = game_opentafl.last_move {
-            TimeUnix::Time(timestamp.as_millisecond())
-        } else {
-            TimeUnix::UnTimed
-        };
-
-        game.time = time;
-        game.attacker_time = attacker_time;
-        game.defender_time = defender_time;
-
-        game
-    }
 }
 
 #[cfg(feature = "js")]
