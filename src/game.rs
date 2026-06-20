@@ -38,7 +38,7 @@ use crate::{
     board::{Board, BoardSize, Captured, InvalidMove},
     characters::Characters,
     message::{COMMANDS, Message},
-    play::{Moved, Plae, Play, PlayRecordTimed, Plays, Vertex},
+    play::{Captures, Plae, Play, PlayRecordTimed, Plays, Vertex},
     role::Role,
     status::Status,
     time::TimeSettings,
@@ -719,9 +719,8 @@ impl Game {
     ///
     /// If the game is already over or the move is illegal.
     #[allow(clippy::too_many_lines)]
-    pub fn play(&mut self, play: &Plae) -> Result<Moved, InvalidMove> {
+    pub fn play(&mut self, play: &Plae) -> Result<Captures, InvalidMove> {
         if self.status == Status::Ongoing {
-            let milliseconds_left =
                 if let (status, TimeSettings::Timed(timer), TimeUnix::Time(time)) = match self.turn
                 {
                     Role::Attacker => (
@@ -745,7 +744,7 @@ impl Game {
                     if timer.milliseconds_left <= 0 {
                         self.status = status;
 
-                        return Ok(Moved::out_of_time());
+                        return Ok(Captures::default());
                     }
 
                     timer.milliseconds_left += timer.add_seconds * 1_000;
@@ -771,10 +770,7 @@ impl Game {
                             Plays::PlayRecords(plays) => plays.push(Some(play.clone())),
                         }
 
-                        Ok(Moved {
-                            captures: Vec::new(),
-                            milliseconds_left,
-                        })
+                        Ok(Captures::default())
                     } else {
                         Err(InvalidMove::InvalidResign)
                     }
@@ -794,10 +790,7 @@ impl Game {
                             Plays::PlayRecords(plays) => plays.push(Some(play.clone())),
                         }
 
-                        Ok(Moved {
-                            captures: Vec::new(),
-                            milliseconds_left,
-                        })
+                        Ok(Captures::default())
                     } else {
                         Err(InvalidMove::InvalidResign)
                     }
@@ -852,11 +845,7 @@ impl Game {
                         }
                     }
 
-                    let captures = Moved {
-                        captures,
-                        milliseconds_left,
-                    };
-                    Ok(captures)
+                    Ok(Captures(captures))
                 }
             }
         } else {

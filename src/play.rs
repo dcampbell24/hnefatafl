@@ -322,33 +322,11 @@ impl fmt::Display for Play {
 }
 
 #[derive(Debug, Default, Deserialize, Serialize)]
-pub struct Moved {
-    pub captures: Vec<Vertex>,
-    pub milliseconds_left: Option<i64>,
-}
+pub struct Captures(pub Vec<Vertex>);
 
-impl Moved {
-    #[must_use]
-    pub fn out_of_time() -> Self {
-        Moved {
-            captures: Vec::new(),
-            milliseconds_left: Some(0),
-        }
-    }
-
-    #[must_use]
-    pub fn time_left(&self) -> String {
-        if let Some(milliseconds_left) = self.milliseconds_left {
-            milliseconds_left.to_string()
-        } else {
-            "_".to_string()
-        }
-    }
-}
-
-impl fmt::Display for Moved {
+impl fmt::Display for Captures {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for vertex in &self.captures {
+        for vertex in &self.0 {
             write!(f, "{vertex} ")?;
         }
 
