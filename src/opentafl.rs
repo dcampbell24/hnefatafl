@@ -51,20 +51,21 @@ pub enum Variant {
 pub struct OpenTaflGame {
     pub attackers: String,
     pub defenders: String,
-    pub rated: bool,
-    pub messages: VecDeque<Message>,
+    pub dim: usize,
+    pub start: String,
+    pub time_control: Option<TimeControl>,
+    pub time_remaining_ms: Option<(i64, i64)>,
     // #[serde(default)]
     // pub variant: Variant,
-    pub dim: usize,
     // #[serde(default = "default_true")]
     // pub sw: bool,
     // #[serde(default = "default_true")]
     // pub efe: bool,
-    pub start: String,
-    pub last_move: Option<Timestamp>,
     pub moves: String,
-    pub time_control: Option<TimeControl>,
-    pub time_remaining_ms: Option<(i64, i64)>,
+    //
+    pub last_move: Option<Timestamp>,
+    pub rated: bool,
+    pub messages: VecDeque<Message>,
 }
 
 impl From<&ServerGame> for OpenTaflGame {
