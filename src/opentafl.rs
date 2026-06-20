@@ -31,6 +31,23 @@ use crate::{
 };
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct TimeControl {
+    main_time_seconds: i64,
+    increment_length: i64,
+}
+
+const fn _default_true() -> bool {
+    true
+}
+
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum Variant {
+    #[default]
+    Copenhagen,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct OpenTaflGame {
     pub attackers: Option<String>,
     pub defenders: Option<String>,
@@ -48,23 +65,6 @@ pub struct OpenTaflGame {
     pub moves: String,
     pub time_control: Option<TimeControl>,
     pub time_remaining_ms: Option<(i64, i64)>,
-}
-
-#[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct TimeControl {
-    main_time_seconds: i64,
-    increment_length: i64,
-}
-
-const fn _default_true() -> bool {
-    true
-}
-
-#[derive(Clone, Debug, Default, Deserialize, Serialize)]
-#[serde(rename_all = "snake_case")]
-pub enum Variant {
-    #[default]
-    Copenhagen,
 }
 
 impl From<&ServerGame> for OpenTaflGame {
