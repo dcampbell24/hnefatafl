@@ -41,7 +41,7 @@ use crate::{
     play::{Captures, Plae, Play, PlayRecordTimed, Plays, Vertex},
     role::Role,
     status::Status,
-    time::TimeSettings,
+    time::{TimeSettings, TimeUnix},
     tree::Tree,
 };
 
@@ -721,38 +721,37 @@ impl Game {
     #[allow(clippy::too_many_lines)]
     pub fn play(&mut self, play: &Plae) -> Result<Captures, InvalidMove> {
         if self.status == Status::Ongoing {
-                if let (status, TimeSettings::Timed(timer), TimeUnix::Time(time)) = match self.turn
-                {
-                    Role::Attacker => (
-                        Status::DefenderWins,
-                        &mut self.attacker_time,
-                        &mut self.time,
-                    ),
-                    Role::Roleless => {
-                        unreachable!("It can't be no one's turn when the game is ongoing!")
-                    }
-                    Role::Defender => (
-                        Status::AttackerWins,
-                        &mut self.defender_time,
-                        &mut self.time,
-                    ),
-                } {
-                    let now = Timestamp::now().as_millisecond();
-                    timer.milliseconds_left -= now - *time;
-                    *time = now;
+            if let (status, TimeSettings::Timed(timer), TimeUnix::Time(time)) = match self.turn {
+                Role::Attacker => (
+                    Status::DefenderWins,
+                    &mut self.attacker_time,
+                    &mut self.time,
+                ),
+                Role::Roleless => {
+                    unreachable!("It can't be no one's turn when the game is ongoing!")
+                }
+                Role::Defender => (
+                    Status::AttackerWins,
+                    &mut self.defender_time,
+                    &mut self.time,
+                ),
+            } {
+                let now = Timestamp::now().as_millisecond();
+                timer.milliseconds_left -= now - *time;
+                *time = now;
 
-                    if timer.milliseconds_left <= 0 {
-                        self.status = status;
+                if timer.milliseconds_left <= 0 {
+                    self.status = status;
 
-                        return Ok(Captures::default());
-                    }
+                    return Ok(Captures::default());
+                }
 
-                    timer.milliseconds_left += timer.add_seconds * 1_000;
+                timer.milliseconds_left += timer.add_seconds * 1_000;
 
-                    Some(timer.milliseconds_left)
-                } else {
-                    None
-                };
+                Some(timer.milliseconds_left)
+            } else {
+                None
+            };
 
             match play {
                 Plae::AttackerResigns => {
@@ -1132,18 +1131,4 @@ impl From<&Tree> for Game {
 pub struct LegalMoves {
     pub role: Role,
     pub moves: FxHashMap<Vertex, Vec<Vertex>>,
-}
-
-#[derive(Clone, Debug, Default, Deserialize, Serialize)]
-pub enum TimeUnix {
-    Time(i64),
-    #[default]
-    UnTimed,
-}
-
-impl TimeUnix {
-    #[must_use]
-    pub fn timed() -> Self {
-        Self::Time(Timestamp::now().as_millisecond())
-    }
 }

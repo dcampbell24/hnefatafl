@@ -65,7 +65,7 @@ fn play_game(i: usize, record: &GameRecord) -> Result<(usize, Game), anyhow::Err
         let mut captures_2 = FxHashSet::default();
         let moved = game.play(&Plae::Play(play))?;
 
-        for capture in moved.captures {
+        for capture in moved.0 {
             captures_2.insert(capture);
         }
 

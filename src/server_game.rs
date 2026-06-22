@@ -30,13 +30,13 @@ use serde::{Deserialize, Serialize};
 use crate::{
     Id,
     board::{Board, BoardSize},
-    game::{Game, TimeUnix},
+    game::Game,
     glicko::Rating,
     play::{PlayRecordTimed, Plays},
     rating::Rated,
     role::Role,
     status::Status,
-    time::{Time, TimeSettings},
+    time::{Time, TimeSettings, TimeUnix},
 };
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
