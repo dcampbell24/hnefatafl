@@ -53,7 +53,7 @@ use hnefatafl_copenhagen::{
     characters::Characters,
     draw::Draw,
     email::Email,
-    game::{Game, GameTime, LegalMoves, TimeUnix},
+    game::{Game, GameTime, LegalMoves},
     heat_map::{Heat, HeatMap},
     invalid_username,
     locale::Locale,
@@ -65,7 +65,7 @@ use hnefatafl_copenhagen::{
     space::Space,
     status::Status,
     tcp_keep_alive,
-    time::{TimeEnum, TimeSettings},
+    time::{TimeEnum, TimeSettings, TimeUnix},
     tournament::{GroupSize, NumberOfGames, TournamentFull},
     tree::Tree,
     utils::{self, choose_ai, config_file, create_config_folder, create_data_folder, data_file},
@@ -3363,10 +3363,10 @@ impl<'a> Client {
 
                                 self.attacker.clone_from(&attacker);
                                 self.defender.clone_from(&defender);
-                                self.texts_game = game_deserialized.messages.clone();
+                                self.texts_game.clone_from(&game_deserialized.messages);
                                 self.game_settings.rated = rated.into();
 
-                                let mut game = Game::from(game_deserialized);
+                                let mut game = Game::from(&game_deserialized);
 
                                 self.time_attacker = game.attacker_time;
                                 self.time_defender = game.defender_time;

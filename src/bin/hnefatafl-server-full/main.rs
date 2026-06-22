@@ -52,7 +52,7 @@ use hnefatafl_copenhagen::{
     board::{BoardSize, InvalidMove},
     draw::Draw,
     email::Email,
-    game::{GameTime, TimeUnix},
+    game::GameTime,
     glicko::Outcome,
     invalid_username,
     opentafl::OpenTaflGame,
@@ -68,6 +68,7 @@ use hnefatafl_copenhagen::{
     time::{
         Time,
         TimeSettings::{self, Timed},
+        TimeUnix,
     },
     tournament::{Tournament, TournamentFull},
     utils::{self, create_data_folder, data_file},
@@ -324,6 +325,7 @@ fn login(
     tx.send((format!("{id} {username_proper} admin"), None))?;
     tx.send((format!("{id} {username_proper} admin_tournament"), None))?;
     tx.send((format!("{id} {username_proper} version"), None))?;
+    tx.send((format!("{id} {username_proper} resume_games"), None))?;
 
     let mut game_id = None;
     'outer: for _ in 0..1_000_000 {
@@ -1823,6 +1825,25 @@ impl Server {
                 "resume_game" | "resume_game_json" | "resume_game_ron" => {
                     self.resume_game(username, index_supplied, command, &the_rest)
                 }
+                "resume_games" => {
+                    for game in self.games.0.values() {
+                        if game.attacker == username {
+                            self.clients
+                                .get(&index_supplied)?
+                                .send(format!("game {} generate_move attacker", game.id))
+                                .ok()?;
+                        }
+
+                        if game.defender == username {
+                            self.clients
+                                .get(&index_supplied)?
+                                .send(format!("game {} generate_move defender", game.id))
+                                .ok()?;
+                        }
+                    }
+
+                    None
+                }
                 "request_draw" => self.request_draw(username, index_supplied, command, &the_rest),
                 "save" => {
                     debug!("saving users file...");
@@ -2069,7 +2090,8 @@ impl Server {
 
         info!("{index_supplied} {username} join_game {id}");
         let Some(game) = self.games_light.0.get_mut(&id) else {
-            unreachable!();
+            error!("There is no game with id {id}!");
+            return None;
         };
 
         game.challenge_accepted = true;
@@ -2679,7 +2701,7 @@ impl Server {
 
             // DEBUG!
             /*
-            let Ok(resume_game_pretty) = serde_json::to_string_pretty(&resume_game) else {
+            let Ok(resume_game_pretty) = serde_json::to_string_pretty(&opentafl_game) else {
                 unreachable!()
             };
 

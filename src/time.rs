@@ -18,6 +18,7 @@
 
 use std::fmt;
 
+use jiff::Timestamp;
 use serde::{Deserialize, Serialize};
 
 use crate::board::InvalidMove;
@@ -307,5 +308,19 @@ impl fmt::Display for TimeEnum {
             Self::Rapid => write!(f, "15m + 10s "),
             Self::VeryLong => write!(f, "7d 12h + 15h "),
         }
+    }
+}
+
+#[derive(Clone, Copy, Debug, Default, Deserialize, Serialize)]
+pub enum TimeUnix {
+    Time(i64),
+    #[default]
+    UnTimed,
+}
+
+impl TimeUnix {
+    #[must_use]
+    pub fn timed() -> Self {
+        Self::Time(Timestamp::now().as_millisecond())
     }
 }
