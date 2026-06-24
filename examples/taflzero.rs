@@ -16,11 +16,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // SPDX-FileCopyrightText: 2026 David Campbell <david@hnefatafl.org>
 
-// Need to keep track of all the active games in which it is my turn, then
-// starting with the game with the least time left, play.
-
-// Go through the loop normally, but when it is my turn send on a channel to make a
-// move.
 use std::{
     env, fs,
     io::{BufRead, BufReader, Write},
@@ -74,6 +69,10 @@ struct Args {
     #[arg(default_value = "hnefatafl.org", long)]
     host: String,
 
+    /// Wait for a challenger
+    #[arg(long)]
+    accept_games: u8,
+
     /// Join game with id
     #[arg(long)]
     join_game: Option<u64>,
@@ -81,10 +80,6 @@ struct Args {
     /// Join a tournament
     #[arg(long)]
     join_tournament: bool,
-
-    /// Play in a tournament
-    #[arg(long)]
-    play_tournament: bool,
 
     /// Whether the application is being run by systemd
     #[arg(long)]
@@ -104,7 +99,8 @@ struct Args {
 }
 
 struct TaflZero {
-    play_tournament: bool,
+    accept_games: u8,
+    accepted_games: u8,
     role: Role,
     reader: BufReader<TcpStream>,
     tcp: TcpStream,
@@ -211,7 +207,8 @@ fn main() -> anyhow::Result<()> {
     let (tx, rx) = channel();
 
     let mut taflzero = TaflZero {
-        play_tournament: args.play_tournament,
+        accept_games: args.accept_games,
+        accepted_games: 0,
         role: *role,
         reader,
         tcp: tcp.try_clone()?,
@@ -255,10 +252,12 @@ fn main() -> anyhow::Result<()> {
 fn handle_messages(taflzero: &mut TaflZero) -> anyhow::Result<()> {
     let mut buf = String::new();
 
-    if !taflzero.play_tournament {
+    if taflzero.accepted_games < taflzero.accept_games {
         taflzero.tcp.write_all(
             format!("new_game {} rated fischer 900000 10 11\n", taflzero.role).as_bytes(),
         )?;
+
+        taflzero.accepted_games += 1;
     }
 
     taflzero.reader.read_line(&mut buf)?;
@@ -289,6 +288,7 @@ fn handle_messages(taflzero: &mut TaflZero) -> anyhow::Result<()> {
                 .tcp
                 .write_all(format!("join_game {game_id}\n").as_bytes())?;
         }
+        (Some("game_over"), _) => taflzero.accepted_games -= 1,
         _ => log::debug!("{buf}"),
     }
 
