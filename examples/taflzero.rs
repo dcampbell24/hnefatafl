@@ -361,7 +361,7 @@ impl TaflZero {
                     };
 
                     let tournament_string = format!(
-                        "[{timestamp}] board size: {}, fischer time: {}, group size: {}, games: {}",
+                        "[{timestamp} (pending)] board size: {}, fischer time: {}, group size: {}, games: {}",
                         tournament.board_size,
                         tournament.time_setting,
                         tournament.group_size.size,
@@ -369,6 +369,18 @@ impl TaflZero {
                     );
 
                     log::info!("{tournament_string}");
+
+                    if let Some(tournament) = tournament.tournament {
+                        let tournament_string = format!(
+                            "[{timestamp} (live)] board size: {}, fischer time: {}, group size: {}, games: {}",
+                            tournament.board_size,
+                            tournament.time_setting,
+                            tournament.group_size,
+                            tournament.number_of_games
+                        );
+
+                        log::info!("{tournament_string}");
+                    }
                 }
             }
             _ => log::debug!("{buf}"),
