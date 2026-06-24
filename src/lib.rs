@@ -42,6 +42,35 @@
 //!
 //! [OpenTafl]: https://codeberg.org/dcampbell/hnefatafl/src/branch/main/src/opentafl.rs
 //! [TaflZero]: https://codeberg.org/dcampbell/hnefatafl/src/branch/main/examples/taflzero.rs
+//!
+//! ### `OpenTafl` Game Format (Returned by `resume_game_json`)
+//!
+//! ```json
+//! {
+//!   "attackers": "david",
+//!   "defenders": "ai-taflzero-10",
+//!   "dim": 11,
+//!   "start": "/3AAAAA3/5A5/11/A4D4A/A3DDD3A/AA1DDKDD1AA/A3DDD3A/A4D4A/11/5A5/3AAAAA3/",
+//!   "time_control": {
+//!     "main_time_seconds": 900,
+//!     "increment_length": 10
+//!   },
+//!   "time_remaining_ms": {
+//!     "attackers": 885694,
+//!     "defenders": 911981,
+//!     "last_move": "2026-06-24T19:57:38.07Z"
+//!   },
+//!   "moves": "d1-d3 e5-e2 d3-d2xe2 f8-c8",
+//!   "rated": true,
+//!   "messages": [
+//!     {
+//!       "username": "david",
+//!       "timestamp": "2026-06-24T19:57:33.519700276Z",
+//!       "content": "Hello!"
+//!     }
+//!   ]
+//! }
+//! ```
 
 #![deny(clippy::panic)]
 #![deny(clippy::unwrap_used)]
