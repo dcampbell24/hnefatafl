@@ -69,6 +69,10 @@ struct Args {
     #[arg(default_value = "hnefatafl.org", long)]
     host: String,
 
+    /// Create an account
+    #[arg(long)]
+    create_account: bool,
+
     /// Wait for u8 challengers
     #[arg(long, default_value_t = 0)]
     accept_games: u8,
@@ -168,7 +172,14 @@ fn main() -> anyhow::Result<()> {
     let mut tcp: TcpStream = socket.into();
     let mut reader = BufReader::new(tcp.try_clone()?);
 
-    tcp.write_all(format!("{VERSION_ID} login {username} {}\n", args.password).as_bytes())?;
+    if args.create_account {
+        tcp.write_all(
+            format!("{VERSION_ID} create_account {username} {}\n", args.password).as_bytes(),
+        )?;
+    } else {
+        tcp.write_all(format!("{VERSION_ID} login {username} {}\n", args.password).as_bytes())?;
+    }
+
     tcp.write_all(format!("software_id {SOFTWARE_ID}\n").as_bytes())?;
 
     if args.join_tournament {
