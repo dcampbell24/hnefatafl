@@ -3,16 +3,9 @@
 
 #![cfg(test)]
 
-use std::{fmt, io::Cursor, str::FromStr};
+use std::{io::Cursor, str::FromStr};
 
-use rustc_hash::FxHashSet;
-
-use hnefatafl_copenhagen::{
-    game::Game,
-    play::{Plae, Play, Vertex},
-    role::Role,
-    status::Status,
-};
+use hnefatafl_copenhagen::{game::Game, opentafl::OpenTaflMoves, status::Status};
 
 /// # Errors
 ///
@@ -61,22 +54,12 @@ pub fn play_games(records: &[(usize, GameRecord)]) {
 fn play_game(i: usize, record: &GameRecord) -> Result<(usize, Game), anyhow::Error> {
     let mut game = Game::default();
 
-    for (play, captures_1) in record.clone().plays {
-        let mut captures_2 = FxHashSet::default();
-        let moved = game.play(&Plae::Play(play))?;
+    for (i, (play, captures_1)) in record.moves.0.iter().enumerate() {
+        let captures_2 = game.play(play)?;
 
-        for capture in moved.0 {
-            captures_2.insert(capture);
-        }
-
-        if game.board.king.is_some() {
-            let captures_2 = Captures(captures_2);
-
-            if let Some(captures_1) = captures_1 {
-                assert_eq!(captures_1, captures_2);
-            } else if !captures_2.0.is_empty() {
-                panic!("The engine reports captures, but the record says there are none.");
-            }
+        // The GameRecord does not mark the capture of the king!
+        if i != record.moves.0.len() - 1 {
+            assert_eq!(captures_1, &captures_2);
         }
     }
 
@@ -91,22 +74,9 @@ struct Record {
     status: String,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct Captures(pub FxHashSet<Vertex>);
-
-impl fmt::Display for Captures {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for vertex in &self.0 {
-            write!(f, "{vertex} ")?;
-        }
-
-        Ok(())
-    }
-}
-
 #[derive(Clone, Debug)]
 pub struct GameRecord {
-    pub plays: Vec<(Play, Option<Captures>)>,
+    pub moves: OpenTaflMoves,
     pub status: Status,
 }
 
@@ -122,40 +92,10 @@ pub fn game_records_from_path(string: &str) -> anyhow::Result<Vec<(usize, GameRe
     let mut game_records = Vec::with_capacity(1_752);
     for (i, result) in rdr.deserialize().enumerate() {
         let record: Record = result?;
-        let mut role = Role::Defender;
-        let mut plays = Vec::new();
-
-        for play in record.moves.split_ascii_whitespace() {
-            role = role.opposite();
-
-            if let Some((vertex, vertex_captures)) = play.split_once('-') {
-                let vertex_captures: Vec<_> = vertex_captures.split('x').collect();
-
-                if let (Ok(from), Ok(to)) = (
-                    Vertex::from_str(vertex),
-                    Vertex::from_str(vertex_captures[0]),
-                ) {
-                    let play = Play { role, from, to };
-
-                    if vertex_captures.get(1).is_some() {
-                        let mut captures = FxHashSet::default();
-                        for capture in vertex_captures.into_iter().skip(1) {
-                            let vertex = Vertex::from_str(capture)?;
-                            if !captures.contains(&vertex) {
-                                captures.insert(vertex);
-                            }
-                        }
-
-                        plays.push((play, Some(Captures(captures))));
-                    } else {
-                        plays.push((play, None));
-                    }
-                }
-            }
-        }
+        let moves = OpenTaflMoves::from_str(&record.moves)?;
 
         let game_record = GameRecord {
-            plays,
+            moves,
             status: Status::from_str(record.status.as_str())?,
         };
 

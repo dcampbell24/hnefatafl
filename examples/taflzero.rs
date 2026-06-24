@@ -27,7 +27,7 @@ use std::{
     net::{TcpStream, ToSocketAddrs},
     process::Command,
     str::FromStr,
-    sync::mpsc::{Receiver, Sender, channel},
+    sync::mpsc::{Sender, channel},
     thread,
     time::Duration,
 };
@@ -40,7 +40,7 @@ use hnefatafl_copenhagen::{
     COPYRIGHT, SOFTWARE_ID, VERSION_ID,
     ai::{AI, AiMonteCarlo},
     game::Game,
-    opentafl::OpenTaflGame,
+    opentafl::{OpenTaflGame, OpenTaflMoves},
     play::{Plae, Play, Vertex},
     role::Role,
 };
@@ -110,7 +110,6 @@ struct TaflZero {
     reader: BufReader<TcpStream>,
     tcp: TcpStream,
     tx: Sender<(u128, OpenTaflGame)>,
-    _genmove_rx: Receiver<(u128, Plae)>,
 }
 
 #[allow(clippy::too_many_lines)]
@@ -214,16 +213,14 @@ fn main() -> anyhow::Result<()> {
     }
 
     let (tx, rx) = channel();
-    let (mut genmove_tx, genmove_rx) = channel();
 
     let mut taflzero = TaflZero {
         play_tournament: args.play_tournament,
         game_id,
         role: *role,
         reader,
-        tcp,
+        tcp: tcp.try_clone()?,
         tx,
-        _genmove_rx: genmove_rx,
     };
 
     thread::spawn(move || {
@@ -234,20 +231,20 @@ fn main() -> anyhow::Result<()> {
             let (id, opentafl_game) = rx.recv().unwrap();
 
             engine.set_start_position();
+            let game = Game::from(&opentafl_game);
+            let moves = OpenTaflMoves::from_str(&opentafl_game.moves).unwrap();
 
-            // Play all the moves already played in both games.
-            // If you get an error resign.
+            for (play, _captures) in moves.0 {
+                if let Plae::Play(play) = &play {
+                    let mv =
+                        create_move_from_algebraic(&format!("{}{}", play.from, play.to)).unwrap();
+                    engine.make_move(mv).unwrap();
+                }
+            }
 
             log::info!("{opentafl_game:#?}");
-            generate_move(
-                &mut ai,
-                &mut engine,
-                args.search_ms,
-                &opentafl_game,
-                &mut genmove_tx,
-                id,
-            )
-            .unwrap();
+
+            generate_move(&mut ai, &mut engine, args.search_ms, game, &mut tcp, id).unwrap();
         }
     });
 
@@ -260,7 +257,6 @@ fn main() -> anyhow::Result<()> {
     }
 }
 
-#[allow(clippy::too_many_lines)]
 fn handle_messages(taflzero: &mut TaflZero) -> anyhow::Result<()> {
     let mut buf = String::new();
 
@@ -279,15 +275,13 @@ fn handle_messages(taflzero: &mut TaflZero) -> anyhow::Result<()> {
     let message: Vec<_> = buf.split_ascii_whitespace().collect();
 
     match (message.get(1).copied(), message.get(2).copied()) {
-        (Some("resume_game_json"), _) => {
-            let game: Vec<_> = message.iter().skip(2).copied().collect();
+        (Some("resume_game_json"), Some(game_id)) => {
+            let game_id = game_id.parse()?;
+            let game: Vec<_> = message.iter().skip(3).copied().collect();
             let game = game.join(" ");
             let game: OpenTaflGame = serde_json::de::from_str(&game)?;
 
-            taflzero.tx.send((
-                taflzero.game_id.expect("We should have an ID by now!"),
-                game,
-            ))?;
+            taflzero.tx.send((game_id, game))?;
         }
         (Some(id), Some("generate_move")) => {
             taflzero
@@ -361,11 +355,10 @@ fn generate_move(
     ai: &mut AiMonteCarlo,
     engine: &mut Engine,
     search_ms: u64,
-    opentafl_game: &OpenTaflGame,
-    genmove_tx: &mut Sender<(u128, Plae)>,
+    mut game: Game,
+    tcp: &mut TcpStream,
     id: u128,
 ) -> anyhow::Result<()> {
-    let mut game = Game::from(opentafl_game);
     let turn = game.turn;
 
     engine.make_search(search_ms, None);
@@ -412,13 +405,13 @@ fn generate_move(
                     if let Err(invalid_play) = engine.make_move(mv) {
                         log::error!("invalid_play: {invalid_play:?}");
                         let play = player_resigns(turn);
-                        genmove_tx.send((id, play))?;
+                        tcp.write_all(format!("game {id} {play}\n").as_bytes())?;
                     }
 
-                    genmove_tx.send((id, generate_move.play))?;
+                    tcp.write_all(format!("game {id} {}\n", generate_move.play).as_bytes())?;
                 }
                 Plae::AttackerResigns | Plae::DefenderResigns => {
-                    genmove_tx.send((id, generate_move.play))?;
+                    tcp.write_all(format!("game {id} {}\n", generate_move.play).as_bytes())?;
                 }
             }
         } else {
@@ -426,14 +419,15 @@ fn generate_move(
                 log::error!("invalid_play: {invalid_play:?}");
 
                 let play = player_resigns(turn);
-                genmove_tx.send((id, play))?;
+                tcp.write_all(format!("game {id} {play}\n").as_bytes())?;
             }
 
-            genmove_tx.send((id, play))?;
+            let send = format!("game {id} {play}\n");
+            tcp.write_all(send.as_bytes())?;
         }
     } else {
         let play = player_resigns(turn);
-        genmove_tx.send((id, play))?;
+        tcp.write_all(format!("game {id} {play}\n").as_bytes())?;
     }
 
     log::debug!("\n{game}");

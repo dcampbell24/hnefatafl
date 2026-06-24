@@ -23,6 +23,7 @@ use std::{
 };
 
 use anyhow::Context;
+use rustc_hash::FxHashSet;
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -321,8 +322,8 @@ impl fmt::Display for Play {
     }
 }
 
-#[derive(Debug, Default, Deserialize, Serialize)]
-pub struct Captures(pub Vec<Vertex>);
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+pub struct Captures(pub FxHashSet<Vertex>);
 
 impl fmt::Display for Captures {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
