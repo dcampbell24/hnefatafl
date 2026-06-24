@@ -105,7 +105,6 @@ struct Args {
 
 struct TaflZero {
     play_tournament: bool,
-    game_id: Option<u128>,
     role: Role,
     reader: BufReader<TcpStream>,
     tcp: TcpStream,
@@ -203,20 +202,16 @@ fn main() -> anyhow::Result<()> {
         "default_nn.onnx"
     };
 
-    let mut game_id = None;
-
     if let Some(id) = args.join_game {
         let id = id.to_string();
-        tcp.write_all(format!("join_game_pending {id}\n").as_bytes())?;
 
-        game_id = Some(0);
+        tcp.write_all(format!("join_game_pending {id}\n").as_bytes())?;
     }
 
     let (tx, rx) = channel();
 
     let mut taflzero = TaflZero {
         play_tournament: args.play_tournament,
-        game_id,
         role: *role,
         reader,
         tcp: tcp.try_clone()?,
@@ -260,11 +255,10 @@ fn main() -> anyhow::Result<()> {
 fn handle_messages(taflzero: &mut TaflZero) -> anyhow::Result<()> {
     let mut buf = String::new();
 
-    if !taflzero.play_tournament && taflzero.game_id.is_none() {
+    if !taflzero.play_tournament {
         taflzero.tcp.write_all(
             format!("new_game {} rated fischer 900000 10 11\n", taflzero.role).as_bytes(),
         )?;
-        taflzero.game_id = Some(0);
     }
 
     taflzero.reader.read_line(&mut buf)?;
