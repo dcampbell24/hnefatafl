@@ -16,8 +16,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // SPDX-FileCopyrightText: 2026 David Campbell <david@hnefatafl.org>
 
-// Todo: make the main loop read from a channel on put the TCP loop on a channel...
-
 use itertools::Itertools;
 use jiff::Timestamp;
 use rustc_hash::FxHashSet;
