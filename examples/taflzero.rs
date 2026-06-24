@@ -98,15 +98,6 @@ struct Args {
     man: bool,
 }
 
-struct TaflZero {
-    accept_games: u8,
-    accepted_games: u8,
-    role: Role,
-    reader: BufReader<TcpStream>,
-    tcp: TcpStream,
-    tx: Sender<(u128, OpenTaflGame)>,
-}
-
 #[allow(clippy::too_many_lines)]
 fn main() -> anyhow::Result<()> {
     let args = Args::parse();
@@ -241,7 +232,7 @@ fn main() -> anyhow::Result<()> {
     });
 
     loop {
-        handle_messages(&mut taflzero)?;
+        taflzero.handle_messages()?;
 
         if args.join_game.is_some() {
             return Ok(());
@@ -249,52 +240,25 @@ fn main() -> anyhow::Result<()> {
     }
 }
 
-fn handle_messages(taflzero: &mut TaflZero) -> anyhow::Result<()> {
-    let mut buf = String::new();
+fn init_logger(debug: bool, systemd: bool) {
+    let mut builder = Builder::new();
+    let module = "taflzero";
 
-    if taflzero.accepted_games < taflzero.accept_games {
-        taflzero.tcp.write_all(
-            format!("new_game {} rated fischer 900000 10 11\n", taflzero.role).as_bytes(),
-        )?;
-
-        taflzero.accepted_games += 1;
+    if systemd {
+        builder.format_timestamp(None);
+        builder.format_target(false);
     }
 
-    taflzero.reader.read_line(&mut buf)?;
-    if buf.trim().is_empty() {
-        return Err(Error::msg("the TCP stream has closed"));
+    if let Ok(var) = env::var("RUST_LOG") {
+        builder.parse_filters(&var);
+    } else if debug {
+        builder.filter(Some(module), LevelFilter::Debug);
+    } else {
+        // If no RUST_LOG provided, default to logging at the Info level.
+        builder.filter(Some(module), LevelFilter::Info);
     }
 
-    let message: Vec<_> = buf.split_ascii_whitespace().collect();
-
-    match (message.get(1).copied(), message.get(2).copied()) {
-        (Some("resume_game_json"), Some(game_id)) => {
-            let game_id = game_id.parse()?;
-            let game: Vec<_> = message.iter().skip(3).copied().collect();
-            let game = game.join(" ");
-            let game: OpenTaflGame = serde_json::de::from_str(&game)?;
-
-            taflzero.tx.send((game_id, game))?;
-        }
-        (Some(id), Some("generate_move")) => {
-            taflzero
-                .tcp
-                .write_all(format!("resume_game_json {id}\n").as_bytes())?;
-        }
-        (Some("challenge_requested"), Some(game_id)) => {
-            log::info!("{message:?}");
-
-            taflzero
-                .tcp
-                .write_all(format!("join_game {game_id}\n").as_bytes())?;
-        }
-        (Some("game_over"), _) => taflzero.accepted_games -= 1,
-        _ => log::debug!("{buf}"),
-    }
-
-    buf.clear();
-
-    Ok(())
+    builder.init();
 }
 
 fn systemd_delay_restart(args: &Args) -> anyhow::Result<()> {
@@ -324,25 +288,62 @@ fn systemd_delay_restart(args: &Args) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn init_logger(debug: bool, systemd: bool) {
-    let mut builder = Builder::new();
-    let module = "taflzero";
+#[derive(Debug)]
+struct TaflZero {
+    accept_games: u8,
+    accepted_games: u8,
+    role: Role,
+    reader: BufReader<TcpStream>,
+    tcp: TcpStream,
+    tx: Sender<(u128, OpenTaflGame)>,
+}
 
-    if systemd {
-        builder.format_timestamp(None);
-        builder.format_target(false);
+impl TaflZero {
+    fn handle_messages(&mut self) -> anyhow::Result<()> {
+        let mut buf = String::new();
+
+        if self.accepted_games < self.accept_games {
+            self.tcp.write_all(
+                format!("new_game {} rated fischer 900000 10 11\n", self.role).as_bytes(),
+            )?;
+
+            self.accepted_games += 1;
+        }
+
+        self.reader.read_line(&mut buf)?;
+        if buf.trim().is_empty() {
+            return Err(Error::msg("the TCP stream has closed"));
+        }
+
+        let message: Vec<_> = buf.split_ascii_whitespace().collect();
+
+        match (message.get(1).copied(), message.get(2).copied()) {
+            (Some("resume_game_json"), Some(game_id)) => {
+                let game_id = game_id.parse()?;
+                let game: Vec<_> = message.iter().skip(3).copied().collect();
+                let game = game.join(" ");
+                let game: OpenTaflGame = serde_json::de::from_str(&game)?;
+
+                self.tx.send((game_id, game))?;
+            }
+            (Some(id), Some("generate_move")) => {
+                self.tcp
+                    .write_all(format!("resume_game_json {id}\n").as_bytes())?;
+            }
+            (Some("challenge_requested"), Some(game_id)) => {
+                log::info!("{message:?}");
+
+                self.tcp
+                    .write_all(format!("join_game {game_id}\n").as_bytes())?;
+            }
+            (Some("game_over"), _) => self.accepted_games -= 1,
+            _ => log::debug!("{buf}"),
+        }
+
+        buf.clear();
+
+        Ok(())
     }
-
-    if let Ok(var) = env::var("RUST_LOG") {
-        builder.parse_filters(&var);
-    } else if debug {
-        builder.filter(Some(module), LevelFilter::Debug);
-    } else {
-        // If no RUST_LOG provided, default to logging at the Info level.
-        builder.filter(Some(module), LevelFilter::Info);
-    }
-
-    builder.init();
 }
 
 fn generate_move(
