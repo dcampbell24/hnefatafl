@@ -2647,7 +2647,7 @@ impl Server {
                 (*command).to_string(),
             ));
         };
-        let Ok(id) = id.parse::<Id>() else {
+        let Ok(game_id) = id.parse::<Id>() else {
             return Some((
                 self.clients.get(&index_supplied)?.clone(),
                 Err(InvalidMove::Other),
@@ -2655,7 +2655,7 @@ impl Server {
             ));
         };
 
-        let Some(server_game) = self.games.0.get_mut(&id) else {
+        let Some(server_game) = self.games.0.get_mut(&game_id) else {
             unreachable!()
         };
 
@@ -2664,7 +2664,7 @@ impl Server {
 
         info!("{index_supplied} {username} {command} {id}");
 
-        let Some(game_light) = self.games_light.0.get_mut(&id) else {
+        let Some(game_light) = self.games_light.0.get_mut(&game_id) else {
             unreachable!();
         };
 
@@ -2714,7 +2714,7 @@ impl Server {
                 };
 
                 client
-                    .send(format!("= resume_game_json {opentafl_game}"))
+                    .send(format!("= resume_game_json {game_id} {opentafl_game}"))
                     .ok()?;
             } else {
                 let Ok(resume_game) = ron::to_string(&opentafl_game) else {
@@ -2722,7 +2722,7 @@ impl Server {
                 };
 
                 client
-                    .send(format!("= resume_game_ron {resume_game}"))
+                    .send(format!("= resume_game_ron {game_id} {resume_game}"))
                     .ok()?;
             }
         } else {

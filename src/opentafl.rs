@@ -20,13 +20,14 @@
 
 use itertools::Itertools;
 use jiff::Timestamp;
+use rustc_hash::FxHashSet;
 use serde::{Deserialize, Serialize};
-use std::{collections::VecDeque, fmt::Write};
+use std::{collections::VecDeque, fmt::Write, str::FromStr};
 
 use crate::{
     board::BoardSize,
     game::Game,
-    play::{Plae, Plays},
+    play::{Captures, Plae, Play, Plays, Vertex},
     role::Role,
     server_game::{Message, ServerGame},
     time::{Time, TimeSettings, TimeUnix},
@@ -231,5 +232,48 @@ impl From<&OpenTaflGame> for Game {
         game.defender_time = defender_time;
 
         game
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct OpenTaflMoves(pub Vec<(Plae, Captures)>);
+
+impl FromStr for OpenTaflMoves {
+    type Err = anyhow::Error;
+
+    fn from_str(moves: &str) -> Result<Self, Self::Err> {
+        let mut plays = Vec::new();
+        let mut role = Role::Attacker;
+
+        for play in moves.split_ascii_whitespace() {
+            if let Some((vertex, vertex_captures)) = play.split_once('-') {
+                let vertex_captures: Vec<_> = vertex_captures.split('x').collect();
+
+                if let (Ok(from), Ok(to)) = (
+                    Vertex::from_str(vertex),
+                    Vertex::from_str(vertex_captures[0]),
+                ) {
+                    let play = Play { role, from, to };
+                    let mut captures = FxHashSet::default();
+
+                    if vertex_captures.get(1).is_some() {
+                        for capture in vertex_captures.into_iter().skip(1) {
+                            let vertex = Vertex::from_str(capture)?;
+                            if !captures.contains(&vertex) {
+                                captures.insert(vertex);
+                            }
+                        }
+
+                        plays.push((Plae::Play(play), Captures(captures)));
+                    } else {
+                        plays.push((Plae::Play(play), Captures(captures)));
+                    }
+                }
+            }
+
+            role = role.opposite();
+        }
+
+        Ok(OpenTaflMoves(plays))
     }
 }

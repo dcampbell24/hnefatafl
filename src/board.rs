@@ -407,7 +407,7 @@ impl Board {
         }
     }
 
-    fn captures(&mut self, play_to: &Vertex, role_from: Role, captures: &mut Vec<Vertex>) {
+    fn captures(&mut self, play_to: &Vertex, role_from: Role, captures: &mut FxHashSet<Vertex>) {
         self.captures_(play_to, role_from, captures, super::play::Vertex::up);
         self.captures_(play_to, role_from, captures, super::play::Vertex::left);
         self.captures_(play_to, role_from, captures, super::play::Vertex::down);
@@ -418,7 +418,7 @@ impl Board {
         &mut self,
         play_to: &Vertex,
         role_from: Role,
-        captures: &mut Vec<Vertex>,
+        captures: &mut FxHashSet<Vertex>,
         over: T,
     ) {
         if let Some(right_1) = over(play_to) {
@@ -430,7 +430,7 @@ impl Board {
                     || Role::from(self.get(&right_2)) == role_from)
                 && self.set_if_not_king(&right_1, Space::Empty)
             {
-                captures.push(right_1);
+                captures.insert(right_1);
             }
         }
     }
@@ -441,7 +441,7 @@ impl Board {
         &mut self,
         role_from: Role,
         vertex_to: &Vertex,
-        captures: &mut Vec<Vertex>,
+        captures: &mut FxHashSet<Vertex>,
     ) {
         let size = self.size();
         let board_size_usize: usize = size.into();
@@ -510,7 +510,7 @@ impl Board {
                             y: board_size_usize - 1,
                         };
                         if self.set_if_not_king(&vertex, Space::Empty) {
-                            captures.push(vertex);
+                            captures.insert(vertex);
                         }
                     }
                 }
@@ -565,7 +565,7 @@ impl Board {
                     for x_2 in start..finish {
                         let vertex = Vertex { size, x: x_2, y: 0 };
                         if self.set_if_not_king(&vertex, Space::Empty) {
-                            captures.push(vertex);
+                            captures.insert(vertex);
                         }
                     }
                 }
@@ -620,7 +620,7 @@ impl Board {
                     for y_2 in start..finish {
                         let vertex = Vertex { size, x: 0, y: y_2 };
                         if self.set_if_not_king(&vertex, Space::Empty) {
-                            captures.push(vertex);
+                            captures.insert(vertex);
                         }
                     }
                 }
@@ -691,7 +691,7 @@ impl Board {
                             y: y_2,
                         };
                         if self.set_if_not_king(&vertex, Space::Empty) {
-                            captures.push(vertex);
+                            captures.insert(vertex);
                         }
                     }
                 }
@@ -932,7 +932,7 @@ impl Board {
         &mut self,
         role_from: Role,
         play_to: &Vertex,
-        captures: &mut Vec<Vertex>,
+        captures: &mut FxHashSet<Vertex>,
     ) -> bool {
         if let Some(kings_vertex) = self.king
             && role_from == Role::Attacker
@@ -948,7 +948,7 @@ impl Board {
         {
             self.set(&kings_vertex, Space::Empty);
             self.king = None;
-            captures.push(kings_vertex);
+            captures.insert(kings_vertex);
 
             true
         } else {
@@ -1396,7 +1396,7 @@ impl Board {
         status: &Status,
         turn: &Role,
         previous_boards: &mut PreviousBoards,
-    ) -> Result<(Vec<Vertex>, Status), InvalidMove> {
+    ) -> Result<(FxHashSet<Vertex>, Status), InvalidMove> {
         let (board, captures, status) = self.play_internal(play, status, turn, previous_boards)?;
         previous_boards.0.push(board.clone());
         *self = board;
@@ -1436,7 +1436,7 @@ impl Board {
                             empty_spaces = None;
                         }
 
-                        open_tafl.push('a');
+                        open_tafl.push('A');
                     }
                     Space::King => {
                         if let Some(spaces) = empty_spaces {
@@ -1444,7 +1444,7 @@ impl Board {
                             empty_spaces = None;
                         }
 
-                        open_tafl.push('k');
+                        open_tafl.push('K');
                     }
                     Space::Defender => {
                         if let Some(spaces) = empty_spaces {
@@ -1452,7 +1452,7 @@ impl Board {
                             empty_spaces = None;
                         }
 
-                        open_tafl.push('d');
+                        open_tafl.push('D');
                     }
                 }
             }
@@ -1593,21 +1593,25 @@ impl Board {
         status: &Status,
         turn: &Role,
         previous_boards: &PreviousBoards,
-    ) -> Result<(Board, Vec<Vertex>, Status), InvalidMove> {
+    ) -> Result<(Board, FxHashSet<Vertex>, Status), InvalidMove> {
         if *status != Status::Ongoing {
             return Err(InvalidMove::NotOngoing);
         }
 
         let play = match play {
-            Plae::AttackerResigns => return Ok((self.clone(), Vec::new(), Status::DefenderWins)),
-            Plae::DefenderResigns => return Ok((self.clone(), Vec::new(), Status::AttackerWins)),
+            Plae::AttackerResigns => {
+                return Ok((self.clone(), FxHashSet::default(), Status::DefenderWins));
+            }
+            Plae::DefenderResigns => {
+                return Ok((self.clone(), FxHashSet::default(), Status::AttackerWins));
+            }
             Plae::Play(play) => play,
         };
 
         let mut board = self.legal_move(play, status, turn, previous_boards)?;
         let space_from = self.get(&play.from);
         let role_from = Role::from(space_from);
-        let mut captures = Vec::new();
+        let mut captures = FxHashSet::default();
         board.captures(&play.to, role_from, &mut captures);
         board.captures_shield_wall(role_from, &play.to, &mut captures);
 
