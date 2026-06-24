@@ -3343,7 +3343,7 @@ impl<'a> Client {
                                 self.texts_game = VecDeque::new();
                                 self.archived_game_handle = None;
 
-                                let texts: Vec<&str> = text.skip(1).collect();
+                                let texts: Vec<&str> = text.collect();
                                 let game_serialized = texts.join(" ");
 
                                 let game_deserialized: OpenTaflGame = if text_next

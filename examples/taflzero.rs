@@ -223,7 +223,7 @@ fn main() -> anyhow::Result<()> {
         let mut ai = AiMonteCarlo::new(Duration::from_secs(MONTE_CARLO_SECONDS), MONTE_CARLO_DEPTH);
 
         loop {
-            let (id, opentafl_game) = rx.recv().unwrap();
+            let opentafl_game = rx.recv().unwrap();
 
             engine.set_start_position();
             let game = Game::from(&opentafl_game);
@@ -239,7 +239,15 @@ fn main() -> anyhow::Result<()> {
 
             log::debug!("{opentafl_game:#?}");
 
-            generate_move(&mut ai, &mut engine, args.search_ms, game, &mut tcp, id).unwrap();
+            generate_move(
+                &mut ai,
+                &mut engine,
+                args.search_ms,
+                game,
+                &mut tcp,
+                opentafl_game.id,
+            )
+            .unwrap();
         }
     });
 
@@ -307,7 +315,7 @@ struct TaflZero {
     role: Role,
     reader: BufReader<TcpStream>,
     tcp: TcpStream,
-    tx: Sender<(u128, OpenTaflGame)>,
+    tx: Sender<OpenTaflGame>,
 }
 
 impl TaflZero {
@@ -330,13 +338,12 @@ impl TaflZero {
         let message: Vec<_> = buf.split_ascii_whitespace().collect();
 
         match (message.get(1).copied(), message.get(2).copied()) {
-            (Some("resume_game_json"), Some(game_id)) => {
-                let game_id = game_id.parse()?;
-                let game: Vec<_> = message.iter().skip(3).copied().collect();
+            (Some("resume_game_json"), _) => {
+                let game: Vec<_> = message.iter().skip(2).copied().collect();
                 let game = game.join(" ");
                 let game: OpenTaflGame = serde_json::de::from_str(&game)?;
 
-                self.tx.send((game_id, game))?;
+                self.tx.send(game)?;
             }
             (Some(id), Some("generate_move")) => {
                 self.tcp
