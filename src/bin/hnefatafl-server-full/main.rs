@@ -2711,7 +2711,7 @@ impl Server {
                 };
 
                 client
-                    .send(format!("= resume_game_json {game_id} {opentafl_game}"))
+                    .send(format!("= resume_game_json {opentafl_game}"))
                     .ok()?;
             } else {
                 let Ok(resume_game) = ron::to_string(&opentafl_game) else {
@@ -2719,7 +2719,7 @@ impl Server {
                 };
 
                 client
-                    .send(format!("= resume_game_ron {game_id} {resume_game}"))
+                    .send(format!("= resume_game_ron {resume_game}"))
                     .ok()?;
             }
         } else {

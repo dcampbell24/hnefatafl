@@ -52,6 +52,7 @@
 //!
 //! ```json
 //! {
+//!   "id": 34253,
 //!   "attackers": "david",
 //!   "defenders": "ai-taflzero-10",
 //!   "dim": 11,

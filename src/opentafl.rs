@@ -59,6 +59,7 @@ pub struct TimeRemaining {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct OpenTaflGame {
+    pub id: u128,
     pub attackers: String,
     pub defenders: String,
     pub dim: usize,
@@ -144,6 +145,7 @@ impl From<&ServerGame> for OpenTaflGame {
         };
 
         Self {
+            id: server_game.id,
             attackers: server_game.attacker.clone(),
             defenders: server_game.defender.clone(),
             dim,
