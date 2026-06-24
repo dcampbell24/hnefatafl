@@ -69,8 +69,8 @@ struct Args {
     #[arg(default_value = "hnefatafl.org", long)]
     host: String,
 
-    /// Wait for a challenger
-    #[arg(long)]
+    /// Wait for u8 challengers
+    #[arg(long, default_value_t = 0)]
     accept_games: u8,
 
     /// Join game with id
@@ -234,7 +234,7 @@ fn main() -> anyhow::Result<()> {
                 }
             }
 
-            log::info!("{opentafl_game:#?}");
+            log::debug!("{opentafl_game:#?}");
 
             generate_move(&mut ai, &mut engine, args.search_ms, game, &mut tcp, id).unwrap();
         }
