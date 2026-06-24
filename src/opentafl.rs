@@ -16,6 +16,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // SPDX-FileCopyrightText: 2026 David Campbell <david@hnefatafl.org>
 
+//! This code handles converting to and from the `OpenTafl` format.
+
 use itertools::Itertools;
 use jiff::Timestamp;
 use rustc_hash::FxHashSet;
