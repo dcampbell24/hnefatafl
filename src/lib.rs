@@ -34,6 +34,11 @@
 //! Get more information about the [message protocol] used by the engine.
 //!
 //! [message protocol]: https://docs.rs/hnefatafl-copenhagen/latest/hnefatafl_copenhagen/message/enum.Message.html
+//!
+//! ## `TaflZero` Example
+//! ```rust
+#![doc = include_str!("../examples/taflzero.rs")]
+//! ```
 
 #![deny(clippy::panic)]
 #![deny(clippy::unwrap_used)]
