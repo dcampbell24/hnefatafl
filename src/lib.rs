@@ -33,12 +33,15 @@
 //!
 //! Get more information about the [message protocol] used by the engine.
 //!
-//! [message protocol]: https://docs.rs/hnefatafl-copenhagen/latest/hnefatafl_copenhagen/message/enum.Message.html
+//! [message protocol]: message/enum.Message.html
 //!
-//! ## `TaflZero` Example
-//! ```rust
-#![doc = include_str!("../examples/taflzero.rs")]
-//! ```
+//! ## [OpenTafl] and [TaflZero]
+//!
+//! If you want to adapt your AI for this server's tournaments, have a look at
+//! this code.
+//!
+//! [OpenTafl]: https://codeberg.org/dcampbell/hnefatafl/src/branch/main/src/opentafl.rs
+//! [TaflZero]: https://codeberg.org/dcampbell/hnefatafl/src/branch/main/examples/taflzero.rs
 
 #![deny(clippy::panic)]
 #![deny(clippy::unwrap_used)]
