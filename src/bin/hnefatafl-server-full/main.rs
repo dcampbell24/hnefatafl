@@ -2699,14 +2699,11 @@ impl Server {
         if command == "resume_game_json" || command == "resume_game_ron" {
             let opentafl_game = OpenTaflGame::from(&*server_game);
 
-            // DEBUG!
-            /*
             let Ok(resume_game_pretty) = serde_json::to_string_pretty(&opentafl_game) else {
                 unreachable!()
             };
 
-            println!("{resume_game_pretty}");
-            */
+            debug!("\n{resume_game_pretty}");
 
             if command == "resume_game_json" {
                 let Ok(opentafl_game) = serde_json::to_string(&opentafl_game) else {
