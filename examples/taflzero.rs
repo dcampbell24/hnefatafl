@@ -38,6 +38,7 @@ use hnefatafl_copenhagen::{
     opentafl::{OpenTaflGame, OpenTaflMoves},
     play::{Plae, Play, Vertex},
     role::Role,
+    tournament::TournamentFull,
 };
 use log::LevelFilter;
 use socket2::{Domain, SockAddr, Socket, TcpKeepalive, Type};
@@ -348,6 +349,28 @@ impl TaflZero {
                     .write_all(format!("join_game {game_id}\n").as_bytes())?;
             }
             (Some("game_over"), _) => self.accepted_games -= 1,
+            (Some("tournament_status"), _) => {
+                let tournament: Vec<_> = message.iter().skip(2).copied().collect();
+                if let Some(tournament) = tournament.first() {
+                    let tournament: TournamentFull = serde_json::de::from_str(tournament)?;
+
+                    let timestamp = if let Some(timestamp) = tournament.date {
+                        timestamp.strftime("%F %T UTC").to_string()
+                    } else {
+                        String::new()
+                    };
+
+                    let tournament_string = format!(
+                        "[{timestamp}] board size: {}, fischer time: {}, group size: {}, games: {}",
+                        tournament.board_size,
+                        tournament.time_setting,
+                        tournament.group_size.size,
+                        tournament.number_of_games.number
+                    );
+
+                    log::info!("{tournament_string}");
+                }
+            }
             _ => log::debug!("{buf}"),
         }
 
