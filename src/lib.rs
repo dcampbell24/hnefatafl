@@ -77,7 +77,7 @@ pub type Id = u128;
 pub const HOME: &str = "hnefatafl-copenhagen";
 pub const SERVER_PORT: &str = ":49152";
 pub const SOCKET_PATH: &str = "/tmp/hnefatafl.sock";
-pub const VERSION_ID: &str = "ad746a65";
+pub const VERSION_ID: &str = "32d9a140";
 
 pub const COPYRIGHT: &str = r".SH COPYRIGHT
 Copyright (C) 2025-2026 Developers of the hnefatafl-copenhagen project
