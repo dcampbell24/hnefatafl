@@ -35,15 +35,20 @@
 //!
 //! [message protocol]: message/enum.Message.html
 //!
-//! ## [OpenTafl] and [TaflZero]
+//! ## `OpenTafl` and `TaflZero`
 //!
 //! If you want to adapt your AI for this server's tournaments, have a look at
-//! this code.
+//! the [OpenTafl] and [TaflZero] code. Following is the game format expected
+//! to be used by clients when they issue the command
+//! `resume_game_json <game-id>\n`. You will get back
+//! `= resume_game_json <game_id> <opentafl_game_json>\n`. `opentafl_game_json`
+//! is below. The messages are newline delimited, but for ease of reading
+//! `opentafl_game_json` has been pretty printed.
 //!
 //! [OpenTafl]: https://codeberg.org/dcampbell/hnefatafl/src/branch/main/src/opentafl.rs
 //! [TaflZero]: https://codeberg.org/dcampbell/hnefatafl/src/branch/main/examples/taflzero.rs
 //!
-//! ### `OpenTafl` Game Format (Returned by `resume_game_json`)
+//! ### `OpenTafl` Game Format
 //!
 //! ```json
 //! {
