@@ -128,7 +128,7 @@ fn server_full() -> anyhow::Result<()> {
     reader_1.read_line(&mut buf)?;
     assert_eq!(
         buf,
-        "= new_game game 0 player-1 _ rated fischer 900000 10 11 _ false {}\n"
+        "= new_game game 0 player-1 _ rated fischer 900000 10 11 Challenger(None) false {}\n"
     );
     buf.clear();
 

@@ -286,33 +286,8 @@ impl From<&ServerGame> for ServerGameSerialized {
 #[derive(Clone, Debug, Default)]
 pub struct ServerGames(pub HashMap<Id, ServerGame>);
 
-#[derive(Clone, Default, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 pub struct Challenger(pub Option<String>);
-
-impl fmt::Debug for Challenger {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if let Some(challenger) = &self.0 {
-            write!(f, "{challenger}")?;
-        } else {
-            write!(f, "_")?;
-        }
-
-        Ok(())
-    }
-}
-
-impl fmt::Display for Challenger {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "challenger: ")?;
-        if let Some(challenger) = &self.0 {
-            write!(f, "{challenger}")?;
-        } else {
-            write!(f, "none")?;
-        }
-
-        Ok(())
-    }
-}
 
 #[derive(Clone, Deserialize, Eq, PartialEq, Serialize)]
 pub struct ServerGameLight {

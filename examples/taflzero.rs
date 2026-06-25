@@ -211,6 +211,7 @@ fn main() -> anyhow::Result<()> {
     let (tx, rx) = channel();
 
     let mut taflzero = TaflZero {
+        username,
         accept_games: args.accept_games,
         accepted_games: 0,
         role: *role,
@@ -224,7 +225,7 @@ fn main() -> anyhow::Result<()> {
         let mut ai = AiMonteCarlo::new(Duration::from_secs(MONTE_CARLO_SECONDS), MONTE_CARLO_DEPTH);
 
         loop {
-            let opentafl_game = rx.recv().unwrap();
+            let (username, opentafl_game) = rx.recv().unwrap();
 
             engine.set_start_position();
             let game = Game::from(&opentafl_game);
@@ -240,15 +241,25 @@ fn main() -> anyhow::Result<()> {
 
             log::debug!("{opentafl_game:#?}");
 
-            generate_move(
-                &mut ai,
-                &mut engine,
-                args.search_ms,
-                game,
-                &mut tcp,
-                opentafl_game.id,
-            )
-            .unwrap();
+            let role = if username == opentafl_game.attackers {
+                Role::Attacker
+            } else if username == opentafl_game.defenders {
+                Role::Defender
+            } else {
+                Role::Roleless
+            };
+
+            if game.turn == role {
+                generate_move(
+                    &mut ai,
+                    &mut engine,
+                    args.search_ms,
+                    game,
+                    &mut tcp,
+                    opentafl_game.id,
+                )
+                .unwrap();
+            }
         }
     });
 
@@ -307,12 +318,13 @@ fn systemd_delay_restart(args: &Args) -> anyhow::Result<()> {
 
 #[derive(Debug)]
 struct TaflZero {
+    username: String,
     accept_games: u8,
     accepted_games: u8,
     role: Role,
     reader: BufReader<TcpStream>,
     tcp: TcpStream,
-    tx: Sender<OpenTaflGame>,
+    tx: Sender<(String, OpenTaflGame)>,
 }
 
 impl TaflZero {
@@ -347,7 +359,7 @@ impl TaflZero {
                 let game = game.join(" ");
                 let game: OpenTaflGame = serde_json::de::from_str(&game)?;
 
-                self.tx.send(game)?;
+                self.tx.send((self.username.clone(), game))?;
             }
             (Some(id), Some("generate_move")) => {
                 self.tcp
