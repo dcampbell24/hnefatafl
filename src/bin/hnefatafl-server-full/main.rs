@@ -740,7 +740,7 @@ impl Server {
                 turn: Role::Roleless,
             };
 
-            command = format!("{command} {game:?}");
+            command = format!("{command} {id}");
             self.games_light.0.insert(id, game);
         }
 
