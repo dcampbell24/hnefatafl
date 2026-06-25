@@ -253,10 +253,6 @@ fn main() -> anyhow::Result<()> {
 
     loop {
         taflzero.handle_messages()?;
-
-        if args.join_game.is_some() {
-            return Ok(());
-        }
     }
 }
 
