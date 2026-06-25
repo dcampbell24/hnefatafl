@@ -404,13 +404,8 @@ impl fmt::Debug for ServerGameLight {
 
             write!(
                 f,
-                "game {} {attacker} {defender} {} {:?} {} {:?} {} {spectators}",
-                self.id,
-                self.rated,
-                self.timed,
-                self.board_size,
-                challenger,
-                self.challenge_accepted,
+                "game {} {attacker} {defender} {} {:?} {} {challenger:?} {} {spectators}",
+                self.id, self.rated, self.timed, self.board_size, self.challenge_accepted,
             )
         } else {
             write!(
