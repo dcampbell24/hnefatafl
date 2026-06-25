@@ -38,6 +38,7 @@ use hnefatafl_copenhagen::{
     opentafl::{OpenTaflGame, OpenTaflMoves},
     play::{Plae, Play, Vertex},
     role::Role,
+    server_game::ServerGameLight,
     tournament::TournamentFull,
 };
 use log::LevelFilter;
@@ -334,6 +335,13 @@ impl TaflZero {
         let message: Vec<_> = buf.split_ascii_whitespace().collect();
 
         match (message.get(1).copied(), message.get(2).copied()) {
+            (Some("display_games"), _) => {
+                let games: Vec<_> = message.iter().skip(2).copied().collect();
+                let games = games.join(" ");
+                let games: Vec<ServerGameLight> = serde_json::de::from_str(&games)?;
+
+                log::debug!("\n{games:#?}");
+            }
             (Some("resume_game_json"), _) => {
                 let game: Vec<_> = message.iter().skip(2).copied().collect();
                 let game = game.join(" ");
