@@ -290,6 +290,14 @@ pub struct ServerGames(pub HashMap<Id, ServerGame>);
 pub struct Challenger(pub Option<String>);
 
 #[derive(Clone, Deserialize, Eq, PartialEq, Serialize)]
+pub struct NewGame {
+    pub role: Role,
+    pub rated: bool,
+    pub time_settings: TimeSettings,
+    pub board_size: usize,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct ServerGameLight {
     pub id: Id,
     pub attacker: Option<String>,
@@ -377,51 +385,6 @@ impl From<&ServerGameSerialized> for ServerGameLight {
     }
 }
 
-impl fmt::Debug for ServerGameLight {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let attacker = if let Some(name) = &self.attacker {
-            name
-        } else {
-            "_"
-        };
-
-        let defender = if let Some(name) = &self.defender {
-            name
-        } else {
-            "_"
-        };
-
-        let Ok(spectators) = ron::ser::to_string(&self.spectators) else {
-            unreachable!();
-        };
-
-        if self.challenge_accepted {
-            let challenger = match self.turn {
-                Role::Attacker => Challenger(Some("A".to_string())),
-                Role::Defender => Challenger(Some("D".to_string())),
-                Role::Roleless => Challenger(None),
-            };
-
-            write!(
-                f,
-                "game {} {attacker} {defender} {} {:?} {} {challenger:?} {} {spectators}",
-                self.id, self.rated, self.timed, self.board_size, self.challenge_accepted,
-            )
-        } else {
-            write!(
-                f,
-                "game {} {attacker} {defender} {} {:?} {} {:?} {} {spectators}",
-                self.id,
-                self.rated,
-                self.timed,
-                self.board_size,
-                self.challenger,
-                self.challenge_accepted,
-            )
-        }
-    }
-}
-
 impl TryFrom<&[&str; 12]> for ServerGameLight {
     type Error = anyhow::Error;
 
@@ -493,20 +456,10 @@ impl TryFrom<&[&str; 12]> for ServerGameLight {
     }
 }
 
-#[derive(Clone, Default, Eq, PartialEq)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct ServerGamesLight(pub HashMap<Id, ServerGameLight>);
 
-impl fmt::Debug for ServerGamesLight {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for game in self.0.values().filter(|game| !game.game_over) {
-            write!(f, "{game:?} ")?;
-        }
-
-        Ok(())
-    }
-}
-
-#[derive(Clone, Default, Eq, PartialEq)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct ServerGamesLightVec(pub Vec<ServerGameLight>);
 
 impl ServerGamesLightVec {
@@ -525,15 +478,5 @@ impl ServerGamesLightVec {
         }
 
         vec
-    }
-}
-
-impl fmt::Debug for ServerGamesLightVec {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for game in self.0.iter().filter(|game| !game.game_over) {
-            write!(f, "{game:?} ")?;
-        }
-
-        Ok(())
     }
 }

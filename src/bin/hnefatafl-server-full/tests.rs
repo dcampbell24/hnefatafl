@@ -124,12 +124,20 @@ fn server_full() -> anyhow::Result<()> {
     assert_eq!(buf, "= change_password\n");
     buf.clear();
 
-    socket_1.write_all(b"new_game attacker rated fischer 900000 10 11\n")?;
+    let new_game = NewGame {
+        role: Role::Attacker,
+        rated: true,
+        time_settings: TimeSettings::Timed(Time {
+            add_seconds: 10,
+            milliseconds_left: 900_000,
+        }),
+        board_size: 11,
+    };
+    let new_game = serde_json::ser::to_string(&new_game)?;
+
+    socket_1.write_all(format!("new_game {new_game}\n").as_bytes())?;
     reader_1.read_line(&mut buf)?;
-    assert_eq!(
-        buf,
-        "= new_game game 0 player-1 _ rated fischer 900000 10 11 Challenger(None) false {}\n"
-    );
+    assert_eq!(buf, "= new_game 0\n");
     buf.clear();
 
     let mut socket_2 = TcpStream::connect(ADDRESS)?;
