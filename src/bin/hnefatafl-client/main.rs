@@ -1593,7 +1593,7 @@ impl<'a> Client {
         let new_game = serde_json::ser::to_string(&NewGame {
             role,
             rated: self.game_settings.rated.into(),
-            time_settings: self.game_settings.timed,
+            time_settings: time_settings.into(),
             board_size: self.game_settings.board_size.into(),
         })
         .expect("Serializing new_game should work!");
