@@ -61,7 +61,7 @@ use hnefatafl_copenhagen::{
     play::{BOARD_LETTERS, Plae, Vertex},
     rating::Rated,
     role::Role,
-    server_game::{self, ArchivedGame, ServerGameLight, ServerGamesLight},
+    server_game::{self, ArchivedGame, NewGame, ServerGameLight, ServerGamesLight},
     space::Space,
     status::Status,
     tcp_keep_alive,
@@ -1587,14 +1587,18 @@ impl<'a> Client {
             error!("No time settings selected.");
             unreachable!();
         };
+
         self.game_settings.timed = time_settings.into();
 
-        // <- new_game (attacker | defender) (rated | unrated) (TIME_MINUTES | _) (ADD_SECONDS_AFTER_EACH_MOVE | _) board_size
-        // -> game id rated attacker defender un-timed _ _ board_size challenger challenge_accepted spectators
-        self.send(&format!(
-            "new_game {role} {} {:?} {}\n",
-            self.game_settings.rated, self.game_settings.timed, self.game_settings.board_size
-        ));
+        let new_game = serde_json::ser::to_string(&NewGame {
+            role,
+            rated: self.game_settings.rated.into(),
+            time_settings: self.game_settings.timed,
+            board_size: self.game_settings.board_size.into(),
+        })
+        .expect("Serializing new_game should work!");
+
+        self.send(&format!("new_game {new_game}\n"));
 
         self.screen = Screen::Games;
     }
@@ -3439,7 +3443,7 @@ impl<'a> Client {
                                 if Some("game") == text.next() {
                                     let game_id = text.next().expect("the game id should be next");
                                     let game_id =
-                                        game_id.parse().expect("the game_id should be a usize");
+                                        game_id.parse().expect("the game_id should be a u128");
 
                                     self.game_id = game_id;
                                     self.challenger = false;

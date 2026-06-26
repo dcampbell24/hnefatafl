@@ -38,7 +38,8 @@ use hnefatafl_copenhagen::{
     opentafl::{OpenTaflGame, OpenTaflMoves},
     play::{Plae, Play, Vertex},
     role::Role,
-    server_game::ServerGameLight,
+    server_game::{NewGame, ServerGameLight},
+    time::{Time, TimeSettings},
     tournament::TournamentFull,
 };
 use log::LevelFilter;
@@ -332,9 +333,21 @@ impl TaflZero {
         let mut buf = String::new();
 
         if self.accepted_games < self.accept_games {
-            self.tcp.write_all(
-                format!("new_game {} rated fischer 900000 10 11\n", self.role).as_bytes(),
-            )?;
+            let new_game = NewGame {
+                role: self.role,
+                rated: true,
+                time_settings: TimeSettings::Timed(Time {
+                    add_seconds: 10,
+                    milliseconds_left: 900_000,
+                }),
+                board_size: 11,
+            };
+
+            let new_game = serde_json::ser::to_string(&new_game)?;
+            log::debug!("{new_game}");
+
+            self.tcp
+                .write_all(format!("new_game {new_game}\n").as_bytes())?;
 
             self.accepted_games += 1;
         }

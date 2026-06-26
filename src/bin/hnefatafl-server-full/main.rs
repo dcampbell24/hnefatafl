@@ -60,7 +60,7 @@ use hnefatafl_copenhagen::{
     rating::Rated,
     role::Role,
     server_game::{
-        ArchivedGame, Challenger, Message, Messenger, ServerGame, ServerGameLight,
+        ArchivedGame, Challenger, Message, Messenger, NewGame, ServerGame, ServerGameLight,
         ServerGameSerialized, ServerGames, ServerGamesLight, ServerGamesLightVec,
     },
     space::Space,
@@ -2489,63 +2489,39 @@ impl Server {
         command: &str,
         the_rest: &[&str],
     ) -> Option<(mpsc::Sender<String>, Result<(), InvalidMove>, String)> {
-        if the_rest.len() < 6 {
-            return Some((
-                self.clients.get(&index_supplied)?.clone(),
-                Err(InvalidMove::Other),
-                (*command).to_string(),
-            ));
-        }
-
-        let role = the_rest.first()?;
-        let Ok(role) = Role::from_str(role) else {
-            return Some((
-                self.clients.get(&index_supplied)?.clone(),
-                Err(InvalidMove::Other),
-                (*command).to_string(),
-            ));
-        };
-
-        let rated = the_rest.get(1)?;
-        let Ok(rated) = Rated::from_str(rated) else {
-            return Some((
-                self.clients.get(&index_supplied)?.clone(),
-                Err(InvalidMove::Other),
-                (*command).to_string(),
-            ));
-        };
-
-        let timed = the_rest.get(2)?;
-        let minutes = the_rest.get(3)?;
-        let add_seconds = the_rest.get(4)?;
-
-        let Ok(timed) = TimeSettings::try_from(vec!["time-settings", timed, minutes, add_seconds])
-        else {
-            return Some((
-                self.clients.get(&index_supplied)?.clone(),
-                Err(InvalidMove::Other),
-                (*command).to_string(),
-            ));
-        };
-
-        let board_size = the_rest.get(5)?;
-        let board_size = BoardSize::from_str(board_size).ok()?;
+        let new_game = the_rest.join(" ");
+        let new_game: NewGame = serde_json::de::from_str(&new_game)
+            .map_err(|error| error!("Error deserializing new_game: {error}"))
+            .ok()?;
 
         info!(
-            "{index_supplied} {username} new_game {} {role} {rated} {timed:?} {board_size}",
-            self.game_id
+            "{index_supplied} {username} new_game {} {} {} {:?} {}",
+            self.game_id,
+            new_game.role,
+            new_game.rated,
+            new_game.time_settings,
+            new_game.board_size,
         );
+
+        let board_size = new_game
+            .board_size
+            .try_into()
+            .map_err(|error| {
+                error!("Invalid board size passed to new_game: {error}");
+            })
+            .ok()?;
 
         let game = ServerGameLight::new(
             self.game_id,
             (*username).to_string(),
-            rated,
-            timed,
+            new_game.rated.into(),
+            new_game.time_settings,
             board_size,
-            role,
+            new_game.role,
         );
 
-        let command = format!("{command} {game:?}");
+        let command = format!("{command} {}", self.game_id);
+
         self.games_light.0.insert(self.game_id, game);
 
         if let Some(account) = self.accounts.0.get_mut(username) {
