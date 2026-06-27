@@ -17,7 +17,7 @@
 // SPDX-FileCopyrightText: 2025 David Campbell <david@hnefatafl.org>
 
 use std::{
-    collections::{HashMap, VecDeque},
+    collections::{HashMap, HashSet, VecDeque},
     fmt,
     str::FromStr,
     sync::mpsc::Sender,
@@ -462,6 +462,7 @@ pub struct ServerGamesLight(pub HashMap<Id, ServerGameLight>);
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct ServerGamesLightVec(pub Vec<ServerGameLight>);
 
+// Fixme: display updated games!
 impl ServerGamesLightVec {
     #[must_use]
     pub fn display_games(&self, username: Option<&str>) -> Vec<ServerGameLight> {
@@ -479,4 +480,11 @@ impl ServerGamesLightVec {
 
         vec
     }
+}
+
+#[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
+pub struct GamesUpdated {
+    pub created: Vec<(u128, Option<u128>, ServerGameLight)>,
+    pub removed: HashSet<u128>,
+    pub updated: HashMap<u128, ServerGameLight>,
 }
