@@ -129,3 +129,30 @@ impl fmt::Display for Account {
 
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
 pub struct Accounts(pub HashMap<String, Account>);
+
+impl Accounts {
+    #[must_use]
+    pub fn rating(&self, attacker: Option<&str>, defender: Option<&str>) -> (f64, f64) {
+        let mut rating_1 = if let Some(attacker) = attacker
+            && let Some(account) = self.0.get(attacker)
+        {
+            account.rating.rating
+        } else {
+            0.0
+        };
+
+        let mut rating_2 = if let Some(defender) = defender
+            && let Some(account) = self.0.get(defender)
+        {
+            account.rating.rating
+        } else {
+            0.0
+        };
+
+        if rating_2 > rating_1 {
+            std::mem::swap(&mut rating_1, &mut rating_2);
+        }
+
+        (rating_1, rating_2)
+    }
+}

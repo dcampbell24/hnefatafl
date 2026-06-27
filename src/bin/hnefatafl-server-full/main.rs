@@ -60,8 +60,8 @@ use hnefatafl_copenhagen::{
     rating::Rated,
     role::Role,
     server_game::{
-        ArchivedGame, Challenger, Message, Messenger, NewGame, ServerGame, ServerGameLight,
-        ServerGameSerialized, ServerGames, ServerGamesLight, ServerGamesLightVec,
+        ArchivedGame, Challenger, GamesUpdated, Message, Messenger, NewGame, ServerGame,
+        ServerGameLight, ServerGameSerialized, ServerGames, ServerGamesLight, ServerGamesLightVec,
     },
     space::Space,
     status::Status,
@@ -760,8 +760,48 @@ impl Server {
     ) -> Option<(mpsc::Sender<String>, Result<(), InvalidMove>, String)> {
         if self.games_light != self.games_light_old {
             debug!("0 {username} display_games");
-            self.games_light_old = self.games_light.clone();
+
             self.sort_games_light();
+
+            let mut created = Vec::new();
+            let mut removed = HashSet::new();
+            let mut updated_1 = Vec::new();
+            let mut previous = None;
+
+            for game in &self.games_light_vec.0 {
+                if !self.games_light_old.0.contains_key(&game.id) {
+                    created.push((game.id, previous, game.clone()));
+                }
+
+                previous = Some(game.id);
+            }
+
+            for (id, game_1) in &self.games_light_old.0 {
+                if let Some(game_2) = self.games_light.0.get(id)
+                    && !game_2.game_over
+                {
+                    if game_1 != game_2 {
+                        updated_1.push(game_2);
+                    }
+                } else {
+                    removed.insert(*id);
+                }
+            }
+
+            let mut updated_2 = HashMap::new();
+            for game in updated_1 {
+                updated_2.insert(game.id, (*game).clone());
+            }
+
+            created.reverse();
+
+            let games_updated = GamesUpdated {
+                created,
+                removed,
+                updated: updated_2,
+            };
+
+            self.games_light_old = self.games_light.clone();
 
             let mut names = HashMap::new();
             for (name, account) in &self.accounts.0 {
@@ -770,17 +810,13 @@ impl Server {
                 }
             }
 
-            for (id, tx) in &mut self.clients {
-                let games = self
-                    .games_light_vec
-                    .display_games(names.get(id).map(|s| s.as_str()));
-
-                match serde_json::ser::to_string(&games) {
+            for tx in &mut self.clients.values() {
+                match serde_json::ser::to_string(&games_updated) {
                     Ok(games) => {
-                        let _ok = tx.send(format!("= display_games {games}"));
+                        let _ok = tx.send(format!("= games_updated {games}"));
                     }
                     Err(error) => {
-                        error!("error serializing games: {error}");
+                        error!("error serializing games_updated: {error}");
                     }
                 }
             }
@@ -2631,18 +2667,13 @@ impl Server {
             ));
         };
 
-        let Some(server_game) = self.games.0.get_mut(&game_id) else {
-            unreachable!()
-        };
-
+        let server_game = self.games.0.get_mut(&game_id)?;
         let game = &server_game.game;
         let messages = &server_game.messages;
 
         info!("{index_supplied} {username} {command} {id}");
 
-        let Some(game_light) = self.games_light.0.get_mut(&game_id) else {
-            unreachable!();
-        };
+        let game_light = self.games_light.0.get_mut(&game_id)?;
 
         let mut channel_id = 0;
         if let Some(account) = self.accounts.0.get(username)
@@ -2834,23 +2865,9 @@ impl Server {
             .0
             .values()
             .map(|game| {
-                let mut rating_1 = 0.0;
-                let mut rating_2 = 0.0;
-
-                if let Some(attacker) = &game.attacker
-                    && let Some(account) = self.accounts.0.get(attacker)
-                {
-                    rating_1 = account.rating.rating;
-                }
-
-                if let Some(defender) = &game.defender
-                    && let Some(account) = self.accounts.0.get(defender)
-                {
-                    rating_2 = account.rating.rating;
-                    if rating_2 > rating_1 {
-                        std::mem::swap(&mut rating_1, &mut rating_2);
-                    }
-                }
+                let (rating_1, rating_2) = self
+                    .accounts
+                    .rating(game.attacker.as_deref(), game.defender.as_deref());
 
                 (game, rating_1, rating_2)
             })
@@ -3045,9 +3062,7 @@ impl Server {
             game.spectators.insert(username.to_string(), index_supplied);
         }
 
-        let Some(server_game) = self.games.0.get(&id) else {
-            unreachable!()
-        };
+        let server_game = self.games.0.get(&id)?;
 
         let game = &server_game.game;
         let Ok(board) = ron::ser::to_string(game) else {

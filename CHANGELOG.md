@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Replace display_server with incremental updates.
 - Send the boards over the wire in the opentafl format.
 - Improve error handling.
 - hnefatafl-text-protocol: allow the defenders to go first.
