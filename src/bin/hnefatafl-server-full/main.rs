@@ -995,7 +995,8 @@ impl Server {
             {
                 (attacker.rating.rating, defender.rating.rating)
             } else {
-                unreachable!();
+                error!("A");
+                return None;
             };
 
             if let Some(attacker) = accounts.get_mut(&game.attacker) {
@@ -1196,7 +1197,8 @@ impl Server {
                 {
                     (attacker.rating.rating, defender.rating.rating)
                 } else {
-                    unreachable!();
+                    error!("B");
+                    return None;
                 };
 
                 if let Some(attacker) = accounts.get_mut(&game.attacker) {
@@ -1251,7 +1253,8 @@ impl Server {
                 {
                     (attacker.rating.rating, defender.rating.rating)
                 } else {
-                    unreachable!();
+                    error!("C");
+                    return None;
                 };
 
                 if let Some(attacker) = accounts.get_mut(&game.attacker) {
@@ -1289,7 +1292,8 @@ impl Server {
 
         if game_over {
             let Some(mut game) = self.games.0.remove(&index) else {
-                unreachable!()
+                error!("D");
+                return None;
             };
 
             let message = Message {
@@ -1299,7 +1303,8 @@ impl Server {
             };
 
             let Ok(message_se) = ron::ser::to_string(&message) else {
-                unreachable!();
+                error!("E");
+                return None;
             };
 
             if let Some(game_light) = self.games_light.0.get_mut(&index) {
@@ -1935,7 +1940,8 @@ impl Server {
                 "texts" => {
                     if !self.texts.is_empty() {
                         let Ok(string) = ron::ser::to_string(&self.texts) else {
-                            unreachable!()
+                            error!("F");
+                            return None;
                         };
 
                         self.clients
@@ -2145,14 +2151,14 @@ impl Server {
             game.spectators.insert(game.defender.clone()?, id);
         }
 
-        let (Some(attacker), Some(defender)) = (&game.attacker, &game.defender) else {
-            unreachable!();
-        };
+        let attacker = game.attacker.as_ref()?;
+        let defender = game.defender.as_ref()?;
 
         let (Some(attacker_account), Some(defender_account)) =
             (self.accounts.0.get(attacker), self.accounts.0.get(defender))
         else {
-            unreachable!()
+            error!("G");
+            return None;
         };
 
         let mut attacker_channel = None;
@@ -2707,14 +2713,16 @@ impl Server {
             let opentafl_game = OpenTaflGame::from(&*server_game);
 
             let Ok(resume_game_pretty) = serde_json::to_string_pretty(&opentafl_game) else {
-                unreachable!()
+                error!("H");
+                return None;
             };
 
             debug!("\n{resume_game_pretty}");
 
             if command == "resume_game_json" {
                 let Ok(opentafl_game) = serde_json::to_string(&opentafl_game) else {
-                    unreachable!()
+                    error!("I");
+                    return None;
                 };
 
                 client
@@ -2722,7 +2730,8 @@ impl Server {
                     .ok()?;
             } else {
                 let Ok(resume_game) = ron::to_string(&opentafl_game) else {
-                    unreachable!()
+                    error!("J");
+                    return None;
                 };
 
                 client
@@ -2731,11 +2740,13 @@ impl Server {
             }
         } else {
             let Ok(game_se) = ron::ser::to_string(&game) else {
-                unreachable!()
+                error!("K");
+                return None;
             };
 
             let Ok(messages_se) = ron::ser::to_string(&messages) else {
-                unreachable!()
+                error!("L");
+                return None;
             };
 
             client
@@ -2918,7 +2929,8 @@ impl Server {
         };
 
         let Ok(message_se) = ron::ser::to_string(&message) else {
-            unreachable!();
+            error!("M");
+            return None;
         };
 
         let message_string = format!("= text_game {message_se}");
@@ -3066,23 +3078,27 @@ impl Server {
 
         let game = &server_game.game;
         let Ok(board) = ron::ser::to_string(game) else {
-            unreachable!()
+            error!("N");
+            return None;
         };
         let messages = &server_game.messages;
         let Ok(texts_se) = ron::ser::to_string(messages) else {
-            unreachable!()
+            error!("O");
+            return None;
         };
 
         info!("{index_supplied} {username} watch_game {id}");
         let Some(game) = self.games_light.0.get_mut(&id) else {
-            unreachable!()
+            error!("P");
+            return None;
         };
 
         if command == "watch_game_json" {
             let opentafl_game = OpenTaflGame::from(server_game);
 
             let Ok(resume_game) = serde_json::to_string(&opentafl_game) else {
-                unreachable!()
+                error!("Q");
+                return None;
             };
 
             self.clients
@@ -3093,7 +3109,8 @@ impl Server {
             let opentafl_game = OpenTaflGame::from(server_game);
 
             let Ok(opentafl_game) = ron::to_string(&opentafl_game) else {
-                unreachable!()
+                error!("R");
+                return None;
             };
 
             self.clients
