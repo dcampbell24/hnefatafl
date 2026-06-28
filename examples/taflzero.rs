@@ -384,7 +384,8 @@ impl TaflZero {
                 self.tcp
                     .write_all(format!("join_game {game_id}\n").as_bytes())?;
             }
-            (Some("game_over"), _) => self.accepted_games -= 1,
+
+            (Some("game_over"), _) => self.accepted_games = self.accepted_games.saturating_sub(1),
             (Some("tournament_status"), _) => {
                 let tournament: Vec<_> = message.iter().skip(2).copied().collect();
                 if let Some(tournament) = tournament.first() {
