@@ -28,7 +28,6 @@ mod new_game_settings;
 mod portable_game_notation;
 mod solarized;
 mod tabs;
-mod user;
 mod volume;
 
 use std::{
@@ -48,7 +47,7 @@ use ::serde::{Deserialize, Serialize};
 use clap::{CommandFactory, Parser};
 use hnefatafl_copenhagen::{
     COPYRIGHT, Id, SERVER_PORT, SOFTWARE_ID, VERSION_ID,
-    accounts::{Account, Accounts},
+    accounts::{Account, Accounts, User, Users},
     board::{Board, BoardSize},
     characters::Characters,
     draw::Draw,
@@ -108,7 +107,6 @@ use crate::{
     new_game_settings::NewGameSettings,
     solarized::{blue, green, red, yellow},
     tabs::TabId,
-    user::User,
     volume::{MAX_VOLUME, Volume},
 };
 
@@ -784,7 +782,7 @@ struct Client {
     #[serde(default)]
     username: String,
     #[serde(skip)]
-    users: HashMap<String, User>,
+    users: Users,
     #[serde(skip)]
     users_sort_by: SortBy,
     #[serde(default)]
@@ -1871,10 +1869,10 @@ impl<'a> Client {
                     defender_rating = account.rating.to_string_rounded();
                 }
             } else {
-                if let Some(user) = self.users.get(&self.attacker) {
+                if let Some(user) = self.users.0.get(&self.attacker) {
                     attacker_rating = user.rating.to_string_rounded();
                 }
-                if let Some(user) = self.users.get(&self.defender) {
+                if let Some(user) = self.users.0.get(&self.defender) {
                     defender_rating = user.rating.to_string_rounded();
                 }
             }
@@ -1894,10 +1892,10 @@ impl<'a> Client {
             )
         };
 
-        if let Some(user) = self.users.get(&self.attacker) {
+        if let Some(user) = self.users.0.get(&self.attacker) {
             attacker_rating = user.rating.to_string_rounded();
         }
-        if let Some(user) = self.users.get(&self.defender) {
+        if let Some(user) = self.users.0.get(&self.defender) {
             defender_rating = user.rating.to_string_rounded();
         }
 
@@ -1997,7 +1995,7 @@ impl<'a> Client {
             }
 
             let mut spectator = spectator.clone();
-            if let Some(user) = self.users.get(&spectator) {
+            if let Some(user) = self.users.0.get(&spectator) {
                 let _ok = write!(spectator, " ({})", user.rating.to_string_rounded());
             }
             spectators = spectators.push(text(spectator));
@@ -3140,18 +3138,12 @@ impl<'a> Client {
                                 }
                             }
                             Some("display_users") => {
-                                self.users.clear();
+                                let users: Users = ron::from_str(
+                                    text.next().expect("there should be a next value"),
+                                )
+                                .expect("we should be able to deserialize accounts");
 
-                                let users: Vec<&str> = text.collect();
-
-                                let (chunks, []) = users.as_chunks::<6>() else {
-                                    panic!("chunks is an exact multiple of 6");
-                                };
-
-                                for user in chunks {
-                                    let user: User = user.into();
-                                    self.users.insert(user.name.clone(), user);
-                                }
+                                self.users = users;
                             }
                             Some("display_users_admin") => {
                                 let accounts: Accounts = ron::from_str(
@@ -3802,7 +3794,7 @@ impl<'a> Client {
 
     #[must_use]
     fn users_sorted(&self) -> Vec<User> {
-        let mut users: Vec<_> = self.users.values().cloned().collect();
+        let mut users: Vec<_> = self.users.0.values().cloned().collect();
 
         match self.users_sort_by {
             SortBy::Name => {
@@ -3812,10 +3804,10 @@ impl<'a> Client {
                         .partial_cmp(&a.rating.rating)
                         .expect("The number should be comparable.")
                 });
-                users.sort_by(|a, b| a.name.cmp(&b.name));
+                users.sort_by(|a, b| a.username.cmp(&b.username));
             }
             SortBy::Rating => {
-                users.sort_by(|a, b| a.name.cmp(&b.name));
+                users.sort_by(|a, b| a.username.cmp(&b.username));
                 users.sort_by(|a, b| {
                     b.rating
                         .rating
@@ -3870,7 +3862,7 @@ impl<'a> Client {
                         text(attacker_str)
                     }
                 } else {
-                    if let Some(user) = self.users.get(attacker_str) {
+                    if let Some(user) = self.users.0.get(attacker_str) {
                         text!("{attacker_str} ({})", user.rating.to_string_rounded())
                     } else {
                         text(attacker_str)
@@ -3894,7 +3886,7 @@ impl<'a> Client {
                         text(defender_str)
                     }
                 } else {
-                    if let Some(user) = self.users.get(defender_str) {
+                    if let Some(user) = self.users.0.get(defender_str) {
                         text!("{defender_str} ({})", user.rating.to_string_rounded())
                     } else {
                         text(defender_str)
@@ -4364,15 +4356,14 @@ impl<'a> Client {
 
             for user in self.users_sorted() {
                 if logged_in == user.logged_in {
-                    let wins_number = f64::from_str(&user.wins).expect("This is a f64.");
-                    let mut win_percentage = wins_number
-                        / (wins_number + f64::from_str(&user.losses).expect("This is a f64."));
+                    let wins_number = user.wins as f64;
+                    let mut win_percentage = wins_number / (wins_number + user.losses as f64);
 
                     win_percentage *= 100.0;
                     win_percentage = win_percentage.round_ties_even();
 
                     ratings = ratings.push(text(user.rating.to_string_rounded()));
-                    usernames = usernames.push(text(user.name));
+                    usernames = usernames.push(text(user.username));
                     wins = wins.push(text(user.wins));
                     losses = losses.push(text(user.losses));
                     draws = draws.push(text(user.draws));

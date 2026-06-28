@@ -48,7 +48,7 @@ use badwords_rs::{Censor, MODERATE};
 use clap::Parser;
 use hnefatafl_copenhagen::{
     Id, SERVER_PORT, VERSION_ID,
-    accounts::{Account, Accounts, DateTimeUtc},
+    accounts::{Account, Accounts, DateTimeUtc, Users},
     board::{BoardSize, InvalidMove},
     draw::Draw,
     email::Email,
@@ -826,16 +826,24 @@ impl Server {
             debug!("0 {username} display_users");
             self.accounts_old = self.accounts.clone();
 
+            let Ok(users_ron) = ron::ser::to_string(&Users::from(&self.accounts)) else {
+                error!("S");
+                return None;
+            };
+
+            let Ok(accounts_ron) = ron::ser::to_string(&self.accounts) else {
+                error!("T");
+                return None;
+            };
+
             for (name, account) in &self.accounts.0 {
                 if let Some(id) = account.logged_in
                     && let Some(tx) = self.clients.get(&id)
                 {
                     if self.admins.contains(name) {
-                        if let Ok(string) = &self.accounts.display_admin() {
-                            let _ok = tx.send(format!("= display_users_admin {string}"));
-                        }
+                        let _ok = tx.send(format!("= display_users_admin {accounts_ron}"));
                     } else {
-                        let _ok = tx.send(format!("= display_users {}", &self.accounts));
+                        let _ok = tx.send(format!("= display_users {users_ron}"));
                     }
                 }
             }

@@ -16,41 +16,13 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // SPDX-FileCopyrightText: 2025 David Campbell <david@hnefatafl.org>
 
-use std::{
-    collections::{HashMap, HashSet},
-    fmt,
-};
+use std::collections::{HashMap, HashSet};
 
 use crate::{email::Email, glicko::Rating};
 use jiff::Timestamp;
 use serde::{Deserialize, Serialize};
 
 use crate::Id;
-
-impl Accounts {
-    /// # Errors
-    ///
-    /// If serialization fails.
-    pub fn display_admin(&self) -> anyhow::Result<String> {
-        let string = ron::ser::to_string(&self)?;
-
-        Ok(string)
-    }
-}
-
-impl fmt::Display for Accounts {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut accounts = Vec::new();
-
-        for (name, account) in &self.0 {
-            accounts.push(format!("{name} {account}"));
-        }
-
-        let accounts = accounts.join(" ");
-
-        write!(f, "{accounts}")
-    }
-}
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct Account {
@@ -109,21 +81,41 @@ impl Default for DateTimeUtc {
     }
 }
 
-impl fmt::Display for Account {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if self.logged_in.is_some() {
-            write!(
-                f,
-                "{} {} {} {} logged_in",
-                self.wins, self.losses, self.draws, self.rating
-            )
-        } else {
-            write!(
-                f,
-                "{} {} {} {} logged_out",
-                self.wins, self.losses, self.draws, self.rating
-            )
+#[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
+pub struct User {
+    pub username: String,
+    pub wins: u64,
+    pub losses: u64,
+    pub draws: u64,
+    pub rating: Rating,
+    pub logged_in: bool,
+}
+
+#[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
+pub struct Users(pub HashMap<String, User>);
+
+impl From<&Accounts> for Users {
+    fn from(accounts_1: &Accounts) -> Self {
+        let mut accounts_2 = HashMap::with_capacity(accounts_1.0.len());
+
+        for (username, account) in &accounts_1.0 {
+            let logged_in = account.logged_in.is_some();
+            let username = username.clone();
+
+            accounts_2.insert(
+                username.clone(),
+                User {
+                    username,
+                    wins: account.wins,
+                    losses: account.losses,
+                    draws: account.draws,
+                    rating: account.rating.clone(),
+                    logged_in,
+                },
+            );
         }
+
+        Self(accounts_2)
     }
 }
 
