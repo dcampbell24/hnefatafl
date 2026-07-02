@@ -5,7 +5,7 @@ Documentation="https://hnefatafl.org"
 [Service]
 Type=simple
 Restart=always
-ExecStart=/usr/games/taflzero --username ${USERNAME} --password ${PASSWORD} --role defender --accept-game --systemd
+ExecStart=/usr/games/taflzero --username ${USERNAME} --password ${PASSWORD} --role defender --accept-games 1 --systemd
 PrivateTmp=yes
 InaccessibleDirectories=/home
 DeviceAllow=/dev/null rw
