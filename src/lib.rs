@@ -147,7 +147,7 @@ Licensed under the AGPLv3"
 );
 
 /// The software package that this is.
-pub const SOFTWARE_ID: &str = concat!("cargo-", env!("CARGO_PKG_VERSION"));
+pub const SOFTWARE_ID: &str = concat!("debian-", env!("CARGO_PKG_VERSION"));
 
 #[must_use]
 pub fn invalid_username(username: &str) -> bool {
