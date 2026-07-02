@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.0.1] - 2026-07-01
+
 ### Added
 
 - resume_game{json,ron} watch_game{json,ron}.
@@ -885,7 +887,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - hnefatafl-client: Make users and games scrollable.
 - Make all the features dependencies.
 
-[unreleased]: https://codeberg.org/dcampbell/hnefatafl/compare/v5.12.0-1...main
+[unreleased]: https://codeberg.org/dcampbell/hnefatafl/compare/v6.0.1-1...main
+[6.0.1]: https://codeberg.org/dcampbell/hnefatafl/compare/v5.11.0-1..v6.0.1-1
 [5.12.0]: https://codeberg.org/dcampbell/hnefatafl/compare/v5.11.0-1..v5.12.0-1
 [5.11.0]: https://codeberg.org/dcampbell/hnefatafl/compare/v5.10.0-1..v5.11.0-1
 [5.10.0]: https://codeberg.org/dcampbell/hnefatafl/compare/v5.9.0-1..v5.10.0-1
