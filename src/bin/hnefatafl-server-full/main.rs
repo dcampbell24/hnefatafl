@@ -48,7 +48,7 @@ use badwords_rs::{Censor, MODERATE};
 use clap::Parser;
 use hnefatafl_copenhagen::{
     Id, SERVER_PORT, VERSION_ID,
-    accounts::{Account, Accounts, DateTimeUtc, Users},
+    accounts::{Account, Accounts, DateTimeUtc, User, Users},
     board::{BoardSize, InvalidMove},
     draw::Draw,
     email::Email,
@@ -60,8 +60,9 @@ use hnefatafl_copenhagen::{
     rating::Rated,
     role::Role,
     server_game::{
-        ArchivedGame, Challenger, GamesUpdated, Message, Messenger, NewGame, ServerGame,
-        ServerGameLight, ServerGameSerialized, ServerGames, ServerGamesLight, ServerGamesLightVec,
+        AccountsUpdated, ArchivedGame, Challenger, GamesUpdated, Message, Messenger, NewGame,
+        ServerGame, ServerGameLight, ServerGameSerialized, ServerGames, ServerGamesLight,
+        ServerGamesLightVec, UsersUpdated,
     },
     space::Space,
     status::Status,
@@ -321,6 +322,7 @@ fn login(
     tx.send((format!("{id} {username_proper} email_get"), None))?;
     tx.send((format!("{id} {username_proper} texts"), None))?;
     tx.send((format!("{id} {username_proper} display_games"), None))?;
+    tx.send((format!("{id} {username_proper} display_users"), None))?;
     tx.send((format!("{id} {username_proper} tournament_status"), None))?;
     tx.send((format!("{id} {username_proper} admin"), None))?;
     tx.send((format!("{id} {username_proper} admin_tournament"), None))?;
@@ -823,14 +825,66 @@ impl Server {
         }
 
         if self.accounts != self.accounts_old {
-            debug!("0 {username} display_users");
+            debug!("0 {username} users_updated");
+
+            let mut updated_accounts = HashMap::new();
+            let mut updated_users = HashMap::new();
+
+            for (username, account_1) in &self.accounts.0 {
+                if let Some(account_2) = self.accounts_old.0.get(username) {
+                    if account_1 != account_2 {
+                        updated_accounts.insert(username.clone(), account_1.clone());
+                        updated_users.insert(
+                            username.clone(),
+                            User {
+                                username: username.clone(),
+                                wins: account_1.wins,
+                                losses: account_1.losses,
+                                draws: account_1.draws,
+                                rating: account_1.rating.clone(),
+                                logged_in: account_1.logged_in.is_some(),
+                            },
+                        );
+                    }
+                } else {
+                    updated_accounts.insert(username.clone(), account_1.clone());
+                    updated_users.insert(
+                        username.clone(),
+                        User {
+                            username: username.clone(),
+                            wins: account_1.wins,
+                            losses: account_1.losses,
+                            draws: account_1.draws,
+                            rating: account_1.rating.clone(),
+                            logged_in: account_1.logged_in.is_some(),
+                        },
+                    );
+                }
+            }
+
+            let mut removed = HashSet::new();
+            for username in self.accounts_old.0.keys() {
+                if !self.accounts.0.contains_key(username) {
+                    removed.insert(username.clone());
+                }
+            }
+
+            let accounts_updated = AccountsUpdated {
+                updated: updated_accounts,
+                removed: removed.clone(),
+            };
+            let users_updated = UsersUpdated {
+                updated: Users(updated_users),
+                removed,
+            };
+
             self.accounts_old = self.accounts.clone();
 
-            let Ok(users_ron) = ron::ser::to_string(&Users::from(&self.accounts)) else {
+            let Ok(users_updated) = ron::ser::to_string(&users_updated) else {
                 unreachable!();
             };
 
-            let Ok(accounts_ron) = ron::ser::to_string(&self.accounts) else {
+            let Ok(accounts_updated) = ron::ser::to_string(&accounts_updated) else {
                 unreachable!();
             };
 
@@ -839,9 +893,9 @@ impl Server {
                     && let Some(tx) = self.clients.get(&id)
                 {
                     if self.admins.contains(name) {
-                        let _ok = tx.send(format!("= display_users_admin {accounts_ron}"));
+                        let _ok = tx.send(format!("= accounts_updated {accounts_updated}"));
                     } else {
-                        let _ok = tx.send(format!("= display_users {users_ron}"));
+                        let _ok = tx.send(format!("= users_updated {users_updated}"));
                     }
                 }
             }
@@ -1624,6 +1678,36 @@ impl Server {
                     }
                 }
                 "display_server" => self.display_server(username),
+                "display_users" => {
+                    if args.skip_advertising_updates {
+                        None
+                    } else if self.admins.contains(username) {
+                        if let Some(tx) = self.clients.get(&index_supplied) {
+                            let Ok(accounts) = ron::ser::to_string(&self.accounts) else {
+                                unreachable!();
+                            };
+
+                            Some((
+                                tx.clone(),
+                                Ok(()),
+                                format!("display_users_admin {accounts}"),
+                            ))
+                        } else {
+                            None
+                        }
+                    } else {
+                        if let Some(tx) = self.clients.get(&index_supplied) {
+                            let Ok(accounts) = ron::ser::to_string(&Users::from(&self.accounts))
+                            else {
+                                unreachable!();
+                            };
+
+                            Some((tx.clone(), Ok(()), format!("display_users {accounts}")))
+                        } else {
+                            None
+                        }
+                    }
+                }
                 "draw" => self.draw(index_supplied, command, the_rest.as_slice()),
                 "game" => self.game(index_supplied, username, command, the_rest.as_slice()),
                 "email" => {

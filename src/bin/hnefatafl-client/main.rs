@@ -60,7 +60,10 @@ use hnefatafl_copenhagen::{
     play::{BOARD_LETTERS, Plae, Vertex},
     rating::Rated,
     role::Role,
-    server_game::{self, ArchivedGame, GamesUpdated, NewGame, ServerGameLight, ServerGamesLight},
+    server_game::{
+        self, AccountsUpdated, ArchivedGame, GamesUpdated, NewGame, ServerGameLight,
+        ServerGamesLight, UsersUpdated,
+    },
     space::Space,
     status::Status,
     tcp_keep_alive,
@@ -3533,6 +3536,34 @@ impl<'a> Client {
                                             .expect("This is a valid tournament.");
 
                                     self.tournament = tournament;
+                                }
+                            }
+                            Some("accounts_updated") => {
+                                let texts: Vec<&str> = text.collect();
+                                let texts = texts.join(" ");
+                                let accounts_updated: AccountsUpdated = ron::de::from_str(&texts)
+                                    .expect("Deserialization should work!");
+
+                                for username in &accounts_updated.removed {
+                                    self.accounts.0.remove(username);
+                                }
+
+                                for (username, account) in accounts_updated.updated {
+                                    self.accounts.0.insert(username, account);
+                                }
+                            }
+                            Some("users_updated") => {
+                                let texts: Vec<&str> = text.collect();
+                                let texts = texts.join(" ");
+                                let users_updated: UsersUpdated = ron::de::from_str(&texts)
+                                    .expect("Deserialization should work!");
+
+                                for username in &users_updated.removed {
+                                    self.users.0.remove(username);
+                                }
+
+                                for (username, user) in users_updated.updated.0 {
+                                    self.users.0.insert(username, user);
                                 }
                             }
                             _ => error!("(2) unexpected text: {}", string.trim()),
