@@ -1,6 +1,6 @@
 #! /bin/bash -e
 
-VERSION='5.10.0'
+VERSION='6.0.1'
 
 INSERT="\
   <key>CFBundleIconFile</key>
