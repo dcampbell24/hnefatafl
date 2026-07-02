@@ -3527,6 +3527,14 @@ impl<'a> Client {
                                 let after = Timestamp::now().as_millisecond();
                                 self.now_diff = after - self.now;
                             }
+                            Some("text") => {
+                                let message: Vec<_> = text.collect();
+                                let message = message.join(" ");
+                                let message: server_game::Message = ron::de::from_str(&message)
+                                    .expect("Deserialization has to work!!");
+
+                                self.texts.push_front(message);
+                            }
                             Some("texts") => self.texts = messages_collect(text),
                             Some("text_game") => self.texts_game.push_front(message_collect(text)),
                             Some("tournament_status") => {
