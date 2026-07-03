@@ -13,7 +13,7 @@ abstract: >-
   artificial intelligence, client, engine, server
 
 type: software
-version: 5.11.0
+version: 6.0.1
 date-released: 2026-05-11
 repository-artifact: https://crates.io/crates/hnefatafl-copenhagen
 repository-code: https://codeberg.org/dcampbell/hnefatafl
