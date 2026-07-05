@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- hnefatafl-client: slightly change the game display.
+
 ## [6.0.1] - 2026-07-01
 
 ### Added

@@ -1967,14 +1967,20 @@ impl<'a> Client {
         let sub_second = self.now_diff % 1_000;
         let seconds = self.now_diff / 1_000;
 
-        let mut user_area = column![text!("#{game_id} {}", &self.username)].spacing(SPACING);
-
-        let is_rated = match self.game_settings.rated {
-            Rated::No => t!("no"),
-            Rated::Yes => t!("yes"),
+        let mut title_bar = Row::new().spacing(SPACING);
+        title_bar = if self.game_settings.rated.into() {
+            title_bar.push(text!("{game_id}").font(Font {
+                weight: Weight::Bold,
+                ..Font::DEFAULT
+            }))
+        } else {
+            title_bar.push(text!("{game_id}").color(GREY))
         };
 
-        user_area = user_area.push(text!("{}: {play} {}: {is_rated}", t!("move"), t!("rated")));
+        title_bar = title_bar.push(text(&self.username));
+        title_bar = title_bar.push(text!("{}: {play}", t!("move")));
+
+        let mut user_area = column![title_bar].spacing(SPACING);
 
         match self.screen_size {
             Size::Large | Size::Medium | Size::Small | Size::Tiny => {
