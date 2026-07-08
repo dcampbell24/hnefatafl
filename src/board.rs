@@ -2379,6 +2379,7 @@ fn expand_flood_fill(
 ) -> bool {
     if let Some(vertex) = vertex {
         let i = usize::from(&vertex);
+
         if already_checked[i] == 0 {
             stack.push(vertex);
             already_checked[i] += 1;
