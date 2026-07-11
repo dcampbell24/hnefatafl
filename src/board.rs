@@ -844,19 +844,16 @@ impl Board {
         let mut defended_spaces = HashSet::new();
 
         for exit in self.exit_squares() {
-            if let Some(defended) = self.closed_off_exit(exit) {
-                // DEBUG!
-                /*
-                if defended_spaces.contains(&exit) == true && defended.contains(&exit) == false {
-                    println!("{exit}\n{self}");
-                }
-                */
+            let defended = self.closed_off_exit(exit)?;
+            // DEBUG!
+            /*
+            if defended_spaces.contains(&exit) == true && defended.contains(&exit) == false {
+                println!("{exit}\n{self}");
+            }
+            */
 
-                for vertex in defended {
-                    defended_spaces.insert(vertex);
-                }
-            } else {
-                return None;
+            for vertex in defended {
+                defended_spaces.insert(vertex);
             }
         }
 
