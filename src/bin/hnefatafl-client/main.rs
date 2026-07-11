@@ -22,7 +22,6 @@
 
 mod archived_game_handle;
 mod command_line;
-mod dimensions;
 mod enums;
 mod new_game_settings;
 mod portable_game_notation;
@@ -105,7 +104,6 @@ use sys_locale::{get_locale, get_locales};
 use crate::{
     archived_game_handle::ArchivedGameHandle,
     command_line::Args,
-    dimensions::Dimensions,
     enums::{Coordinates, JoinGame, Message, Move, Screen, Size, SortBy, State, Theme},
     new_game_settings::NewGameSettings,
     solarized::{blue, green, red, yellow},
@@ -757,7 +755,7 @@ struct Client {
     #[serde(skip)]
     server_version: String,
     #[serde(default)]
-    sound_muted: bool,
+    sound: bool,
     #[serde(skip)]
     spectators: Vec<String>,
     #[serde(skip)]
@@ -790,6 +788,12 @@ struct Client {
     users_sort_by: SortBy,
     #[serde(default)]
     volume: Volume,
+    #[serde(skip)]
+    window_height: f32,
+    #[serde(skip)]
+    window_width: f32,
+    #[serde(skip)]
+    window_wide: bool,
 }
 
 impl<'a> Client {
@@ -917,23 +921,21 @@ impl<'a> Client {
         let (board, heat_map) = self.board_and_heatmap();
         let board_size = board.size();
         let board_size_usize: usize = board_size.into();
-        let d = Dimensions::new(board_size, &self.screen_size);
         let letters: Vec<_> = BOARD_LETTERS[..board_size_usize].chars().collect();
         let mut game_display = Row::new().spacing(2);
         let possible_moves = self.possible_moves();
 
-        let coordinates: bool = self.coordinates.into();
-        if coordinates {
-            game_display =
-                game_display.push(self.numbers(d.letter_size, d.spacing, board_size_usize));
-        }
+        let board_dimension = self.window_height / 13.75;
+        let letter_size = self.window_height / 18.181_818;
+        let piece_size = self.window_height / 13.0;
+        let spacing = 2.5;
+
+        game_display = game_display.push(self.numbers(letter_size, spacing, board_size_usize));
 
         for (x, letter) in letters.iter().enumerate() {
             let mut column = Column::new().spacing(2).align_x(Horizontal::Center);
 
-            if coordinates {
-                column = self.letter(*letter, column, d.letter_size);
-            }
+            column = self.letter(*letter, column, letter_size);
 
             for y in 0..board_size_usize {
                 let vertex = Vertex {
@@ -1043,10 +1045,8 @@ impl<'a> Client {
                     }
                 }
 
-                txt = txt.font(Font::MONOSPACE).center().size(d.piece_size);
-                let mut button = button(txt)
-                    .width(d.board_dimension)
-                    .height(d.board_dimension);
+                txt = txt.font(Font::MONOSPACE).center().size(piece_size);
+                let mut button = button(txt).width(board_dimension).height(board_dimension);
 
                 match self.board_move(&vertex, possible_moves.as_ref()) {
                     Move::From => button = button.on_press(Message::PlayMoveFrom(vertex)),
@@ -1058,17 +1058,12 @@ impl<'a> Client {
                 column = column.push(button);
             }
 
-            if coordinates {
-                column = self.letter(*letter, column, d.letter_size);
-            }
+            column = self.letter(*letter, column, letter_size);
 
             game_display = game_display.push(column);
         }
 
-        if coordinates {
-            game_display =
-                game_display.push(self.numbers(d.letter_size, d.spacing, board_size_usize));
-        }
+        game_display = game_display.push(self.numbers(letter_size, spacing, board_size_usize));
 
         game_display
     }
@@ -1815,11 +1810,6 @@ impl<'a> Client {
         handle_error(self.save_client_ron());
     }
 
-    fn coordinates(&mut self) {
-        self.coordinates = !self.coordinates;
-        handle_error(self.save_client_ron());
-    }
-
     // Fixme: get the real status when exploring the game tree.
     #[allow(clippy::too_many_lines)]
     fn display_game(&self) -> Element<'_, Message> {
@@ -1982,13 +1972,10 @@ impl<'a> Client {
 
         let mut user_area = column![title_bar].spacing(SPACING);
 
-        match self.screen_size {
-            Size::Large | Size::Medium | Size::Small | Size::Tiny => {
-                user_area = user_area.push(column![attacker, defender].spacing(SPACING));
-            }
-            Size::Giant | Size::TinyWide => {
-                user_area = user_area.push(row![attacker, defender].spacing(SPACING));
-            }
+        if self.window_wide {
+            user_area = user_area.push(column![attacker, defender].spacing(SPACING));
+        } else {
+            user_area = user_area.push(row![attacker, defender].spacing(SPACING));
         }
 
         if self.username.as_str() != attacker_string && self.username.as_str() != defender_string {
@@ -2032,20 +2019,12 @@ impl<'a> Client {
             }
         }
 
-        let coordinates_muted = row![
-            checkbox(self.coordinates.into()).on_toggle(Message::Coordinates),
-            text!("{} (n)", t!("Coordinates")),
-            checkbox(self.sound_muted).on_toggle(Message::SoundMuted),
-            text!("{} (o)", t!("Muted")),
-        ]
-        .spacing(SPACING);
-        user_area = user_area.push(coordinates_muted);
-
         let volume = row![
             text!("{} (- +)", t!("Volume")),
             slider(0..=MAX_VOLUME, self.volume.0, Message::VolumeChanged),
         ]
         .spacing(SPACING);
+
         user_area = user_area.push(volume);
 
         let leave = button(text!("{} (Esc)", t!("Leave"))).on_press(Message::Leave);
@@ -2452,7 +2431,6 @@ impl<'a> Client {
                 self.tournament_date = date;
                 self.tournament_date_show_picker = false;
             }
-            Message::Coordinates(_coordinates) => self.coordinates(),
             Message::DeleteAccount => self.delete_account(),
             Message::EmailChanged(email) => self.email_input = email,
             Message::EmailEveryone => {
@@ -2726,13 +2704,11 @@ impl<'a> Client {
                 Screen::Games => self.join_game_press(12, shift),
             },
             Message::PressN(shift) => match self.screen {
-                Screen::EmailEveryone | Screen::Login => {}
-                Screen::Game | Screen::GameReview => self.coordinates(),
+                Screen::EmailEveryone | Screen::Login | Screen::Game | Screen::GameReview => {}
                 Screen::Games => self.join_game_press(13, shift),
             },
             Message::PressO(shift) => match self.screen {
-                Screen::EmailEveryone | Screen::Login => {}
-                Screen::Game | Screen::GameReview => self.sound_muted(),
+                Screen::EmailEveryone | Screen::Login | Screen::Game | Screen::GameReview => {}
                 Screen::Games => self.join_game_press(14, shift),
             },
             Message::PressP(shift) => match self.screen {
@@ -3052,7 +3028,6 @@ impl<'a> Client {
                 self.error_persistent
                     .push(t!("The server was shut down.").to_string());
             }
-            Message::SoundMuted(_muted) => self.sound_muted(),
             Message::StreamConnected(tx) => self.tx = Some(tx),
             Message::TcpConnectFailed => {
                 self.error_persistent
@@ -3172,7 +3147,7 @@ impl<'a> Client {
                                         game.turn = Role::Roleless;
                                     }
 
-                                    if !self.sound_muted {
+                                    if self.sound {
                                         let volume = self.volume.volume();
                                         thread::spawn(move || {
                                             let mut stream =
@@ -3301,7 +3276,7 @@ impl<'a> Client {
                                     _ => error!("(1) unexpected text: {}", string.trim()),
                                 }
 
-                                if !self.sound_muted {
+                                if self.sound {
                                     let volume = self.volume.volume();
                                     thread::spawn(move || {
                                         let mut stream =
@@ -3788,6 +3763,10 @@ impl<'a> Client {
             Message::UsersSortedBy(sort_by) => self.users_sort_by = sort_by,
             Message::VolumeChanged(volume) => self.volume.0 = volume,
             Message::WindowResized((width, height)) => {
+                self.window_width = width;
+                self.window_height = height;
+                self.window_wide = width < 2.0 * height;
+
                 if width >= 1_500.0 && height >= 1_000.0 {
                     self.screen_size = Size::Giant;
                 } else if width >= 1_300.0 && height >= 1_000.0 {
@@ -4120,7 +4099,7 @@ impl<'a> Client {
             handle.play += 1;
         }
 
-        if self.sound_muted {
+        if !self.sound {
             return;
         }
 
@@ -4186,11 +4165,6 @@ impl<'a> Client {
             "game {} play {} resigns _\n",
             self.game_id, game.turn
         ));
-    }
-
-    fn sound_muted(&mut self) {
-        self.sound_muted = !self.sound_muted;
-        handle_error(self.save_client_ron());
     }
 
     #[allow(
@@ -4827,7 +4801,7 @@ impl<'a> Client {
             password_show: self.password_show,
             rating_maximum: self.rating_maximum,
             rating_minimum: self.rating_minimum,
-            sound_muted: self.sound_muted,
+            sound: self.sound,
             theme: self.theme,
             username: self.username.clone(),
             ..Client::default()
@@ -5065,7 +5039,7 @@ impl<'a> Client {
         &self,
         letter: char,
         column: Column<'a, Message>,
-        letter_size: u32,
+        letter_size: f32,
     ) -> Column<'a, Message> {
         let mut text = text(letter).size(letter_size);
         if self.press_letters.contains(&letter.to_ascii_lowercase()) {
@@ -5075,15 +5049,17 @@ impl<'a> Client {
         column.push(text)
     }
 
-    fn numbers(&self, letter_size: u32, spacing: u32, board_size: usize) -> Column<'a, Message> {
+    fn numbers(&self, letter_size: f32, spacing: f32, board_size: usize) -> Column<'a, Message> {
         let mut column = column![text(" ").size(letter_size)].spacing(spacing);
 
         for i in 0..board_size {
             let i = board_size - i;
             let mut text = text!("{i:2}").size(letter_size).align_y(Vertical::Center);
+
             if self.press_numbers[i - 1] {
                 text = text.style(text::success);
             }
+
             column = column.push(text);
         }
 
