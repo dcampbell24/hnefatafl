@@ -845,6 +845,7 @@ impl Board {
 
         for exit in self.exit_squares() {
             let defended = self.closed_off_exit(exit)?;
+
             // DEBUG!
             /*
             if defended_spaces.contains(&exit) == true && defended.contains(&exit) == false {
