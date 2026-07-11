@@ -755,6 +755,7 @@ impl Server {
         self.accounts.0.remove(username);
     }
 
+    // Fixme: When you remove a game if it is the before created game you have to change it!.
     #[allow(clippy::too_many_lines)]
     fn display_server(
         &mut self,
