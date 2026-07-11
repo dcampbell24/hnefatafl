@@ -86,7 +86,7 @@ use iced::{
     widget::{
         self, Button, Column, Container, Row, Scrollable, button, checkbox, column, container,
         operation::{focus_next, focus_previous},
-        pick_list, radio, row, scrollable, slider, text, text_editor, tooltip,
+        pick_list, radio, responsive, row, scrollable, slider, text, text_editor, tooltip,
     },
     window::{self, icon},
 };
@@ -1121,7 +1121,8 @@ impl<'a> Client {
     fn chat_view(&self) -> Column<'_, Message> {
         column![
             button(text!("{} (Esc)", t!("Quit"))).on_press(Message::Leave),
-            self.texting(&self.texts, true, false),
+            //
+            self.texting(&self.texts, true, 1_000.0),
         ]
         .spacing(SPACING)
         .padding(PADDING)
@@ -1815,244 +1816,249 @@ impl<'a> Client {
     // Fixme: get the real status when exploring the game tree.
     #[allow(clippy::too_many_lines)]
     fn display_game(&self) -> Element<'_, Message> {
-        let game = self.display_game_initialize();
-        let captured = game.board.captured();
+        let user_area = responsive(move |size| {
+            let game = self.display_game_initialize();
+            let captured = game.board.captured();
 
-        let mut row_1 = row![
-            text(game.attacker.clone()),
-            text(game.attacker_rating).center(),
-            text(&self.chars.defender)
-                .color(blue())
-                .font(Font::MONOSPACE),
-            text(captured.defender).font(Font::MONOSPACE),
-        ];
+            let mut row_1 = row![
+                text(game.attacker_rating).center(),
+                text(&self.chars.defender)
+                    .color(blue())
+                    .font(Font::MONOSPACE),
+                text(captured.defender).font(Font::MONOSPACE),
+            ];
 
-        if captured.king {
-            row_1 = row_1.push(text(&self.chars.king).color(yellow()).font(Font::MONOSPACE));
-        }
+            if captured.king {
+                row_1 = row_1.push(text(&self.chars.king).color(yellow()).font(Font::MONOSPACE));
+            }
 
-        if !self.spectators.contains(&game.attacker) {
-            row_1 = row_1.push(text(&self.chars.warning).style(text::danger));
-        }
+            if !self.spectators.contains(&game.attacker) {
+                row_1 = row_1.push(text(&self.chars.warning).style(text::danger));
+            }
 
-        let attacker = container(
-            column![
+            let attacker = container(column![
+                text(game.attacker.clone()),
                 row_1.spacing(SPACING),
                 row![
                     text(game.attacker_time).size(35).center(),
                     text(&self.chars.dagger).size(35).center(),
                 ]
                 .spacing(SPACING),
-            ]
-            .spacing(SPACING),
-        )
-        .padding(PADDING)
-        .style(container::bordered_box);
+            ])
+            .padding(PADDING)
+            .style(container::bordered_box);
 
-        let mut row_2 = row![
-            text(game.defender.clone()),
-            text(game.defender_rating).center(),
-            text(&self.chars.attacker)
-                .color(red())
-                .font(Font::MONOSPACE),
-            text(captured.attacker).font(Font::MONOSPACE),
-        ];
+            let mut row_2 = row![
+                text(game.defender_rating).center(),
+                text(&self.chars.attacker)
+                    .color(red())
+                    .font(Font::MONOSPACE),
+                text(captured.attacker).font(Font::MONOSPACE),
+            ];
 
-        if !self.spectators.contains(&game.defender) {
-            row_2 = row_2.push(text(&self.chars.warning).style(text::danger));
-        }
+            if !self.spectators.contains(&game.defender) {
+                row_2 = row_2.push(text(&self.chars.warning).style(text::danger));
+            }
 
-        let defender = container(
-            column![
+            let defender = container(column![
+                text(game.defender.clone()),
                 row_2.spacing(SPACING),
                 row![
                     text(game.defender_time).size(35).center(),
                     text(&self.chars.shield).size(35.0).center(),
                 ]
                 .spacing(SPACING),
-            ]
-            .spacing(SPACING),
-        )
-        .padding(PADDING)
-        .style(container::bordered_box);
+            ])
+            .padding(PADDING)
+            .style(container::bordered_box);
 
-        let mut watching = false;
+            let sub_second = self.now_diff % 1_000;
+            let seconds = self.now_diff / 1_000;
 
-        let sub_second = self.now_diff % 1_000;
-        let seconds = self.now_diff / 1_000;
-
-        let mut title_bar = Row::new().spacing(SPACING);
-        title_bar = if self.game_settings.rated.into() {
-            title_bar.push(text!("{}", game.game_id).font(Font {
-                weight: Weight::Bold,
-                ..Font::DEFAULT
-            }))
-        } else {
-            title_bar.push(text!("{}", game.game_id).color(GREY))
-        };
-
-        title_bar = title_bar.push(text(&self.username));
-        title_bar = title_bar.push(text!("{}: {}", t!("move"), game.play));
-
-        let mut user_area = column![title_bar].spacing(SPACING);
-
-        if self.window_wide {
-            user_area = user_area.push(column![attacker, defender].spacing(SPACING));
-        } else {
-            user_area = user_area.push(row![attacker, defender].spacing(SPACING));
-        }
-
-        if self.username.as_str() != game.attacker && self.username.as_str() != game.defender {
-            watching = true;
-        }
-
-        let mut spectators = Column::new();
-        let mut players_length = 0;
-        for spectator in &self.spectators {
-            if spectator == &game.attacker || spectator == &game.defender {
-                players_length += 1;
-                continue;
-            }
-
-            let mut spectator = spectator.clone();
-            if let Some(user) = self.users.0.get(&spectator) {
-                let _ok = write!(spectator, " ({})", user.rating.to_string_rounded());
-            }
-            spectators = spectators.push(text(spectator));
-        }
-
-        let resign = button(text!("{} (p)", t!("Resign"))).on_press(Message::PlayResign);
-        let request_draw = button(text!("{} (q)", t!("Request Draw"))).on_press(Message::PlayDraw);
-
-        if !watching {
-            if self.my_turn {
-                user_area = user_area.push(row![resign, request_draw].spacing(SPACING));
+            let game_id = if self.game_settings.rated.into() {
+                text(game.game_id).font(Font {
+                    weight: Weight::Bold,
+                    ..Font::DEFAULT
+                })
             } else {
-                let row = if self.request_draw {
-                    column![
-                        row![
-                            button(text!("{} (r)", t!("Accept Draw")))
-                                .on_press(Message::PlayDrawDecision(Draw::Accept)),
-                        ]
-                        .spacing(SPACING)
-                    ]
+                text(game.game_id).color(GREY)
+            };
+
+            let username = text(&self.username);
+            let play = text!("{}: {}", t!("move"), game.play);
+
+            let title_bar: Element<_> = if size.width < 300.0 {
+                column![game_id, username, play].into()
+            } else {
+                row![game_id, username, play].spacing(SPACING).into()
+            };
+
+            let mut watching = false;
+            let mut user_area = column![title_bar].spacing(SPACING);
+
+            if size.width < 475.0 {
+                user_area = user_area.push(column![attacker, defender].spacing(SPACING));
+            } else {
+                user_area = user_area.push(row![attacker, defender].spacing(SPACING));
+            }
+
+            if self.username.as_str() != game.attacker && self.username.as_str() != game.defender {
+                watching = true;
+            }
+
+            let mut spectators = Column::new();
+            let mut players_length = 0;
+            for spectator in &self.spectators {
+                if spectator == &game.attacker || spectator == &game.defender {
+                    players_length += 1;
+                    continue;
+                }
+
+                let mut spectator = spectator.clone();
+                if let Some(user) = self.users.0.get(&spectator) {
+                    let _ok = write!(spectator, " ({})", user.rating.to_string_rounded());
+                }
+                spectators = spectators.push(text(spectator));
+            }
+
+            let resign = button(text!("{} (p)", t!("Resign"))).on_press(Message::PlayResign);
+            let request_draw =
+                button(text!("{} (q)", t!("Request Draw"))).on_press(Message::PlayDraw);
+
+            if !watching {
+                if self.my_turn {
+                    user_area = user_area.push(row![resign, request_draw].spacing(SPACING));
                 } else {
-                    Column::new()
-                };
-                user_area = user_area.push(row.spacing(SPACING));
-            }
-        }
-
-        let volume = row![
-            text!("{} (- +)", t!("Volume")),
-            slider(0..=MAX_VOLUME, self.volume.0, Message::VolumeChanged),
-        ]
-        .spacing(SPACING);
-
-        user_area = user_area.push(volume);
-
-        let leave = button(text!("{} (Esc)", t!("Leave"))).on_press(Message::Leave);
-
-        match game.status {
-            Status::AttackerWins => {
-                user_area = user_area.push(text(t!("Attacker wins!")));
-            }
-            Status::Draw => {
-                user_area = user_area.push(text(t!("It's a draw.")));
-            }
-            Status::Ongoing => {}
-            Status::DefenderWins => {
-                user_area = user_area.push(text(t!("Defender wins!")));
-            }
-        }
-
-        if let Some(handle) = &self.archived_game_handle {
-            let mut heat_map = checkbox(self.heat_map_display).size(32);
-            if self.heat_map.is_some() {
-                heat_map = heat_map.on_toggle(Message::HeatMap);
+                    let row = if self.request_draw {
+                        column![
+                            row![
+                                button(text!("{} (r)", t!("Accept Draw")))
+                                    .on_press(Message::PlayDrawDecision(Draw::Accept)),
+                            ]
+                            .spacing(SPACING)
+                        ]
+                    } else {
+                        Column::new()
+                    };
+                    user_area = user_area.push(row.spacing(SPACING));
+                }
             }
 
-            let mut heat_map_button = button(text!("{} (p) (q)", t!("Heat Map")));
+            let volume = row![
+                text!("{} (- +)", t!("Volume")),
+                slider(0..=MAX_VOLUME, self.volume.0, Message::VolumeChanged),
+            ]
+            .spacing(SPACING);
 
-            if !self.estimate_score && game.status == Status::Ongoing {
-                heat_map_button = heat_map_button.on_press(Message::EstimateScore);
+            user_area = user_area.push(volume);
+
+            let leave = button(text!("{} (Esc)", t!("Leave"))).on_press(Message::Leave);
+
+            match game.status {
+                Status::AttackerWins => {
+                    user_area = user_area.push(text(t!("Attacker wins!")));
+                }
+                Status::Draw => {
+                    user_area = user_area.push(text(t!("It's a draw.")));
+                }
+                Status::Ongoing => {}
+                Status::DefenderWins => {
+                    user_area = user_area.push(text(t!("Defender wins!")));
+                }
             }
 
-            user_area = user_area.push(row![heat_map, heat_map_button].spacing(SPACING));
+            if let Some(handle) = &self.archived_game_handle {
+                let mut heat_map = checkbox(self.heat_map_display).size(32);
+                if self.heat_map.is_some() {
+                    heat_map = heat_map.on_toggle(Message::HeatMap);
+                }
 
-            let child_number = text(handle.boards.next_child);
-            let child_right = button(
-                text(&self.chars.double_arrow_right)
-                    .center()
-                    .font(Font::MONOSPACE),
-            )
-            .on_press(Message::ReviewGameChildNext);
+                let mut heat_map_button = button(text!("{} (p) (q)", t!("Heat Map")));
 
-            user_area = user_area.push(
-                row![
-                    leave,
-                    child_right,
-                    container(child_number)
-                        .style(container::bordered_box)
-                        .padding(PADDING_MEDIUM),
-                ]
-                .spacing(SPACING),
-            );
+                if !self.estimate_score && game.status == Status::Ongoing {
+                    heat_map_button = heat_map_button.on_press(Message::EstimateScore);
+                }
 
-            let mut left_all = button(text(&self.chars.double_arrow_left_full));
-            let mut left = button(text(&self.chars.double_arrow_left));
+                user_area = user_area.push(row![heat_map, heat_map_button].spacing(SPACING));
 
-            if handle.play > 0 {
-                left_all = left_all.on_press(Message::ReviewGameBackwardAll);
-                left = left.on_press(Message::ReviewGameBackward);
-            }
+                let child_number = text(handle.boards.next_child);
+                let child_right = button(
+                    text(&self.chars.double_arrow_right)
+                        .center()
+                        .font(Font::MONOSPACE),
+                )
+                .on_press(Message::ReviewGameChildNext);
 
-            let mut right = button(text(&self.chars.double_arrow_right));
-            let mut right_all = button(text(&self.chars.double_arrow_right_full));
+                user_area = user_area.push(
+                    row![
+                        leave,
+                        child_right,
+                        container(child_number)
+                            .style(container::bordered_box)
+                            .padding(PADDING_MEDIUM),
+                    ]
+                    .spacing(SPACING),
+                );
 
-            if handle.boards.has_children() {
-                right = right.on_press(Message::ReviewGameForward);
-                right_all = right_all.on_press(Message::ReviewGameForwardAll);
-            }
+                let mut left_all = button(text(&self.chars.double_arrow_left_full));
+                let mut left = button(text(&self.chars.double_arrow_left));
 
-            user_area = user_area.push(row![left_all, left, right, right_all].spacing(SPACING));
+                if handle.play > 0 {
+                    left_all = left_all.on_press(Message::ReviewGameBackwardAll);
+                    left = left.on_press(Message::ReviewGameBackward);
+                }
 
-            #[cfg(not(target_os = "redox"))]
-            let export_pgn =
-                button(text!("{} (r)", t!("Export PGN File"))).on_press(Message::ExportPGN);
+                let mut right = button(text(&self.chars.double_arrow_right));
+                let mut right_all = button(text(&self.chars.double_arrow_right_full));
 
-            #[cfg(target_os = "redox")]
-            let export_pgn = button(text!("{} (r)", t!("Export PGN File")));
+                if handle.boards.has_children() {
+                    right = right.on_press(Message::ReviewGameForward);
+                    right_all = right_all.on_press(Message::ReviewGameForwardAll);
+                }
 
-            user_area = user_area.push(export_pgn);
-        } else {
-            user_area = user_area.push(leave);
+                user_area = user_area.push(row![left_all, left, right, right_all].spacing(SPACING));
 
-            let spectator = text!(
-                "{} ({}) {}: {seconds:01}.{sub_second:03} s",
-                &self.chars.people,
-                self.spectators.len() - players_length,
-                t!("lag"),
-            );
+                #[cfg(not(target_os = "redox"))]
+                let export_pgn =
+                    button(text!("{} (r)", t!("Export PGN File"))).on_press(Message::ExportPGN);
 
-            if self.spectators.is_empty() {
-                user_area = user_area.push(spectator);
+                #[cfg(target_os = "redox")]
+                let export_pgn = button(text!("{} (r)", t!("Export PGN File")));
+
+                user_area = user_area.push(export_pgn);
             } else {
-                user_area = user_area.push(tooltip(
-                    spectator,
-                    container(spectators)
-                        .style(container::bordered_box)
-                        .padding(PADDING),
-                    tooltip::Position::Bottom,
-                ));
-            }
-        }
+                user_area = user_area.push(leave);
 
-        if self.archived_game_handle.is_some() {
-            user_area = user_area.push(self.texting(&game.messages, false, true));
-        } else {
-            user_area = user_area.push(self.texting(&game.messages, true, true));
-        }
+                let spectator = text!(
+                    "{} ({}) {}: {seconds:01}.{sub_second:03} s",
+                    &self.chars.people,
+                    self.spectators.len() - players_length,
+                    t!("lag"),
+                );
+
+                if self.spectators.is_empty() {
+                    user_area = user_area.push(spectator);
+                } else {
+                    user_area = user_area.push(tooltip(
+                        spectator,
+                        container(spectators)
+                            .style(container::bordered_box)
+                            .padding(PADDING),
+                        tooltip::Position::Bottom,
+                    ));
+                }
+            }
+
+            if self.archived_game_handle.is_some() {
+                user_area
+                    .push(self.texting(&game.messages, false, size.width))
+                    .into()
+            } else {
+                user_area
+                    .push(self.texting(&game.messages, true, size.width))
+                    .into()
+            }
+        });
 
         let user_area = container(user_area)
             .padding(PADDING)
@@ -2315,7 +2321,7 @@ impl<'a> Client {
         &self,
         messages: &VecDeque<server_game::Message>,
         enable_texting: bool,
-        is_game: bool,
+        width: f32,
     ) -> Container<'_, Message> {
         let mut text_box = Column::new().spacing(SPACING).padding(PADDING_SMALL);
         let mut texts = Column::new();
@@ -2329,7 +2335,7 @@ impl<'a> Client {
                 ..Font::DEFAULT
             });
 
-            if is_game {
+            if width < 375.0 {
                 texts = texts.push(column![username, timestamp]);
             } else {
                 texts = texts.push(row![username, timestamp].spacing(SPACING));
