@@ -22,6 +22,7 @@
 
 mod archived_game_handle;
 mod command_line;
+mod display_game;
 mod enums;
 mod new_game_settings;
 mod portable_game_notation;
@@ -104,6 +105,7 @@ use sys_locale::{get_locale, get_locales};
 use crate::{
     archived_game_handle::ArchivedGameHandle,
     command_line::Args,
+    display_game::DisplayGame,
     enums::{Coordinates, JoinGame, Message, Move, Screen, Size, SortBy, State, Theme},
     new_game_settings::NewGameSettings,
     solarized::{blue, green, red, yellow},
@@ -1813,90 +1815,12 @@ impl<'a> Client {
     // Fixme: get the real status when exploring the game tree.
     #[allow(clippy::too_many_lines)]
     fn display_game(&self) -> Element<'_, Message> {
-        let mut attacker_rating = String::new();
-        let mut defender_rating = String::new();
-
-        let (
-            game_id,
-            attacker_string,
-            attacker_time,
-            defender_string,
-            defender_time,
-            board,
-            play,
-            status,
-            texts,
-        ) = if let Some(game_handle) = &self.archived_game_handle {
-            attacker_rating = game_handle.game.attacker_rating.to_string_rounded();
-            defender_rating = game_handle.game.defender_rating.to_string_rounded();
-
-            let status = if game_handle.play == game_handle.game.plays.len().saturating_sub(1) {
-                &game_handle.game.status
-            } else {
-                &Status::Ongoing
-            };
-
-            (
-                &game_handle.game.id,
-                &game_handle.game.attacker,
-                game_handle
-                    .game
-                    .plays
-                    .time_left(Role::Attacker, game_handle.play),
-                &game_handle.game.defender,
-                game_handle
-                    .game
-                    .plays
-                    .time_left(Role::Defender, game_handle.play),
-                &game_handle.boards.here().board,
-                game_handle.play,
-                status,
-                &game_handle.game.messages,
-            )
-        } else {
-            if self.admin {
-                if let Some(account) = self.accounts.0.get(&self.attacker) {
-                    attacker_rating = account.rating.to_string_rounded();
-                }
-                if let Some(account) = self.accounts.0.get(&self.defender) {
-                    defender_rating = account.rating.to_string_rounded();
-                }
-            } else {
-                if let Some(user) = self.users.0.get(&self.attacker) {
-                    attacker_rating = user.rating.to_string_rounded();
-                }
-                if let Some(user) = self.users.0.get(&self.defender) {
-                    defender_rating = user.rating.to_string_rounded();
-                }
-            }
-
-            let game = self.game.as_ref().expect("we should be in a game");
-
-            (
-                &self.game_id,
-                &self.attacker,
-                self.time_attacker.time_left(),
-                &self.defender,
-                self.time_defender.time_left(),
-                &game.board,
-                game.previous_boards.0.len() - 1,
-                &self.status,
-                &self.texts_game,
-            )
-        };
-
-        if let Some(user) = self.users.0.get(&self.attacker) {
-            attacker_rating = user.rating.to_string_rounded();
-        }
-        if let Some(user) = self.users.0.get(&self.defender) {
-            defender_rating = user.rating.to_string_rounded();
-        }
-
-        let captured = board.captured();
+        let game = self.display_game_initialize();
+        let captured = game.board.captured();
 
         let mut row_1 = row![
-            text(attacker_string),
-            text(attacker_rating).center(),
+            text(game.attacker.clone()),
+            text(game.attacker_rating).center(),
             text(&self.chars.defender)
                 .color(blue())
                 .font(Font::MONOSPACE),
@@ -1907,7 +1831,7 @@ impl<'a> Client {
             row_1 = row_1.push(text(&self.chars.king).color(yellow()).font(Font::MONOSPACE));
         }
 
-        if !self.spectators.contains(attacker_string) {
+        if !self.spectators.contains(&game.attacker) {
             row_1 = row_1.push(text(&self.chars.warning).style(text::danger));
         }
 
@@ -1915,7 +1839,7 @@ impl<'a> Client {
             column![
                 row_1.spacing(SPACING),
                 row![
-                    text(attacker_time).size(35).center(),
+                    text(game.attacker_time).size(35).center(),
                     text(&self.chars.dagger).size(35).center(),
                 ]
                 .spacing(SPACING),
@@ -1926,15 +1850,15 @@ impl<'a> Client {
         .style(container::bordered_box);
 
         let mut row_2 = row![
-            text(defender_string),
-            text(defender_rating).center(),
+            text(game.defender.clone()),
+            text(game.defender_rating).center(),
             text(&self.chars.attacker)
                 .color(red())
                 .font(Font::MONOSPACE),
             text(captured.attacker).font(Font::MONOSPACE),
         ];
 
-        if !self.spectators.contains(defender_string) {
+        if !self.spectators.contains(&game.defender) {
             row_2 = row_2.push(text(&self.chars.warning).style(text::danger));
         }
 
@@ -1942,7 +1866,7 @@ impl<'a> Client {
             column![
                 row_2.spacing(SPACING),
                 row![
-                    text(defender_time).size(35).center(),
+                    text(game.defender_time).size(35).center(),
                     text(&self.chars.shield).size(35.0).center(),
                 ]
                 .spacing(SPACING),
@@ -1959,16 +1883,16 @@ impl<'a> Client {
 
         let mut title_bar = Row::new().spacing(SPACING);
         title_bar = if self.game_settings.rated.into() {
-            title_bar.push(text!("{game_id}").font(Font {
+            title_bar.push(text!("{}", game.game_id).font(Font {
                 weight: Weight::Bold,
                 ..Font::DEFAULT
             }))
         } else {
-            title_bar.push(text!("{game_id}").color(GREY))
+            title_bar.push(text!("{}", game.game_id).color(GREY))
         };
 
         title_bar = title_bar.push(text(&self.username));
-        title_bar = title_bar.push(text!("{}: {play}", t!("move")));
+        title_bar = title_bar.push(text!("{}: {}", t!("move"), game.play));
 
         let mut user_area = column![title_bar].spacing(SPACING);
 
@@ -1978,14 +1902,14 @@ impl<'a> Client {
             user_area = user_area.push(row![attacker, defender].spacing(SPACING));
         }
 
-        if self.username.as_str() != attacker_string && self.username.as_str() != defender_string {
+        if self.username.as_str() != game.attacker && self.username.as_str() != game.defender {
             watching = true;
         }
 
         let mut spectators = Column::new();
         let mut players_length = 0;
         for spectator in &self.spectators {
-            if spectator == attacker_string || spectator == defender_string {
+            if spectator == &game.attacker || spectator == &game.defender {
                 players_length += 1;
                 continue;
             }
@@ -2029,7 +1953,7 @@ impl<'a> Client {
 
         let leave = button(text!("{} (Esc)", t!("Leave"))).on_press(Message::Leave);
 
-        match status {
+        match game.status {
             Status::AttackerWins => {
                 user_area = user_area.push(text(t!("Attacker wins!")));
             }
@@ -2050,7 +1974,7 @@ impl<'a> Client {
 
             let mut heat_map_button = button(text!("{} (p) (q)", t!("Heat Map")));
 
-            if !self.estimate_score && *status == Status::Ongoing {
+            if !self.estimate_score && game.status == Status::Ongoing {
                 heat_map_button = heat_map_button.on_press(Message::EstimateScore);
             }
 
@@ -2125,9 +2049,9 @@ impl<'a> Client {
         }
 
         if self.archived_game_handle.is_some() {
-            user_area = user_area.push(self.texting(texts, false, true));
+            user_area = user_area.push(self.texting(&game.messages, false, true));
         } else {
-            user_area = user_area.push(self.texting(texts, true, true));
+            user_area = user_area.push(self.texting(&game.messages, true, true));
         }
 
         let user_area = container(user_area)
@@ -2139,6 +2063,74 @@ impl<'a> Client {
             .padding(PADDING);
 
         row![board, user_area].spacing(SPACING).into()
+    }
+
+    fn display_game_initialize(&self) -> DisplayGame {
+        if let Some(game_handle) = &self.archived_game_handle {
+            let attacker_rating = game_handle.game.attacker_rating.to_string_rounded();
+            let defender_rating = game_handle.game.defender_rating.to_string_rounded();
+
+            let status = if game_handle.play == game_handle.game.plays.len().saturating_sub(1) {
+                &game_handle.game.status
+            } else {
+                &Status::Ongoing
+            };
+
+            DisplayGame {
+                game_id: game_handle.game.id,
+                attacker: game_handle.game.attacker.clone(),
+                attacker_time: game_handle
+                    .game
+                    .plays
+                    .time_left(Role::Attacker, game_handle.play),
+                attacker_rating,
+                defender: game_handle.game.defender.clone(),
+                defender_time: game_handle
+                    .game
+                    .plays
+                    .time_left(Role::Defender, game_handle.play),
+                defender_rating,
+                board: game_handle.boards.here().board,
+                play: game_handle.play,
+                status: status.clone(),
+                messages: game_handle.game.messages.clone(),
+            }
+        } else {
+            let mut attacker_rating = String::new();
+            let mut defender_rating = String::new();
+
+            if self.admin {
+                if let Some(account) = self.accounts.0.get(&self.attacker) {
+                    attacker_rating = account.rating.to_string_rounded();
+                }
+                if let Some(account) = self.accounts.0.get(&self.defender) {
+                    defender_rating = account.rating.to_string_rounded();
+                }
+            } else {
+                if let Some(user) = self.users.0.get(&self.attacker) {
+                    attacker_rating = user.rating.to_string_rounded();
+                }
+                if let Some(user) = self.users.0.get(&self.defender) {
+                    defender_rating = user.rating.to_string_rounded();
+                }
+            }
+
+            let game = self.game.as_ref().expect("we should be in a game");
+
+            DisplayGame {
+                game_id: self.game_id,
+                attacker: self.attacker.clone(),
+                attacker_time: self.time_attacker.time_left(),
+                attacker_rating,
+                defender: self.defender.clone(),
+                defender_time: self.time_defender.time_left(),
+                defender_rating,
+                board: game.board.clone(),
+                play: game.previous_boards.0.len() - 1,
+                status: self.status.clone(),
+                messages: self.texts_game.clone(),
+            }
+        }
     }
 
     fn leave(&mut self) {
@@ -2320,11 +2312,11 @@ impl<'a> Client {
     }
 
     fn texting(
-        &'a self,
-        messages: &'a VecDeque<server_game::Message>,
+        &self,
+        messages: &VecDeque<server_game::Message>,
         enable_texting: bool,
         is_game: bool,
-    ) -> Container<'a, Message> {
+    ) -> Container<'_, Message> {
         let mut text_box = Column::new().spacing(SPACING).padding(PADDING_SMALL);
         let mut texts = Column::new();
 
