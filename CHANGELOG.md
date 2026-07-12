@@ -12,13 +12,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.1.0] - 2026-07-12
+
 ### Fixed
 
 - hnefatafl-client: sort the games client side.
+- hnefatafl-client: fix an error that sometimes when a game is removed.
 
 ### Changed
 
-- hnefatafl-server-full: don' sort the games server side.
+- hnefatafl-server-full: don't sort the games server side.
 - hnefatafl-client: make the display more dynamic.
 - hnefatafl-client: slightly change the game display.
 
@@ -897,7 +900,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - hnefatafl-client: Make users and games scrollable.
 - Make all the features dependencies.
 
-[unreleased]: https://codeberg.org/dcampbell/hnefatafl/compare/v6.0.1-1...main
+[unreleased]: https://codeberg.org/dcampbell/hnefatafl/compare/v6.1.0-1...main
+[6.1.0]: https://codeberg.org/dcampbell/hnefatafl/compare/v6.0.1-1..6.1.0-1
 [6.0.1]: https://codeberg.org/dcampbell/hnefatafl/compare/v5.11.0-1..v6.0.1-1
 [5.12.0]: https://codeberg.org/dcampbell/hnefatafl/compare/v5.11.0-1..v5.12.0-1
 [5.11.0]: https://codeberg.org/dcampbell/hnefatafl/compare/v5.10.0-1..v5.11.0-1
