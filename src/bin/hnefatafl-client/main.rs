@@ -3185,7 +3185,7 @@ impl<'a> Client {
                             Some("games_updated") => {
                                 let texts: Vec<&str> = text.collect();
                                 let texts = texts.join(" ");
-                                let mut games_updated: GamesUpdated =
+                                let games_updated: GamesUpdated =
                                     serde_json::de::from_str(&texts)
                                         .expect("Deserialization should work!");
 
@@ -3201,60 +3201,11 @@ impl<'a> Client {
                                     self.games_light.0.remove(game_id);
                                 }
 
-                                let mut games_new = Vec::new();
-
-                                if let Some((id_1, None, game)) =
-                                    games_updated.created.clone().last()
-                                {
-                                    let mut id_1 = *id_1;
-                                    games_new.push(game.clone());
-                                    games_updated.created.pop();
-
-                                    loop {
-                                        if let Some((_, Some(id_2), game)) =
-                                            games_updated.created.clone().last()
-                                            && id_1 == *id_2
-                                        {
-                                            games_new.push(game.clone());
-                                            games_updated.created.pop();
-                                            id_1 = *id_2;
-                                        } else {
-                                            break;
-                                        }
-                                    }
+                                if self.admin {
+                                    self.games_light_vec = self.games_light.sort_by_rating(&self.accounts);
+                                } else {
+                                    self.games_light_vec = self.games_light.sort_by_rating_users(&self.users);
                                 }
-
-                                for game in &self.games_light_vec {
-                                    if !games_updated.removed.contains(&game.id) {
-                                        if let Some(game_1) = games_updated.updated.get(&game.id) {
-                                            if let Some(game_2) =
-                                                self.games_light.0.get_mut(&game.id)
-                                            {
-                                                *game_2 = game_1.clone();
-                                            }
-
-                                            games_new.push(game_1.clone());
-                                        } else {
-                                            games_new.push(game.clone());
-                                        }
-                                    }
-
-                                    let mut id_1 = game.id;
-
-                                    loop {
-                                        if let Some((_, Some(id_2), game)) =
-                                            games_updated.created.clone().last()
-                                            && id_1 == *id_2
-                                        {
-                                            games_new.push(game.clone());
-                                            games_updated.created.pop();
-                                            id_1 = *id_2;
-                                        } else {
-                                            break;
-                                        }
-                                    }
-                                }
-                                self.games_light_vec = games_new;
 
                                 if let Some(game) = self.games_light.0.get(&self.game_id) {
                                     self.spectators = game.spectators.keys().cloned().collect();
