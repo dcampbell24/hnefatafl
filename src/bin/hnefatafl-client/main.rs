@@ -3185,9 +3185,8 @@ impl<'a> Client {
                             Some("games_updated") => {
                                 let texts: Vec<&str> = text.collect();
                                 let texts = texts.join(" ");
-                                let games_updated: GamesUpdated =
-                                    serde_json::de::from_str(&texts)
-                                        .expect("Deserialization should work!");
+                                let games_updated: GamesUpdated = serde_json::de::from_str(&texts)
+                                    .expect("Deserialization should work!");
 
                                 for (game_id, _, game) in &games_updated.created {
                                     self.games_light.0.insert(*game_id, game.clone());
@@ -3202,9 +3201,11 @@ impl<'a> Client {
                                 }
 
                                 if self.admin {
-                                    self.games_light_vec = self.games_light.sort_by_rating(&self.accounts);
+                                    self.games_light_vec =
+                                        self.games_light.sort_by_rating(&self.accounts);
                                 } else {
-                                    self.games_light_vec = self.games_light.sort_by_rating_users(&self.users);
+                                    self.games_light_vec =
+                                        self.games_light.sort_by_rating_users(&self.users);
                                 }
 
                                 if let Some(game) = self.games_light.0.get(&self.game_id) {
