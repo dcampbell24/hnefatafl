@@ -772,7 +772,7 @@ impl Server {
                 }
 
                 // Fixme: remove previous when making a breaking change.
-                previous = Some(0);
+                previous = None;
             }
 
             for (id, game_1) in &self.games_light_old.0 {
