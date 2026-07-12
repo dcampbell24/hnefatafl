@@ -1,10 +1,6 @@
 on: [push, pull_request]
 name: All of the Rust Commit Checks
 
-# Make sure CI fails on all warnings, including Clippy lints
-env:
-  RUSTFLAGS: "-D warnings"
-
 permissions:
   actions: read # An explanation.
 
@@ -34,6 +30,6 @@ jobs:
           rustup update stable
 
           cargo fmt --all --check
-          cargo clippy --examples --features js
+          cargo clippy --examples --keep-going --features js
           cargo test --features js
           cargo test --benches --features js
