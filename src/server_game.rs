@@ -461,6 +461,23 @@ impl TryFrom<&[&str; 12]> for ServerGameLight {
 pub struct ServerGamesLight(pub HashMap<Id, ServerGameLight>);
 
 impl ServerGamesLight {
+    #[must_use]
+    pub fn display_games(&self, username: Option<&str>) -> Vec<ServerGameLight> {
+        let mut vec = Vec::new();
+
+        for game in self.0.values() {
+            if !game.game_over {
+                vec.push(game.clone());
+            } else if let Some(username) = username
+                && game.spectators.contains_key(username)
+            {
+                vec.push(game.clone());
+            }
+        }
+
+        vec
+    }
+
     pub fn sort_by_rating(&mut self, accounts: &Accounts) -> Vec<ServerGameLight> {
         let mut games: Vec<_> = self
             .0
@@ -495,28 +512,6 @@ impl ServerGamesLight {
         games.sort_by(|a, b| b.1.total_cmp(&a.1));
 
         games.iter().map(|(game, _, _)| (*game).clone()).collect()
-    }
-}
-
-#[derive(Clone, Debug, Default, Eq, PartialEq)]
-pub struct ServerGamesLightVec(pub Vec<ServerGameLight>);
-
-impl ServerGamesLightVec {
-    #[must_use]
-    pub fn display_games(&self, username: Option<&str>) -> Vec<ServerGameLight> {
-        let mut vec = Vec::new();
-
-        for game in &self.0 {
-            if !game.game_over {
-                vec.push(game.clone());
-            } else if let Some(username) = username
-                && game.spectators.contains_key(username)
-            {
-                vec.push(game.clone());
-            }
-        }
-
-        vec
     }
 }
 
