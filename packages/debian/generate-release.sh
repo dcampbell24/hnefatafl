@@ -1,6 +1,6 @@
 #! /bin/bash -e
 
-VERSION='6.0.0-2'
+VERSION='6.1.0-1'
 PACKAGE="hnefatafl-copenhagen_${VERSION}_amd64.deb"
 
 packages/debian/deb.sh
