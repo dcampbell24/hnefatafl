@@ -38,6 +38,7 @@ default it connects to the server running at hnefatafl.org.}
 
 %description %_description
 
+%define toolchain clang
 %prep
 %setup -q -n hnefatafl
 
