@@ -29,7 +29,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     Id,
-    accounts::{Account, Users},
+    accounts::{Account, Accounts, Users},
     board::{Board, BoardSize},
     game::Game,
     glicko::Rating,
@@ -459,6 +459,44 @@ impl TryFrom<&[&str; 12]> for ServerGameLight {
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct ServerGamesLight(pub HashMap<Id, ServerGameLight>);
+
+impl ServerGamesLight {
+    pub fn sort_by_rating(&mut self, accounts: &Accounts) -> Vec<ServerGameLight> {
+        let mut games: Vec<_> = self
+            .0
+            .values()
+            .map(|game| {
+                let (rating_1, rating_2) =
+                    accounts.rating(game.attacker.as_deref(), game.defender.as_deref());
+
+                (game, rating_1, rating_2)
+            })
+            .collect();
+
+        games.sort_by(|a, b| b.2.total_cmp(&a.2));
+        games.sort_by(|a, b| b.1.total_cmp(&a.1));
+
+        games.iter().map(|(game, _, _)| (*game).clone()).collect()
+    }
+
+    pub fn sort_by_rating_users(&mut self, accounts: &Users) -> Vec<ServerGameLight> {
+        let mut games: Vec<_> = self
+            .0
+            .values()
+            .map(|game| {
+                let (rating_1, rating_2) =
+                    accounts.rating(game.attacker.as_deref(), game.defender.as_deref());
+
+                (game, rating_1, rating_2)
+            })
+            .collect();
+
+        games.sort_by(|a, b| b.2.total_cmp(&a.2));
+        games.sort_by(|a, b| b.1.total_cmp(&a.1));
+
+        games.iter().map(|(game, _, _)| (*game).clone()).collect()
+    }
+}
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct ServerGamesLightVec(pub Vec<ServerGameLight>);

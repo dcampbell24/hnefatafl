@@ -12,6 +12,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- hnefatafl-client: sort the games client side.
+
+### Changed
+
+- hnefatafl-client: make the display more dynamic.
 - hnefatafl-client: slightly change the game display.
 
 ## [6.0.1] - 2026-07-01

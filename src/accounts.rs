@@ -119,6 +119,33 @@ impl From<&Accounts> for Users {
     }
 }
 
+impl Users {
+    #[must_use]
+    pub fn rating(&self, attacker: Option<&str>, defender: Option<&str>) -> (f64, f64) {
+        let mut rating_1 = if let Some(attacker) = attacker
+            && let Some(user) = self.0.get(attacker)
+        {
+            user.rating.rating
+        } else {
+            0.0
+        };
+
+        let mut rating_2 = if let Some(defender) = defender
+            && let Some(user) = self.0.get(defender)
+        {
+            user.rating.rating
+        } else {
+            0.0
+        };
+
+        if rating_2 > rating_1 {
+            std::mem::swap(&mut rating_1, &mut rating_2);
+        }
+
+        (rating_1, rating_2)
+    }
+}
+
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
 pub struct Accounts(pub HashMap<String, Account>);
 
