@@ -62,7 +62,7 @@ use hnefatafl_copenhagen::{
     server_game::{
         AccountsUpdated, ArchivedGame, Challenger, GamesUpdated, Message, Messenger, NewGame,
         ServerGame, ServerGameLight, ServerGameSerialized, ServerGames, ServerGamesLight,
-        ServerGamesLightVec, UsersUpdated,
+        UsersUpdated,
     },
     space::Space,
     status::Status,
@@ -454,8 +454,6 @@ struct Server {
     #[serde(skip)]
     games_light: ServerGamesLight,
     #[serde(skip)]
-    games_light_vec: ServerGamesLightVec,
-    #[serde(skip)]
     games_light_old: ServerGamesLight,
     #[serde(skip)]
     skip_the_data_files: bool,
@@ -763,19 +761,18 @@ impl Server {
         if self.games_light != self.games_light_old {
             debug!("0 {username} display_games");
 
-            self.sort_games_light();
-
             let mut created = Vec::new();
             let mut removed = HashSet::new();
             let mut updated_1 = Vec::new();
             let mut previous = None;
 
-            for game in &self.games_light_vec.0 {
+            for game in self.games_light.0.values() {
                 if !self.games_light_old.0.contains_key(&game.id) {
                     created.push((game.id, previous, game.clone()));
                 }
 
-                previous = Some(game.id);
+                // Fixme: remove previous when making a breaking change.
+                previous = Some(0);
             }
 
             for (id, game_1) in &self.games_light_old.0 {
@@ -794,8 +791,6 @@ impl Server {
             for game in updated_1 {
                 updated_2.insert(game.id, (*game).clone());
             }
-
-            created.reverse();
 
             let games_updated = GamesUpdated {
                 created,
@@ -1668,7 +1663,7 @@ impl Server {
                         None
                     } else {
                         self.clients.get(&index_supplied).map(|tx| {
-                            let games = self.games_light_vec.display_games(Some(username));
+                            let games = self.games_light.display_games(Some(username));
                             let Ok(games) = serde_json::ser::to_string(&games) else {
                                 unreachable!();
                             };
@@ -2946,28 +2941,6 @@ impl Server {
                 Err(error) => error!("save file (1): {error}"),
             }
         }
-    }
-
-    // Fixme: don't bother sorting at some point...
-    fn sort_games_light(&mut self) {
-        let mut games: Vec<_> = self
-            .games_light
-            .0
-            .values()
-            .map(|game| {
-                let (rating_1, rating_2) = self
-                    .accounts
-                    .rating(game.attacker.as_deref(), game.defender.as_deref());
-
-                (game, rating_1, rating_2)
-            })
-            .collect();
-
-        games.sort_by(|a, b| b.2.total_cmp(&a.2));
-        games.sort_by(|a, b| b.1.total_cmp(&a.1));
-
-        self.games_light_vec =
-            ServerGamesLightVec(games.iter().map(|(game, _, _)| (*game).clone()).collect());
     }
 
     fn text_game(
