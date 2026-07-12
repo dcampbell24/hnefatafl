@@ -19,9 +19,8 @@ modules:
     sources:
       - type: git
         url: https://codeberg.org/dcampbell/hnefatafl.git
-        # git show-ref --tags
-        commit: 216c3e1250be6bae9d66e957a57731c66beb5702
-        tag: v6.0.1-1
+        commit: f95ae3477890dc192bed6cecbb4b560416b7fe5a
+        tag: v6.1.0-1
       # - type: file
       #   url: https://codeberg.org/dcampbell/hnefatafl/raw/branch/main/packages/org.hnefatafl.hnefatafl_client.metainfo.xml
       #   sha256: 905beec593b53fb52b00c431b32cf1154548b3af62da4f36b89729113cdf4b80
