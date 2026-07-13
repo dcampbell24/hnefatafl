@@ -3,7 +3,7 @@
 
 [package]
 name = "hnefatafl-copenhagen"
-version = "6.1.0"
+version = "6.1.1"
 edition = "2024"
 rust-version =  "1.94"
 description = "Copenhagen Hnefatafl client, engine, server and artificial intelligence"

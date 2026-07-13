@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.1.1] - 2026-07-13
+
 ### Fixed
 
 - hnefatafl-client: turn on the sound.
@@ -904,7 +906,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - hnefatafl-client: Make users and games scrollable.
 - Make all the features dependencies.
 
-[unreleased]: https://codeberg.org/dcampbell/hnefatafl/compare/v6.1.0-1...main
+[unreleased]: https://codeberg.org/dcampbell/hnefatafl/compare/v6.1.1-1...main
+[6.1.1]: https://codeberg.org/dcampbell/hnefatafl/compare/v6.1.0-1..6.1.1-1
 [6.1.0]: https://codeberg.org/dcampbell/hnefatafl/compare/v6.0.1-1..6.1.0-1
 [6.0.1]: https://codeberg.org/dcampbell/hnefatafl/compare/v5.11.0-1..v6.0.1-1
 [5.12.0]: https://codeberg.org/dcampbell/hnefatafl/compare/v5.11.0-1..v5.12.0-1
