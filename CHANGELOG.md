@@ -16,14 +16,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- hnefatafl-client: sort the games client side.
-- hnefatafl-client: fix an error that sometimes when a game is removed.
+- hnefatafl-client: fix an error that sometimes happens when a game is removed.
 
 ### Changed
 
-- hnefatafl-server-full: don't sort the games server side.
-- hnefatafl-client: make the display more dynamic.
-- hnefatafl-client: slightly change the game display.
+- hnefatafl-server-full: sort the games client side instead of server side.
+- hnefatafl-client: make the game display more dynamic based on the screen
+  size.
+- hnefatafl-client: slightly improve the game display.
 
 ## [6.0.1] - 2026-07-01
 
