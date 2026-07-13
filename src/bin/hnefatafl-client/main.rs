@@ -3148,12 +3148,13 @@ impl<'a> Client {
                                         let mut stream =
                                             rodio::DeviceSinkBuilder::open_default_sink()?;
 
+                                        stream.log_on_drop(false);
+
                                         let cursor = Cursor::new(SOUND_GAME_OVER);
                                         let sound = rodio::play(stream.mixer(), cursor)?;
                                         sound.set_volume(volume);
                                         sound.sleep_until_end();
 
-                                        stream.log_on_drop(false);
                                         Ok::<(), anyhow::Error>(())
                                     });
                                 }
@@ -3225,13 +3226,13 @@ impl<'a> Client {
                                 let volume = self.volume.volume();
                                 thread::spawn(move || {
                                     let mut stream = rodio::DeviceSinkBuilder::open_default_sink()?;
+                                    stream.log_on_drop(false);
 
                                     let cursor = Cursor::new(SOUND_GAME_OVER);
                                     let sound = rodio::play(stream.mixer(), cursor)?;
                                     sound.set_volume(volume);
                                     sound.sleep_until_end();
 
-                                    stream.log_on_drop(false);
                                     Ok::<(), anyhow::Error>(())
                                 });
                             }
@@ -4047,16 +4048,18 @@ impl<'a> Client {
 
         thread::spawn(move || {
             let mut stream = rodio::DeviceSinkBuilder::open_default_sink()?;
+            stream.log_on_drop(false);
+
             let cursor = if capture {
                 Cursor::new(SOUND_CAPTURE)
             } else {
                 Cursor::new(SOUND_MOVE)
             };
+
             let sound = rodio::play(stream.mixer(), cursor)?;
             sound.set_volume(volume);
             sound.sleep_until_end();
 
-            stream.log_on_drop(false);
             Ok::<(), anyhow::Error>(())
         });
     }
