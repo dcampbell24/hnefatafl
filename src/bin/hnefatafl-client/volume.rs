@@ -20,7 +20,7 @@ use serde::{Deserialize, Serialize};
 
 pub const MAX_VOLUME: u32 = 8;
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub(crate) struct Volume(pub u32);
 
 impl Default for Volume {

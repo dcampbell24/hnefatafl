@@ -4742,6 +4742,7 @@ impl<'a> Client {
             rating_minimum: self.rating_minimum,
             theme: self.theme,
             username: self.username.clone(),
+            volume: self.volume.clone(),
             ..Client::default()
         };
 
