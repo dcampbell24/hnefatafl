@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- hnefatafl-client: turn on the sound.
+
 ## [6.1.0] - 2026-07-12
 
 ### Fixed
