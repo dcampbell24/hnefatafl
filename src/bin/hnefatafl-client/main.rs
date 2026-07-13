@@ -756,8 +756,6 @@ struct Client {
     screen_size: Size,
     #[serde(skip)]
     server_version: String,
-    #[serde(default)]
-    sound: bool,
     #[serde(skip)]
     spectators: Vec<String>,
     #[serde(skip)]
@@ -3145,21 +3143,19 @@ impl<'a> Client {
                                         game.turn = Role::Roleless;
                                     }
 
-                                    if self.sound {
-                                        let volume = self.volume.volume();
-                                        thread::spawn(move || {
-                                            let mut stream =
-                                                rodio::DeviceSinkBuilder::open_default_sink()?;
+                                    let volume = self.volume.volume();
+                                    thread::spawn(move || {
+                                        let mut stream =
+                                            rodio::DeviceSinkBuilder::open_default_sink()?;
 
-                                            let cursor = Cursor::new(SOUND_GAME_OVER);
-                                            let sound = rodio::play(stream.mixer(), cursor)?;
-                                            sound.set_volume(volume);
-                                            sound.sleep_until_end();
+                                        let cursor = Cursor::new(SOUND_GAME_OVER);
+                                        let sound = rodio::play(stream.mixer(), cursor)?;
+                                        sound.set_volume(volume);
+                                        sound.sleep_until_end();
 
-                                            stream.log_on_drop(false);
-                                            Ok::<(), anyhow::Error>(())
-                                        });
-                                    }
+                                        stream.log_on_drop(false);
+                                        Ok::<(), anyhow::Error>(())
+                                    });
                                 }
                             }
                             Some("email") => {
@@ -3226,21 +3222,18 @@ impl<'a> Client {
                                     _ => error!("(1) unexpected text: {}", string.trim()),
                                 }
 
-                                if self.sound {
-                                    let volume = self.volume.volume();
-                                    thread::spawn(move || {
-                                        let mut stream =
-                                            rodio::DeviceSinkBuilder::open_default_sink()?;
+                                let volume = self.volume.volume();
+                                thread::spawn(move || {
+                                    let mut stream = rodio::DeviceSinkBuilder::open_default_sink()?;
 
-                                        let cursor = Cursor::new(SOUND_GAME_OVER);
-                                        let sound = rodio::play(stream.mixer(), cursor)?;
-                                        sound.set_volume(volume);
-                                        sound.sleep_until_end();
+                                    let cursor = Cursor::new(SOUND_GAME_OVER);
+                                    let sound = rodio::play(stream.mixer(), cursor)?;
+                                    sound.set_volume(volume);
+                                    sound.sleep_until_end();
 
-                                        stream.log_on_drop(false);
-                                        Ok::<(), anyhow::Error>(())
-                                    });
-                                }
+                                    stream.log_on_drop(false);
+                                    Ok::<(), anyhow::Error>(())
+                                });
                             }
                             Some("game_time") => {
                                 let texts: Vec<&str> = text.collect();
@@ -4049,10 +4042,6 @@ impl<'a> Client {
             handle.play += 1;
         }
 
-        if !self.sound {
-            return;
-        }
-
         let capture = !self.captures.is_empty();
         let volume = self.volume.volume();
 
@@ -4751,7 +4740,6 @@ impl<'a> Client {
             password_show: self.password_show,
             rating_maximum: self.rating_maximum,
             rating_minimum: self.rating_minimum,
-            sound: self.sound,
             theme: self.theme,
             username: self.username.clone(),
             ..Client::default()
