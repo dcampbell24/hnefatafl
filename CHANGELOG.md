@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- hnefatafl-server-full: sort the games client side instead of server side.
+- Sort the games client side instead of server side.
 - hnefatafl-client: make the game display more dynamic based on the screen
   size.
 - hnefatafl-client: slightly improve the game display.
