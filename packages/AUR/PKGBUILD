@@ -1,7 +1,7 @@
 # Maintainer:
 # SPDX-FileCopyrightText: 2025 David Campbell <david@hnefatafl.org>
 # SPDX-License-Identifier: 0BSD
-
+#
 # Zero-Clause BSD
 # ===============
 #
@@ -17,7 +17,7 @@
 # OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 pkgname=hnefatafl-copenhagen
-pkgver=6.1.1
+pkgver=6.2.0
 pkgrel=1
 real_pkgrel=1
 pkgdesc="Copenhagen Hnefatafl client, engine, server and artificial intelligence"
