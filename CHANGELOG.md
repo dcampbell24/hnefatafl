@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.2.0] - 2026-07-14
+
+### Added
+
 - hnefatafl-client: Allow going into fullscreen mode with F11.
 
 ## [6.1.1] - 2026-07-13
@@ -908,9 +912,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - hnefatafl-client: Make users and games scrollable.
 - Make all the features dependencies.
 
-[unreleased]: https://codeberg.org/dcampbell/hnefatafl/compare/v6.1.1-1...main
-[6.1.1]: https://codeberg.org/dcampbell/hnefatafl/compare/v6.1.0-1..6.1.1-1
-[6.1.0]: https://codeberg.org/dcampbell/hnefatafl/compare/v6.0.1-1..6.1.0-1
+[unreleased]: https://codeberg.org/dcampbell/hnefatafl/compare/v6.2.0-1...main
+[6.2.0]: https://codeberg.org/dcampbell/hnefatafl/compare/v6.1.1-1...v6.2.0-1
+[6.1.1]: https://codeberg.org/dcampbell/hnefatafl/compare/v6.1.0-1..v6.1.1-1
+[6.1.0]: https://codeberg.org/dcampbell/hnefatafl/compare/v6.0.1-1..v6.1.0-1
 [6.0.1]: https://codeberg.org/dcampbell/hnefatafl/compare/v5.11.0-1..v6.0.1-1
 [5.12.0]: https://codeberg.org/dcampbell/hnefatafl/compare/v5.11.0-1..v5.12.0-1
 [5.11.0]: https://codeberg.org/dcampbell/hnefatafl/compare/v5.10.0-1..v5.11.0-1

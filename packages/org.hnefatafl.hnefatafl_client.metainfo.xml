@@ -82,6 +82,13 @@
   </content_rating>
 
   <releases>
+    <release version="6.2.0" date="2026-07-14">
+      <url type="details">https://codeberg.org/dcampbell/hnefatafl/src/branch/main/CHANGELOG.md#6-2-0-2026-07-14</url>
+      <description>
+        <p>Enable going into fullscreen mode with F11.</p>
+      </description>
+    </release>
+
     <release version="6.1.1" date="2026-07-13">
       <url type="details">https://codeberg.org/dcampbell/hnefatafl/src/branch/main/CHANGELOG.md#6-1-1-2026-07-13</url>
       <description>
