@@ -30,7 +30,7 @@ use hnefatafl_copenhagen::{
     time::TimeEnum,
     tree::{Node, Tree},
 };
-use iced::widget::text_editor;
+use iced::{widget::text_editor, window};
 use iced_aw::date_picker::Date;
 use serde::{Deserialize, Serialize};
 
@@ -181,6 +181,8 @@ pub(crate) enum Message {
     ReviewGameForward,
     ReviewGameForwardAll,
     RoleSelected(Role),
+    SetScreenSize(Option<window::Id>),
+    SetScreenSizeGetWindow,
     ServerShutdown,
     StreamConnected(mpsc::Sender<String>),
     TabSelected(TabId),
@@ -196,6 +198,8 @@ pub(crate) enum Message {
     TextSendLogin,
     Tick,
     Time(TimeEnum),
+    ToggleFullscreen(Option<window::Id>),
+    ToggleFullscreenGetWindow,
     TournamentBoardSize(BoardSize),
     TournamentTime(TimeEnum),
     Tournaments,
