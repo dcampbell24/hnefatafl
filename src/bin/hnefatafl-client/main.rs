@@ -715,6 +715,8 @@ struct Client {
     #[serde(skip)]
     heat_map_display: bool,
     #[serde(default)]
+    is_fullscreen: bool,
+    #[serde(default)]
     locale: Option<Locale>,
     #[serde(default)]
     my_games_only: bool,
@@ -2213,6 +2215,7 @@ impl<'a> Client {
         handle_error(self.save_client_ron());
     }
 
+    #[allow(clippy::too_many_lines)]
     pub(crate) fn subscriptions(&self) -> Subscription<Message> {
         let subscription_1 = if let Some(game) = &self.game {
             if let TimeUnix::Time(_) = game.time {
@@ -2283,6 +2286,7 @@ impl<'a> Client {
                     },
                     Key::Named(name) => match name {
                         Named::Enter => Some(Message::PressEnter),
+                        Named::F11 => Some(Message::ToggleFullscreenGetWindow),
                         Named::Tab if shift => Some(Message::FocusPrevious),
                         Named::Tab => Some(Message::FocusNext),
                         Named::ArrowUp => Some(Message::ReviewGameBackwardAll),
@@ -2306,12 +2310,25 @@ impl<'a> Client {
             Subscription::none()
         };
 
+        let subscription_6 = Subscription::run(|| {
+            stream::channel(
+                1,
+                async move |mut sender: iced::futures::channel::mpsc::Sender<Message>| {
+                    sender
+                        .send(Message::SetScreenSizeGetWindow)
+                        .await
+                        .expect("Getting the window sizw shouls work!");
+                },
+            )
+        });
+
         Subscription::batch(vec![
             subscription_1,
             subscription_2,
             subscription_3,
             subscription_4,
             subscription_5,
+            subscription_6,
         ])
     }
 
@@ -3024,6 +3041,20 @@ impl<'a> Client {
                 self.error_persistent
                     .push(t!("The server was shut down.").to_string());
             }
+            Message::SetScreenSize(window_id) => {
+                if let Some(window_id) = window_id {
+                    let target_mode = if self.is_fullscreen {
+                        window::Mode::Fullscreen
+                    } else {
+                        window::Mode::Windowed
+                    };
+
+                    return window::set_mode(window_id, target_mode);
+                }
+            }
+            Message::SetScreenSizeGetWindow => {
+                return iced::window::latest().map(Message::SetScreenSize);
+            }
             Message::StreamConnected(tx) => self.tx = Some(tx),
             Message::TcpConnectFailed => {
                 self.error_persistent
@@ -3699,6 +3730,23 @@ impl<'a> Client {
                         }
                     }
                 }
+            }
+            Message::ToggleFullscreen(window_id) => {
+                if let Some(window_id) = window_id {
+                    self.is_fullscreen = !self.is_fullscreen;
+                    self.save_client_ron().expect("Saving should work!");
+
+                    let target_mode = if self.is_fullscreen {
+                        window::Mode::Fullscreen
+                    } else {
+                        window::Mode::Windowed
+                    };
+
+                    return window::set_mode(window_id, target_mode);
+                }
+            }
+            Message::ToggleFullscreenGetWindow => {
+                return iced::window::latest().map(Message::ToggleFullscreen);
             }
             Message::Time(time) => self.game_settings.time = Some(time),
             Message::Tournaments => open_url("https://hnefatafl.org/tournaments.html"),
@@ -4736,6 +4784,7 @@ impl<'a> Client {
         let client = Client {
             archived_games: Vec::new(),
             coordinates: self.coordinates,
+            is_fullscreen: self.is_fullscreen,
             locale: self.locale,
             my_games_only: self.my_games_only,
             password,
