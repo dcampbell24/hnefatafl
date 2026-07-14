@@ -18,7 +18,7 @@
 
 pkgname=hnefatafl-copenhagen
 pkgver=6.2.0
-pkgrel=2
+pkgrel=3
 real_pkgrel=1
 pkgdesc="Copenhagen Hnefatafl client, engine, server and artificial intelligence"
 url="https://hnefatafl.org"
