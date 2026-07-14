@@ -27,7 +27,7 @@ arch=("x86_64")
 depends=("glibc" "gcc-libs" "hicolor-icon-theme" "alsa-lib" "openssl")
 makedepends=("clang" "llvm" "mold" "rustup" "wget")
 source=("https://codeberg.org/dcampbell/hnefatafl/archive/v$pkgver-$real_pkgrel.tar.gz" "https://codeberg.org/dcampbell/hnefatafl/media/branch/main/default_nn.onnx")
-sha256sums=("")
+sha256sums=("e7015c7e682f63a4ce7fca971f46543a88233e8f8d3525e3a62e2534d0cfc762")
 
 prepare() {
     cd "hnefatafl"
