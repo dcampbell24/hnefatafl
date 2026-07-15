@@ -55,10 +55,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let response = client
             .post(url)
             .header("Content-Type", "application/json; charset=utf-8")
-            .body(json_data.to_string())
+            .body(json_data.clone())
             .send()?;
 
-        println!("Status: {:?}", response);
+        println!("Status: {response:?}");
         println!("Response Body:\n{}", response.text()?);
     }
 
