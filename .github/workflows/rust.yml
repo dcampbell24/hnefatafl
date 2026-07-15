@@ -31,5 +31,4 @@ jobs:
 
           cargo fmt --all --check
           cargo clippy --all-targets --all-features --keep-going
-          cargo test --features js
-          cargo test --benches --features js
+          cargo test --all-targets --all-features
