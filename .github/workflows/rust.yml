@@ -30,6 +30,6 @@ jobs:
           rustup update stable
 
           cargo fmt --all --check
-          cargo clippy --all-targets ---all-features --keep-going
+          cargo clippy --all-targets --all-features --keep-going
           cargo test --features js
           cargo test --benches --features js
