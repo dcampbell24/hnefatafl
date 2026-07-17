@@ -3139,8 +3139,15 @@ impl<'a> Client {
                                     .expect("We should be able to deserialse into Vec<ServerGameLight>!");
 
                                 for game in games {
-                                    self.games_light.0.insert(game.id, game.clone());
-                                    self.games_light_vec.push(game);
+                                    self.games_light.0.insert(game.id, game);
+                                }
+
+                                if self.admin {
+                                    self.games_light_vec =
+                                        self.games_light.sort_by_rating(&self.accounts);
+                                } else {
+                                    self.games_light_vec =
+                                        self.games_light.sort_by_rating_users(&self.users);
                                 }
 
                                 if let Some(game) = self.games_light.0.get(&self.game_id) {
