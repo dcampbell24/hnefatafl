@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.2.1] - 2026-07-17
+
 ### Fixed
 
 - sort the games before there has been an update.
@@ -917,7 +919,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - hnefatafl-client: Make users and games scrollable.
 - Make all the features dependencies.
 
-[unreleased]: https://codeberg.org/dcampbell/hnefatafl/compare/v6.2.0-1...main
+[unreleased]: https://codeberg.org/dcampbell/hnefatafl/compare/v6.2.1-1...main
+[6.2.1]: https://codeberg.org/dcampbell/hnefatafl/compare/v6.2.0-1...v6.2.1-1
 [6.2.0]: https://codeberg.org/dcampbell/hnefatafl/compare/v6.1.1-1...v6.2.0-1
 [6.1.1]: https://codeberg.org/dcampbell/hnefatafl/compare/v6.1.0-1..v6.1.1-1
 [6.1.0]: https://codeberg.org/dcampbell/hnefatafl/compare/v6.0.1-1..v6.1.0-1
