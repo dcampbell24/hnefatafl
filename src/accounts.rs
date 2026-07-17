@@ -175,3 +175,9 @@ impl Accounts {
         (rating_1, rating_2)
     }
 }
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+pub enum AccountsOrUsers {
+    Accounts(Accounts),
+    Users(Users),
+}

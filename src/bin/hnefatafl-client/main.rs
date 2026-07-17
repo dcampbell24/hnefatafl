@@ -47,7 +47,7 @@ use ::serde::{Deserialize, Serialize};
 use clap::{CommandFactory, Parser};
 use hnefatafl_copenhagen::{
     COPYRIGHT, Id, SERVER_PORT, SOFTWARE_ID, VERSION_ID,
-    accounts::{Account, Accounts, User, Users},
+    accounts::{Account, Accounts, AccountsOrUsers, User, Users},
     board::{Board, BoardSize},
     characters::Characters,
     draw::Draw,
@@ -3127,16 +3127,32 @@ impl<'a> Client {
                                 | "game"
                                 | "request_draw",
                             ) => {}
-                            Some("admin") => self.admin = true,
-                            Some("admin_tournament") => self.admin_tournament = true,
-                            Some("display_games") => {
+                            Some("initialize_display") => {
                                 self.games_light.0.clear();
                                 self.games_light_vec.clear();
 
                                 let games: Vec<&str> = text.collect();
                                 let games = games.join(" ");
-                                let games: Vec<ServerGameLight> = serde_json::de::from_str(&games)
-                                    .expect("We should be able to deserialse into Vec<ServerGameLight>!");
+                                let (games, users, admin, admin_tournament): (
+                                    Vec<ServerGameLight>,
+                                    AccountsOrUsers,
+                                    bool,
+                                    bool,
+                                ) = ron::de::from_str(&games).expect(
+                                    "We should be able to deserialse into (games, users, admin, admin_tournament)!",
+                                );
+
+                                self.admin = admin;
+                                self.admin_tournament = admin_tournament;
+
+                                match users {
+                                    AccountsOrUsers::Accounts(accounts) => {
+                                        self.accounts = accounts;
+                                    }
+                                    AccountsOrUsers::Users(users) => {
+                                        self.users = users;
+                                    }
+                                }
 
                                 for game in games {
                                     self.games_light.0.insert(game.id, game);
@@ -3154,22 +3170,6 @@ impl<'a> Client {
                                     self.spectators = game.spectators.keys().cloned().collect();
                                     self.spectators.sort();
                                 }
-                            }
-                            Some("display_users") => {
-                                let users: Users = ron::from_str(
-                                    text.next().expect("there should be a next value"),
-                                )
-                                .expect("we should be able to deserialize accounts");
-
-                                self.users = users;
-                            }
-                            Some("display_users_admin") => {
-                                let accounts: Accounts = ron::from_str(
-                                    text.next().expect("there should be a next value"),
-                                )
-                                .expect("we should be able to deserialize accounts");
-
-                                self.accounts = accounts;
                             }
                             Some("draw") => {
                                 self.request_draw = false;
