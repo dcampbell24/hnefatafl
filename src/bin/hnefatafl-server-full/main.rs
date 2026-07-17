@@ -48,7 +48,7 @@ use badwords_rs::{Censor, MODERATE};
 use clap::Parser;
 use hnefatafl_copenhagen::{
     Id, SERVER_PORT, VERSION_ID,
-    accounts::{Account, Accounts, DateTimeUtc, User, Users},
+    accounts::{Account, Accounts, AccountsOrUsers, DateTimeUtc, User, Users},
     board::{BoardSize, InvalidMove},
     draw::Draw,
     email::Email,
@@ -319,16 +319,10 @@ fn login(
         }
     });
 
+    tx.send((format!("{id} {username_proper} initialize_display"), None))?;
     tx.send((format!("{id} {username_proper} email_get"), None))?;
     tx.send((format!("{id} {username_proper} texts"), None))?;
-    tx.send((format!("{id} {username_proper} display_users"), None))?;
-
-    sleep(Duration::from_millis(100));
-
-    tx.send((format!("{id} {username_proper} display_games"), None))?;
     tx.send((format!("{id} {username_proper} tournament_status"), None))?;
-    tx.send((format!("{id} {username_proper} admin"), None))?;
-    tx.send((format!("{id} {username_proper} admin_tournament"), None))?;
     tx.send((format!("{id} {username_proper} version"), None))?;
     tx.send((format!("{id} {username_proper} resume_games"), None))?;
 
@@ -762,7 +756,7 @@ impl Server {
         username: &str,
     ) -> Option<(mpsc::Sender<String>, Result<(), InvalidMove>, String)> {
         if self.games_light != self.games_light_old {
-            debug!("0 {username} display_games");
+            debug!("0 {username} games_updated");
 
             let mut created = Vec::new();
             let mut removed = HashSet::new();
@@ -920,6 +914,7 @@ impl Server {
                                 ),
                                 None,
                             ));
+
                             return None;
                         }
 
@@ -1661,51 +1656,7 @@ impl Server {
                     self.delete_account(username, index_supplied);
                     None
                 }
-                "display_games" => {
-                    if args.skip_advertising_updates {
-                        None
-                    } else {
-                        self.clients.get(&index_supplied).map(|tx| {
-                            let games = self.games_light.display_games(Some(username));
-                            let Ok(games) = serde_json::ser::to_string(&games) else {
-                                unreachable!();
-                            };
-
-                            (tx.clone(), Ok(()), format!("display_games {games}"))
-                        })
-                    }
-                }
                 "display_server" => self.display_server(username),
-                "display_users" => {
-                    if args.skip_advertising_updates {
-                        None
-                    } else if self.admins.contains(username) {
-                        if let Some(tx) = self.clients.get(&index_supplied) {
-                            let Ok(accounts) = ron::ser::to_string(&self.accounts) else {
-                                unreachable!();
-                            };
-
-                            Some((
-                                tx.clone(),
-                                Ok(()),
-                                format!("display_users_admin {accounts}"),
-                            ))
-                        } else {
-                            None
-                        }
-                    } else {
-                        if let Some(tx) = self.clients.get(&index_supplied) {
-                            let Ok(accounts) = ron::ser::to_string(&Users::from(&self.accounts))
-                            else {
-                                unreachable!();
-                            };
-
-                            Some((tx.clone(), Ok(()), format!("display_users {accounts}")))
-                        } else {
-                            None
-                        }
-                    }
-                }
                 "draw" => self.draw(index_supplied, command, the_rest.as_slice()),
                 "game" => self.game(index_supplied, username, command, the_rest.as_slice()),
                 "email" => {
@@ -1847,6 +1798,28 @@ impl Server {
                     );
 
                     exit(0);
+                }
+                "initialize_display" => {
+                    if args.skip_advertising_updates {
+                        return None;
+                    }
+
+                    let tx = self.clients.get(&index_supplied)?;
+                    let admin = self.admins.contains(username);
+                    let admin_tournament = self.admins_tournament.contains(username);
+                    let games = self.games_light.display_games(Some(username));
+                    let users = if self.admins.contains(username) {
+                        AccountsOrUsers::Accounts(self.accounts.clone())
+                    } else {
+                        AccountsOrUsers::Users(Users::from(&self.accounts))
+                    };
+
+                    let Ok(display) = ron::ser::to_string(&(games, users, admin, admin_tournament))
+                    else {
+                        unreachable!();
+                    };
+
+                    Some((tx.clone(), Ok(()), format!("initialize_display {display}")))
                 }
                 "join_game" => self.join_game(
                     username,
