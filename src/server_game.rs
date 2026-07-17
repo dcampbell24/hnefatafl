@@ -478,7 +478,8 @@ impl ServerGamesLight {
         vec
     }
 
-    pub fn sort_by_rating(&mut self, accounts: &Accounts) -> Vec<ServerGameLight> {
+    #[must_use]
+    pub fn sort_by_rating(&self, accounts: &Accounts) -> Vec<ServerGameLight> {
         let mut games: Vec<_> = self
             .0
             .values()
@@ -496,7 +497,8 @@ impl ServerGamesLight {
         games.iter().map(|(game, _, _)| (*game).clone()).collect()
     }
 
-    pub fn sort_by_rating_users(&mut self, accounts: &Users) -> Vec<ServerGameLight> {
+    #[must_use]
+    pub fn sort_by_rating_users(&self, accounts: &Users) -> Vec<ServerGameLight> {
         let mut games: Vec<_> = self
             .0
             .values()

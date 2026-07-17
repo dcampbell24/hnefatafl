@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- sort the games before there has been an update.
 - hnefatafl-server-full: increase the allowed message length.
 
 ## [6.2.0] - 2026-07-14
