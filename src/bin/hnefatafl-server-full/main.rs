@@ -322,6 +322,9 @@ fn login(
     tx.send((format!("{id} {username_proper} email_get"), None))?;
     tx.send((format!("{id} {username_proper} texts"), None))?;
     tx.send((format!("{id} {username_proper} display_users"), None))?;
+
+    sleep(Duration::from_millis(100));
+
     tx.send((format!("{id} {username_proper} display_games"), None))?;
     tx.send((format!("{id} {username_proper} tournament_status"), None))?;
     tx.send((format!("{id} {username_proper} admin"), None))?;
