@@ -82,8 +82,8 @@
   </content_rating>
 
   <releases>
-    <release version="6.2.1" date="2026-07-17">
-      <url type="details">https://codeberg.org/dcampbell/hnefatafl/src/branch/main/CHANGELOG.md#6-2-1-2026-07-17</url>
+    <release version="6.2.2" date="2026-07-17">
+      <url type="details">https://codeberg.org/dcampbell/hnefatafl/src/branch/main/CHANGELOG.md#6-2-2-2026-07-17</url>
       <description>
         <p>Sort the games from the start.</p>
       </description>
