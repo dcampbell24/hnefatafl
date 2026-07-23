@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+###
+
+- cargo update.
+
 ## [6.2.2] - 2026-07-17
 
 ### Fixed
