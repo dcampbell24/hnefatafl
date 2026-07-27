@@ -61,6 +61,14 @@ cargo install hnefatafl-copenhagen
 [crates-io]: https://img.shields.io/crates/v/hnefatafl-copenhagen.svg?logo=rust
 [crates-io-link]: https://crates.io/crates/hnefatafl-copenhagen
 
+### Steam [![steam]][steam-link]
+
+To run on andriod see [GameNative].
+
+[GameNative]: https://github.com/utkarshdalal/GameNative#how-to-use
+[steam]: https://img.shields.io/badge/-111111?logo=steam
+[steam-link]: https://store.steampowered.com/app/4382130/Hnefatafl_Org/
+
 ### Source [![codeberg]][codeberg-link]
 
 In your terminal run:
