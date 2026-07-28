@@ -2334,11 +2334,12 @@ impl Server {
                 command,
             ));
         };
+
+        info!("{index_supplied} {username} leave_game {id}");
+
         if let Some(account) = self.accounts.0.get_mut(username) {
             account.pending_games.remove(&id);
         }
-
-        info!("{index_supplied} {username} leave_game {id}");
 
         let mut remove = false;
         match self.games_light.0.get_mut(&id) {
@@ -2541,7 +2542,7 @@ impl Server {
                     && let TimeSettings::Timed(Time {
                         milliseconds_left, ..
                     }) = game.timed
-                    && milliseconds_left < 1_000 * 60 * 60 * 24
+                    && milliseconds_left < DAY_IN_SECONDS_SIGNED * 1_000
                 {
                     let _ok =
                         tx.send((format!("{index_supplied} {username} leave_game {id}"), None));
