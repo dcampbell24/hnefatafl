@@ -1121,7 +1121,6 @@ impl<'a> Client {
     fn chat_view(&self) -> Column<'_, Message> {
         column![
             button(text!("{} (Esc)", t!("Quit"))).on_press(Message::Leave),
-            //
             self.texting(&self.texts, true, 1_000.0),
         ]
         .spacing(SPACING)
