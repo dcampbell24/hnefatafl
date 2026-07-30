@@ -35,6 +35,7 @@ use std::{
     fmt::{self, Write as _},
     fs::{self, File},
     io::{BufRead, BufReader, Cursor, ErrorKind, Read, Write},
+    mem::take,
     net::{Shutdown, TcpStream, ToSocketAddrs},
     process::exit,
     str::{FromStr, SplitAsciiWhitespace},
@@ -1732,17 +1733,16 @@ impl<'a> Client {
         }
 
         if !self.text_input.trim().is_empty() {
-            let username = self.text_input.clone();
-
+            let username = &self.text_input;
             self.send(&format!(
                 "{VERSION_ID} login {username} {}\n",
                 self.password
             ));
 
             self.send(&format!("software_id {SOFTWARE_ID}\n"));
-            self.username = username;
+            self.username = take(&mut self.text_input);
+
             self.texts.clear();
-            self.text_input.clear();
             self.archived_game_reset();
 
             handle_error(self.save_client_ron());
