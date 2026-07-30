@@ -1738,15 +1738,15 @@ impl<'a> Client {
                 "{VERSION_ID} login {username} {}\n",
                 self.password
             ));
+
+            self.send(&format!("software_id {SOFTWARE_ID}\n"));
             self.username = username;
+            self.texts.clear();
+            self.text_input.clear();
+            self.archived_game_reset();
+
+            handle_error(self.save_client_ron());
         }
-
-        self.texts.clear();
-        self.text_input.clear();
-        self.archived_game_reset();
-        handle_error(self.save_client_ron());
-
-        self.send(&format!("software_id {SOFTWARE_ID}\n"));
     }
 
     fn play_to(&mut self, to: Vertex) {
@@ -4611,7 +4611,7 @@ impl<'a> Client {
 
                 let mut login = button(text!("{} (Enter)", t!("Login")));
                 let mut create_account = button(text!("{} (4)", t!("Create Account")));
-                if !invalid_username(&self.text_input) {
+                if !self.text_input.is_empty() && !invalid_username(&self.text_input) {
                     login = login.on_press(Message::TextSendLogin);
                     create_account = create_account.on_press(Message::TextSendCreateAccount);
                 }
