@@ -1741,7 +1741,6 @@ impl<'a> Client {
 
             self.send(&format!("software_id {SOFTWARE_ID}\n"));
             self.username = take(&mut self.text_input);
-
             self.texts.clear();
             self.archived_game_reset();
 
