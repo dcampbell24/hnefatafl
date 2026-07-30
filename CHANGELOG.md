@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - hnefatafl-client: you have to have a username to press "Login" or "Create
-  Account:.
+  Account".
 
 ### Changed
 
