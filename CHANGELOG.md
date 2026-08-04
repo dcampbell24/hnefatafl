@@ -14,8 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- hnefatafl-server-full - set a delay of 2s, 4s, 8s, 16s, 30m, for an IP and
+  username when they fail to login.
 - hnefatafl-client: you have to have a username to press "Login" or "Create
   Account".
+- hnefatafl-client: don't delete the username unless you login.
 
 ### Changed
 

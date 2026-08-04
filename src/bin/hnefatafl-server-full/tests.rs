@@ -253,7 +253,7 @@ fn create_account(server: &mut ServerFull, tx: Sender<String>) -> anyhow::Result
 
 fn login(server: &mut ServerFull, tx: Sender<String>, password: &str) -> anyhow::Result<()> {
     if let Some((_, result, message)) =
-        server.handle_messages_internal(&format!("0 david login {password}"), Some(tx))
+        server.handle_messages_internal(&format!("0 david login ::1 {password}"), Some(tx))
     {
         assert_eq!(Ok(()), result);
         assert_eq!(message, "login");

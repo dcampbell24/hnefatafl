@@ -35,7 +35,6 @@ use std::{
     fmt::{self, Write as _},
     fs::{self, File},
     io::{BufRead, BufReader, Cursor, ErrorKind, Read, Write},
-    mem::take,
     net::{Shutdown, TcpStream, ToSocketAddrs},
     process::exit,
     str::{FromStr, SplitAsciiWhitespace},
@@ -1208,7 +1207,7 @@ impl<'a> Client {
                 ));
                 self.username = username;
             }
-            self.text_input.clear();
+
             self.archived_game_reset();
             handle_error(self.save_client_ron());
 
@@ -1740,7 +1739,7 @@ impl<'a> Client {
             ));
 
             self.send(&format!("software_id {SOFTWARE_ID}\n"));
-            self.username = take(&mut self.text_input);
+            self.username = self.text_input.clone();
             self.texts.clear();
             self.archived_game_reset();
 
@@ -3472,7 +3471,10 @@ impl<'a> Client {
                                 self.challenger = true;
                             }
                             Some("leave_game") => self.game_id = 0,
-                            Some("login") => self.screen = Screen::Games,
+                            Some("login") => {
+                                self.text_input.clear();
+                                self.screen = Screen::Games;
+                            }
                             Some("new_game") => {
                                 // = new_game game 15 none david rated fischer 900_000 10
                                 if Some("game") == text.next() {
