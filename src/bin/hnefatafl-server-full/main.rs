@@ -75,7 +75,7 @@ use hnefatafl_copenhagen::{
     utils::{self, create_data_folder, data_file},
 };
 use itertools::Itertools;
-use jiff::{Timestamp, Zoned};
+use jiff::{SignedDuration, Timestamp, Zoned};
 use lettre::{
     SmtpTransport, Transport,
     message::{Mailbox, header::ContentType},
@@ -276,7 +276,7 @@ fn login(
             }
 
             tx.send((
-                format!("{id} {username} {create_account_login} {password}"),
+                format!("{id} {username} {create_account_login} {peer_address} {password}"),
                 Some(client_tx.clone()),
             ))?;
 
@@ -288,6 +288,7 @@ fn login(
                     break;
                 }
 
+                // Fixme!
                 stream.write_all(b"? login multiple_possible_errors\n")?;
                 continue;
             } else if create_account_login == "create_account" {
@@ -460,6 +461,8 @@ struct Server {
     tx: Option<mpsc::Sender<(String, Option<mpsc::Sender<String>>)>>,
     #[serde(default)]
     blocked_ips: HashSet<IpAddr>,
+    #[serde(skip)]
+    login_attemps: HashMap<(String, String), (u8, Timestamp)>,
 }
 
 impl Server {
@@ -2396,9 +2399,54 @@ impl Server {
         the_rest: &[&str],
         option_tx: Option<Sender<String>>,
     ) -> Option<(mpsc::Sender<String>, Result<(), InvalidMove>, String)> {
-        let password_1 = the_rest.join(" ");
+        let peer_address = the_rest.first()?.to_string();
+        let username = username.to_string();
+        let password_1 = the_rest.get(1..)?.join(" ");
         let tx = option_tx?;
-        if let Some(account) = self.accounts.0.get_mut(username) {
+        let now = Timestamp::now();
+
+        if let Some((login_attemps, last_attemp)) = self
+            .login_attemps
+            .get(&(peer_address.clone(), username.clone()))
+        {
+            let delay: SignedDuration = match login_attemps {
+                1 => "2s".parse().ok()?,
+                2 => "4s".parse().ok()?,
+                3 => "8s".parse().ok()?,
+                4 => "16s".parse().ok()?,
+                _ => "30m".parse().ok()?,
+            };
+
+            let waited = now
+                .checked_sub(last_attemp.as_duration())
+                .ok()?
+                .as_duration();
+
+            if delay > waited {
+                error!(
+                    "{index_supplied} {username} retried too soon, waited: {waited}, delay: {delay}"
+                );
+
+                // Fixme: differentiate why the user can'y login!
+                return Some((tx, Err(InvalidMove::Other), (*command).to_string()));
+            }
+        }
+
+        if let Some(account) = self.accounts.0.get_mut(&username) {
+            match self
+                .login_attemps
+                .get_mut(&(peer_address.clone(), username.clone()))
+            {
+                Some((login_attemps, last_attemp)) => {
+                    *login_attemps += 1;
+                    *last_attemp = now;
+                }
+                None => {
+                    self.login_attemps
+                        .insert((peer_address.clone(), username.clone()), (1, now));
+                }
+            }
+
             // The username is in the database and already logged in.
             if let Some(index_database) = account.logged_in {
                 error!("{index_supplied} {username} login failed, {index_database} is logged in");
@@ -2414,6 +2462,7 @@ impl Server {
                     return Some((tx, Err(InvalidMove::Other), (*command).to_string()));
                 }
 
+                self.login_attemps.remove(&(peer_address, username));
                 self.clients.insert(index_supplied, tx);
                 account.logged_in = Some(index_supplied);
                 account.last_logged_in = DateTimeUtc(Timestamp::now());
