@@ -288,8 +288,8 @@ fn login(
                     break;
                 }
 
-                // Fixme!
-                stream.write_all(b"? login multiple_possible_errors\n")?;
+                message.push('\n');
+                stream.write_all(message.as_bytes())?;
                 continue;
             } else if create_account_login == "create_account" {
                 if "= create_account" == message.as_str() {
@@ -2427,8 +2427,11 @@ impl Server {
                     "{index_supplied} {username} retried too soon, waited: {waited}, delay: {delay}"
                 );
 
-                // Fixme: differentiate why the user can'y login!
-                return Some((tx, Err(InvalidMove::Other), (*command).to_string()));
+                return Some((
+                    tx,
+                    Err(InvalidMove::LoginTooSoon),
+                    "login multiple_possible_errors".to_string(),
+                ));
             }
         }
 
@@ -2451,7 +2454,11 @@ impl Server {
             if let Some(index_database) = account.logged_in {
                 error!("{index_supplied} {username} login failed, {index_database} is logged in");
 
-                Some(((tx), Err(InvalidMove::Other), (*command).to_string()))
+                Some((
+                    (tx),
+                    Err(InvalidMove::LoggedInAlready),
+                    "login multiple_possible_errors".to_string(),
+                ))
             // The username is in the database, but not logged in yet.
             } else {
                 let hash_2 = PasswordHash::try_from(account.password.as_str()).ok()?;
@@ -2459,7 +2466,12 @@ impl Server {
                     Argon2::default().verify_password(password_1.as_bytes(), &hash_2)
                 {
                     error!("{index_supplied} {username} provided the wrong password: {error}");
-                    return Some((tx, Err(InvalidMove::Other), (*command).to_string()));
+
+                    return Some((
+                        tx,
+                        Err(InvalidMove::WrongPassword),
+                        "login multiple_possible_errors".to_string(),
+                    ));
                 }
 
                 self.login_attemps.remove(&(peer_address, username));
@@ -2475,7 +2487,12 @@ impl Server {
             }
         } else {
             error!("{index_supplied} {username} is not in the database");
-            Some((tx, Err(InvalidMove::Other), (*command).to_string()))
+
+            Some((
+                tx,
+                Err(InvalidMove::AccountNotInDatabase),
+                "login multiple_possible_errors".to_string(),
+            ))
         }
     }
 

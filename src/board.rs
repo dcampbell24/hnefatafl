@@ -2287,6 +2287,7 @@ enum Direction {
     UpDown,
 }
 
+//
 #[derive(Error, Debug, PartialEq)]
 pub enum InvalidMove {
     #[error("to plae: {0}")]
@@ -2335,6 +2336,14 @@ pub enum InvalidMove {
     Deserialize(String),
     #[error("error parsing: {0}")]
     Parsing(String),
+    #[error("logged_in_already")]
+    LoggedInAlready,
+    #[error("retried_too_soon")]
+    LoginTooSoon,
+    #[error("wrong_password")]
+    WrongPassword,
+    #[error("account_not_in_database")]
+    AccountNotInDatabase,
     #[error("unknown error")]
     Other,
 }
