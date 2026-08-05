@@ -25,6 +25,7 @@ use std::{
 };
 
 use colored::Colorize;
+use jiff::Timestamp;
 use rustc_hash::FxHashSet;
 use serde::{
     Deserialize, Deserializer, Serialize, Serializer,
@@ -2338,8 +2339,8 @@ pub enum InvalidMove {
     Parsing(String),
     #[error("logged_in_already")]
     LoggedInAlready,
-    #[error("retried_too_soon")]
-    LoginTooSoon,
+    #[error("retried_too_soon {0}")]
+    LoginTooSoon(Timestamp),
     #[error("wrong_password")]
     WrongPassword,
     #[error("account_not_in_database")]
