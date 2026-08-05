@@ -2407,7 +2407,7 @@ impl Server {
 
         if let Some((login_attemps, last_attemp)) = self
             .login_attemps
-            .get(&(peer_address.clone(), username.clone()))
+            .get_mut(&(peer_address.clone(), username.clone()))
         {
             let delay: SignedDuration = match login_attemps {
                 1 => "2s".parse().ok()?,
@@ -2417,39 +2417,27 @@ impl Server {
                 _ => "30m".parse().ok()?,
             };
 
-            let waited = now
-                .checked_sub(last_attemp.as_duration())
-                .ok()?
-                .as_duration();
+            let wait_until = last_attemp.checked_add(delay).ok()?;
+            *login_attemps += 1;
+            *last_attemp = now;
 
-            if delay > waited {
+            if now < wait_until {
                 error!(
-                    "{index_supplied} {username} retried too soon, waited: {waited}, delay: {delay}"
+                    "{index_supplied} {username} retried too soon, now: {now}, wait_until: {wait_until}"
                 );
 
                 return Some((
                     tx,
-                    Err(InvalidMove::LoginTooSoon),
+                    Err(InvalidMove::LoginTooSoon(wait_until)),
                     "login multiple_possible_errors".to_string(),
                 ));
             }
+        } else {
+            self.login_attemps
+                .insert((peer_address.clone(), username.clone()), (1, now));
         }
 
         if let Some(account) = self.accounts.0.get_mut(&username) {
-            match self
-                .login_attemps
-                .get_mut(&(peer_address.clone(), username.clone()))
-            {
-                Some((login_attemps, last_attemp)) => {
-                    *login_attemps += 1;
-                    *last_attemp = now;
-                }
-                None => {
-                    self.login_attemps
-                        .insert((peer_address.clone(), username.clone()), (1, now));
-                }
-            }
-
             // The username is in the database and already logged in.
             if let Some(index_database) = account.logged_in {
                 error!("{index_supplied} {username} login failed, {index_database} is logged in");

@@ -3710,7 +3710,6 @@ impl<'a> Client {
             Message::Tick => {
                 self.counter = self.counter.wrapping_add(1);
 
-                // Fixme!
                 if self.counter.is_multiple_of(25) {
                     self.now = Timestamp::now().as_millisecond();
                     self.send("ping\n");
