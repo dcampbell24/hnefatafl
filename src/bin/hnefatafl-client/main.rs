@@ -95,7 +95,7 @@ use iced_aw::{
     style::colors::GREY, widget::LabeledFrame,
 };
 use image::ImageFormat;
-use jiff::Timestamp;
+use jiff::{Timestamp, tz::TimeZone};
 use log::{debug, error, info, trace};
 use rust_i18n::t;
 use smol_str::ToSmolStr;
@@ -3574,9 +3574,35 @@ impl<'a> Client {
                                 let text_next = text.next();
                                 match text_next {
                                     Some("multiple_possible_errors") => {
-                                        self.error = Some(t!(
-                                            "Login password is wrong (try lowercase), account doesn't exist, or you're already logged in."
-                                        ).to_string());
+                                        let error = match text.next() {
+                                            Some("account_not_in_database") => {
+                                                t!("This username is not registered.").to_string()
+                                            }
+                                            Some("logged_in_already") => {
+                                                t!("This user is already logged in.").to_string()
+                                            }
+                                            Some("retried_too_soon") => {
+                                                if let Some(datetime) = text.next() && let Ok(timestamp) = datetime.parse::<Timestamp>() {
+                                                    let tz = TimeZone::system();
+                                                    let datetime = timestamp.to_zoned(tz);
+
+                                                    format!("{} {}", t!("You tried to login again too soon, wait until:"), datetime.strftime("%X %z %Z"))
+                                                } else {
+                                                    "Unknown Error".to_string()
+                                                }
+                                            }
+                                            Some("wrong_password") => {
+                                                t!("The password is wrong.").to_string()
+                                            }
+                                            Some(_) => {
+                                                "Unknown Error".to_string()
+                                            }
+                                            None => {
+                                                t!("Login password is wrong (try lowercase), account doesn't exist, or you're already logged in.").to_string()
+                                            }
+                                        };
+
+                                        self.error = Some(error);
                                     }
                                     Some("reset_password") => {
                                         self.error = Some(t!(
