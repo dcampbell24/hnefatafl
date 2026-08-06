@@ -1228,12 +1228,14 @@ impl<'a> Client {
     #[allow(clippy::too_many_lines)]
     fn display_tournament(&self) -> Column<'_, Message> {
         let column_1 = if let Some(tournament) = &self.tournament.tournament {
+            let tz = TimeZone::system();
+            let datetime = tournament.date.to_zoned(tz);
             let tournament_string = t!("Tournament");
             let row_1 = text(tournament_string.to_string());
             let row_2 = text("-".repeat(tournament_string.len())).font(Font::MONOSPACE);
             let row_3 = text!(
                 "[{}] {}: {}, fischer {}: {}, {}: {}",
-                tournament.date.strftime("%F %T UTC"),
+                datetime.strftime("%F %T %z %Z"),
                 t!("board size"),
                 tournament.board_size,
                 t!("time"),
@@ -2339,7 +2341,9 @@ impl<'a> Client {
         let mut texts = Column::new();
 
         for message in messages.iter().rev() {
-            let timestamp = message.timestamp.strftime("%F %T UTC").to_string();
+            let tz = TimeZone::system();
+            let datetime = message.timestamp.to_zoned(tz);
+            let timestamp = datetime.strftime("%F %T %z %Z").to_string();
             let timestamp = text(timestamp).color(GREY);
 
             let username = text(message.username.clone()).font(Font {
@@ -4974,9 +4978,12 @@ impl<'a> Client {
 
         let mut date = Row::new().spacing(SPACING);
         if let Some(timestamp) = self.tournament.date {
+            let tz = TimeZone::system();
+            let datetime = timestamp.to_zoned(tz);
+
             date = date.push(text!(
                 "[{}] {}: {}, fischer {}: {}, {}: {}",
-                timestamp.strftime("%F %T UTC"),
+                datetime.strftime("%F %T %z %Z"),
                 t!("board size"),
                 self.tournament.board_size,
                 t!("time"),
