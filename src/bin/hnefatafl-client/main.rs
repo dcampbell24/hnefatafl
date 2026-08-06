@@ -2343,7 +2343,7 @@ impl<'a> Client {
         for message in messages.iter().rev() {
             let tz = TimeZone::system();
             let datetime = message.timestamp.to_zoned(tz);
-            let timestamp = datetime.strftime("%F %T %z %Z").to_string();
+            let timestamp = datetime.strftime("%F %T %Z").to_string();
             let timestamp = text(timestamp).color(GREY);
 
             let username = text(message.username.clone()).font(Font {
