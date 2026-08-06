@@ -2410,10 +2410,11 @@ impl Server {
             .get_mut(&(peer_address.clone(), username.clone()))
         {
             let delay: SignedDuration = match login_attemps {
-                1 => "2s".parse().ok()?,
-                2 => "4s".parse().ok()?,
-                3 => "8s".parse().ok()?,
-                4 => "16s".parse().ok()?,
+                1 => "1s".parse().ok()?,
+                2 => "2s".parse().ok()?,
+                3 => "4s".parse().ok()?,
+                4 => "8s".parse().ok()?,
+                5 => "16s".parse().ok()?,
                 _ => "30m".parse().ok()?,
             };
 
