@@ -937,7 +937,7 @@ impl<'a> Client {
         };
         let piece_size = match board_size {
             BoardSize::_11 => self.window_height / 13.0,
-            BoardSize::_13 => self.window_height / 16.0,
+            BoardSize::_13 => self.window_height / 15.0,
         };
         let spacing = match board_size {
             BoardSize::_11 => 2.5,
