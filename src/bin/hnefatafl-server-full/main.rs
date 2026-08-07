@@ -2405,37 +2405,37 @@ impl Server {
         let tx = option_tx?;
         let now = Timestamp::now();
 
-        if let Some((login_attemps, last_attemp)) = self
+        if let Some((login_attemps, wait_until)) = self
             .login_attemps
             .get_mut(&(peer_address.clone(), username.clone()))
         {
-            let delay: SignedDuration = match login_attemps {
-                1 => "1s".parse().ok()?,
-                2 => "2s".parse().ok()?,
-                3 => "4s".parse().ok()?,
-                4 => "8s".parse().ok()?,
-                5 => "16s".parse().ok()?,
-                _ => "30m".parse().ok()?,
-            };
-
-            let wait_until = last_attemp.checked_add(delay).ok()?;
-            *login_attemps += 1;
-            *last_attemp = now;
-
-            if now < wait_until {
+            if now < *wait_until {
                 error!(
                     "{index_supplied} {username} retried too soon, now: {now}, wait_until: {wait_until}"
                 );
 
                 return Some((
                     tx,
-                    Err(InvalidMove::LoginTooSoon(wait_until)),
+                    Err(InvalidMove::LoginTooSoon(*wait_until)),
                     "login multiple_possible_errors".to_string(),
                 ));
             }
+
+            let delay: SignedDuration = match login_attemps {
+                1 => "2s".parse().ok()?,
+                2 => "4s".parse().ok()?,
+                3 => "8s".parse().ok()?,
+                4 => "16s".parse().ok()?,
+                _ => "30m".parse().ok()?,
+            };
+
+            *wait_until = now.checked_add(delay).ok()?;
+            *login_attemps += 1;
         } else {
-            self.login_attemps
-                .insert((peer_address.clone(), username.clone()), (1, now));
+            self.login_attemps.insert(
+                (peer_address.clone(), username.clone()),
+                (1, now.checked_add(Duration::from_secs(1)).ok()?),
+            );
         }
 
         if let Some(account) = self.accounts.0.get_mut(&username) {
