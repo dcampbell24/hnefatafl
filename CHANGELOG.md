@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - hnefatafl-server-full - set a delay of 1s, 2s, 4s, 8s, 16s, 30m, for an IP
   and username when they fail to login.
 - Differentiate the login errors.
+- hnefatafl-client: the 13x13 size.
 - hnefatafl-client: use the local timezone.
 - hnefatafl-client: you have to have a username to press "Login" or "Create
   Account".
