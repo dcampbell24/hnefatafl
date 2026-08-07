@@ -927,10 +927,22 @@ impl<'a> Client {
         let mut game_display = Row::new().spacing(2);
         let possible_moves = self.possible_moves();
 
-        let board_dimension = self.window_height / 13.75;
-        let letter_size = self.window_height / 18.181_818;
-        let piece_size = self.window_height / 13.0;
-        let spacing = 2.5;
+        let board_dimension = match board_size {
+            BoardSize::_11 => self.window_height / 13.75,
+            BoardSize::_13 => self.window_height / 15.75,
+        };
+        let letter_size = match board_size {
+            BoardSize::_11 => self.window_height / 18.181_818,
+            BoardSize::_13 => self.window_height / 25.0,
+        };
+        let piece_size = match board_size {
+            BoardSize::_11 => self.window_height / 13.0,
+            BoardSize::_13 => self.window_height / 16.0,
+        };
+        let spacing = match board_size {
+            BoardSize::_11 => 2.5,
+            BoardSize::_13 => self.window_height / 75.0,
+        };
 
         game_display = game_display.push(self.numbers(letter_size, spacing, board_size_usize));
 
