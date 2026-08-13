@@ -191,12 +191,12 @@ impl From<&OpenTaflGame> for Game {
         };
 
         let mut game = Game::make(
-            BoardSize::try_from(game_opentafl.dim).expect("The board size must be 11 or 13!"),
+            BoardSize::try_from(game_opentafl.dim).expect("The board size must be 7, 11, or 13!"),
             &attacker_time,
         );
 
         let mut plays = Vec::with_capacity(game_opentafl.moves.len());
-        let mut role = Role::Attacker;
+        let mut role = game.turn;
 
         for play in game_opentafl.moves.split_whitespace() {
             let mut play = play.to_string();
