@@ -420,6 +420,10 @@ impl Game {
             game.time = TimeUnix::timed();
         }
 
+        if game.board.size() == BoardSize::_7 {
+            game.turn = Role::Defender;
+        }
+
         game
     }
 
@@ -428,6 +432,7 @@ impl Game {
         let size = self.board.size();
         let board_size_usize = size.into();
         let vec_capacity = match size {
+            BoardSize::_7 => 12,
             BoardSize::_11 => 20,
             BoardSize::_13 => 24,
         };

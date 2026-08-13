@@ -238,6 +238,7 @@ impl ServerGame {
             game: Game {
                 attacker_time: game.timed,
                 defender_time: game.timed,
+                turn: game.turn,
                 time,
                 board,
                 plays,

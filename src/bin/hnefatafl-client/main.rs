@@ -928,18 +928,20 @@ impl<'a> Client {
         let possible_moves = self.possible_moves();
 
         let board_dimension = match board_size {
-            BoardSize::_11 => self.window_height / 13.75,
+            BoardSize::_7 | BoardSize::_11 => self.window_height / 13.75,
             BoardSize::_13 => self.window_height / 15.75,
         };
         let letter_size = match board_size {
+            BoardSize::_7 => self.window_height / 20.0,
             BoardSize::_11 => self.window_height / 18.181_818,
             BoardSize::_13 => self.window_height / 25.0,
         };
         let piece_size = match board_size {
-            BoardSize::_11 => self.window_height / 13.0,
+            BoardSize::_7 | BoardSize::_11 => self.window_height / 13.0,
             BoardSize::_13 => self.window_height / 15.0,
         };
         let spacing = match board_size {
+            BoardSize::_7 => 8.0,
             BoardSize::_11 => 2.5,
             BoardSize::_13 => self.window_height / 75.0,
         };
@@ -1454,6 +1456,7 @@ impl<'a> Client {
         }
     }
 
+    #[allow(clippy::too_many_lines)]
     fn game_new_view(&self) -> Column<'_, Message> {
         let attacker = radio(
             format!("{} (8)", t!("attacker")),
@@ -1486,6 +1489,13 @@ impl<'a> Client {
 
         let leave = button(text!("{} (Esc)", t!("Quit"))).on_press(Message::Leave);
 
+        let size_7x7 = radio(
+            "7x7 (Brandubh)",
+            BoardSize::_7,
+            Some(self.game_settings.board_size),
+            Message::BoardSizeSelected,
+        );
+
         let size_11x11 = radio(
             "11x11 (0)",
             BoardSize::_11,
@@ -1507,7 +1517,7 @@ impl<'a> Client {
 
         let row_board_size = LabeledFrame::new(
             text(t!("board size")),
-            row![size_11x11, size_13x13]
+            row![size_7x7, size_11x11, size_13x13]
                 .padding(PADDING)
                 .spacing(SPACING),
         );
@@ -2823,7 +2833,7 @@ impl<'a> Client {
                 Screen::Game | Screen::GameReview => {
                     let (board, _) = self.board_and_heatmap();
                     match board.size() {
-                        BoardSize::_11 => {
+                        BoardSize::_7 | BoardSize::_11 => {
                             self.clear_numbers_except(2);
                             self.press_numbers[1] = !self.press_numbers[1];
                             self.press_letter_and_number();
@@ -2857,7 +2867,7 @@ impl<'a> Client {
                 Screen::Game | Screen::GameReview => {
                     let (board, _) = self.board_and_heatmap();
                     match board.size() {
-                        BoardSize::_11 => {
+                        BoardSize::_7 | BoardSize::_11 => {
                             self.clear_numbers_except(3);
                             self.press_numbers[2] = !self.press_numbers[2];
                             self.press_letter_and_number();
@@ -3078,6 +3088,7 @@ impl<'a> Client {
             Message::TournamentBoardSize(board_size) => {
                 if self.admin_tournament {
                     match board_size {
+                        BoardSize::_7 => self.send("tournament_board_size 7\n"),
                         BoardSize::_11 => self.send("tournament_board_size 11\n"),
                         BoardSize::_13 => self.send("tournament_board_size 13\n"),
                     }
@@ -3651,6 +3662,7 @@ impl<'a> Client {
                         // game 0 generate_move attacker
                         let text_word = text.next();
                         if text_word == Some("generate_move") {
+                            println!("!!!!");
                             self.request_draw = false;
                             self.my_turn = true;
                         // game 0 play attacker a3 a4

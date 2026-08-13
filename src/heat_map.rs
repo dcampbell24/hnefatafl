@@ -296,6 +296,9 @@ impl fmt::Display for HeatMap {
             writeln!(f, "vertex: {vertex}, role: {role}")?;
 
             match self.board_size {
+                BoardSize::_7 => {
+                    writeln!(f, "   A       B       C       D       E       F       G")?;
+                }
                 BoardSize::_11 => writeln!(
                     f,
                     "   A       B       C       D       E       F       G       H       I       J       K"
@@ -308,6 +311,7 @@ impl fmt::Display for HeatMap {
 
             for y in 0..board_size {
                 match self.board_size {
+                    BoardSize::_7 => write!(f, "{:2} ", 7 - y)?,
                     BoardSize::_11 => write!(f, "{:2} ", 11 - y)?,
                     BoardSize::_13 => write!(f, "{:2} ", 13 - y)?,
                 }
