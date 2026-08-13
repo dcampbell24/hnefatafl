@@ -34,6 +34,59 @@ use crate::{
 
 pub const BOARD_LETTERS: &str = "ABCDEFGHIJKLM";
 
+pub const EXIT_SQUARES_7X7: [Vertex; 4] = [
+    Vertex {
+        size: BoardSize::_7,
+        x: 0,
+        y: 0,
+    },
+    Vertex {
+        size: BoardSize::_7,
+        x: 6,
+        y: 0,
+    },
+    Vertex {
+        size: BoardSize::_7,
+        x: 0,
+        y: 6,
+    },
+    Vertex {
+        size: BoardSize::_7,
+        x: 6,
+        y: 6,
+    },
+];
+
+const THRONE_7X7: Vertex = Vertex {
+    size: BoardSize::_7,
+    x: 3,
+    y: 3,
+};
+
+const RESTRICTED_SQUARES_7X7: [Vertex; 5] = [
+    Vertex {
+        size: BoardSize::_7,
+        x: 0,
+        y: 0,
+    },
+    Vertex {
+        size: BoardSize::_7,
+        x: 6,
+        y: 0,
+    },
+    Vertex {
+        size: BoardSize::_7,
+        x: 0,
+        y: 6,
+    },
+    Vertex {
+        size: BoardSize::_7,
+        x: 6,
+        y: 6,
+    },
+    THRONE_7X7,
+];
+
 pub const EXIT_SQUARES_11X11: [Vertex; 4] = [
     Vertex {
         size: BoardSize::_11,
@@ -345,18 +398,27 @@ pub struct Vertex {
 impl fmt::Display for Vertex {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let letters = match self.size {
-            BoardSize::_11 => &BOARD_LETTERS.to_lowercase(),
+            BoardSize::_7 | BoardSize::_11 => &BOARD_LETTERS.to_lowercase(),
             BoardSize::_13 => BOARD_LETTERS,
         };
 
         let board_size: usize = self.size.into();
 
-        write!(
-            f,
-            "{}{}",
-            letters.chars().collect::<Vec<_>>()[self.x],
-            board_size - self.y
-        )
+        if self.size == BoardSize::_7 {
+            write!(
+                f,
+                "0{}{}",
+                letters.chars().collect::<Vec<_>>()[self.x],
+                board_size - self.y
+            )
+        } else {
+            write!(
+                f,
+                "{}{}",
+                letters.chars().collect::<Vec<_>>()[self.x],
+                board_size - self.y
+            )
+        }
     }
 }
 
@@ -367,7 +429,14 @@ impl FromStr for Vertex {
         let mut chars = vertex.chars();
 
         if let Some(mut ch) = chars.next() {
-            let size = if ch.is_lowercase() { 11 } else { 13 };
+            let size = if ch == '0' {
+                ch = chars.next().context("play: a letter should follow 0")?;
+                7
+            } else if ch.is_lowercase() {
+                11
+            } else {
+                13
+            };
 
             ch = ch.to_ascii_uppercase();
             let x = BOARD_LETTERS[..size]
@@ -506,6 +575,7 @@ impl Vertex {
     #[must_use]
     pub fn on_exit_square(&self) -> bool {
         match self.size {
+            BoardSize::_7 => EXIT_SQUARES_7X7.contains(self),
             BoardSize::_11 => EXIT_SQUARES_11X11.contains(self),
             BoardSize::_13 => EXIT_SQUARES_13X13.contains(self),
         }
@@ -515,6 +585,7 @@ impl Vertex {
     #[must_use]
     pub fn on_throne(&self) -> bool {
         match self.size {
+            BoardSize::_7 => THRONE_7X7 == *self,
             BoardSize::_11 => THRONE_11X11 == *self,
             BoardSize::_13 => THRONE_13X13 == *self,
         }
@@ -523,6 +594,7 @@ impl Vertex {
     #[must_use]
     pub fn on_restricted_square(&self) -> bool {
         match &self.size {
+            BoardSize::_7 => RESTRICTED_SQUARES_7X7.contains(self),
             BoardSize::_11 => RESTRICTED_SQUARES_11X11.contains(self),
             BoardSize::_13 => RESTRICTED_SQUARES_13X13.contains(self),
         }
