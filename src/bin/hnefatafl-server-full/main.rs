@@ -1147,7 +1147,6 @@ impl Server {
         game.elapsed_time = 0;
         game.draw_requested = Role::Roleless;
 
-        let mut attackers_turn_next = true;
         if role == Role::Attacker {
             if *username == game.attacker {
                 let play =
@@ -1187,8 +1186,6 @@ impl Server {
                         ));
                     }
                 }
-
-                attackers_turn_next = false;
             } else {
                 return Some((
                     self.clients.get(&index_supplied)?.clone(),
@@ -1290,11 +1287,11 @@ impl Server {
                 // Handled in the draw fn.
             }
             Status::Ongoing => {
-                if attackers_turn_next {
+                if game.game.turn == Role::Attacker {
                     game_light.turn = Role::Attacker;
                     game.attacker_tx
                         .send(format!("game {index} generate_move attacker"));
-                } else {
+                } else if game.game.turn == Role::Defender {
                     game_light.turn = Role::Defender;
                     game.defender_tx
                         .send(format!("game {index} generate_move defender"));
@@ -2195,7 +2192,12 @@ impl Server {
         };
 
         game.challenge_accepted = true;
-        game.turn = Role::Attacker;
+
+        if game.board_size == BoardSize::_7 {
+            game.turn = Role::Defender;
+        } else {
+            game.turn = Role::Attacker;
+        }
 
         if let Some(account) = self.accounts.0.get(game.attacker.as_ref()?)
             && let Some(id) = account.logged_in
@@ -2659,7 +2661,7 @@ impl Server {
             .board_size
             .try_into()
             .map_err(|error| {
-                error!("Invalid board size passed to new_game: {error}");
+                error!("{error}");
             })
             .ok()?;
 
@@ -2734,6 +2736,12 @@ impl Server {
 
         self.game_id += 1;
 
+        let turn = if board_size == BoardSize::_7 {
+            Role::Defender
+        } else {
+            Role::Attacker
+        };
+
         let game_light = ServerGameLight {
             id,
             attacker: Some(attacker.to_string()),
@@ -2745,7 +2753,7 @@ impl Server {
             challenge_accepted: true,
             game_over: false,
             board_size,
-            turn: Role::Attacker,
+            turn,
         };
 
         info!(
