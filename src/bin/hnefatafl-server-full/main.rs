@@ -2258,12 +2258,6 @@ impl Server {
             account.pending_games.remove(&id);
         }
 
-        if let Some(channel) = attacker_channel {
-            channel
-                .send(format!("game {id} generate_move attacker"))
-                .ok()?;
-        }
-
         None
     }
 
