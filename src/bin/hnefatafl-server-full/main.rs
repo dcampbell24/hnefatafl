@@ -2254,6 +2254,23 @@ impl Server {
         );
         self.games.0.insert(id, new_game);
 
+        match game.board_size {
+            BoardSize::_7 => {
+                if let Some(channel) = defender_channel {
+                    channel
+                        .send(format!("game {id} generate_move defender"))
+                        .ok()?;
+                }
+            }
+            BoardSize::_11 | BoardSize::_13 => {
+                if let Some(channel) = attacker_channel {
+                    channel
+                        .send(format!("game {id} generate_move attacker"))
+                        .ok()?;
+                }
+            }
+        }
+
         if let Some(account) = self.accounts.0.get_mut(username) {
             account.pending_games.remove(&id);
         }
