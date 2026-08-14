@@ -3662,7 +3662,6 @@ impl<'a> Client {
                         // game 0 generate_move attacker
                         let text_word = text.next();
                         if text_word == Some("generate_move") {
-                            println!("!!!!");
                             self.request_draw = false;
                             self.my_turn = true;
                         // game 0 play attacker a3 a4
