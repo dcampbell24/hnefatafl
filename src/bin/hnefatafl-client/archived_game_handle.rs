@@ -17,8 +17,13 @@
 // SPDX-FileCopyrightText: 2025 David Campbell <david@hnefatafl.org>
 
 use hnefatafl_copenhagen::{
-    board::Board, game::PreviousBoards, play::Plays, role::Role, server_game::ArchivedGame,
-    status::Status, tree::Tree,
+    board::{Board, BoardSize},
+    game::PreviousBoards,
+    play::Plays,
+    role::Role,
+    server_game::ArchivedGame,
+    status::Status,
+    tree::Tree,
 };
 
 #[derive(Clone, Debug)]
@@ -35,7 +40,11 @@ impl ArchivedGameHandle {
     pub(crate) fn new(game: &ArchivedGame) -> ArchivedGameHandle {
         let mut board = Board::new(game.board_size);
         let mut boards = Tree::new(game.board_size);
-        let mut turn = Role::default();
+
+        let mut turn = match game.board_size {
+            BoardSize::_7 => Role::Defender,
+            BoardSize::_11 | BoardSize::_13 => Role::Attacker,
+        };
 
         let plays = match &game.plays {
             Plays::PlayRecordsTimed(plays) => {
@@ -56,11 +65,7 @@ impl ArchivedGameHandle {
                     .unwrap();
 
                 boards.insert(&board);
-                turn = match turn {
-                    Role::Attacker => Role::Defender,
-                    Role::Roleless => Role::Roleless,
-                    Role::Defender => Role::Attacker,
-                };
+                turn = turn.opposite();
             }
         }
 
