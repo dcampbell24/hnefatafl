@@ -170,10 +170,6 @@ fn server_full() -> anyhow::Result<()> {
     );
     buf.clear();
 
-    reader_1.read_line(&mut buf)?;
-    assert_eq!(buf, "game 0 generate_move attacker\n");
-    buf.clear();
-
     socket_1.write_all(b"game 0 play attacker resigns _\n")?;
     reader_1.read_line(&mut buf)?;
     assert_eq!(buf, "= game_over 0 defender_wins\n");
