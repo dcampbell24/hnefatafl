@@ -23,3 +23,6 @@ hnefatafl-client-installer-*.exe
 v*.tar.gz
 
 .pijul
+
+# nix
+/result
