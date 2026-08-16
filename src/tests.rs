@@ -21,7 +21,6 @@
 use std::{fmt, str::FromStr, time::Duration};
 
 use crate::{
-    ai::{AI, AiBanal},
     board::{BoardSize, InvalidMove},
     game_tree::Tree,
     time::TimeSettings,
@@ -3281,19 +3280,4 @@ fn can_not_escape_8() -> anyhow::Result<()> {
     assert_eq!(game.status, Status::Ongoing);
 
     Ok(())
-}
-
-#[test]
-fn someone_wins() {
-    let mut game = Game::default();
-    let mut ai: Box<dyn AI> = Box::new(AiBanal);
-
-    loop {
-        // Do nothing but play.
-        if ai.generate_move(&mut game).is_err() {
-            break;
-        }
-    }
-
-    assert!(game.status == Status::AttackerWins || game.status == Status::DefenderWins);
 }

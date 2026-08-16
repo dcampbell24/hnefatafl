@@ -427,6 +427,7 @@ impl Game {
         game
     }
 
+    #[allow(clippy::too_many_lines)]
     #[must_use]
     pub fn all_legal_moves(&self) -> LegalMoves {
         let size = self.board.size();
@@ -455,7 +456,9 @@ impl Game {
         for vertex_from in possible_vertexes {
             let mut vertexes_to = Vec::with_capacity(vec_capacity);
 
-            for y in 0..board_size_usize {
+            for y in 1..=vertex_from.y {
+                let y = vertex_from.y - y;
+
                 let vertex_to = Vertex {
                     size,
                     x: vertex_from.x,
@@ -467,11 +470,13 @@ impl Game {
                     to: vertex_to,
                 };
 
-                /* Fixme!
-                if size == BoardSize::_7 && play.to.on_throne() {
+                if size == BoardSize::_7
+                    && play.to.on_throne()
+                    && let Some(king) = self.board.king
+                    && play.from != king
+                {
                     break;
                 }
-                */
 
                 if self
                     .board
@@ -482,7 +487,38 @@ impl Game {
                 }
             }
 
-            for x in 0..board_size_usize {
+            for y in vertex_from.y..board_size_usize {
+                let vertex_to = Vertex {
+                    size,
+                    x: vertex_from.x,
+                    y,
+                };
+                let play = Play {
+                    role: self.turn,
+                    from: vertex_from,
+                    to: vertex_to,
+                };
+
+                if size == BoardSize::_7
+                    && play.to.on_throne()
+                    && let Some(king) = self.board.king
+                    && play.from != king
+                {
+                    break;
+                }
+
+                if self
+                    .board
+                    .legal_move(&play, &self.status, &self.turn, &self.previous_boards)
+                    .is_ok()
+                {
+                    vertexes_to.push(vertex_to);
+                }
+            }
+
+            for x in 1..=vertex_from.x {
+                let x = vertex_from.x - x;
+
                 let vertex_to = Vertex {
                     size,
                     x,
@@ -494,11 +530,42 @@ impl Game {
                     to: vertex_to,
                 };
 
-                /* Fixme!
-                if size == BoardSize::_7 && play.to.on_throne() {
+                if size == BoardSize::_7
+                    && play.to.on_throne()
+                    && let Some(king) = self.board.king
+                    && play.from != king
+                {
                     break;
                 }
-                */
+
+                if self
+                    .board
+                    .legal_move(&play, &self.status, &self.turn, &self.previous_boards)
+                    .is_ok()
+                {
+                    vertexes_to.push(vertex_to);
+                }
+            }
+
+            for x in vertex_from.x..board_size_usize {
+                let vertex_to = Vertex {
+                    size,
+                    x,
+                    y: vertex_from.y,
+                };
+                let play = Play {
+                    role: self.turn,
+                    from: vertex_from,
+                    to: vertex_to,
+                };
+
+                if size == BoardSize::_7
+                    && play.to.on_throne()
+                    && let Some(king) = self.board.king
+                    && play.from != king
+                {
+                    break;
+                }
 
                 if self
                     .board
