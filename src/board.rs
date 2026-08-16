@@ -945,25 +945,89 @@ impl Board {
         play_to: &Vertex,
         captures: &mut FxHashSet<Vertex>,
     ) -> bool {
-        if let Some(kings_vertex) = self.king
-            && role_from == Role::Attacker
-            && let Some(right) = kings_vertex.right()
-            && let Some(left) = kings_vertex.left()
-            && let Some(down) = kings_vertex.down()
-            && let Some(up) = kings_vertex.up()
-            && (*play_to == up || *play_to == left || *play_to == down || *play_to == right)
-            && (self.get(&up) == Space::Attacker || up.on_throne())
-            && (self.get(&left) == Space::Attacker || left.on_throne())
-            && (self.get(&down) == Space::Attacker || down.on_throne())
-            && (self.get(&right) == Space::Attacker || right.on_throne())
-        {
-            self.set(&kings_vertex, Space::Empty);
-            self.king = None;
-            captures.insert(kings_vertex);
+        match self.size() {
+            BoardSize::_7 => {
+                if let Some(kings_vertex) = self.king
+                    && kings_vertex.on_throne()
+                    && role_from == Role::Attacker
+                {
+                    if let Some(right) = kings_vertex.right()
+                        && let Some(left) = kings_vertex.left()
+                        && let Some(down) = kings_vertex.down()
+                        && let Some(up) = kings_vertex.up()
+                        && (*play_to == up
+                            || *play_to == left
+                            || *play_to == down
+                            || *play_to == right)
+                        && self.get(&up) == Space::Attacker
+                        && self.get(&left) == Space::Attacker
+                        && self.get(&down) == Space::Attacker
+                        && self.get(&right) == Space::Attacker
+                    {
+                        self.set(&kings_vertex, Space::Empty);
+                        self.king = None;
+                        captures.insert(kings_vertex);
 
-            true
-        } else {
-            false
+                        true
+                    } else {
+                        false
+                    }
+                } else if let Some(kings_vertex) = self.king
+                    && role_from == Role::Attacker
+                {
+                    if let Some(right) = kings_vertex.right()
+                        && let Some(left) = kings_vertex.left()
+                        && (*play_to == left || *play_to == right)
+                        && self.get(&right) == Space::Attacker
+                        && self.get(&left) == Space::Attacker
+                    {
+                        self.set(&kings_vertex, Space::Empty);
+                        self.king = None;
+                        captures.insert(kings_vertex);
+
+                        return true;
+                    }
+
+                    if let Some(up) = kings_vertex.up()
+                        && let Some(down) = kings_vertex.down()
+                        && (*play_to == up || *play_to == down)
+                        && self.get(&up) == Space::Attacker
+                        && self.get(&down) == Space::Attacker
+                    {
+                        self.set(&kings_vertex, Space::Empty);
+                        self.king = None;
+                        captures.insert(kings_vertex);
+
+                        return true;
+                    }
+
+                    false
+                } else {
+                    false
+                }
+            }
+            BoardSize::_11 | BoardSize::_13 => {
+                if let Some(kings_vertex) = self.king
+                    && role_from == Role::Attacker
+                    && let Some(right) = kings_vertex.right()
+                    && let Some(left) = kings_vertex.left()
+                    && let Some(down) = kings_vertex.down()
+                    && let Some(up) = kings_vertex.up()
+                    && (*play_to == up || *play_to == left || *play_to == down || *play_to == right)
+                    && (self.get(&up) == Space::Attacker || up.on_throne())
+                    && (self.get(&left) == Space::Attacker || left.on_throne())
+                    && (self.get(&down) == Space::Attacker || down.on_throne())
+                    && (self.get(&right) == Space::Attacker || right.on_throne())
+                {
+                    self.set(&kings_vertex, Space::Empty);
+                    self.king = None;
+                    captures.insert(kings_vertex);
+
+                    true
+                } else {
+                    false
+                }
+            }
         }
     }
 
@@ -1637,6 +1701,7 @@ impl Board {
         let space_from = self.get(&play.from);
         let role_from = Role::from(space_from);
         let mut captures = FxHashSet::default();
+
         board.captures(&play.to, role_from, &mut captures);
         board.captures_shield_wall(role_from, &play.to, &mut captures);
 
@@ -1648,7 +1713,7 @@ impl Board {
             return Ok((board, captures, Status::AttackerWins));
         }
 
-        if board.exit_forts() {
+        if board.size() != BoardSize::_7 && board.exit_forts() {
             return Ok((board, captures, Status::DefenderWins));
         }
 
