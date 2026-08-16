@@ -128,7 +128,7 @@ icon_2 = []
 urls = ["dep:reqwest"]
 
 [lib]
-crate-type = ["cdylib", "rlib"]
+crate-type = ["rlib"]
 bench = false
 doctest = false
 

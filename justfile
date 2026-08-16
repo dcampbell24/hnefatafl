@@ -57,7 +57,9 @@ cargo-deps:
     python3 ../flatpak-builder-tools/cargo/flatpak-cargo-generator.py Cargo.lock -o packages/flathub/cargo-sources.json
 
 js:
+    sed -i 's/\["rlib"\]/\["cdylib", "rlib"\]/' Cargo.toml
     wasm-pack build --target web --no-default-features --features js
+    sed -i 's/\["cdylib", "rlib"\]/\["rlib"\]/' Cargo.toml
 
 html-client:
     sudo cp html-client/index.html /var/www/html/index.html
