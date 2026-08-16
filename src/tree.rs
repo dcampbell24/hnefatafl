@@ -118,13 +118,18 @@ impl Tree {
 
     #[must_use]
     pub fn new(board_size: BoardSize) -> Self {
+        let turn = match board_size {
+            BoardSize::_7 => Role::Defender,
+            BoardSize::_11 | BoardSize::_13 => Role::Attacker,
+        };
+
         Self {
             node: 0,
             next_child: 0,
             arena: vec![Node {
                 index: 0,
                 board: Board::new(board_size),
-                turn: Role::Attacker,
+                turn,
                 parent: None,
                 children: Vec::new(),
             }],
