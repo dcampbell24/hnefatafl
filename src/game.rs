@@ -467,6 +467,12 @@ impl Game {
                     to: vertex_to,
                 };
 
+                /* Fixme!
+                if size == BoardSize::_7 && play.to.on_throne() {
+                    break;
+                }
+                */
+
                 if self
                     .board
                     .legal_move(&play, &self.status, &self.turn, &self.previous_boards)
@@ -487,6 +493,12 @@ impl Game {
                     from: vertex_from,
                     to: vertex_to,
                 };
+
+                /* Fixme!
+                if size == BoardSize::_7 && play.to.on_throne() {
+                    break;
+                }
+                */
 
                 if self
                     .board
