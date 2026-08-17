@@ -92,6 +92,16 @@
             // {
               inherit cargoArtifacts;
               doCheck = true;
+
+              # tests don't pass without building explicitly and omitting the --release flag
+              checkPhase = ''
+                runHook preCheck
+
+                cargoWithProfile build
+                cargoWithProfile test
+
+                runHook postCheck
+              '';
             }
           );
         };
