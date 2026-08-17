@@ -97,6 +97,7 @@ use iced_aw::{
 use image::ImageFormat;
 use jiff::{Timestamp, tz::TimeZone};
 use log::{debug, error, info, trace};
+use num_format::{SystemLocale, ToFormattedString};
 use rust_i18n::t;
 use smol_str::ToSmolStr;
 use socket2::{Domain, SockAddr, Socket, Type};
@@ -723,11 +724,11 @@ struct Client {
     #[serde(skip)]
     my_turn: bool,
     #[serde(skip)]
-    now: i64,
+    now: Timestamp,
     #[serde(skip)]
     number_of_games: f64,
     #[serde(skip)]
-    now_diff: i64,
+    now_diff: Timestamp,
     #[serde(default)]
     password: String,
     #[serde(skip)]
@@ -1893,9 +1894,6 @@ impl<'a> Client {
             .padding(PADDING)
             .style(container::bordered_box);
 
-            let sub_second = self.now_diff % 1_000;
-            let seconds = self.now_diff / 1_000;
-
             let game_id = if self.game_settings.rated.into() {
                 text(game.game_id).font(Font {
                     weight: Weight::Bold,
@@ -2050,11 +2048,15 @@ impl<'a> Client {
             } else {
                 user_area = user_area.push(leave);
 
+                let locale =
+                    SystemLocale::default().expect("The system should support getting the locale!");
+
                 let spectator = text!(
-                    "{} ({}) {}: {seconds:01}.{sub_second:03} s",
+                    "{} ({}) {}: {} µs",
                     &self.chars.people,
                     self.spectators.len() - players_length,
                     t!("lag"),
+                    self.now_diff.as_microsecond().to_formatted_string(&locale),
                 );
 
                 if self.spectators.is_empty() {
@@ -3514,8 +3516,10 @@ impl<'a> Client {
                                 }
                             }
                             Some("ping") => {
-                                let after = Timestamp::now().as_millisecond();
-                                self.now_diff = after - self.now;
+                                let after = Timestamp::now();
+                                self.now_diff = after
+                                    .checked_sub(self.now.as_duration())
+                                    .expect("This should be a valid time!");
                             }
                             Some("text") => {
                                 let message: Vec<_> = text.collect();
@@ -3764,7 +3768,7 @@ impl<'a> Client {
                 self.counter = self.counter.wrapping_add(1);
 
                 if self.counter.is_multiple_of(25) {
-                    self.now = Timestamp::now().as_millisecond();
+                    self.now = Timestamp::now();
                     self.send("ping\n");
                 }
 

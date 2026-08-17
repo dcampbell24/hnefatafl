@@ -12,9 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Brandubh
+
 ### Changed
 
 - cargo update.
+- hnefatafl-client: report lag in microseconds
 
 ## [6.2.3] - 2026-08-08
 
