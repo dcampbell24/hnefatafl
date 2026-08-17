@@ -39,21 +39,18 @@ struct Server(Child);
 
 impl Server {
     fn new(release: bool) -> anyhow::Result<Server> {
-        let server = if release {
-            std::process::Command::new("./target/release/hnefatafl-server-full")
-                .stdout(Stdio::null())
-                .stderr(Stdio::null())
-                .arg("--skip-the-data-file")
-                .arg("--skip-advertising-updates")
-                .spawn()?
+        let bin_path = if release {
+            "./target/release/hnefatafl-server-full"
         } else {
-            std::process::Command::new("./target/debug/hnefatafl-server-full")
-                .stdout(Stdio::null())
-                .stderr(Stdio::null())
-                .arg("--skip-the-data-file")
-                .arg("--skip-advertising-updates")
-                .spawn()?
+            "./target/debug/hnefatafl-server-full"
         };
+
+        let server = std::process::Command::new(bin_path)
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .arg("--skip-the-data-file")
+            .arg("--skip-advertising-updates")
+            .spawn()?;
 
         Ok(Server(server))
     }
