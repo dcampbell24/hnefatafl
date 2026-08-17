@@ -391,3 +391,12 @@ The [Copenhagen] rules were outlined 2012 by Aage Nielsen (Denmark), Adam Bartle
 Based on the version that was last updated 2024-12-21.
 
 [Copenhagen]: https://aagenielsen.dk/copenhagen_rules.php
+
+## Brandubh 7x7
+
+It is the same as above except:
+
+1. The defenders go first.
+2. Off the throne the king is captured in a sandwhich.
+3. Only the king can pass through the throne.
+4. There are no exit forts.
