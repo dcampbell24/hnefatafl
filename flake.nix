@@ -31,6 +31,7 @@
           clang
           mold
           pkg-config
+          wget
         ];
 
         buildInputs = with pkgs; [
