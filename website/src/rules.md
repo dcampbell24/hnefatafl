@@ -391,3 +391,29 @@ The [Copenhagen] rules were outlined 2012 by Aage Nielsen (Denmark), Adam Bartle
 Based on the version that was last updated 2024-12-21.
 
 [Copenhagen]: https://aagenielsen.dk/copenhagen_rules.php
+
+## Brandubh 7x7
+
+```plain
+  ┌───────────────┐
+ 7│ # . . A . . # │
+ 6│ . . . A . . . │
+ 5│ . . . D . . . │
+ 4│ A A D K D A A │
+ 3│ . . . D . . . │
+ 2│ . . . A . . . │
+ 1│ # . . A . . # │
+  └───────────────┘
+    A B C D E F G
+```
+
+It is the same as above except:
+
+1. The defenders go first.
+2. Off the throne the king is captured in a sandwhich.
+3. Only the king can pass through the throne.
+4. There are no exit forts.
+5. Matches are played in sets of two games with players switching sides after
+   the first game. If a player wins both games, then they win the match. If
+   each player wins one game, then the player who won in fewer moves wins the
+   match.
