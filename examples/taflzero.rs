@@ -100,6 +100,10 @@ struct Args {
     #[arg(long)]
     debug: bool,
 
+    /// Use the neural network at the path given
+    #[arg(long)]
+    neural_network: Option<String>,
+
     /// Build the man page
     #[arg(long)]
     man: bool,
@@ -197,10 +201,14 @@ fn main() -> anyhow::Result<()> {
 
     let role = &args.role;
 
-    let onnx_path = if fs::exists(ONNX_PATH)? {
-        ONNX_PATH
+    let onnx_path = if let Some(path) = args.neural_network
+        && fs::exists(&path)?
+    {
+        path
+    } else if fs::exists(ONNX_PATH)? {
+        ONNX_PATH.to_string()
     } else {
-        "default_nn.onnx"
+        "default_nn.onnx".to_string()
     };
 
     if let Some(id) = args.join_game {
@@ -222,7 +230,7 @@ fn main() -> anyhow::Result<()> {
     };
 
     thread::spawn(move || {
-        let mut engine = Engine::new(onnx_path.to_string());
+        let mut engine = Engine::new(onnx_path);
         let mut ai = AiMonteCarlo::new(Duration::from_secs(MONTE_CARLO_SECONDS), MONTE_CARLO_DEPTH);
 
         loop {
