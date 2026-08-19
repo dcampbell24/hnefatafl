@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- hnefatafl-server-full: create account error.
+
 ### Added
 
 - Brandubh
