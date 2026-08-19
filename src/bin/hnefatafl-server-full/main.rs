@@ -639,7 +639,8 @@ impl Server {
         the_rest: &[&str],
         option_tx: Option<Sender<String>>,
     ) -> Option<(mpsc::Sender<String>, Result<(), InvalidMove>, String)> {
-        let password = the_rest.join(" ");
+        let _peer_address = the_rest.first()?.to_string();
+        let password = the_rest.get(1..)?.join(" ");
         let tx = option_tx?;
 
         if self.accounts.0.contains_key(username) || username == "server" {
