@@ -23,7 +23,7 @@ path = "assets/king.svg"
 SPDX-License-Identifier = "CC-BY-NC-ND-4.0"
 SPDX-FileCopyrightText = "2025 David Campbell <david@hnefatafl.org>"
 
-# Automatically generated file.
+# Automatically generated files.
 [[annotations]]
 path = "*.lock"
 SPDX-License-Identifier = "CC0-1.0"
