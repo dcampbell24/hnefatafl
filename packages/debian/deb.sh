@@ -21,6 +21,7 @@ gzip --no-name --best hnefatafl-server-full.1
 
 PACKAGE=$(cargo deb)
 
+sed -i 's/debian-/cargo-/' src/lib.rs;
 rm taflzero.1.gz
 rm hnefatafl-server.1.gz
 rm hnefatafl-text-protocol.1.gz
