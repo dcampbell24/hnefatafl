@@ -44,7 +44,7 @@ use std::{
 };
 
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
-use badwords_rs::{Censor, MODERATE};
+use badwords_rs::{Censor, INTENSE};
 use clap::Parser;
 use hnefatafl_copenhagen::{
     Id, SERVER_PORT, VERSION_ID,
@@ -545,7 +545,7 @@ impl Server {
             return String::new();
         }
 
-        let censored_first = self.censor.censor(text, MODERATE);
+        let censored_first = self.censor.censor(text, INTENSE);
         let (censored_second, analysis) = rustrict::Censor::from_str(&censored_first)
             .with_censor_threshold(Type::PROFANE | Type::SEXUAL)
             .with_censor_first_character_threshold(Type::ANY)

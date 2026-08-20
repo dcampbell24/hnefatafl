@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- hnefatafl-server-full: switch the badwords censor from moderate to intense.
 - hnefatafl-server-full: create account error.
 
 ### Added
