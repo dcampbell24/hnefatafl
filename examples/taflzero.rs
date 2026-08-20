@@ -126,8 +126,7 @@ fn main() -> anyhow::Result<()> {
         return Ok(());
     }
 
-    let mut username = "ai-taflzero-".to_string();
-    username.push_str(&args.username);
+    let username = args.username.clone();
 
     let mut address_string = args.host.clone();
     address_string.push_str(PORT);
