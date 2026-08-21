@@ -897,86 +897,7 @@ impl Server {
             }
         }
 
-        for game in self.games.0.values_mut() {
-            match game.game.turn {
-                Role::Attacker => {
-                    if game.game.status == Status::Ongoing
-                        && let TimeUnix::Time(game_time) = &mut game.game.time
-                    {
-                        let now = Timestamp::now().as_millisecond();
-                        let elapsed_time = now - *game_time;
-                        game.elapsed_time += elapsed_time;
-                        *game_time = now;
-
-                        if game.elapsed_time > SEVEN_DAYS
-                            && let Some(tx) = &mut self.tx
-                        {
-                            let _ok = tx.send((
-                                format!(
-                                    "0 {} game {} play attacker resigns _",
-                                    game.attacker, game.id
-                                ),
-                                None,
-                            ));
-
-                            return None;
-                        }
-
-                        if let TimeSettings::Timed(attacker_time) = &mut game.game.attacker_time {
-                            if attacker_time.milliseconds_left > 0 {
-                                attacker_time.milliseconds_left -= elapsed_time;
-                            } else if let Some(tx) = &mut self.tx {
-                                let _ok = tx.send((
-                                    format!(
-                                        "0 {} game {} play attacker resigns _",
-                                        game.attacker, game.id
-                                    ),
-                                    None,
-                                ));
-                            }
-                        }
-                    }
-                }
-                Role::Roleless => {}
-                Role::Defender => {
-                    if game.game.status == Status::Ongoing
-                        && let TimeUnix::Time(game_time) = &mut game.game.time
-                    {
-                        let now = Timestamp::now().as_millisecond();
-                        let elapsed_time = now - *game_time;
-                        game.elapsed_time += elapsed_time;
-                        *game_time = now;
-
-                        if game.elapsed_time > SEVEN_DAYS
-                            && let Some(tx) = &mut self.tx
-                        {
-                            let _ok = tx.send((
-                                format!(
-                                    "0 {} game {} play defender resigns _",
-                                    game.defender, game.id
-                                ),
-                                None,
-                            ));
-                            return None;
-                        }
-
-                        if let TimeSettings::Timed(defender_time) = &mut game.game.defender_time {
-                            if defender_time.milliseconds_left > 0 {
-                                defender_time.milliseconds_left -= elapsed_time;
-                            } else if let Some(tx) = &mut self.tx {
-                                let _ok = tx.send((
-                                    format!(
-                                        "0 {} game {} play defender resigns _",
-                                        game.defender, game.id
-                                    ),
-                                    None,
-                                ));
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        self.game_end_on_time();
 
         None
     }
@@ -1030,60 +951,10 @@ impl Server {
         game.defender_tx.send(message.clone());
 
         if draw == Draw::Accept {
-            let Some(game_light) = self.games_light.0.get(&id) else {
-                return Some((
-                    self.clients.get(&index_supplied)?.clone(),
-                    Err(InvalidMove::Other),
-                    (*command).to_string(),
-                ));
-            };
-
-            for spectator in game_light.spectators() {
-                if let Some(sender) = self.clients.get(&spectator) {
-                    let _ok = sender.send(message.clone());
-                }
-            }
-
             game.game.status = Status::Draw;
-
-            let accounts = &mut self.accounts.0;
-            let (attacker_rating, defender_rating) = if let (Some(attacker), Some(defender)) =
-                (accounts.get(&game.attacker), accounts.get(&game.defender))
-            {
-                (attacker.rating.rating, defender.rating.rating)
-            } else {
-                unreachable!();
-            };
-
-            if let Some(attacker) = accounts.get_mut(&game.attacker) {
-                attacker.draws += 1;
-
-                if game.rated.into() {
-                    attacker
-                        .rating
-                        .update_rating(defender_rating, &Outcome::Draw);
-                }
-            }
-            if let Some(defender) = accounts.get_mut(&game.defender) {
-                defender.draws += 1;
-
-                if game.rated.into() {
-                    defender
-                        .rating
-                        .update_rating(attacker_rating, &Outcome::Draw);
-                }
-            }
 
             if let Some(game) = self.games_light.0.get_mut(&id) {
                 game.game_over = true;
-            }
-
-            if !self.skip_the_data_files {
-                self.append_archived_game(game)
-                    .map_err(|err| {
-                        error!("append_archived_games: {err}");
-                    })
-                    .ok()?;
             }
         }
 
@@ -1285,7 +1156,47 @@ impl Server {
                 game_over = true;
             }
             Status::Draw => {
-                // Handled in the draw fn.
+                let accounts = &mut self.accounts.0;
+                let (attacker_rating, defender_rating) = if let (Some(attacker), Some(defender)) =
+                    (accounts.get(&game.attacker), accounts.get(&game.defender))
+                {
+                    (attacker.rating.rating, defender.rating.rating)
+                } else {
+                    unreachable!();
+                };
+
+                if let Some(attacker) = accounts.get_mut(&game.attacker) {
+                    attacker.draws += 1;
+
+                    if game.rated.into() {
+                        attacker
+                            .rating
+                            .update_rating(defender_rating, &Outcome::Draw);
+                    }
+                }
+                if let Some(defender) = accounts.get_mut(&game.defender) {
+                    defender.draws += 1;
+
+                    if game.rated.into() {
+                        defender
+                            .rating
+                            .update_rating(attacker_rating, &Outcome::Draw);
+                    }
+                }
+
+                let message = "= draw accept".to_string();
+                game.attacker_tx.send(message.clone());
+                game.defender_tx.send(message.clone());
+
+                for spectator in game_light.spectators() {
+                    if let Some(sender) = self.clients.get(&spectator) {
+                        let _ok = sender.send(message.clone());
+                    }
+
+                    game.game.status = Status::Draw;
+                }
+
+                game_over = true;
             }
             Status::Ongoing => {
                 if game.game.turn == Role::Attacker {
@@ -1415,6 +1326,90 @@ impl Server {
             Ok(()),
             (*command).to_string(),
         ))
+    }
+
+    fn game_end_on_time(&mut self) {
+        let Some(tx) = self.tx.as_mut() else {
+            unreachable!()
+        };
+
+        for game in self.games.0.values_mut() {
+            match game.game.turn {
+                Role::Attacker => {
+                    if game.game.status == Status::Ongoing
+                        && let TimeUnix::Time(game_time) = &mut game.game.time
+                    {
+                        let now = Timestamp::now().as_millisecond();
+                        let elapsed_time = now - *game_time;
+                        game.elapsed_time += elapsed_time;
+                        *game_time = now;
+
+                        if game.elapsed_time > SEVEN_DAYS {
+                            let _ok = tx.send((
+                                format!(
+                                    "0 {} game {} play attacker resigns _",
+                                    game.attacker, game.id
+                                ),
+                                None,
+                            ));
+
+                            return;
+                        }
+
+                        if let TimeSettings::Timed(attacker_time) = &mut game.game.attacker_time {
+                            if attacker_time.milliseconds_left > 0 {
+                                attacker_time.milliseconds_left -= elapsed_time;
+                            } else {
+                                let _ok = tx.send((
+                                    format!(
+                                        "0 {} game {} play attacker resigns _",
+                                        game.attacker, game.id
+                                    ),
+                                    None,
+                                ));
+                            }
+                        }
+                    }
+                }
+                Role::Roleless => {}
+                Role::Defender => {
+                    if game.game.status == Status::Ongoing
+                        && let TimeUnix::Time(game_time) = &mut game.game.time
+                    {
+                        let now = Timestamp::now().as_millisecond();
+                        let elapsed_time = now - *game_time;
+                        game.elapsed_time += elapsed_time;
+                        *game_time = now;
+
+                        if game.elapsed_time > SEVEN_DAYS {
+                            let _ok = tx.send((
+                                format!(
+                                    "0 {} game {} play defender resigns _",
+                                    game.defender, game.id
+                                ),
+                                None,
+                            ));
+
+                            return;
+                        }
+
+                        if let TimeSettings::Timed(defender_time) = &mut game.game.defender_time {
+                            if defender_time.milliseconds_left > 0 {
+                                defender_time.milliseconds_left -= elapsed_time;
+                            } else {
+                                let _ok = tx.send((
+                                    format!(
+                                        "0 {} game {} play defender resigns _",
+                                        game.defender, game.id
+                                    ),
+                                    None,
+                                ));
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     fn generate_round(&mut self) {

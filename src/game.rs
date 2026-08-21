@@ -888,6 +888,7 @@ impl Game {
                         &Plae::Play(play.clone()),
                         &self.status,
                         &self.turn,
+                        self.plays.len(),
                         &mut self.previous_boards,
                     )?;
 

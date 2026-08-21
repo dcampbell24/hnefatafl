@@ -41,6 +41,7 @@ use crate::{
     status::Status,
 };
 
+pub const MAX_TURNS: usize = 128;
 pub const BOARD_LETTERS: &str = " A B C D E F G H I J K L M ";
 
 pub const STARTING_POSITION_7X7: [&str; 7] = [
@@ -1479,9 +1480,12 @@ impl Board {
         play: &Plae,
         status: &Status,
         turn: &Role,
+        turn_number: usize,
         previous_boards: &mut PreviousBoards,
     ) -> Result<(FxHashSet<Vertex>, Status), InvalidMove> {
-        let (board, captures, status) = self.play_internal(play, status, turn, previous_boards)?;
+        let (board, captures, status) =
+            self.play_internal(play, status, turn, turn_number, previous_boards)?;
+
         previous_boards.0.push(board.clone());
         *self = board;
 
@@ -1681,6 +1685,7 @@ impl Board {
         play: &Plae,
         status: &Status,
         turn: &Role,
+        turn_number: usize,
         previous_boards: &PreviousBoards,
     ) -> Result<(Board, FxHashSet<Vertex>, Status), InvalidMove> {
         if *status != Status::Ongoing {
@@ -1723,6 +1728,10 @@ impl Board {
 
         if board.no_attacker_pieces_left() {
             return Ok((board, captures, Status::DefenderWins));
+        }
+
+        if turn_number > MAX_TURNS {
+            return Ok((board, captures, Status::Draw));
         }
 
         Ok((board, captures, Status::Ongoing))

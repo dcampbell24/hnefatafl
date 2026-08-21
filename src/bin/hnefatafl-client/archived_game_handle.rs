@@ -60,6 +60,7 @@ impl ArchivedGameHandle {
                         play,
                         &Status::Ongoing,
                         &turn,
+                        game.plays.len(),
                         &mut PreviousBoards::default(),
                     )
                     .unwrap();
