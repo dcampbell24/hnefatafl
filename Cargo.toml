@@ -234,7 +234,7 @@ assets = [
     ["default_nn.onnx", "usr/share/taflzero/", "644"]
 ]
 changelog = "packages/debian/changelog"
-revision = "3"
+revision = "4"
 section = "games"
 depends = ["libasound2t64", "libc6", "libssl3t64"]
 
