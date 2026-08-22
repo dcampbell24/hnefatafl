@@ -148,23 +148,45 @@ impl Tournament {
                     for group in groups {
                         if let Ok(group) = group.lock()
                             && let Some(top_score) = group.records.values().map(Record::score).max()
-                            && let Some(min_moves) = group
-                                .records
-                                .values()
-                                .map(|record| record.moves)
-                                .min_by(f64::total_cmp)
                         {
+                            let mut group_players = HashSet::new();
+
                             for (name, record) in &group.records {
-                                if record.score() == top_score && record.moves == min_moves {
-                                    players.insert(name.clone());
-                                } else {
-                                    next_round = true;
+                                if record.score() == top_score {
+                                    group_players.insert(name.clone());
                                 }
+                            }
+
+                            if group_players.len() > 1 {
+                                let mut new_group_players = HashSet::new();
+
+                                if let Some(min_record) = group_players
+                                    .iter()
+                                    .filter_map(|player: &String| group.records.get(player))
+                                    .min_by(|a, b| a.moves.total_cmp(&b.moves))
+                                {
+                                    for player in &group_players {
+                                        if let Some(record) = group.records.get(player)
+                                            && record.moves == min_record.moves
+                                        {
+                                            new_group_players.insert(player.clone());
+                                        }
+                                    }
+
+                                    group_players = new_group_players;
+                                }
+                            }
+
+                            for player in group_players {
+                                players.insert(player);
                             }
                         }
                     }
 
-                    self.players = players;
+                    if players.len() < self.players.len() {
+                        self.players = players;
+                        next_round = true;
+                    }
                 }
             }
         }
