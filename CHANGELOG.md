@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Breaking
+
+- Break ties in tournaments with moves.
+
 ### Fixed
 
 - hnefatafl-server-full: switch the badwords censor from moderate to intense.
@@ -27,7 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - cargo update.
-- hnefatafl-client: report lag in microseconds
+- hnefatafl-client: report lag in microseconds.
 
 ## [6.2.3] - 2026-08-08
 
