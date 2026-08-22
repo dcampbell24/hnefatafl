@@ -77,7 +77,7 @@ pub struct Tournament {
 }
 
 impl Tournament {
-    #[allow(clippy::float_cmp, clippy::too_many_lines)]
+    #[allow(clippy::float_cmp, clippy::too_many_lines, clippy::cast_precision_loss)]
     #[must_use]
     pub fn game_over(&mut self, game: &ServerGame) -> bool {
         let mut next_round = false;
@@ -86,60 +86,40 @@ impl Tournament {
             if let Ok(mut group) = group.lock() {
                 match game.game.status {
                     Status::AttackerWins => {
+                        let total_moves = (game.game.plays.len().div_ceil(2) - 1) as f64;
+
                         if let Some(record) = group.records.get_mut(game.attacker.as_str()) {
                             record.wins += 1;
+                            record.moves += total_moves;
                         }
                         if let Some(record) = group.records.get_mut(game.defender.as_str()) {
                             record.losses += 1;
                         }
                     }
                     Status::Draw => {
+                        let total_moves = (game.game.plays.len().div_ceil(2) - 1) as f64 / 2.0;
+
                         if let Some(record) = group.records.get_mut(game.attacker.as_str()) {
                             record.draws += 1;
+                            record.moves += total_moves;
                         }
                         if let Some(record) = group.records.get_mut(game.defender.as_str()) {
                             record.draws += 1;
+                            record.moves += total_moves;
                         }
                     }
                     Status::Ongoing => {}
                     Status::DefenderWins => {
+                        let total_moves = (game.game.plays.len().div_ceil(2) - 1) as f64;
+
                         if let Some(record) = group.records.get_mut(game.attacker.as_str()) {
                             record.losses += 1;
                         }
                         if let Some(record) = group.records.get_mut(game.defender.as_str()) {
                             record.wins += 1;
+                            record.moves += total_moves;
                         }
                     }
-                }
-
-                let mut games_count = 0;
-                for record in group.records.values() {
-                    games_count += record.games_count();
-                }
-
-                // If group finished:
-                if group.total_games == games_count / 2 {
-                    let mut standings = Vec::new();
-                    let mut players = Vec::new();
-                    let mut previous_score = u64::MAX;
-
-                    for (name, record) in &group.records {
-                        players.push(name.clone());
-                        let score = record.score();
-
-                        if score != previous_score {
-                            standings.push(Standing {
-                                score,
-                                players: players.clone(),
-                            });
-                        } else if let Some(standing) = standings.last_mut() {
-                            standing.players.push(name.clone());
-                        }
-
-                        previous_score = score;
-                    }
-
-                    group.finishing_standings = standings;
                 }
             }
 
@@ -168,9 +148,14 @@ impl Tournament {
                     for group in groups {
                         if let Ok(group) = group.lock()
                             && let Some(top_score) = group.records.values().map(Record::score).max()
+                            && let Some(min_moves) = group
+                                .records
+                                .values()
+                                .map(|record| record.moves)
+                                .min_by(f64::total_cmp)
                         {
                             for (name, record) in &group.records {
-                                if record.score() == top_score {
+                                if record.score() == top_score && record.moves == min_moves {
                                     players.insert(name.clone());
                                 } else {
                                     next_round = true;
@@ -319,7 +304,6 @@ pub struct Group {
     pub id: u64,
     pub total_games: u64,
     pub records: HashMap<String, Record>,
-    pub finishing_standings: Vec<Standing>,
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
@@ -334,6 +318,7 @@ pub struct Record {
     pub wins: u64,
     pub losses: u64,
     pub draws: u64,
+    pub moves: f64,
 }
 
 impl Record {

@@ -1240,7 +1240,7 @@ impl<'a> Client {
         }
     }
 
-    #[allow(clippy::too_many_lines)]
+    #[allow(clippy::too_many_lines, clippy::float_cmp)]
     fn display_tournament(&self) -> Column<'_, Message> {
         let column_1 = if let Some(tournament) = &self.tournament.tournament {
             let tz = TimeZone::system();
@@ -1348,6 +1348,9 @@ impl<'a> Client {
                                 .collect();
 
                             records.sort_by(|(_, record_1), (_, record_2)| {
+                                record_1.moves.total_cmp(&record_2.moves)
+                            });
+                            records.sort_by(|(_, record_1), (_, record_2)| {
                                 record_2.draws.cmp(&record_1.draws)
                             });
                             records.sort_by(|(_, record_1), (_, record_2)| {
@@ -1360,10 +1363,11 @@ impl<'a> Client {
                                     if record_1.wins == record_2.wins
                                         && record_1.losses == record_2.losses
                                         && record_1.draws == record_2.draws
+                                        && record_1.moves == record_2.moves
                                     {
                                         column_group_vec.push(
                                             text!(
-                                                "{:16} {:10} {}: {}, {}: {}, {}: {}",
+                                                "{:16} {:10} {}: {}, {}: {}, {}: {}, {}: {}",
                                                 name_2,
                                                 record_2.rating.to_string_rounded(),
                                                 t!("wins"),
@@ -1372,6 +1376,8 @@ impl<'a> Client {
                                                 record_2.losses,
                                                 t!("draws"),
                                                 record_2.draws,
+                                                "moves",
+                                                record_2.moves,
                                             )
                                             .font(Font::MONOSPACE)
                                             .style(text::success),
@@ -1379,7 +1385,7 @@ impl<'a> Client {
                                     } else {
                                         column_group_vec.push(
                                             text!(
-                                                "{:16} {:10} {}: {}, {}: {}, {}: {}",
+                                                "{:16} {:10} {}: {}, {}: {}, {}: {}, {}: {}",
                                                 name_2,
                                                 record_2.rating.to_string_rounded(),
                                                 t!("wins"),
@@ -1388,6 +1394,8 @@ impl<'a> Client {
                                                 record_2.losses,
                                                 t!("draws"),
                                                 record_2.draws,
+                                                "moves",
+                                                record_2.moves,
                                             )
                                             .font(Font::MONOSPACE)
                                             .style(text::danger),
@@ -3531,7 +3539,7 @@ impl<'a> Client {
                             }
                             Some("texts") => self.texts = messages_collect(text),
                             Some("text_game") => self.texts_game.push_front(message_collect(text)),
-                            Some("tournament_status") => {
+                            Some("tournament_status_0") => {
                                 if let Some(tournament) = text.next() {
                                     let tournament: TournamentFull =
                                         serde_json::from_str(tournament)

@@ -44,7 +44,8 @@ and like this for size four:
 ```
 
 After each round the winner of each group or all the winners in a group if tied
-go on to play in the next round.
+go on to play in the next round. If a player is tied for wins, then if they
+won in fewer moves they are the winner.
 
 Here is an example screenshot of a played out tournament with group size three:
 

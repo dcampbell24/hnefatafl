@@ -323,7 +323,7 @@ fn login(
     tx.send((format!("{id} {username_proper} initialize_display"), None))?;
     tx.send((format!("{id} {username_proper} email_get"), None))?;
     tx.send((format!("{id} {username_proper} texts"), None))?;
-    tx.send((format!("{id} {username_proper} tournament_status"), None))?;
+    tx.send((format!("{id} {username_proper} tournament_status_0"), None))?;
     tx.send((format!("{id} {username_proper} version"), None))?;
     tx.send((format!("{id} {username_proper} resume_games"), None))?;
 
@@ -2077,7 +2077,7 @@ impl Server {
 
                     None
                 }
-                "tournament_status" => {
+                "tournament_status_0" => {
                     trace!("tournament_status: {:#?}", self.tournament);
 
                     if args.skip_advertising_updates {
@@ -2089,7 +2089,7 @@ impl Server {
                         Some((
                             tx.clone(),
                             Ok(()),
-                            format!("tournament_status {tournament}"),
+                            format!("tournament_status_0 {tournament}"),
                         ))
                     }
                 }
@@ -3138,7 +3138,7 @@ impl Server {
         trace!("tournament_status: {:#?}", self.tournament);
 
         if let Ok(mut tournament) = serde_json::ser::to_string(&self.tournament) {
-            tournament = format!("= tournament_status {tournament}");
+            tournament = format!("= tournament_status_0 {tournament}");
 
             for tx in self.clients.values() {
                 let _ok = tx.send(tournament.clone());
