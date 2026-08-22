@@ -4936,6 +4936,13 @@ impl<'a> Client {
             column = column.push(row);
         }
 
+        let size_7x7 = radio(
+            "7x7 (Brandubh)",
+            BoardSize::_7,
+            Some(self.game_settings.board_size),
+            Message::TournamentBoardSize,
+        );
+
         let size_11x11 = radio(
             "11x11",
             BoardSize::_11,
@@ -4952,7 +4959,7 @@ impl<'a> Client {
 
         let board_size = LabeledFrame::new(
             text(t!("board size")),
-            row![size_11x11, size_13x13]
+            row![size_7x7, size_11x11, size_13x13]
                 .padding(PADDING)
                 .spacing(SPACING),
         );

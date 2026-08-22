@@ -3055,6 +3055,7 @@ impl Server {
         };
 
         self.tournament.board_size = match date.parse::<u8>() {
+            Ok(7) => BoardSize::_7,
             Ok(11) => BoardSize::_11,
             Ok(13) => BoardSize::_13,
             Ok(i) => {
