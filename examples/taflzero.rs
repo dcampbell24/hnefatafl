@@ -20,6 +20,7 @@ use std::{
     env, fs,
     io::{BufRead, BufReader, Write},
     net::{TcpStream, ToSocketAddrs},
+    path::Path,
     process::Command,
     str::FromStr,
     sync::mpsc::{Sender, channel},
@@ -47,7 +48,8 @@ use socket2::{Domain, SockAddr, Socket, TcpKeepalive, Type};
 use taflzero::{Engine, moves::mv::create_move_from_algebraic};
 
 const PORT: &str = ":49152";
-const ONNX_PATH: &str = "/usr/share/taflzero/default_nn.onnx";
+const ONNX_PATH: &str = "/usr/share/taflzero";
+const ONNX_FILE: &str = "default_nn.onnx";
 const MONTE_CARLO_SECONDS: u64 = 16;
 const MONTE_CARLO_DEPTH: u8 = 20;
 
@@ -199,15 +201,15 @@ fn main() -> anyhow::Result<()> {
     buf.clear();
 
     let role = &args.role;
+    let onnx_path = Path::new(ONNX_PATH);
 
-    let onnx_path = if let Some(path) = args.neural_network
+    let path = if let Some(file) = args.neural_network
+        && let path = onnx_path.join(file)
         && fs::exists(&path)?
     {
         path
-    } else if fs::exists(ONNX_PATH)? {
-        ONNX_PATH.to_string()
     } else {
-        "default_nn.onnx".to_string()
+        Path::new(ONNX_FILE).to_path_buf()
     };
 
     if let Some(id) = args.join_game {
@@ -229,7 +231,7 @@ fn main() -> anyhow::Result<()> {
     };
 
     thread::spawn(move || {
-        let mut engine = Engine::new(onnx_path);
+        let mut engine = Engine::new(path.to_string_lossy().to_string());
         let mut ai = AiMonteCarlo::new(Duration::from_secs(MONTE_CARLO_SECONDS), MONTE_CARLO_DEPTH);
 
         loop {

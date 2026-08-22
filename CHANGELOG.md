@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `--neural-network` to taflzero.
 - Brandubh
 - A Nix package.
 - Limit the number of turn to 132, then draw the game.
