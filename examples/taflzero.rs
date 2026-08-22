@@ -66,6 +66,10 @@ struct Args {
     #[arg(default_value = "", long)]
     password: String,
 
+    /// Use the neural network file from /usr/share/taflzero/
+    #[arg(long)]
+    neural_network: Option<String>,
+
     /// attacker or defender
     #[arg(long, default_value_t = Role::Defender)]
     role: Role,
@@ -101,10 +105,6 @@ struct Args {
     /// Whether to log at the debug level
     #[arg(long)]
     debug: bool,
-
-    /// Use the neural network at the path given
-    #[arg(long)]
-    neural_network: Option<String>,
 
     /// Build the man page
     #[arg(long)]
