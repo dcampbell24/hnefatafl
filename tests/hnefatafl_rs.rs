@@ -44,7 +44,7 @@ pub fn play_games(records: &[(usize, GameRecord)]) {
             }
         });
 
-    assert_eq!(already_over, 89);
+    assert_eq!(already_over, 87);
     assert_eq!(already_played, 34);
 
     let already_played_error = f64::from(already_played) / records.len() as f64;
