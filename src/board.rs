@@ -41,7 +41,7 @@ use crate::{
     status::Status,
 };
 
-pub const MAX_TURNS: usize = 132;
+pub const MAX_TURNS: usize = 140;
 pub const BOARD_LETTERS: &str = " A B C D E F G H I J K L M ";
 
 pub const STARTING_POSITION_7X7: [&str; 7] = [
