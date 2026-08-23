@@ -1376,7 +1376,7 @@ impl<'a> Client {
                                                 record_2.losses,
                                                 t!("draws"),
                                                 record_2.draws,
-                                                "moves",
+                                                t!("moves"),
                                                 record_2.moves,
                                             )
                                             .font(Font::MONOSPACE)
@@ -1394,7 +1394,7 @@ impl<'a> Client {
                                                 record_2.losses,
                                                 t!("draws"),
                                                 record_2.draws,
-                                                "moves",
+                                                t!("moves"),
                                                 record_2.moves,
                                             )
                                             .font(Font::MONOSPACE)
