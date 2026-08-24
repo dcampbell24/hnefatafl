@@ -23,13 +23,12 @@ criterion = { version = "0.8", features = ["html_reports"] }
 csv = "1"
 taflzero = { git = "https://github.com/sovelin/taflzero.git", default-features = false }
 
-# client
+### client
 [target.'cfg(not(any(target_os = "redox", target_os = "android")))'.dependencies.iced]
 version = "0.14"
 features = ["advanced-shaping", "fira-sans", "image", "smol"]
 optional = true
 
-# client
 [target.'cfg(any(target_os = "redox", target_os = "android"))'.dependencies.iced]
 version = "0.14"
 features = [
@@ -39,9 +38,12 @@ features = [
 optional = true
 default-features = false
 
-# client
+[target.'cfg(windows)'.dependencies]
+winapi = { version = "0.3", features = ["errhandlingapi"] }
+
 [target.'cfg(not(target_os = "redox"))'.dependencies]
 rfd = { version ="0.17", features = ["xdg-portal"], optional = true }
+###
 
 [dependencies]
 anyhow = "1"
