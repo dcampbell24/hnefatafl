@@ -394,18 +394,7 @@ Based on the version that was last updated 2024-12-21.
 
 ## Brandubh 7x7
 
-```plain
-  ┌───────────────┐
- 7│ # . . A . . # │
- 6│ . . . A . . . │
- 5│ . . . D . . . │
- 4│ A A D K D A A │
- 3│ . . . D . . . │
- 2│ . . . A . . . │
- 1│ # . . A . . # │
-  └───────────────┘
-    A B C D E F G
-```
+![Brandubh](screenshots/brandubh.png)
 
 It is the same as above except:
 
