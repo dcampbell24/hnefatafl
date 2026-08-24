@@ -1,3 +1,4 @@
 sed -i 's/cargo-/windows-steam-/' src/lib.rs;
 cargo build --release --bin hnefatafl-client --features client --no-default-features
 scp target\release\hnefatafl-client.exe david@192.168.1.141:~
+sed -i 's/windows-steam-/cargo-/' src/lib.rs;
