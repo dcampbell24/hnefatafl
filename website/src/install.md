@@ -41,13 +41,12 @@ You need to install [Rust].
 
 ### Linux Dependencies
 
-ALSA development files are needed to build `cpal` on Linux (`rodio` dependency,
-`hnefatafl-client` dependency). These are provided as part of the
-`alsa-lib` package on Arch, `libasound2-dev` package on Debian and Ubuntu, and
-`alsa-lib-devel` on Fedora.
+On Debian from a fresh installation you need to install `clang`,
+`git-lfs`, `libasound2-dev`, `libssl-dev`, and `mold`.
 
-The package uses the `mold` linker. This is provided via the `mold`
-package on Arch, Debian, Ubuntu, and Fedora.
+On Arch you need `clang`, `git-lfs`, `alsa-lib`, `openssl` and `mold`.
+
+On Fedora you need `clang`, `git-lfs`, `alsa-lib-devel`, `openssl-devel`, and `mold`.
 
 ### Cargo [![crates-io]][crates-io-link]
 
@@ -75,6 +74,8 @@ In your terminal run:
 
 ```sh
 git clone https://codeberg.org/dcampbell/hnefatafl.git
+cd hnefatafl
+git lfs pull
 ```
 
 [codeberg]: https://img.shields.io/badge/Codeberg-eeeeee?logo=codeberg
