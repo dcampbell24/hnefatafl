@@ -111,6 +111,7 @@ client = [
 ]
 console = []
 debug =  ["iced?/debug"]
+#![cfg(target_family = "wasm")]
 js = ["dep:wasm-bindgen", "getrandom/wasm_js", "iced?/web-colors", "iced?/webgl"]
 runic = []
 server = [
@@ -132,7 +133,7 @@ icon_2 = []
 urls = ["dep:reqwest"]
 
 [lib]
-crate-type = ["rlib"]
+crate-type = ["cdylib", "rlib"]
 bench = false
 doctest = false
 
