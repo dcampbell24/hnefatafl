@@ -30,7 +30,7 @@ use jiff::Timestamp;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use rustc_hash::FxHashMap;
 use serde::{Deserialize, Serialize};
-#[cfg(feature = "js")]
+#[cfg(feature = "wasm")]
 use wasm_bindgen::prelude::wasm_bindgen;
 
 use crate::{
@@ -45,7 +45,7 @@ use crate::{
     tree::Tree,
 };
 
-#[cfg(not(feature = "js"))]
+#[cfg(not(feature = "wasm"))]
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct Game {
     pub board: Board,
@@ -60,7 +60,7 @@ pub struct Game {
     pub chars: Characters,
 }
 
-#[cfg(feature = "js")]
+#[cfg(feature = "wasm")]
 #[wasm_bindgen]
 #[allow(clippy::unsafe_derive_deserialize)]
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
@@ -142,7 +142,7 @@ impl fmt::Display for Game {
     }
 }
 
-#[cfg(feature = "js")]
+#[cfg(feature = "wasm")]
 #[wasm_bindgen]
 impl Game {
     #[must_use]

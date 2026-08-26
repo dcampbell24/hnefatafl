@@ -56,8 +56,8 @@ ssl:
 cargo-deps:
     python3 ../flatpak-builder-tools/cargo/flatpak-cargo-generator.py Cargo.lock -o packages/flathub/cargo-sources.json
 
-js:
-    wasm-pack build --target web --no-default-features --features js
+wasm:
+    wasm-pack build --target web --no-default-features --features wasm
 
 html-client:
     sudo cp html-client/index.html /var/www/html/index.html

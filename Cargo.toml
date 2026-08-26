@@ -111,8 +111,7 @@ client = [
 ]
 console = []
 debug =  ["iced?/debug"]
-#![cfg(target_family = "wasm")]
-js = ["dep:wasm-bindgen", "getrandom/wasm_js", "iced?/web-colors", "iced?/webgl"]
+wasm = ["dep:wasm-bindgen", "getrandom/wasm_js", "iced?/web-colors", "iced?/webgl"]
 runic = []
 server = [
     "dep:argon2",
