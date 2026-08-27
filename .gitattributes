@@ -2,3 +2,4 @@
 # SPDX-License-Identifier: MIT
 
 default_nn.onnx filter=lfs diff=lfs merge=lfs -text
+packages/fedora/hnefatafl-copenhagen-6.3.0-1.fc44.src.rpm filter=lfs diff=lfs merge=lfs -text
