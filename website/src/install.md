@@ -168,6 +168,17 @@ Application Launcher -> Games -> Hnefatafl Copenhagen
 [flathub]: https://img.shields.io/flathub/v/org.hnefatafl.hnefatafl_client?logo=flathub
 [flathub-link]: https://flathub.org/apps/org.hnefatafl.hnefatafl_client
 
+### Nix [![Nix]][nix-link]
+
+[Nix]: https://img.shields.io/badge/-111111?logo=nixos
+[nix-link]: https://codeberg.org/dcampbell/hnefatafl/src/branch/main/flake.nix
+
+```sh
+git clone https://codeberg.org/dcampbell/hnefatafl.git
+cd hnefatafl
+sudo nix run
+```
+
 ## Windows
 
 ### Chocolatey [![chocolatey]][choco-link]
