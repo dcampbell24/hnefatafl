@@ -42,11 +42,11 @@ You need to install [Rust].
 ### Linux Dependencies
 
 On Debian from a fresh installation you need to install `clang`,
-`git-lfs`, `libasound2-dev`, `libssl-dev`, and `mold`.
+`libasound2-dev`, `libssl-dev`, and `mold`.
 
-On Arch you need `clang`, `git-lfs`, `alsa-lib`, `openssl` and `mold`.
+On Arch you need `clang`, `alsa-lib`, `openssl` and `mold`.
 
-On Fedora you need `clang`, `git-lfs`, `alsa-lib-devel`, `openssl-devel`, and `mold`.
+On Fedora you need `clang`, `alsa-lib-devel`, `openssl-devel`, and `mold`.
 
 ### Cargo [![crates-io]][crates-io-link]
 
@@ -74,8 +74,6 @@ In your terminal run:
 
 ```sh
 git clone https://codeberg.org/dcampbell/hnefatafl.git
-cd hnefatafl
-git lfs pull
 ```
 
 [codeberg]: https://img.shields.io/badge/Codeberg-eeeeee?logo=codeberg
