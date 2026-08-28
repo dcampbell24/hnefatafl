@@ -407,6 +407,7 @@ impl fmt::Display for Vertex {
         if self.size == BoardSize::_7 {
             write!(
                 f,
+                // Fixme!
                 "0{}{}",
                 letters.chars().collect::<Vec<_>>()[self.x],
                 board_size - self.y
@@ -429,6 +430,7 @@ impl FromStr for Vertex {
         let mut chars = vertex.chars();
 
         if let Some(mut ch) = chars.next() {
+            // Fixme!
             let size = if ch == '0' {
                 ch = chars.next().context("play: a letter should follow 0")?;
                 7
