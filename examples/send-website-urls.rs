@@ -20,7 +20,6 @@
 #![deny(clippy::indexing_slicing)]
 #![deny(clippy::panic)]
 #![deny(clippy::unwrap_used)]
-#![cfg(feature = "urls")]
 
 use std::{fs, path::PathBuf};
 
