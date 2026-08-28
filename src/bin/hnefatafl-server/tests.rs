@@ -40,9 +40,9 @@ struct Server(Child);
 impl Server {
     fn new(release: bool) -> anyhow::Result<Server> {
         let bin_path = if release {
-            "./target/release/hnefatafl-server-full"
+            "./target/release/hnefatafl-server"
         } else {
-            "./target/debug/hnefatafl-server-full"
+            "./target/debug/hnefatafl-server"
         };
 
         let server = std::process::Command::new(bin_path)
@@ -101,7 +101,7 @@ fn server_full() -> anyhow::Result<()> {
     std::process::Command::new("cargo")
         .arg("build")
         .arg("--bin")
-        .arg("hnefatafl-server-full")
+        .arg("hnefatafl-server")
         .output()?;
 
     let _server = Server::new(false);
