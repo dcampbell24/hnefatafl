@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Move a bunch of binaries to examples.
+- Use the taflzero crate.
+
 ## [6.3.0] - 2026-08-23
 
 ### Breaking
