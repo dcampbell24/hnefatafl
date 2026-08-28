@@ -56,7 +56,7 @@ build() {
     cargo build --frozen --release --examples
     cargo build --frozen --release
 
-    ./target/release/examples/taflzero --man --username ""
+    ./target/release/taflzero --man --username ""
     ./target/release/hnefatafl-client --man
     ./target/release/hnefatafl-server --man
     ./target/release/hnefatafl-server-full --man
@@ -66,7 +66,7 @@ build() {
 package() {
     cd "hnefatafl"
 
-    install -Dm755 "target/release/examples/taflzero" -t "$pkgdir/usr/bin"
+    install -Dm755 "target/release/taflzero" -t "$pkgdir/usr/bin"
     install -Dm755 "target/release/hnefatafl-client" -t "$pkgdir/usr/bin"
     install -Dm755 "target/release/hnefatafl-server" -t "$pkgdir/usr/bin"
     install -Dm755 "target/release/hnefatafl-server-full" -t "$pkgdir/usr/bin"

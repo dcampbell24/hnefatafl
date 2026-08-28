@@ -6067,7 +6067,8 @@ dependencies = [
 [[package]]
 name = "taflzero"
 version = "0.1.0"
-source = "git+https://github.com/sovelin/taflzero.git#b98bcf23ce2f416b4356c344ecfd5d3502eb1500"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d1a86db64818ee8bee992950ca54dbb7357eca20f545f9dc5b112ab2dffe310f"
 dependencies = [
  "console_error_panic_hook",
  "getrandom 0.4.3",

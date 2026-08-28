@@ -49,7 +49,7 @@ sed -i 's/cargo-/fedora-/' src/lib.rs;
 RUST_MIN_STACK=2147483648 cargo build --offline --release --examples
 RUST_MIN_STACK=2147483648 cargo build --offline --release
 
-./target/release/examples/taflzero --man --username ""
+./target/release/taflzero --man --username ""
 ./target/release/hnefatafl-client --man
 ./target/release/hnefatafl-server --man
 ./target/release/hnefatafl-server-full --man
@@ -67,7 +67,7 @@ sed -i 's/games/bin/' packages/hnefatafl.service
 sed -i 's/Exec=hnefatafl-client/Exec=hnefatafl-client --ascii/' packages/hnefatafl-client.desktop
 
 %install
-install -Dm755 "target/release/examples/taflzero" -t "%{buildroot}%{_bindir}"
+install -Dm755 "target/release/taflzero" -t "%{buildroot}%{_bindir}"
 install -Dm755 "target/release/hnefatafl-client" -t "%{buildroot}%{_bindir}"
 install -Dm755 "target/release/hnefatafl-server" -t "%{buildroot}%{_bindir}"
 install -Dm755 "target/release/hnefatafl-server-full" -t "%{buildroot}%{_bindir}"

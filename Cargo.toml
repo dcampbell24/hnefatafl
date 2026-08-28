@@ -21,7 +21,6 @@ include = ["/src/**/*", "/README.md", "/CHANGELOG.md", "/LICENSE.txt"]
 [dev-dependencies]
 criterion = { version = "0.8", features = ["html_reports"] }
 csv = "1"
-taflzero = { git = "https://github.com/sovelin/taflzero.git", default-features = false }
 
 ### client
 [target.'cfg(not(any(target_os = "redox", target_os = "android")))'.dependencies.iced]
@@ -63,6 +62,7 @@ rustc-hash = "2"
 rust-i18n = "4"
 serde = { version = "1", features = ["derive", "rc"] }
 serde_json = "1"
+taflzero = "0.1"
 thiserror = "2"
 
 # client
@@ -175,7 +175,7 @@ required-features = ["urls"]
 bench = false
 test = false
 
-[[example]]
+[[bin]]
 name = "taflzero"
 required-features = ["socket"]
 
@@ -228,7 +228,7 @@ assets = [
     ["packages/hnefatafl-ai-attacker.service", "usr/lib/systemd/system/", "644"],
     ["packages/hnefatafl-ai-defender.service", "usr/lib/systemd/system/", "644"],
     ["packages/hnefatafl.service", "usr/lib/systemd/system/", "644"],
-    ["target/release/examples/taflzero", "usr/games/", "755"],
+    ["target/release/taflzero", "usr/games/", "755"],
     ["target/release/hnefatafl-client", "usr/games/", "755"],
     ["target/release/hnefatafl-server", "usr/games/", "755"],
     ["target/release/hnefatafl-server-full", "usr/games/", "755"],
