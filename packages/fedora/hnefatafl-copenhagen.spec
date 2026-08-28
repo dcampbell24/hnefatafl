@@ -52,12 +52,10 @@ RUST_MIN_STACK=2147483648 cargo build --offline --release
 ./target/release/taflzero --man --username ""
 ./target/release/hnefatafl-client --man
 ./target/release/hnefatafl-server --man
-./target/release/hnefatafl-server-full --man
 ./target/release/hnefatafl-text-protocol --man
 
 gzip --no-name --best taflzero.1
 gzip --no-name --best hnefatafl-server.1
-gzip --no-name --best hnefatafl-server-full.1
 gzip --no-name --best hnefatafl-text-protocol.1
 gzip --no-name --best hnefatafl-client.1
 
@@ -70,7 +68,6 @@ sed -i 's/Exec=hnefatafl-client/Exec=hnefatafl-client --ascii/' packages/hnefata
 install -Dm755 "target/release/taflzero" -t "%{buildroot}%{_bindir}"
 install -Dm755 "target/release/hnefatafl-client" -t "%{buildroot}%{_bindir}"
 install -Dm755 "target/release/hnefatafl-server" -t "%{buildroot}%{_bindir}"
-install -Dm755 "target/release/hnefatafl-server-full" -t "%{buildroot}%{_bindir}"
 install -Dm755 "target/release/hnefatafl-text-protocol" -t "%{buildroot}%{_bindir}"
 install -Dm644 "packages/hnefatafl.service" -t "%{buildroot}/usr/lib/systemd/system"
 install -Dm644 "packages/hnefatafl-ai-attacker.service" -t "%{buildroot}/usr/lib/systemd/system"
@@ -79,7 +76,6 @@ install -Dm644 "website/src/images/helmet.svg" "%{buildroot}/usr/share/icons/hic
 install -Dm644 "taflzero.1.gz" -t "%{buildroot}/usr/share/man/man1"
 install -Dm644 "hnefatafl-client.1.gz" -t "%{buildroot}/usr/share/man/man1"
 install -Dm644 "hnefatafl-server.1.gz" -t "%{buildroot}/usr/share/man/man1"
-install -Dm644 "hnefatafl-server-full.1.gz" -t "%{buildroot}/usr/share/man/man1"
 install -Dm644 "hnefatafl-text-protocol.1.gz" -t "%{buildroot}/usr/share/man/man1"
 install -Dm644 "packages/hnefatafl-client.desktop" -t "%{buildroot}/usr/share/applications"
 install -Dm644 "packages/org.hnefatafl.hnefatafl_client.metainfo.xml" -t "%{buildroot}%{_metainfodir}"
@@ -88,7 +84,6 @@ install -Dm644 "%{SOURCE1}" -t "%{buildroot}/usr/share/taflzero"
 %files
 %{_bindir}/hnefatafl-client
 %{_bindir}/hnefatafl-server
-%{_bindir}/hnefatafl-server-full
 %{_bindir}/hnefatafl-text-protocol
 %{_bindir}/taflzero
 /usr/share/taflzero/default_nn.onnx
@@ -98,7 +93,6 @@ install -Dm644 "%{SOURCE1}" -t "%{buildroot}/usr/share/taflzero"
 /usr/share/applications/hnefatafl-client.desktop
 /usr/share/icons/hicolor/scalable/apps/org.hnefatafl.hnefatafl_client.svg
 /usr/share/man/man1/hnefatafl-client.1.gz
-/usr/share/man/man1/hnefatafl-server-full.1.gz
 /usr/share/man/man1/hnefatafl-server.1.gz
 /usr/share/man/man1/hnefatafl-text-protocol.1.gz
 /usr/share/man/man1/taflzero.1.gz

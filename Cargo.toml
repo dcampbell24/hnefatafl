@@ -210,7 +210,6 @@ assets = [
     ["taflzero.1.gz", "usr/share/man/man1/", "644"],
     ["hnefatafl-client.1.gz", "usr/share/man/man1/", "644"],
     ["hnefatafl-server.1.gz", "usr/share/man/man1/", "644"],
-    ["hnefatafl-server-full.1.gz", "usr/share/man/man1/", "644"],
     ["hnefatafl-text-protocol.1.gz", "usr/share/man/man1/", "644"],
     ["website/src/images/helmet.svg", "/usr/share/icons/hicolor/scalable/apps/org.hnefatafl.hnefatafl_client.svg", "644"],
     ["packages/hnefatafl-client.desktop", "usr/share/applications/", "644"],
@@ -220,7 +219,6 @@ assets = [
     ["target/release/taflzero", "usr/games/", "755"],
     ["target/release/hnefatafl-client", "usr/games/", "755"],
     ["target/release/hnefatafl-server", "usr/games/", "755"],
-    ["target/release/hnefatafl-server-full", "usr/games/", "755"],
     ["target/release/hnefatafl-text-protocol", "usr/games/", "755"],
     ["default_nn.onnx", "usr/share/taflzero/", "644"]
 ]
