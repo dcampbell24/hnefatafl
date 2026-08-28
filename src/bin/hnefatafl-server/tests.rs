@@ -202,7 +202,7 @@ fn many_clients() -> anyhow::Result<()> {
         .arg("build")
         .arg("--release")
         .arg("--bin")
-        .arg("hnefatafl-server-full")
+        .arg("hnefatafl-server")
         .output()?;
 
     let _server = Server::new(true);
