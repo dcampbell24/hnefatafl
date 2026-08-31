@@ -21,7 +21,7 @@ use std::str::FromStr;
 use anyhow::Context;
 
 use crate::{
-    board::InvalidMove,
+    board::{BoardSize, InvalidMove},
     play::{Plae, Vertex},
     role::Role,
     time,
@@ -91,9 +91,9 @@ use crate::{
 #[allow(clippy::doc_markdown)]
 #[derive(Debug, Clone)]
 pub enum Message {
-    /// `board_size` 11 | `board_size` 13
+    ///  `board_size` 7 | `board_size` 11 | `board_size` 13
     ///
-    ///  Sets the game to initial conditions with board size 11 or 13.
+    ///  Sets the game to initial conditions with board size 7, 11, or 13.
     BoardSize(usize),
 
     /// The empty string or only comments and whitespace was passed.
@@ -202,10 +202,10 @@ pub static COMMANDS: [&str; 17] = [
     "version",
 ];
 
-impl FromStr for Message {
-    type Err = anyhow::Error;
+impl TryFrom<(BoardSize, &str)> for Message {
+    type Error = anyhow::Error;
 
-    fn from_str(message: &str) -> anyhow::Result<Self> {
+    fn try_from((board_size, message): (BoardSize, &str)) -> anyhow::Result<Self> {
         let args: Vec<&str> = message.split_whitespace().collect();
 
         let Some(first) = args.first() else {
@@ -231,14 +231,14 @@ impl FromStr for Message {
             "list_commands" => Ok(Self::ListCommands),
             "name" => Ok(Self::Name),
             "play" => {
-                let play = Plae::try_from(args)?;
+                let play = Plae::try_from((board_size, args))?;
                 Ok(Self::Play(play))
             }
             "play_from" => Ok(Self::PlayFrom),
             "play_to" => {
                 if let (Some(role), Some(vertex)) = (args.get(1), args.get(2)) {
                     let role = Role::from_str(role)?;
-                    let vertex = Vertex::from_str(vertex)?;
+                    let vertex = Vertex::try_from((board_size, *vertex))?;
                     Ok(Self::PlayTo((role, vertex)))
                 } else {
                     Err(InvalidMove::InvalidRoleVertex)?

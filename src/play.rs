@@ -229,27 +229,26 @@ impl fmt::Display for Plae {
     }
 }
 
-impl Plae {
-    /// # Errors
-    ///
-    /// If you try to convert an illegal character or you don't get vertex-vertex.
-    pub fn from_str_(play: &str, role: &Role) -> anyhow::Result<Self> {
+impl TryFrom<(&str, &Role)> for Plae {
+    type Error = InvalidMove;
+
+    fn try_from((play, role): (&str, &Role)) -> Result<Self, Self::Error> {
         let Some((from, to)) = play.split_once('-') else {
-            return Err(anyhow::Error::msg("expected: vertex-vertex"));
+            return Err(InvalidMove::InvalidVertex);
         };
 
         Ok(Self::Play(Play {
             role: *role,
-            from: Vertex::from_str(from)?,
-            to: Vertex::from_str(to)?,
+            from: Vertex::try_from((BoardSize::_11, from))?,
+            to: Vertex::try_from((BoardSize::_11, to))?,
         }))
     }
 }
 
-impl TryFrom<Vec<&str>> for Plae {
+impl TryFrom<(BoardSize, Vec<&str>)> for Plae {
     type Error = InvalidMove;
 
-    fn try_from(args: Vec<&str>) -> Result<Self, Self::Error> {
+    fn try_from((board_size, args): (BoardSize, Vec<&str>)) -> Result<Self, Self::Error> {
         let error_str = "expected: 'play ROLE FROM TO' or 'play ROLE resign'";
 
         if args.len() < 3 {
@@ -271,8 +270,8 @@ impl TryFrom<Vec<&str>> for Plae {
 
         Ok(Self::Play(Play {
             role: Role::from_str(args[1])?,
-            from: Vertex::from_str(args[2])?,
-            to: Vertex::from_str(args[3])?,
+            from: Vertex::try_from((board_size, args[2]))?,
+            to: Vertex::try_from((board_size, args[3]))?,
         }))
     }
 }
@@ -404,50 +403,33 @@ impl fmt::Display for Vertex {
 
         let board_size: usize = self.size.into();
 
-        if self.size == BoardSize::_7 {
-            write!(
-                f,
-                // Fixme!
-                "0{}{}",
-                letters.chars().collect::<Vec<_>>()[self.x],
-                board_size - self.y
-            )
-        } else {
-            write!(
-                f,
-                "{}{}",
-                letters.chars().collect::<Vec<_>>()[self.x],
-                board_size - self.y
-            )
-        }
+        write!(
+            f,
+            "{}{}",
+            letters.chars().collect::<Vec<_>>()[self.x],
+            board_size - self.y
+        )
     }
 }
 
-impl FromStr for Vertex {
-    type Err = anyhow::Error;
+impl TryFrom<(BoardSize, &str)> for Vertex {
+    type Error = anyhow::Error;
 
-    fn from_str(vertex: &str) -> anyhow::Result<Self> {
+    fn try_from((board_size, vertex): (BoardSize, &str)) -> anyhow::Result<Self> {
         let mut chars = vertex.chars();
+        let size: usize = board_size.into();
 
-        if let Some(mut ch) = chars.next() {
-            // Fixme!
-            let size = if ch == '0' {
-                ch = chars.next().context("play: a letter should follow 0")?;
-                7
-            } else if ch.is_lowercase() {
-                11
-            } else {
-                13
-            };
-
-            ch = ch.to_ascii_uppercase();
+        if let Some(ch) = chars.next() {
+            let ch = ch.to_ascii_uppercase();
             let x = BOARD_LETTERS[..size]
                 .find(ch)
                 .context("play: the first letter is not a legal char")?;
 
             let mut y = chars.as_str().parse()?;
+
             if y > 0 && y <= size {
                 y = size - y;
+
                 return Ok(Self {
                     size: size.try_into()?,
                     x,

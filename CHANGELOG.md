@@ -12,6 +12,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Don't pass the board size in play (breaks Brandubh).
+
+### Changed
+
 - Move a bunch of binaries to examples.
 - Use the taflzero crate.
 

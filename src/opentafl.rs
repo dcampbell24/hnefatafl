@@ -22,7 +22,7 @@ use itertools::Itertools;
 use jiff::Timestamp;
 use rustc_hash::FxHashSet;
 use serde::{Deserialize, Serialize};
-use std::{collections::VecDeque, fmt::Write, str::FromStr};
+use std::{collections::VecDeque, fmt::Write};
 
 use crate::{
     board::BoardSize,
@@ -190,11 +190,10 @@ impl From<&OpenTaflGame> for Game {
             )
         };
 
-        let mut game = Game::make(
-            BoardSize::try_from(game_opentafl.dim).expect("The board size must be 7, 11, or 13!"),
-            &attacker_time,
-        );
+        let board_size =
+            BoardSize::try_from(game_opentafl.dim).expect("The board size must be 7, 11, or 13!");
 
+        let mut game = Game::make(board_size, &attacker_time);
         let mut plays = Vec::with_capacity(game_opentafl.moves.len());
         let mut role = game.turn;
 
@@ -219,7 +218,7 @@ impl From<&OpenTaflGame> for Game {
                 vec!["play", &role_str, play_vec[0], play_vec[1]]
             };
 
-            plays.push(Plae::try_from(play).expect("This must work!"));
+            plays.push(Plae::try_from((board_size, play)).expect("This must work!"));
 
             role = role.opposite();
         }
@@ -240,10 +239,10 @@ impl From<&OpenTaflGame> for Game {
 #[derive(Clone, Debug)]
 pub struct OpenTaflMoves(pub Vec<(Plae, Captures)>);
 
-impl FromStr for OpenTaflMoves {
-    type Err = anyhow::Error;
+impl TryFrom<(BoardSize, &str)> for OpenTaflMoves {
+    type Error = anyhow::Error;
 
-    fn from_str(moves: &str) -> Result<Self, Self::Err> {
+    fn try_from((board_size, moves): (BoardSize, &str)) -> anyhow::Result<Self> {
         let mut plays = Vec::new();
         let mut role = Role::Attacker;
 
@@ -252,15 +251,15 @@ impl FromStr for OpenTaflMoves {
                 let vertex_captures: Vec<_> = vertex_captures.split('x').collect();
 
                 if let (Ok(from), Ok(to)) = (
-                    Vertex::from_str(vertex),
-                    Vertex::from_str(vertex_captures[0]),
+                    Vertex::try_from((board_size, vertex)),
+                    Vertex::try_from((board_size, vertex_captures[0])),
                 ) {
                     let play = Play { role, from, to };
                     let mut captures = FxHashSet::default();
 
                     if vertex_captures.get(1).is_some() {
                         for capture in vertex_captures.into_iter().skip(1) {
-                            let vertex = Vertex::from_str(capture)?;
+                            let vertex = Vertex::try_from((board_size, capture))?;
                             if !captures.contains(&vertex) {
                                 captures.insert(vertex);
                             }

@@ -22,7 +22,6 @@ use std::{
     fmt,
     hash::{DefaultHasher, Hash, Hasher},
     process::exit,
-    str::FromStr,
 };
 
 use colored::Colorize;
@@ -161,7 +160,7 @@ impl Game {
             buffer.to_mut().replace_range(comment_offset.., "");
         }
 
-        match Message::from_str(buffer.as_ref()) {
+        match Message::try_from((self.board.size(), buffer.as_ref())) {
             Ok(message) => match self.update(message) {
                 Ok(update) => {
                     if let Some(update) = update {
@@ -946,7 +945,7 @@ impl Game {
             buffer.to_mut().replace_range(comment_offset.., "");
         }
 
-        self.update(Message::from_str(buffer.as_ref())?)
+        self.update(Message::try_from((self.board.size(), buffer.as_ref()))?)
     }
 
     /// # Errors

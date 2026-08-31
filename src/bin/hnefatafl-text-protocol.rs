@@ -208,7 +208,7 @@ fn play_tcp(
         if let Some(word) = words.first() {
             match *word {
                 "play" => {
-                    let play = Plae::try_from(words)?;
+                    let play = Plae::try_from((game.board.size(), words))?;
                     ai.play(&mut game, &play)?;
 
                     if display_game {

@@ -18,7 +18,7 @@
 
 #![cfg(test)]
 
-use std::{fmt, str::FromStr, time::Duration};
+use std::{fmt, time::Duration};
 
 use crate::{
     board::{BoardSize, InvalidMove},
@@ -79,7 +79,7 @@ fn flood_fill_1() -> anyhow::Result<()> {
         ..Default::default()
     };
 
-    let vertex = Vertex::from_str("f1")?;
+    let vertex = Vertex::try_from((BoardSize::_11, "f1"))?;
     assert!(game.board.flood_fill_defender_wins(&vertex));
 
     Ok(())
@@ -107,7 +107,7 @@ fn flood_fill_2() -> anyhow::Result<()> {
         ..Default::default()
     };
 
-    let vertex = Vertex::from_str("f1")?;
+    let vertex = Vertex::try_from((BoardSize::_11, "f1"))?;
     assert!(!game.board.flood_fill_defender_wins(&vertex));
 
     Ok(())

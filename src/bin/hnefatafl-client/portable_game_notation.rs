@@ -22,7 +22,6 @@ use std::{
     collections::{HashMap, VecDeque},
     fs::File,
     io::{Read, Write},
-    str::FromStr,
 };
 
 use hnefatafl_copenhagen::{
@@ -116,8 +115,8 @@ fn archived_game_from_pgn(mut file: File) -> anyhow::Result<ArchivedGame> {
 
         game.play(&Plae::Play(Play {
             role,
-            from: Vertex::from_str(from)?,
-            to: Vertex::from_str(to)?,
+            from: Vertex::try_from((BoardSize::_11, from))?,
+            to: Vertex::try_from((BoardSize::_11, to))?,
         }))?;
 
         role = role.opposite();

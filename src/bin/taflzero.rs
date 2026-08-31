@@ -22,7 +22,6 @@ use std::{
     net::{TcpStream, ToSocketAddrs},
     path::Path,
     process::Command,
-    str::FromStr,
     sync::mpsc::{Sender, channel},
     thread,
     time::Duration,
@@ -239,7 +238,8 @@ fn main() -> anyhow::Result<()> {
 
             engine.set_start_position();
             let game = Game::from(&opentafl_game);
-            let moves = OpenTaflMoves::from_str(&opentafl_game.moves).unwrap();
+            let moves =
+                OpenTaflMoves::try_from((game.board.size(), opentafl_game.moves.as_str())).unwrap();
 
             for (play, _captures) in moves.0 {
                 if let Plae::Play(play) = &play {
@@ -462,9 +462,10 @@ fn generate_move(
             s
         };
 
+        let size = game.board.size();
         let from: String = from.iter().collect();
-        let from = Vertex::from_str(&from)?;
-        let to = Vertex::from_str(&to)?;
+        let from = Vertex::try_from((size, from.as_str()))?;
+        let to = Vertex::try_from((size, to.as_str()))?;
         let play = Plae::Play(Play {
             role: game.turn,
             from,

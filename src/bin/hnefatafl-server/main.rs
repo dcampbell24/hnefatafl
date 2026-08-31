@@ -1021,20 +1021,22 @@ impl Server {
 
         if role == Role::Attacker {
             if *username == game.attacker {
-                let play =
-                    match Plae::try_from(["play", &role.to_string(), *from, &to, "_"].to_vec()) {
-                        Ok(play) => play,
-                        result @ Err(_) => {
-                            error!("play attacker {from} {to}: {result:?}");
-                            let error = result.map(|_string| ());
+                let play = match Plae::try_from((
+                    game.game.board.size(),
+                    ["play", &role.to_string(), *from, &to, "_"].to_vec(),
+                )) {
+                    Ok(play) => play,
+                    result @ Err(_) => {
+                        error!("play attacker {from} {to}: {result:?}");
+                        let error = result.map(|_string| ());
 
-                            return Some((
-                                self.clients.get(&index_supplied)?.clone(),
-                                error,
-                                (*command).to_string(),
-                            ));
-                        }
-                    };
+                        return Some((
+                            self.clients.get(&index_supplied)?.clone(),
+                            error,
+                            (*command).to_string(),
+                        ));
+                    }
+                };
 
                 match game.game.play(&play) {
                     Ok(_moved) => {
@@ -1066,7 +1068,10 @@ impl Server {
                 ));
             }
         } else if *username == game.defender {
-            let play = match Plae::try_from(["play", &role.to_string(), *from, &to].to_vec()) {
+            let play = match Plae::try_from((
+                game.game.board.size(),
+                ["play", &role.to_string(), *from, &to].to_vec(),
+            )) {
                 Ok(play) => play,
                 result @ Err(_) => {
                     error!("play defender {from} {to}: {result:?}");

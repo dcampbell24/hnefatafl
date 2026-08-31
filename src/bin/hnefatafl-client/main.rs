@@ -3688,8 +3688,10 @@ impl<'a> Client {
 
                             let to = text.next().expect("this should be to");
 
+                            let game = self.game.as_ref().expect("you should have a game by now");
+                            let size = game.board.size();
                             if let (Ok(from), Ok(to)) =
-                                (Vertex::from_str(from), Vertex::from_str(to))
+                                (Vertex::try_from((size, from)), Vertex::try_from((size, to)))
                             {
                                 self.play_from_previous = Some(from);
                                 self.play_to_previous = Some(to);
@@ -4149,7 +4151,7 @@ impl<'a> Client {
             game.turn
         };
 
-        let play = Plae::try_from(vec!["play", &role.to_string(), from, to])
+        let play = Plae::try_from((game.board.size(), vec!["play", &role.to_string(), from, to]))
             .expect("This is a valid plae.");
 
         let captures = game.play(&play).expect("This should be a legal play.");
