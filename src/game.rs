@@ -1097,12 +1097,13 @@ impl Game {
         }
     }
 
+    // Fixme!
     #[must_use]
     pub fn utility(&self) -> (f64, EscapeVec) {
         let mut utility = 0.0;
 
-        // Fixme: let captured = self.board.captured();
-        // Fixme: utility -= f64::from(captured.attacker) * 100_000.0;
+        // let captured = self.board.captured();
+        // utility -= f64::from(captured.attacker) * 100_000.0;
 
         let (moves_to_escape, escape_vec) = self.moves_to_escape();
         utility += match moves_to_escape {
@@ -1116,7 +1117,7 @@ impl Game {
         }
 
         // Todo: An extra 100.0 points for each corner that touches another corner.
-        // Fixme: utility += f64::from(captured.defender) * 10.0;
+        // utility += f64::from(captured.defender) * 10.0;
 
         if let Some(spaces) = self.board.spaces_around_the_king() {
             utility -= f64::from(spaces);
