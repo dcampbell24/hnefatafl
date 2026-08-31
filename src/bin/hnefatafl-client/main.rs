@@ -3600,7 +3600,6 @@ impl<'a> Client {
                                     None => error!("(6) unexpected text: {}", string.trim()),
                                 }
                             }
-                            // Fixme: translate.
                             Some("email") => {
                                 let text: Vec<_> = text.collect();
                                 let text = text.join(" ");
