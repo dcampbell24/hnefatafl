@@ -11,6 +11,7 @@
 ### 1. Starting Board Position
 
 ![Opening Game](screenshots/opening_game.png)
+![Opening Game](screenshots/opening_game_13x13.png)
 
 ### 2. First Turn
 
