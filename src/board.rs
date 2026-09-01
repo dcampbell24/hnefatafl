@@ -979,8 +979,8 @@ impl Board {
                     if let Some(right) = kings_vertex.right()
                         && let Some(left) = kings_vertex.left()
                         && (*play_to == left || *play_to == right)
-                        && self.get(&right) == Space::Attacker
-                        && self.get(&left) == Space::Attacker
+                        && (self.get(&right) == Space::Attacker || right.on_exit_square())
+                        && (self.get(&left) == Space::Attacker || left.on_exit_square())
                     {
                         self.set(&kings_vertex, Space::Empty);
                         self.king = None;
@@ -992,8 +992,8 @@ impl Board {
                     if let Some(up) = kings_vertex.up()
                         && let Some(down) = kings_vertex.down()
                         && (*play_to == up || *play_to == down)
-                        && self.get(&up) == Space::Attacker
-                        && self.get(&down) == Space::Attacker
+                        && (self.get(&up) == Space::Attacker || up.on_exit_square())
+                        && (self.get(&down) == Space::Attacker || down.on_exit_square())
                     {
                         self.set(&kings_vertex, Space::Empty);
                         self.king = None;

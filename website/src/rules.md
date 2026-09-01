@@ -399,6 +399,7 @@ Based on the version that was last updated 2024-12-21.
 It is the same as above except:
 
 1. The defenders go first.
-2. Off the throne the king is captured in a sandwhich.
-3. Only the king can pass through the throne.
-4. There are no exit forts.
+2. Off the throne, the king is captured like any other piece.
+3. The throne is not hostile towards the king.
+4. Only the king can pass through the throne.
+5. There are no exit forts.
