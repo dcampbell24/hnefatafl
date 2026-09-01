@@ -1,11 +1,11 @@
 app-id: org.hnefatafl.hnefatafl_client
 runtime: org.freedesktop.Platform
-runtime-version: '25.08'
+runtime-version: '26.08'
 sdk: org.freedesktop.Sdk
 command: org.hnefatafl.hnefatafl_client
 sdk-extensions:
   - org.freedesktop.Sdk.Extension.rust-stable
-  - org.freedesktop.Sdk.Extension.llvm20
+  - org.freedesktop.Sdk.Extension.llvm22
 finish-args:
   - --share=ipc
   - --socket=pulseaudio

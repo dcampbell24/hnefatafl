@@ -37,3 +37,7 @@ If you have any issues with the software, open an issue on [codeberg][1].
 [1]: https://codeberg.org/dcampbell/hnefatafl/issues
 [3]: https://codeberg.org/dcampbell/hnefatafl/src/branch/main/locales/app.toml
 [4]: https://codeberg.org/dcampbell/hnefatafl/pulls
+
+## Forum
+
+Here is a forum for [Tafl games](https://discourse.linntafl.org/).
