@@ -1,4 +1,4 @@
-## Rules
+## Copenhagen Hnefatafl 11x11, 13x13
 
 `A`: attacker  
 `a`: captured attacker  
