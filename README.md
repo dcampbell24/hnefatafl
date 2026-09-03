@@ -26,8 +26,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 [discord-link]: https://discord.gg/h56CAHEBXd
 [docs-rs]: https://img.shields.io/badge/docs.rs-66c2a5?logo=docs.rs
 [docs-rs-link]: https://docs.rs/hnefatafl-copenhagen
-[REUSE status]: https://api.reuse.software/badge/github.com/dcampbell24/hnefatafl
-[reuse]: https://api.reuse.software/info/github.com/dcampbell24/hnefatafl
+[REUSE status]: https://api.reuse.software/badge/codeberg.org/dcampbell/hnefatafl
+[reuse]: https://api.reuse.software/info/codeberg.org/dcampbell/hnefatafl
 
 ![Opening Game](https://codeberg.org/dcampbell/hnefatafl/raw/branch/main/website/src/screenshots/opening_game.png)
 
