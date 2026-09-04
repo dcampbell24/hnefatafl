@@ -3,7 +3,7 @@
 
 [package]
 name = "hnefatafl-copenhagen"
-version = "6.4.0"
+version = "6.4.1"
 edition = "2024"
 rust-version =  "1.94"
 description = "Copenhagen Hnefatafl client, engine, server and artificial intelligence"
@@ -64,7 +64,6 @@ rustc-hash = "2"
 rust-i18n = "4"
 serde = { version = "1", features = ["derive", "rc"] }
 serde_json = "1"
-taflzero = "0.1"
 thiserror = "2"
 
 # client
@@ -91,8 +90,11 @@ lettre = { version = "0.11", optional = true }
 password-hash = { version = "0.6", optional = true }
 rustrict = { version = "0.7", optional = true }
 
+# taflzero
+taflzero = { version = "0.1", optional = true }
+
 [features]
-default = ["client", "server"]
+default = ["client", "server", "taflzero"]
 client = [
     "dep:iced",
     "dep:iced_aw",
@@ -145,7 +147,9 @@ bench = false
 
 [[bin]]
 name = "taflzero"
-required-features = ["socket"]
+required-features = ["socket", "taflzero"]
+bench = false
+test = false
 
 [[bench]]
 name = "hnefatafl_rs"
@@ -223,7 +227,7 @@ assets = [
     ["default_nn.onnx", "usr/share/taflzero/", "644"]
 ]
 changelog = "packages/debian/changelog"
-revision = "2"
+revision = "1"
 section = "games"
 depends = ["libasound2t64", "libc6", "libssl3t64"]
 

@@ -20,14 +20,14 @@
 //!
 //! ## Feature Flags
 //!
-//! By default the `client` and `server` feature flags are enabled.
+//! By default the `client`, `server`, and `taflzero` feature flags are enabled.
 //!
 //! * client - enable the `hnefatafl-client` binary
 //! * console - on Windows print output to the console
 //! * debug - enable iced debug mode, also log on the debug level
 //! * js - enable options for generating javascript code
-//! * runic - enable the `icelandic-runic` binary for translating Icelandic to Icelandic Runic
-//! * server - enable the `hnefatafl-server-full` binary
+//! * server - enable the `hnefatafl-server` binary
+//! * taflzero - enable the `taflzero` binary
 //!
 //! ## Message Protocol
 //!
