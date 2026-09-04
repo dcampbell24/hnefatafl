@@ -43,10 +43,9 @@ default it connects to the server running at hnefatafl.org.}
 %setup -q -n hnefatafl
 
 %build
-mv ./packages/flathub/cargo-sources.json .
 sed -i 's/cargo-/fedora-/' src/lib.rs;
 
-RUST_MIN_STACK=2147483648 cargo build --offline --release
+RUST_MIN_STACK=2147483648 cargo build --release
 
 ./target/release/taflzero --man --username ""
 ./target/release/hnefatafl-client --man
