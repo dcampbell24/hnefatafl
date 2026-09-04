@@ -82,6 +82,13 @@
   </content_rating>
 
   <releases>
+    <release version="6.4.0" date="2026-09-03">
+      <url type="details">https://codeberg.org/dcampbell/hnefatafl/src/branch/main/CHANGELOG.md#6-4-0-2026-09-03</url>
+      <description>
+        <p>See the CHANGELOG.md file.</p>
+      </description>
+    </release>
+
     <release version="6.3.0" date="2026-08-23">
       <url type="details">https://codeberg.org/dcampbell/hnefatafl/src/branch/main/CHANGELOG.md#6-3-0-2026-08-23</url>
       <description>
