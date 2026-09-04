@@ -109,7 +109,7 @@ fn main() -> anyhow::Result<()> {
     // return Ok(());
 
     let args = Args::parse();
-    utils::init_logger("hnefatafl_server_full", args.debug, args.systemd);
+    utils::init_logger("hnefatafl_server", args.debug, args.systemd);
 
     if args.man {
         return Args::generate_man_page();

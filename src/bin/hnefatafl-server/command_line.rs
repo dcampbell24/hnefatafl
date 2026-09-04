@@ -56,15 +56,13 @@ pub(crate) struct Args {
 impl Args {
     pub(crate) fn generate_man_page() -> anyhow::Result<()> {
         let mut buffer: Vec<u8> = Vec::default();
-        let cmd = Self::command()
-            .name("hnefatafl-server-full")
-            .long_version(None);
+        let cmd = Self::command().name("hnefatafl-server").long_version(None);
         let man = clap_mangen::Man::new(cmd).date("2025-06-23");
 
         man.render(&mut buffer)?;
         write!(buffer, "{COPYRIGHT}")?;
 
-        std::fs::write("hnefatafl-server-full.1", buffer)?;
+        std::fs::write("hnefatafl-server.1", buffer)?;
         Ok(())
     }
 }
