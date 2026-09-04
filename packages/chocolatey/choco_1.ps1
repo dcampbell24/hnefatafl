@@ -11,4 +11,4 @@ cargo build --release --bin hnefatafl-client --features client --no-default-feat
 & 'C:\Program Files (x86)\NSIS\Bin\makensis.exe' .\hnefatafl-client-installer.nsi
 
 sed -i 's/chocolatey-/cargo-/' ..\..\src\lib.rs;
-checksum -t sha256 -f hnefatafl-copenhagen\tools\hnefatafl-client-installer-6.3.0.exe
+checksum -t sha256 -f hnefatafl-copenhagen\tools\hnefatafl-client-installer-6.4.1.exe
