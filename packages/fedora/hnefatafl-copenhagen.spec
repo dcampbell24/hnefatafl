@@ -1,5 +1,5 @@
 Name:          hnefatafl-copenhagen
-Version:       6.3.0
+Version:       6.4.1
 Release:       1%{?dist}
 Summary:       Copenhagen Hnefatafl client, engine, server and artificial intelligence
 License:       AGPL-3.0-or-later
@@ -46,7 +46,6 @@ default it connects to the server running at hnefatafl.org.}
 mv ./packages/flathub/cargo-sources.json .
 sed -i 's/cargo-/fedora-/' src/lib.rs;
 
-RUST_MIN_STACK=2147483648 cargo build --offline --release --examples
 RUST_MIN_STACK=2147483648 cargo build --offline --release
 
 ./target/release/taflzero --man --username ""
