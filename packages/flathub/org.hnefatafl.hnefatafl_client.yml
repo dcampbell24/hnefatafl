@@ -27,8 +27,8 @@ modules:
       - cargo-sources.json
 
     build-options:
-      append-path: /usr/lib/sdk/llvm20/bin
-      prepend-ld-library-path: /usr/lib/sdk/llvm20/lib
+      append-path: /usr/lib/sdk/llvm22/bin
+      prepend-ld-library-path: /usr/lib/sdk/llvm22/lib
       env:
         CARGO_HOME: /run/build/hnefatafl_client/cargo
         CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: clang
