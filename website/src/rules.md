@@ -238,7 +238,11 @@ If the defender would repeat a board position, the move is not allowed.
 
 If a player cannot move, he loses the game.
 
-### 10. Defenders Can't Escape, Attackers Win
+### 10. Automatic Draw
+
+It is a draw if the game goes over 140 moves.
+
+### 11. Defenders Can't Escape, Attackers Win
 
 When the defenders don't have enough pieces left to make an exit fort, the
 corners are blocked, and the attackers can move without unblocking a corner.
