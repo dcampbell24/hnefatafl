@@ -265,6 +265,23 @@ corners are blocked, and the attackers can move without unblocking a corner.
     A B C D E F G H I J K
 ```
 
+Or there are no exit forts for this size.
+
+```plain
+  ┌───────────────────┐
+ 9│ # . A . . . A . # │
+ 8│ . A . . . . . A . │
+ 7│ A . . . . . . . A │
+ 6│ . . . . . . D D D │
+ 5│ A . . # . . D . K │
+ 4│ . . . . . . . D D │
+ 3│ A . . . . . . . A │
+ 2│ . A . . . . . A . │
+ 1│ # . A . . . A . # │
+  └───────────────────┘
+    A B C D E F G H I
+```
+
 When only three spaces are left on the side and the defender only has five
 pieces plus the king left.
 
@@ -413,15 +430,18 @@ It is the same as above except:
 ## Tablut 9X9
 
 ```plain
-. . . A A A . . .
-. . . . A . . . .
-. . . . D . . . .
-A . . . D . . . A
-A A D D K D D A A
-A . . . D . . . A
-. . . . D . . . .
-. . . . A . . . .
-. . . A A A . . .
+  ┌───────────────────┐
+ 9│ # . . A A A . . # │
+ 8│ . . . . A . . . . │
+ 7│ . . . . D . . . . │
+ 6│ A . . . D . . . A │
+ 5│ A A D D K D D A A │
+ 4│ A . . . D . . . A │
+ 3│ . . . . D . . . . │
+ 2│ . . . . A . . . . │
+ 1│ # . . A A A . . # │
+  └───────────────────┘
+    A B C D E F G H I
 ```
 
 from <https://codeberg.org/ruarq/linn#linn-tablut-engine>:
