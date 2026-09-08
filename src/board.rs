@@ -1881,8 +1881,13 @@ impl Board {
             return Ok((board, captures, Status::AttackerWins));
         }
 
-        if board.size() != BoardSize::_7 && board.exit_forts() {
-            return Ok((board, captures, Status::DefenderWins));
+        match board.size() {
+            BoardSize::_7 | BoardSize::_9 => {}
+            BoardSize::_11 | BoardSize::_13 => {
+                if board.exit_forts() {
+                    return Ok((board, captures, Status::DefenderWins));
+                }
+            }
         }
 
         if board.flood_fill_attacker_wins() {
