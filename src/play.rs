@@ -110,7 +110,7 @@ pub const EXIT_SQUARES_9X9: [Vertex; 4] = [
     },
 ];
 
-const THRONE_9X9: Vertex = Vertex {
+pub const THRONE_9X9: Vertex = Vertex {
     size: BoardSize::_9,
     x: 4,
     y: 4,

@@ -37,7 +37,7 @@ use crate::{
     game::PreviousBoards,
     play::{
         EXIT_SQUARES_7X7, EXIT_SQUARES_9X9, EXIT_SQUARES_11X11, EXIT_SQUARES_13X13, Plae, Play,
-        Vertex,
+        THRONE_9X9, Vertex,
     },
     role::Role,
     space::Space,
@@ -1056,9 +1056,82 @@ impl Board {
                         } else {
                             false
                         }
-                    // Fixme!
-                    } else if true {
-                        false
+                    } else if let Some(right) = THRONE_9X9.right()
+                        && kings_vertex == right
+                    {
+                        if let Some(right_right) = right.right()
+                            && let Some(down) = right.down()
+                            && let Some(up) = right.up()
+                            && (*play_to == up || *play_to == down || *play_to == right_right)
+                            && self.get(&up) == Space::Attacker
+                            && self.get(&down) == Space::Attacker
+                            && self.get(&right_right) == Space::Attacker
+                        {
+                            self.set(&kings_vertex, Space::Empty);
+                            self.king = None;
+                            captures.insert(kings_vertex);
+
+                            true
+                        } else {
+                            false
+                        }
+                    } else if let Some(left) = THRONE_9X9.left()
+                        && kings_vertex == left
+                    {
+                        if let Some(left_left) = left.left()
+                            && let Some(down) = left.down()
+                            && let Some(up) = left.up()
+                            && (*play_to == up || *play_to == down || *play_to == left_left)
+                            && self.get(&up) == Space::Attacker
+                            && self.get(&down) == Space::Attacker
+                            && self.get(&left_left) == Space::Attacker
+                        {
+                            self.set(&kings_vertex, Space::Empty);
+                            self.king = None;
+                            captures.insert(kings_vertex);
+
+                            true
+                        } else {
+                            false
+                        }
+                    } else if let Some(up) = THRONE_9X9.up()
+                        && kings_vertex == up
+                    {
+                        if let Some(up_up) = up.up()
+                            && let Some(right) = up.right()
+                            && let Some(left) = up.left()
+                            && (*play_to == up_up || *play_to == right || *play_to == left)
+                            && self.get(&up_up) == Space::Attacker
+                            && self.get(&right) == Space::Attacker
+                            && self.get(&left) == Space::Attacker
+                        {
+                            self.set(&kings_vertex, Space::Empty);
+                            self.king = None;
+                            captures.insert(kings_vertex);
+
+                            true
+                        } else {
+                            false
+                        }
+                    } else if let Some(down) = THRONE_9X9.down()
+                        && kings_vertex == down
+                    {
+                        if let Some(down_down) = down.down()
+                            && let Some(right) = down.right()
+                            && let Some(left) = down.left()
+                            && (*play_to == down_down || *play_to == right || *play_to == left)
+                            && self.get(&down_down) == Space::Attacker
+                            && self.get(&right) == Space::Attacker
+                            && self.get(&left) == Space::Attacker
+                        {
+                            self.set(&kings_vertex, Space::Empty);
+                            self.king = None;
+                            captures.insert(kings_vertex);
+
+                            true
+                        } else {
+                            false
+                        }
                     } else {
                         if let Some(right) = kings_vertex.right()
                             && let Some(left) = kings_vertex.left()
