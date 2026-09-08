@@ -1595,7 +1595,11 @@ impl Board {
             }
         }
 
-        if space_from != Space::King && play.to.on_restricted_square() {
+        if space_from == Space::King {
+            if size == BoardSize::_9 && play.to == THRONE_9X9 {
+                return Err(InvalidMove::Restricted);
+            }
+        } else if play.to.on_restricted_square() {
             return Err(InvalidMove::Restricted);
         }
 
@@ -2464,10 +2468,11 @@ impl FromStr for BoardSize {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
             "7" => Ok(BoardSize::_7),
+            "9" => Ok(BoardSize::_9),
             "11" => Ok(BoardSize::_11),
             "13" => Ok(BoardSize::_13),
             _ => Err(anyhow::Error::msg(format!(
-                "expected 7, 11, or 13, got {s}"
+                "expected 7, 9, 11, or 13, got {s}"
             ))),
         }
     }
