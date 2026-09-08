@@ -44,7 +44,6 @@ use crate::{
     status::Status,
 };
 
-pub const MAX_TURNS: usize = 140;
 pub const BOARD_LETTERS: &str = " A B C D E F G H I J K L M ";
 
 pub const STARTING_POSITION_7X7: [&str; 7] = [
@@ -892,6 +891,7 @@ impl Board {
         Some(defended_spaces)
     }
 
+    // Fixme: for size 9 we don't have to worry about exit forts.
     #[must_use]
     pub fn can_not_escape(&self) -> bool {
         let defenders_left = match self.size() {
@@ -1611,7 +1611,9 @@ impl Board {
             board.king = Some(play.to);
         }
 
-        if turn == &Role::Defender && previous_boards.0.contains(&board) {
+        if size == BoardSize::_9 {
+            // Fixme: Draw the game if three moves are repeated.
+        } else if turn == &Role::Defender && previous_boards.0.contains(&board) {
             return Err(InvalidMove::RepeatMove);
         }
 
@@ -1870,6 +1872,7 @@ impl Board {
         };
 
         let mut board = self.legal_move(play, status, turn, previous_boards)?;
+        let board_size = board.size();
         let space_from = self.get(&play.from);
         let role_from = Role::from(space_from);
         let mut captures = FxHashSet::default();
@@ -1885,7 +1888,7 @@ impl Board {
             return Ok((board, captures, Status::AttackerWins));
         }
 
-        match board.size() {
+        match board_size {
             BoardSize::_7 | BoardSize::_9 => {}
             BoardSize::_11 | BoardSize::_13 => {
                 if board.exit_forts() {
@@ -1902,8 +1905,25 @@ impl Board {
             return Ok((board, captures, Status::DefenderWins));
         }
 
-        if turn_number > MAX_TURNS {
-            return Ok((board, captures, Status::Draw));
+        match board_size {
+            BoardSize::_7 => {
+                if turn_number > 100 {
+                    return Ok((board, captures, Status::Draw));
+                }
+            }
+            BoardSize::_9 => {
+                // Fixme: only allow 49 moves after a capture before drawing the game.
+            }
+            BoardSize::_11 => {
+                if turn_number > 140 {
+                    return Ok((board, captures, Status::Draw));
+                }
+            }
+            BoardSize::_13 => {
+                if turn_number > 160 {
+                    return Ok((board, captures, Status::Draw));
+                }
+            }
         }
 
         Ok((board, captures, Status::Ongoing))

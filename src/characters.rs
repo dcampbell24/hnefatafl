@@ -76,7 +76,7 @@ impl Characters {
         self.double_arrow_right = ">".to_string();
         self.double_arrow_right_full = ">>".to_string();
         self.king = "K".to_string();
-        self.people = "OO".to_string();
+        self.people = "@".to_string();
         self.restricted_square = "#".to_string();
         self.shield = "D".to_string();
         self.warning = "X".to_string();

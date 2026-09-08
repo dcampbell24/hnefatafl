@@ -240,7 +240,8 @@ If a player cannot move, he loses the game.
 
 ### 10. Automatic Draw
 
-It is a draw if the game goes over 140 moves.
+It is a draw if the game goes over 100 moves for a 7x7 game, 140 moves for a
+11x11 game, and 160 moves for a 13x13 game.
 
 ### 11. Defenders Can't Escape, Attackers Win
 
