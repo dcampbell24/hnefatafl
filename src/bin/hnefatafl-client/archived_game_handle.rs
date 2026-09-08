@@ -43,7 +43,7 @@ impl ArchivedGameHandle {
 
         let mut turn = match game.board_size {
             BoardSize::_7 => Role::Defender,
-            BoardSize::_11 | BoardSize::_13 => Role::Attacker,
+            BoardSize::_9 | BoardSize::_11 | BoardSize::_13 => Role::Attacker,
         };
 
         let plays = match &game.plays {

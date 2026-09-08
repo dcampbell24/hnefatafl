@@ -433,6 +433,7 @@ impl Game {
         let board_size_usize = size.into();
         let vec_capacity = match size {
             BoardSize::_7 => 12,
+            BoardSize::_9 => 16,
             BoardSize::_11 => 20,
             BoardSize::_13 => 24,
         };

@@ -35,7 +35,10 @@ use thiserror::Error;
 
 use crate::{
     game::PreviousBoards,
-    play::{EXIT_SQUARES_7X7, EXIT_SQUARES_11X11, EXIT_SQUARES_13X13, Plae, Play, Vertex},
+    play::{
+        EXIT_SQUARES_7X7, EXIT_SQUARES_9X9, EXIT_SQUARES_11X11, EXIT_SQUARES_13X13, Plae, Play,
+        Vertex,
+    },
     role::Role,
     space::Space,
     status::Status,
@@ -46,6 +49,18 @@ pub const BOARD_LETTERS: &str = " A B C D E F G H I J K L M ";
 
 pub const STARTING_POSITION_7X7: [&str; 7] = [
     "...X...", "...X...", "...O...", "XXOKOXX", "...O...", "...X...", "...X...",
+];
+
+pub const STARTING_POSITION_9X9: [&str; 9] = [
+    "...XXX...",
+    "....X....",
+    "....O....",
+    "X...O...X",
+    "XXOOKOOXX",
+    "X...O...X",
+    "....O....",
+    "....X....",
+    "...XXX...",
 ];
 
 pub const STARTING_POSITION_11X11: [&str; 11] = [
@@ -303,6 +318,7 @@ impl Board {
     pub fn new(board_size: BoardSize) -> Self {
         match board_size {
             BoardSize::_7 => board_7x7(),
+            BoardSize::_9 => board_9x9(),
             BoardSize::_11 => board_11x11(),
             BoardSize::_13 => board_13x13(),
         }
@@ -400,6 +416,10 @@ impl Board {
             BoardSize::_7 => {
                 attacker = 8 - attacker;
                 defender = 4 - defender;
+            }
+            BoardSize::_9 => {
+                attacker = 16 - attacker;
+                defender = 8 - defender;
             }
             BoardSize::_11 => {
                 attacker = 24 - attacker;
@@ -876,12 +896,14 @@ impl Board {
     pub fn can_not_escape(&self) -> bool {
         let defenders_left = match self.size() {
             BoardSize::_7 => 4 - self.defenders_captured,
+            BoardSize::_9 => 8 - self.defenders_captured,
             BoardSize::_11 => 12 - self.defenders_captured,
             BoardSize::_13 => 16 - self.defenders_captured,
         };
 
         let attackers_left = match self.size() {
             BoardSize::_7 => 8 - self.attackers_captured,
+            BoardSize::_9 => 16 - self.attackers_captured,
             BoardSize::_11 => 24 - self.attackers_captured,
             BoardSize::_13 => 32 - self.attackers_captured,
         };
@@ -935,11 +957,13 @@ impl Board {
     pub fn exit_squares(&self) -> Vec<Vertex> {
         match self.size() {
             BoardSize::_7 => EXIT_SQUARES_7X7.into(),
+            BoardSize::_9 => EXIT_SQUARES_9X9.into(),
             BoardSize::_11 => EXIT_SQUARES_11X11.into(),
             BoardSize::_13 => EXIT_SQUARES_13X13.into(),
         }
     }
 
+    #[allow(clippy::too_many_lines)]
     fn capture_the_king(
         &mut self,
         role_from: Role,
@@ -949,60 +973,121 @@ impl Board {
         match self.size() {
             BoardSize::_7 => {
                 if let Some(kings_vertex) = self.king
-                    && kings_vertex.on_throne()
                     && role_from == Role::Attacker
                 {
-                    if let Some(right) = kings_vertex.right()
-                        && let Some(left) = kings_vertex.left()
-                        && let Some(down) = kings_vertex.down()
-                        && let Some(up) = kings_vertex.up()
-                        && (*play_to == up
-                            || *play_to == left
-                            || *play_to == down
-                            || *play_to == right)
-                        && self.get(&up) == Space::Attacker
-                        && self.get(&left) == Space::Attacker
-                        && self.get(&down) == Space::Attacker
-                        && self.get(&right) == Space::Attacker
-                    {
-                        self.set(&kings_vertex, Space::Empty);
-                        self.king = None;
-                        captures.insert(kings_vertex);
+                    if kings_vertex.on_throne() {
+                        if let Some(right) = kings_vertex.right()
+                            && let Some(left) = kings_vertex.left()
+                            && let Some(down) = kings_vertex.down()
+                            && let Some(up) = kings_vertex.up()
+                            && (*play_to == up
+                                || *play_to == left
+                                || *play_to == down
+                                || *play_to == right)
+                            && self.get(&up) == Space::Attacker
+                            && self.get(&left) == Space::Attacker
+                            && self.get(&down) == Space::Attacker
+                            && self.get(&right) == Space::Attacker
+                        {
+                            self.set(&kings_vertex, Space::Empty);
+                            self.king = None;
+                            captures.insert(kings_vertex);
 
-                        true
+                            true
+                        } else {
+                            false
+                        }
                     } else {
+                        if let Some(right) = kings_vertex.right()
+                            && let Some(left) = kings_vertex.left()
+                            && (*play_to == left || *play_to == right)
+                            && (self.get(&right) == Space::Attacker || right.on_exit_square())
+                            && (self.get(&left) == Space::Attacker || left.on_exit_square())
+                        {
+                            self.set(&kings_vertex, Space::Empty);
+                            self.king = None;
+                            captures.insert(kings_vertex);
+
+                            return true;
+                        }
+
+                        if let Some(up) = kings_vertex.up()
+                            && let Some(down) = kings_vertex.down()
+                            && (*play_to == up || *play_to == down)
+                            && (self.get(&up) == Space::Attacker || up.on_exit_square())
+                            && (self.get(&down) == Space::Attacker || down.on_exit_square())
+                        {
+                            self.set(&kings_vertex, Space::Empty);
+                            self.king = None;
+                            captures.insert(kings_vertex);
+
+                            return true;
+                        }
+
                         false
                     }
-                } else if let Some(kings_vertex) = self.king
+                } else {
+                    false
+                }
+            }
+            BoardSize::_9 => {
+                if let Some(kings_vertex) = self.king
                     && role_from == Role::Attacker
                 {
-                    if let Some(right) = kings_vertex.right()
-                        && let Some(left) = kings_vertex.left()
-                        && (*play_to == left || *play_to == right)
-                        && (self.get(&right) == Space::Attacker || right.on_exit_square())
-                        && (self.get(&left) == Space::Attacker || left.on_exit_square())
-                    {
-                        self.set(&kings_vertex, Space::Empty);
-                        self.king = None;
-                        captures.insert(kings_vertex);
+                    if kings_vertex.on_throne() {
+                        if let Some(right) = kings_vertex.right()
+                            && let Some(left) = kings_vertex.left()
+                            && let Some(down) = kings_vertex.down()
+                            && let Some(up) = kings_vertex.up()
+                            && (*play_to == up
+                                || *play_to == left
+                                || *play_to == down
+                                || *play_to == right)
+                            && self.get(&up) == Space::Attacker
+                            && self.get(&left) == Space::Attacker
+                            && self.get(&down) == Space::Attacker
+                            && self.get(&right) == Space::Attacker
+                        {
+                            self.set(&kings_vertex, Space::Empty);
+                            self.king = None;
+                            captures.insert(kings_vertex);
 
-                        return true;
+                            true
+                        } else {
+                            false
+                        }
+                    // Fixme!
+                    } else if true {
+                        false
+                    } else {
+                        if let Some(right) = kings_vertex.right()
+                            && let Some(left) = kings_vertex.left()
+                            && (*play_to == left || *play_to == right)
+                            && (self.get(&right) == Space::Attacker || right.on_exit_square())
+                            && (self.get(&left) == Space::Attacker || left.on_exit_square())
+                        {
+                            self.set(&kings_vertex, Space::Empty);
+                            self.king = None;
+                            captures.insert(kings_vertex);
+
+                            return true;
+                        }
+
+                        if let Some(up) = kings_vertex.up()
+                            && let Some(down) = kings_vertex.down()
+                            && (*play_to == up || *play_to == down)
+                            && (self.get(&up) == Space::Attacker || up.on_exit_square())
+                            && (self.get(&down) == Space::Attacker || down.on_exit_square())
+                        {
+                            self.set(&kings_vertex, Space::Empty);
+                            self.king = None;
+                            captures.insert(kings_vertex);
+
+                            return true;
+                        }
+
+                        false
                     }
-
-                    if let Some(up) = kings_vertex.up()
-                        && let Some(down) = kings_vertex.down()
-                        && (*play_to == up || *play_to == down)
-                        && (self.get(&up) == Space::Attacker || up.on_exit_square())
-                        && (self.get(&down) == Space::Attacker || down.on_exit_square())
-                    {
-                        self.set(&kings_vertex, Space::Empty);
-                        self.king = None;
-                        captures.insert(kings_vertex);
-
-                        return true;
-                    }
-
-                    false
                 } else {
                     false
                 }
@@ -1356,10 +1441,11 @@ impl Board {
 
         match len {
             49 => BoardSize::_7,
+            81 => BoardSize::_9,
             121 => BoardSize::_11,
             169 => BoardSize::_13,
             _ => {
-                eprintln!("len is {len} not 7^2, 11^2, or 13^2");
+                eprintln!("len is {len} not 7^2, 9^2, 11^2, or 13^2");
                 unreachable!();
             }
         }
@@ -1663,6 +1749,10 @@ impl Board {
             BoardSize::_7 => {
                 board.attackers_captured = 8 - attackers;
                 board.defenders_captured = 4 - defenders;
+            }
+            BoardSize::_9 => {
+                board.attackers_captured = 16 - attackers;
+                board.defenders_captured = 8 - defenders;
             }
             BoardSize::_11 => {
                 board.attackers_captured = 24 - attackers;
@@ -2262,6 +2352,7 @@ impl<'de> Deserialize<'de> for OpenTaflBoard {
 )]
 pub enum BoardSize {
     _7,
+    _9,
     #[default]
     _11,
     _13,
@@ -2271,6 +2362,7 @@ impl fmt::Display for BoardSize {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             BoardSize::_7 => write!(f, "7"),
+            BoardSize::_9 => write!(f, "9"),
             BoardSize::_11 => write!(f, "11"),
             BoardSize::_13 => write!(f, "13"),
         }
@@ -2281,6 +2373,7 @@ impl From<BoardSize> for usize {
     fn from(size: BoardSize) -> Self {
         match size {
             BoardSize::_7 => 7,
+            BoardSize::_9 => 9,
             BoardSize::_11 => 11,
             BoardSize::_13 => 13,
         }
@@ -2308,6 +2401,7 @@ impl TryFrom<usize> for BoardSize {
     fn try_from(value: usize) -> Result<Self, Self::Error> {
         match value {
             7 => Ok(BoardSize::_7),
+            9 => Ok(BoardSize::_9),
             11 => Ok(BoardSize::_11),
             13 => Ok(BoardSize::_13),
             _ => Err(anyhow::Error::msg(format!(
@@ -2334,6 +2428,34 @@ fn board_7x7() -> Board {
             size: BoardSize::_7,
             x: 3,
             y: 3,
+        }),
+        display_ascii: false,
+    };
+
+    let captured = board.captured();
+    board.attackers_captured = captured.attacker;
+    board.defenders_captured = captured.defender;
+
+    board
+}
+
+#[must_use]
+#[allow(clippy::missing_panics_doc)]
+#[allow(clippy::unwrap_used)]
+fn board_9x9() -> Board {
+    let spaces: Vec<Space> = STARTING_POSITION_9X9
+        .iter()
+        .flat_map(|space| space.chars().map(|ch| ch.try_into().unwrap()))
+        .collect();
+
+    let mut board = Board {
+        spaces,
+        attackers_captured: 0,
+        defenders_captured: 0,
+        king: Some(Vertex {
+            size: BoardSize::_9,
+            x: 4,
+            y: 4,
         }),
         display_ascii: false,
     };

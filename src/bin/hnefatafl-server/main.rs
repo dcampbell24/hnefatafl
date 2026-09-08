@@ -2263,7 +2263,7 @@ impl Server {
                         .ok()?;
                 }
             }
-            BoardSize::_11 | BoardSize::_13 => {
+            BoardSize::_9 | BoardSize::_11 | BoardSize::_13 => {
                 if let Some(channel) = attacker_channel {
                     channel
                         .send(format!("game {id} generate_move attacker"))
