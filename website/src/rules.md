@@ -444,22 +444,4 @@ It is the same as above except:
     A B C D E F G H I
 ```
 
-from <https://codeberg.org/ruarq/linn#linn-tablut-engine>:
-
-Currently, the following rules are implemented:
-
-* King is armed
-* King can be captured by 2 pieces, 3 pieces when adjacent to the throne, 4 when on the throne
-* King can be captured using a corner and an attacker
-* Corners can be used as anvil for capture
-* Corner escape
-* Throne can be passed through, but not stepped on (including for the king)
-* Empty throne can be used as anvil for capture
-* If the king is on the throne and surrounded by 3 attackers and 1 defender, the defender can be captured.
-
-The engine can theoretically play other rulesets (and this was supported in the past), but the rules are currently hardcoded. Defining custom rulesets will be supported in the future.
-
-Additionally, the following two rules are enforced:
-
-* 3-fold repetition is a draw
-* 50 moves without capture is a draw (50 move rule)
+See <https://codeberg.org/ruarq/linn#linn-tablut-engine> for the rules.
