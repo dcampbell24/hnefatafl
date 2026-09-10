@@ -713,6 +713,17 @@ impl Game {
     }
 
     #[must_use]
+    pub fn moves(&self) -> Vec<Plae> {
+        match &self.plays {
+            Plays::PlayRecordsTimed(plays) => plays
+                .iter()
+                .filter_map(|play_record| play_record.play.clone())
+                .collect(),
+            Plays::PlayRecords(plays) => plays.iter().flatten().cloned().collect(),
+        }
+    }
+
+    #[must_use]
     pub fn moves_to_escape(&self) -> (MovesToEscape, EscapeVec) {
         let Some(start) = self.board.king else {
             return (MovesToEscape::GameOver, EscapeVec::new(self.board.size()));

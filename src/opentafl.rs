@@ -82,22 +82,14 @@ pub struct OpenTaflGame {
 impl From<&ServerGame> for OpenTaflGame {
     fn from(server_game: &ServerGame) -> Self {
         let dim = usize::from(server_game.game.board.size());
-
-        let moves: Vec<Plae> = match &server_game.game.plays {
-            Plays::PlayRecordsTimed(plays) => plays
-                .iter()
-                .filter_map(|play_record| play_record.play.clone())
-                .collect(),
-            Plays::PlayRecords(plays) => plays.iter().flatten().cloned().collect(),
-        };
-
-        let mut game_play = Game::make(server_game.game.board.size(), &TimeSettings::UnTimed);
-        let start = game_play.board.open_tafl_serialize();
-
-        let moves = moves
+        let mut game = Game::make(server_game.game.board.size(), &TimeSettings::UnTimed);
+        let start = game.board.open_tafl_serialize();
+        let moves = server_game
+            .game
+            .moves()
             .iter()
             .map(|play| {
-                let captures = game_play.play(play).expect("This must be a valid move!");
+                let captures = game.play(play).expect("This must be a valid move!");
                 let mut play_string = match play {
                     Plae::Play(play) => {
                         format!("{}-{}", play.from, play.to)
