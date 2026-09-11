@@ -1908,7 +1908,7 @@ impl Board {
         match board_size {
             BoardSize::_7 => {
                 if turn_number > 100 {
-                    return Ok((board, captures, Status::Draw));
+                    return Ok((board, captures, Status::AttackerWins));
                 }
             }
             BoardSize::_9 => {
@@ -1916,12 +1916,12 @@ impl Board {
             }
             BoardSize::_11 => {
                 if turn_number > 140 {
-                    return Ok((board, captures, Status::Draw));
+                    return Ok((board, captures, Status::AttackerWins));
                 }
             }
             BoardSize::_13 => {
                 if turn_number > 160 {
-                    return Ok((board, captures, Status::Draw));
+                    return Ok((board, captures, Status::AttackerWins));
                 }
             }
         }
