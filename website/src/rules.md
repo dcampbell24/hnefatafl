@@ -238,9 +238,9 @@ If the defender would repeat a board position, the move is not allowed.
 
 If a player cannot move, he loses the game.
 
-### 10. Automatic Draw
+### 10. Defenders Lose On Turns
 
-It is a draw if the game goes over 100 moves for a 7x7 game, 140 moves for a
+The defenders lose if the game goes over 100 moves for a 7x7 game, 140 moves for a
 11x11 game, and 160 moves for a 13x13 game.
 
 ### 11. Defenders Can't Escape, Attackers Win
