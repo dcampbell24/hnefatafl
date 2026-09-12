@@ -891,7 +891,6 @@ impl Board {
         Some(defended_spaces)
     }
 
-    // Fixme: for size 9 we don't have to worry about exit forts.
     #[must_use]
     pub fn can_not_escape(&self) -> bool {
         let defenders_left = match self.size() {
@@ -913,7 +912,7 @@ impl Board {
         }
 
         if let Some(defended_spaces) = self.closed_off_exits() {
-            (defenders_left < 4 && attackers_left >= 13)
+            ((defenders_left < 4 || self.size() == BoardSize::_9) && attackers_left >= 13)
                 || (defenders_left < 6 && self.n_or_less_side_spaces(&defended_spaces, 3))
                 || self.n_or_less_side_spaces(&defended_spaces, 2)
         } else {

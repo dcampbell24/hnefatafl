@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Add tablut 9x9.
+
 ## [6.4.1] - 2026-09-04
 
 - Make it optional to build taflzero.
