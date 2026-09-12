@@ -73,6 +73,7 @@ pub struct OpenTaflGame {
     // #[serde(default = "default_true")]
     // pub efe: bool,
     pub moves: String,
+    pub last_capture: Option<u8>,
     //
     #[serde(default = "default_true")]
     pub rated: bool,
@@ -145,6 +146,7 @@ impl From<&ServerGame> for OpenTaflGame {
             time_control,
             time_remaining_ms,
             moves,
+            last_capture: server_game.game.last_capture,
             rated: server_game.rated.into(),
             messages: server_game.messages.clone(),
         }
@@ -223,6 +225,7 @@ impl From<&OpenTaflGame> for Game {
         game.time = last_move;
         game.attacker_time = attacker_time;
         game.defender_time = defender_time;
+        game.last_capture = game_opentafl.last_capture;
 
         game
     }

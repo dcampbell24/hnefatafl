@@ -30,14 +30,14 @@ use serde::{Deserialize, Serialize};
 use crate::{
     Id,
     accounts::{Account, Accounts, Users},
-    board::{Board, BoardSize},
+    board::BoardSize,
     game::Game,
     glicko::Rating,
-    play::{PlayRecordTimed, Plays},
+    play::Plays,
     rating::Rated,
     role::Role,
     status::Status,
-    time::{Time, TimeSettings, TimeUnix},
+    time::{Time, TimeSettings},
 };
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -209,23 +209,6 @@ impl ServerGame {
             unreachable!();
         };
 
-        let plays = match game.timed {
-            TimeSettings::Timed(time) => Plays::PlayRecordsTimed(vec![PlayRecordTimed {
-                play: None,
-                attacker_time: time.into(),
-                defender_time: time.into(),
-            }]),
-            TimeSettings::UnTimed => Plays::PlayRecords(vec![None]),
-        };
-
-        let board = Board::new(game.board_size);
-
-        let time = if let TimeSettings::Timed(_) = &game.timed {
-            TimeUnix::timed()
-        } else {
-            TimeUnix::UnTimed
-        };
-
         Self {
             id: game.id,
             attacker,
@@ -235,15 +218,7 @@ impl ServerGame {
             draw_requested: Role::Roleless,
             elapsed_time: 0,
             rated: game.rated,
-            game: Game {
-                attacker_time: game.timed,
-                defender_time: game.timed,
-                turn: game.turn,
-                time,
-                board,
-                plays,
-                ..Game::default()
-            },
+            game: Game::make(game.board_size, &game.timed),
             messages: VecDeque::new(),
         }
     }

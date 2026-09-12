@@ -49,6 +49,7 @@ use crate::{
 pub struct Game {
     pub board: Board,
     pub plays: Plays,
+    pub last_capture: Option<u8>,
     pub previous_boards: PreviousBoards,
     pub status: Status,
     pub time: TimeUnix,
@@ -68,6 +69,8 @@ pub struct Game {
     pub board: Board,
     #[wasm_bindgen(skip)]
     pub plays: Plays,
+    #[wasm_bindgen(skip)]
+    pub last_capture: Option<u8>,
     #[wasm_bindgen(skip)]
     pub previous_boards: PreviousBoards,
     #[wasm_bindgen(skip)]
@@ -419,8 +422,14 @@ impl Game {
             game.time = TimeUnix::timed();
         }
 
-        if game.board.size() == BoardSize::_7 {
-            game.turn = Role::Defender;
+        match board_size {
+            BoardSize::_7 => {
+                game.turn = Role::Defender;
+            }
+            BoardSize::_9 => {
+                game.last_capture = Some(0);
+            }
+            BoardSize::_11 | BoardSize::_13 => {}
         }
 
         game
@@ -920,6 +929,18 @@ impl Game {
                         Role::Attacker => self.board.defenders_captured += captures.len(),
                         Role::Defender => self.board.attackers_captured += captures.len(),
                         Role::Roleless => unreachable!(),
+                    }
+
+                    if let Some(last_capture) = &mut self.last_capture {
+                        *last_capture += 1;
+
+                        if !captures.is_empty() {
+                            *last_capture = 0;
+                        }
+
+                        if *last_capture >= 100 {
+                            self.status = Status::Draw;
+                        }
                     }
 
                     if self.status == Status::Ongoing {

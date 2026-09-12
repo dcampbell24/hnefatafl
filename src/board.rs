@@ -1911,7 +1911,7 @@ impl Board {
                 }
             }
             BoardSize::_9 => {
-                // Fixme: only allow 49 moves after a capture before drawing the game.
+                // The game ends after 100 moves without a capture. It is done in play of Game.
             }
             BoardSize::_11 => {
                 if turn_number > 140 {
