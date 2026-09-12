@@ -3267,7 +3267,7 @@ impl<'a> Client {
                                 let games_updated: GamesUpdated = serde_json::de::from_str(&texts)
                                     .expect("Deserialization should work!");
 
-                                for (game_id, _, game) in &games_updated.created {
+                                for (game_id, game) in &games_updated.created {
                                     self.games_light.0.insert(*game_id, game.clone());
                                 }
 

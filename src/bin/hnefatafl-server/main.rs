@@ -765,15 +765,11 @@ impl Server {
             let mut created = Vec::new();
             let mut removed = HashSet::new();
             let mut updated_1 = Vec::new();
-            let mut previous = None;
 
             for game in self.games_light.0.values() {
                 if !self.games_light_old.0.contains_key(&game.id) {
-                    created.push((game.id, previous, game.clone()));
+                    created.push((game.id, game.clone()));
                 }
-
-                // Fixme: remove previous when making a breaking change.
-                previous = None;
             }
 
             for (id, game_1) in &self.games_light_old.0 {

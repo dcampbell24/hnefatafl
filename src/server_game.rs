@@ -495,7 +495,7 @@ impl ServerGamesLight {
 
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
 pub struct GamesUpdated {
-    pub created: Vec<(u128, Option<u128>, ServerGameLight)>,
+    pub created: Vec<(u128, ServerGameLight)>,
     pub removed: HashSet<u128>,
     pub updated: HashMap<u128, ServerGameLight>,
 }
