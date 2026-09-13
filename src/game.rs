@@ -51,6 +51,7 @@ pub struct Game {
     pub plays: Plays,
     pub last_capture: Option<u8>,
     pub previous_boards: PreviousBoards,
+    pub previous_boards_repeated: HashMap<Board, u8>,
     pub status: Status,
     pub time: TimeUnix,
     pub attacker_time: TimeSettings,
@@ -73,6 +74,8 @@ pub struct Game {
     pub last_capture: Option<u8>,
     #[wasm_bindgen(skip)]
     pub previous_boards: PreviousBoards,
+    #[wasm_bindgen(skip)]
+    pub previous_boards_repeated: HashMap<Board, u8>,
     #[wasm_bindgen(skip)]
     pub status: Status,
     #[wasm_bindgen(skip)]
@@ -931,19 +934,33 @@ impl Game {
                         Role::Roleless => unreachable!(),
                     }
 
-                    if let Some(last_capture) = &mut self.last_capture {
-                        *last_capture += 1;
-
-                        if !captures.is_empty() {
-                            *last_capture = 0;
-                        }
-
-                        if *last_capture >= 100 {
-                            self.status = Status::Draw;
-                        }
-                    }
-
                     if self.status == Status::Ongoing {
+                        if self.board.size() == BoardSize::_9 {
+                            let repeated = self
+                                .previous_boards_repeated
+                                .entry(self.board.clone())
+                                .or_insert(0);
+                            *repeated += 1;
+
+                            if *repeated >= 3 {
+                                self.status = Status::Draw;
+                                return Ok(Captures(captures));
+                            }
+                        }
+
+                        if let Some(last_capture) = &mut self.last_capture {
+                            *last_capture += 1;
+
+                            if !captures.is_empty() {
+                                *last_capture = 0;
+                            }
+
+                            if *last_capture >= 100 {
+                                self.status = Status::Draw;
+                                return Ok(Captures(captures));
+                            }
+                        }
+
                         self.turn = self.turn.opposite();
 
                         if self.board.can_not_escape() {

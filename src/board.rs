@@ -1611,7 +1611,7 @@ impl Board {
         }
 
         if size == BoardSize::_9 {
-            // Fixme: Draw the game if three moves are repeated.
+            // The game is a draw if the board position is repeated three times.
         } else if turn == &Role::Defender && previous_boards.0.contains(&board) {
             return Err(InvalidMove::RepeatMove);
         }
