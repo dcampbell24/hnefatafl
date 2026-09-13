@@ -160,12 +160,26 @@ impl fmt::Display for Board {
 
             for x in 0..board_size {
                 if (((y, x) == (0, 0)
-                    || (y, x) == (10, 0)
-                    || (y, x) == (0, 10)
-                    || (y, x) == (10, 10)
-                    || (y, x) == (5, 5))
+                    || (y, x) == (6, 0)
+                    || (y, x) == (0, 6)
+                    || (y, x) == (6, 6)
+                    || (y, x) == (3, 3))
                     && self.spaces[y * board_size + x] == Space::Empty
-                    && board_size == 11)
+                    && board_size == 7)
+                    || (((y, x) == (0, 0)
+                        || (y, x) == (8, 0)
+                        || (y, x) == (0, 8)
+                        || (y, x) == (8, 8)
+                        || (y, x) == (4, 4))
+                        && self.spaces[y * board_size + x] == Space::Empty
+                        && board_size == 9)
+                    || (((y, x) == (0, 0)
+                        || (y, x) == (10, 0)
+                        || (y, x) == (0, 10)
+                        || (y, x) == (10, 10)
+                        || (y, x) == (5, 5))
+                        && self.spaces[y * board_size + x] == Space::Empty
+                        && board_size == 11)
                     || (((y, x) == (0, 0)
                         || (y, x) == (12, 0)
                         || (y, x) == (0, 12)
@@ -357,7 +371,7 @@ impl Board {
         status: &Status,
         turn: &Role,
         previous_boards: &PreviousBoards,
-    ) -> bool {
+    ) -> Option<Play> {
         let size = self.size();
         let board_size_usize: usize = size.into();
 
@@ -386,14 +400,14 @@ impl Board {
                             .legal_move(&play, status, turn, previous_boards)
                             .is_ok()
                         {
-                            return true;
+                            return Some(play);
                         }
                     }
                 }
             }
         }
 
-        false
+        None
     }
 
     #[must_use]

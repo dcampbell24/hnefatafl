@@ -965,11 +965,11 @@ impl Game {
 
                         if self.board.can_not_escape() {
                             self.status = Status::AttackerWins;
-                        } else if !self.board.a_legal_move_exists(
-                            &self.status,
-                            &self.turn,
-                            &self.previous_boards,
-                        ) {
+                        } else if self
+                            .board
+                            .a_legal_move_exists(&self.status, &self.turn, &self.previous_boards)
+                            .is_none()
+                        {
                             self.status = match self.turn {
                                 Role::Attacker => Status::DefenderWins,
                                 Role::Roleless => unreachable!(),
