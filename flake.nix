@@ -55,9 +55,13 @@
           openssl
           alsa-lib
           onnxruntime
+          wayland
+          libxkbcommon
         ];
 
         commonArgs = {
+          pname = "hnefatafl-org";
+
           src = lib.fileset.toSource {
             root = ./.;
             fileset = lib.fileset.unions [
@@ -71,6 +75,7 @@
 
           nativeBuildInputs = nativeBuildInputs;
           buildInputs = buildInputs;
+          LD_LIBRARY_PATH = lib.makeLibraryPath buildInputs;
 
           doCheck = false;
 
@@ -82,14 +87,40 @@
         };
 
         cargoArtifacts = craneLib.buildDepsOnly commonArgs;
+
+        package = craneLib.buildPackage (commonArgs // { inherit cargoArtifacts; });
+
+        hnefatafl-client = {
+          type = "app";
+          program = "${package}/bin/hnefatafl-client";
+        };
+
+        hnefatafl-server = {
+          type = "app";
+          program = "${package}/bin/hnefatafl-server";
+        };
+
+        hnefatafl-text-protocol = {
+          type = "app";
+          program = "${package}/bin/hnefatafl-text-protocol";
+        };
+
+        taflzero = {
+          type = "app";
+          program = "${package}/bin/taflzero";
+        };
       in
       {
-        packages.default = craneLib.buildPackage (
-          commonArgs
-          // {
-            inherit cargoArtifacts;
-          }
-        );
+        packages.default = package;
+
+        apps = {
+          default = hnefatafl-server;
+
+          inherit hnefatafl-client;
+          inherit hnefatafl-server;
+          inherit hnefatafl-text-protocol;
+          inherit taflzero;
+        };
 
         checks = {
           clippy = craneLib.cargoClippy (
@@ -128,6 +159,7 @@
 
         devShells.default = craneLib.devShell {
           packages = buildInputs ++ nativeBuildInputs;
+          LD_LIBRARY_PATH = lib.makeLibraryPath buildInputs;
         };
       }
     );
