@@ -57,6 +57,9 @@
           onnxruntime
           wayland
           libxkbcommon
+          libX11
+          libXcursor
+          libXi
         ];
 
         commonArgs = {
@@ -80,6 +83,7 @@
           doCheck = false;
 
           env = {
+            RUST_MIN_STACK = 16777216;
             ORT_STRATEGY = "system";
             ORT_LIB_LOCATION = "${pkgs.onnxruntime}/lib";
             ORT_PREFER_DYNAMIC_LINK = "1";

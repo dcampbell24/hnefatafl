@@ -175,7 +175,6 @@ name = "send-website-urls"
 bench = false
 test = false
 
-
 [lints.clippy]
 cargo = "deny"
 complexity = "deny"
