@@ -78,11 +78,11 @@
 
           nativeBuildInputs = nativeBuildInputs;
           buildInputs = buildInputs;
-          LD_LIBRARY_PATH = lib.makeLibraryPath buildInputs;
 
           doCheck = false;
 
           env = {
+            LD_LIBRARY_PATH = lib.makeLibraryPath buildInputs;
             RUST_MIN_STACK = 16777216;
             ORT_STRATEGY = "system";
             ORT_LIB_LOCATION = "${pkgs.onnxruntime}/lib";
@@ -92,7 +92,25 @@
 
         cargoArtifacts = craneLib.buildDepsOnly commonArgs;
 
-        package = craneLib.buildPackage (commonArgs // { inherit cargoArtifacts; });
+        package = craneLib.buildPackage (
+          commonArgs
+          // {
+            inherit cargoArtifacts;
+
+            nativeBuildInputs = commonArgs.nativeBuildInputs ++ [ pkgs.makeBinaryWrapper ];
+
+            postInstall = ''
+              if [ -d "$out/bin" ]; then
+                for bin in "$out/bin"/*; do
+                  if [ -f "$bin" ] && [ -x "$bin" ]; then
+                    wrapProgram "$bin" \
+                      --prefix LD_LIBRARY_PATH : ${lib.makeLibraryPath buildInputs}
+                  fi
+                done
+              fi
+            '';
+          }
+        );
 
         hnefatafl-client = {
           type = "app";
@@ -167,5 +185,4 @@
         };
       }
     );
-
 }
