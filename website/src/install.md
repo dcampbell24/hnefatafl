@@ -119,6 +119,7 @@ Then, Download [packages.hnefatafl.org.asc][1] to `/etc/apt/keyrings/` or:
 
 ```sh
 wget https://hnefatafl.org/packages.hnefatafl.org.asc
+sudo mkdir --parents /etc/apt/keyrings
 sudo mv packages.hnefatafl.org.asc /etc/apt/keyrings/
 ```
 
