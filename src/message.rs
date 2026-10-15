@@ -162,7 +162,7 @@ pub enum Message {
     /// Displays the board
     ShowBoard,
 
-    /// `show_board`
+    /// `show_board_open_tafl`
     ///
     /// Displays the board in OpenTafl format
     ShowBoardOpenTafl,
@@ -212,9 +212,9 @@ impl TryFrom<(BoardSize, &str)> for Message {
 
         match *first {
             "board_size" => Ok(Self::BoardSize(
-                (*args
-                    .get(1)
-                    .context("expected: board_size 11 or board_size 13")?)
+                (*args.get(1).context(
+                    "expected: board_size 7, board_size 9, board_size 11, or board_size 13",
+                )?)
                 .parse()?,
             )),
             "final_status" => Ok(Self::FinalStatus),
