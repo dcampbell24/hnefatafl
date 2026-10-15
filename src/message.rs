@@ -29,8 +29,6 @@ use crate::{
 
 /// hnefatafl-text-protocol binary and javascript pkg
 ///
-/// All of the positions are lowercase for 11x11 and uppercase for 13x13.
-///
 /// The engine is line orientated and takes UTF-8 encoded text. The engine takes the below commands
 /// and returns `= response` on success and `? error_message` on failure. If only comments and
 /// whitespace or the empty string are passed the engine ignores the input and requests another
