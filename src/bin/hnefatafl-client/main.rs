@@ -925,6 +925,7 @@ impl<'a> Client {
         let board_size = board.size();
         let board_size_usize: usize = board_size.into();
         let letters: Vec<_> = BOARD_LETTERS[..board_size_usize].chars().collect();
+        // Fixme: use table?
         let mut game_display = Row::new().spacing(2);
         let possible_moves = self.possible_moves();
 
