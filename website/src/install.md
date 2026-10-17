@@ -175,7 +175,7 @@ Application Launcher -> Games -> Hnefatafl Copenhagen
 ```sh
 git clone https://codeberg.org/dcampbell/hnefatafl.git
 cd hnefatafl
-sudo nix run
+sudo nix run .#hnefatafl-client
 ```
 
 ## Windows
