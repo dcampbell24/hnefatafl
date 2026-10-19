@@ -1,5 +1,5 @@
 Name:          hnefatafl-copenhagen
-Version:       6.4.1
+Version:       7.0.0
 Release:       1%{?dist}
 Summary:       Copenhagen Hnefatafl client, engine, server and artificial intelligence
 License:       AGPL-3.0-or-later
@@ -12,6 +12,8 @@ BuildRequires: mold
 BuildRequires: cargo
 BuildRequires: openssl-devel
 BuildRequires: alsa-lib-devel
+BuildRequires: libappstream-glib
+BuildRequires: desktop-file-utils
 
 Requires:      glibc
 Requires:      hicolor-icon-theme
@@ -52,11 +54,6 @@ RUST_MIN_STACK=2147483648 cargo build --release
 ./target/release/hnefatafl-server --man
 ./target/release/hnefatafl-text-protocol --man
 
-gzip --no-name --best taflzero.1
-gzip --no-name --best hnefatafl-server.1
-gzip --no-name --best hnefatafl-text-protocol.1
-gzip --no-name --best hnefatafl-client.1
-
 sed -i 's/games/bin/' packages/hnefatafl-ai-attacker.service
 sed -i 's/games/bin/' packages/hnefatafl-ai-defender.service
 sed -i 's/games/bin/' packages/hnefatafl.service
@@ -67,33 +64,33 @@ install -Dm755 "target/release/taflzero" -t "%{buildroot}%{_bindir}"
 install -Dm755 "target/release/hnefatafl-client" -t "%{buildroot}%{_bindir}"
 install -Dm755 "target/release/hnefatafl-server" -t "%{buildroot}%{_bindir}"
 install -Dm755 "target/release/hnefatafl-text-protocol" -t "%{buildroot}%{_bindir}"
-install -Dm644 "packages/hnefatafl.service" -t "%{buildroot}/usr/lib/systemd/system"
-install -Dm644 "packages/hnefatafl-ai-attacker.service" -t "%{buildroot}/usr/lib/systemd/system"
-install -Dm644 "packages/hnefatafl-ai-defender.service" -t "%{buildroot}/usr/lib/systemd/system"
-install -Dm644 "website/src/images/helmet.svg" "%{buildroot}/usr/share/icons/hicolor/scalable/apps/org.hnefatafl.hnefatafl_client.svg"
-install -Dm644 "taflzero.1.gz" -t "%{buildroot}/usr/share/man/man1"
-install -Dm644 "hnefatafl-client.1.gz" -t "%{buildroot}/usr/share/man/man1"
-install -Dm644 "hnefatafl-server.1.gz" -t "%{buildroot}/usr/share/man/man1"
-install -Dm644 "hnefatafl-text-protocol.1.gz" -t "%{buildroot}/usr/share/man/man1"
-install -Dm644 "packages/hnefatafl-client.desktop" -t "%{buildroot}/usr/share/applications"
+install -Dm644 "packages/hnefatafl.service" -t "%{buildroot}%{_unitdir}"
+install -Dm644 "packages/hnefatafl-ai-attacker.service" -t "%{buildroot}%{_unitdir}"
+install -Dm644 "packages/hnefatafl-ai-defender.service" -t "%{buildroot}%{_unitdir}"
+install -Dm644 "website/src/images/helmet.svg" "%{buildroot}%{_datadir}/icons/hicolor/scalable/apps/org.hnefatafl.hnefatafl_client.svg"
+install -Dm644 "taflzero.1*" -t "%{buildroot}%{_mandir}/man1"
+install -Dm644 "hnefatafl-client.1*" -t "%{buildroot}%{_mandir}/man1"
+install -Dm644 "hnefatafl-server.1*" -t "%{buildroot}%{_mandir}/man1"
+install -Dm644 "hnefatafl-text-protocol.1.*" -t "%{buildroot}%{_mandir}/man1"
+install -Dm644 "packages/hnefatafl-client.desktop" -t "%{buildroot}%{_datadir}/applications"
 install -Dm644 "packages/org.hnefatafl.hnefatafl_client.metainfo.xml" -t "%{buildroot}%{_metainfodir}"
-install -Dm644 "%{SOURCE1}" -t "%{buildroot}/usr/share/taflzero"
+install -Dm644 "%{SOURCE1}" -t "%{buildroot}%{_datadir}/taflzero"
 
 %files
 %{_bindir}/hnefatafl-client
 %{_bindir}/hnefatafl-server
 %{_bindir}/hnefatafl-text-protocol
 %{_bindir}/taflzero
-/usr/share/taflzero/default_nn.onnx
-/usr/lib/systemd/system/hnefatafl-ai-attacker.service
-/usr/lib/systemd/system/hnefatafl-ai-defender.service
-/usr/lib/systemd/system/hnefatafl.service
-/usr/share/applications/hnefatafl-client.desktop
-/usr/share/icons/hicolor/scalable/apps/org.hnefatafl.hnefatafl_client.svg
-/usr/share/man/man1/hnefatafl-client.1.gz
-/usr/share/man/man1/hnefatafl-server.1.gz
-/usr/share/man/man1/hnefatafl-text-protocol.1.gz
-/usr/share/man/man1/taflzero.1.gz
+%{_datadir}/taflzero/default_nn.onnx
+%{_unitdir}/hnefatafl-ai-attacker.service
+%{_unitdir}/hnefatafl-ai-defender.service
+%{_unitdir}/hnefatafl.service
+%{_datadir}/applications/hnefatafl-client.desktop
+%{_datadir}/icons/hicolor/scalable/apps/org.hnefatafl.hnefatafl_client.svg
+%{_mandir}/man1/hnefatafl-client.1*
+%{_mandir}/man1/hnefatafl-server.1*
+%{_mandir}/man1/hnefatafl-text-protocol.1*
+%{_mandir}/man1/taflzero.1*
 %{_metainfodir}/org.hnefatafl.hnefatafl_client.metainfo.xml
 %license LICENSES/AGPL-3.0-or-later.txt
 %doc README.md
@@ -102,3 +99,5 @@ install -Dm644 "%{SOURCE1}" -t "%{buildroot}/usr/share/taflzero"
 %autochangelog
 
 %check
+desktop-file-validate %{buildroot}/%{_datadir}/applications/hnefatafl-client.desktop
+appstream-util validate-relax --nonet %{buildroot}%{_metainfodir}/*.metainfo.xml
