@@ -1,5 +1,5 @@
 Name:          hnefatafl-copenhagen
-Version:       7.0.0
+Version:       6.4.1
 Release:       1%{?dist}
 Summary:       Copenhagen Hnefatafl client, engine, server and artificial intelligence
 License:       AGPL-3.0-or-later
@@ -68,10 +68,10 @@ install -Dm644 "packages/hnefatafl.service" -t "%{buildroot}%{_unitdir}"
 install -Dm644 "packages/hnefatafl-ai-attacker.service" -t "%{buildroot}%{_unitdir}"
 install -Dm644 "packages/hnefatafl-ai-defender.service" -t "%{buildroot}%{_unitdir}"
 install -Dm644 "website/src/images/helmet.svg" "%{buildroot}%{_datadir}/icons/hicolor/scalable/apps/org.hnefatafl.hnefatafl_client.svg"
-install -Dm644 "taflzero.1*" -t "%{buildroot}%{_mandir}/man1"
-install -Dm644 "hnefatafl-client.1*" -t "%{buildroot}%{_mandir}/man1"
-install -Dm644 "hnefatafl-server.1*" -t "%{buildroot}%{_mandir}/man1"
-install -Dm644 "hnefatafl-text-protocol.1.*" -t "%{buildroot}%{_mandir}/man1"
+install -Dm644 "taflzero.1.gz" -t "%{buildroot}%{_mandir}/man1"
+install -Dm644 "hnefatafl-client.1.gz" -t "%{buildroot}%{_mandir}/man1"
+install -Dm644 "hnefatafl-server.1.gz" -t "%{buildroot}%{_mandir}/man1"
+install -Dm644 "hnefatafl-text-protocol.1.gz" -t "%{buildroot}%{_mandir}/man1"
 install -Dm644 "packages/hnefatafl-client.desktop" -t "%{buildroot}%{_datadir}/applications"
 install -Dm644 "packages/org.hnefatafl.hnefatafl_client.metainfo.xml" -t "%{buildroot}%{_metainfodir}"
 install -Dm644 "%{SOURCE1}" -t "%{buildroot}%{_datadir}/taflzero"
@@ -87,10 +87,10 @@ install -Dm644 "%{SOURCE1}" -t "%{buildroot}%{_datadir}/taflzero"
 %{_unitdir}/hnefatafl.service
 %{_datadir}/applications/hnefatafl-client.desktop
 %{_datadir}/icons/hicolor/scalable/apps/org.hnefatafl.hnefatafl_client.svg
-%{_mandir}/man1/hnefatafl-client.1*
-%{_mandir}/man1/hnefatafl-server.1*
-%{_mandir}/man1/hnefatafl-text-protocol.1*
-%{_mandir}/man1/taflzero.1*
+%{_mandir}/man1/hnefatafl-client.1.gz
+%{_mandir}/man1/hnefatafl-server.1.gz
+%{_mandir}/man1/hnefatafl-text-protocol.1.gz
+%{_mandir}/man1/taflzero.1.gz
 %{_metainfodir}/org.hnefatafl.hnefatafl_client.metainfo.xml
 %license LICENSES/AGPL-3.0-or-later.txt
 %doc README.md
