@@ -26,7 +26,7 @@ use std::{fs, path::PathBuf};
 use reqwest::blocking::Client;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let url = "http://api.indexnow.org/IndexNow";
+    let url = "https://api.indexnow.org/IndexNow";
     let client = Client::new();
     let mut dir = PathBuf::new();
     dir.push("website");
