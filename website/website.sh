@@ -25,7 +25,7 @@ cp ../../www/hnefatafl-client-installer-*.exe /var/www/html/binaries/nsis/
 cp -r ../../www/apt/ /var/www/html/
 cp -r ../../www/homebrew/ /var/html/
 
-mkdir /var/www/html/.well-known
+mkdir --parents /var/www/html/.well-known
 echo "fb1c1fdb-d01d-4918-911f-f4cf4b0540a0" > /var/www/html/.well-known/org.flathub.VerifiedApps.txt
 
 cp index-now/* /var/www/html/
