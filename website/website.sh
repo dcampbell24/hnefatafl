@@ -3,6 +3,12 @@
 # PATH+=":$HOME/.cargo/bin"
 
 mdbook build
+
+rm -rf /var/www/html/css
+rm -rf /var/www/html/fonts
+rm -rf /var/www/html/images
+rm -rf /var/www/html/screenshots
+
 mv --force ./book/html/* /var/www/html/
 
 ./replace_strings.sh
