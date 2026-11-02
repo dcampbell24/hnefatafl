@@ -117,6 +117,7 @@ impl fmt::Display for Game {
 
         writeln!(f, "{}\n", self.board)?;
         writeln!(f, "move: {}", self.plays.len() + 1)?;
+        writeln!(f, "board size: {}", self.board.size())?;
         write!(
             f,
             "captures: {} {}, {} {}",
