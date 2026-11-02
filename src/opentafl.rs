@@ -22,7 +22,7 @@ use itertools::Itertools;
 use jiff::Timestamp;
 use rustc_hash::FxHashSet;
 use serde::{Deserialize, Serialize};
-use std::{collections::VecDeque, fmt::Write};
+use std::{collections::VecDeque, fmt::Write, str::FromStr};
 
 use crate::{
     board::BoardSize,
@@ -62,7 +62,7 @@ pub struct OpenTaflGame {
     pub id: u128,
     pub attackers: String,
     pub defenders: String,
-    pub dim: usize,
+    pub dim: String,
     pub start: String,
     pub time_control: Option<TimeControl>,
     pub time_remaining_ms: Option<TimeRemaining>,
@@ -82,7 +82,7 @@ pub struct OpenTaflGame {
 
 impl From<&ServerGame> for OpenTaflGame {
     fn from(server_game: &ServerGame) -> Self {
-        let dim = usize::from(server_game.game.board.size());
+        let dim = server_game.game.board.size().into();
         let mut game = Game::make(server_game.game.board.size(), &TimeSettings::UnTimed);
         let start = game.board.open_tafl_serialize();
         let moves = server_game
@@ -184,8 +184,8 @@ impl From<&OpenTaflGame> for Game {
             )
         };
 
-        let board_size =
-            BoardSize::try_from(game_opentafl.dim).expect("The board size must be 7, 11, or 13!");
+        let board_size = BoardSize::from_str(&game_opentafl.dim)
+            .expect("The board size must be 7, 9L, 11, or 13!");
 
         let mut game = Game::make(board_size, &attacker_time);
         let mut plays = Vec::with_capacity(game_opentafl.moves.len());

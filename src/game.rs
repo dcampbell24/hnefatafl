@@ -22,6 +22,7 @@ use std::{
     fmt,
     hash::{DefaultHasher, Hash, Hasher},
     process::exit,
+    str::FromStr,
 };
 
 use colored::Colorize;
@@ -429,7 +430,7 @@ impl Game {
             BoardSize::_7 => {
                 game.turn = Role::Defender;
             }
-            BoardSize::_9 => {
+            BoardSize::_9Linntafl => {
                 game.last_capture = Some(0);
             }
             BoardSize::_11 | BoardSize::_13 => {}
@@ -445,7 +446,7 @@ impl Game {
         let board_size_usize = size.into();
         let vec_capacity = match size {
             BoardSize::_7 => 12,
-            BoardSize::_9 => 16,
+            BoardSize::_9Linntafl => 16,
             BoardSize::_11 => 20,
             BoardSize::_13 => 24,
         };
@@ -935,7 +936,7 @@ impl Game {
                     }
 
                     if self.status == Status::Ongoing {
-                        if self.board.size() == BoardSize::_9 {
+                        if self.board.size() == BoardSize::_9Linntafl {
                             let repeated = self
                                 .previous_boards_repeated
                                 .entry(self.board.clone())
@@ -1005,7 +1006,7 @@ impl Game {
     pub fn update(&mut self, message: Message) -> Result<Option<String>, InvalidMove> {
         match message {
             Message::BoardSize(size) => {
-                let board_size = BoardSize::try_from(size)?;
+                let board_size = BoardSize::from_str(&size)?;
 
                 let time_settings = if self.previous_boards.0.len() == 1 {
                     self.defender_time
@@ -1209,9 +1210,17 @@ impl EscapeVec {
 
 impl fmt::Display for EscapeVec {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let board_size = if self.spaces.len() == 11 * 11 { 11 } else { 13 };
+        let board_size = match self.spaces.len() {
+            49 => 7,
+            81 => 9,
+            121 => 11,
+            169 => 13,
+            _ => unreachable!(),
+        };
 
         match board_size {
+            7 => writeln!(f, "   A  B  C  D  E  F  G")?,
+            9 => writeln!(f, "   A  B  C  D  E  F  G  H  I")?,
             11 => writeln!(f, "   A  B  C  D  E  F  G  H  I  J  K")?,
             13 => writeln!(f, "   A  B  C  D  E  F  G  H  I  J  K  L  M")?,
             _ => unreachable!(),
@@ -1219,6 +1228,8 @@ impl fmt::Display for EscapeVec {
 
         for y in 0..board_size {
             match board_size {
+                7 => write!(f, "{:2} ", 7 - y)?,
+                9 => write!(f, "{:2} ", 9 - y)?,
                 11 => write!(f, "{:2} ", 11 - y)?,
                 13 => write!(f, "{:2} ", 13 - y)?,
                 _ => unreachable!(),

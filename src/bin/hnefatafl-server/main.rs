@@ -2259,7 +2259,7 @@ impl Server {
                         .ok()?;
                 }
             }
-            BoardSize::_9 | BoardSize::_11 | BoardSize::_13 => {
+            BoardSize::_9Linntafl | BoardSize::_11 | BoardSize::_13 => {
                 if let Some(channel) = attacker_channel {
                     channel
                         .send(format!("game {id} generate_move attacker"))
@@ -2665,20 +2665,13 @@ impl Server {
             new_game.board_size,
         );
 
-        let board_size = new_game
-            .board_size
-            .try_into()
-            .map_err(|error| {
-                error!("{error}");
-            })
-            .ok()?;
-
+        let board_size = new_game.board_size;
         let game = ServerGameLight::new(
             self.game_id,
             (*username).to_string(),
             new_game.rated.into(),
             new_game.time_settings,
-            board_size,
+            BoardSize::from_str(&board_size).ok()?,
             new_game.role,
         );
 

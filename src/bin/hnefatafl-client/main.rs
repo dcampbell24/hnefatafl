@@ -930,22 +930,22 @@ impl<'a> Client {
         let possible_moves = self.possible_moves();
 
         let board_dimension = match board_size {
-            BoardSize::_7 | BoardSize::_9 | BoardSize::_11 => self.window_height / 13.75,
+            BoardSize::_7 | BoardSize::_9Linntafl | BoardSize::_11 => self.window_height / 13.75,
             BoardSize::_13 => self.window_height / 15.75,
         };
         let letter_size = match board_size {
             BoardSize::_7 => self.window_height / 20.0,
-            BoardSize::_9 => self.window_height / 18.0,
+            BoardSize::_9Linntafl => self.window_height / 18.0,
             BoardSize::_11 => self.window_height / 18.181_818,
             BoardSize::_13 => self.window_height / 25.0,
         };
         let piece_size = match board_size {
-            BoardSize::_7 | BoardSize::_9 | BoardSize::_11 => self.window_height / 13.0,
+            BoardSize::_7 | BoardSize::_9Linntafl | BoardSize::_11 => self.window_height / 13.0,
             BoardSize::_13 => self.window_height / 15.0,
         };
         let spacing = match board_size {
             BoardSize::_7 => 8.0,
-            BoardSize::_9 => 2.0,
+            BoardSize::_9Linntafl => 2.0,
             BoardSize::_11 => 2.5,
             BoardSize::_13 => self.window_height / 75.0,
         };
@@ -1510,7 +1510,7 @@ impl<'a> Client {
 
         let size_9x9 = radio(
             "9x9 (Tablut)",
-            BoardSize::_9,
+            BoardSize::_9Linntafl,
             Some(self.game_settings.board_size),
             Message::BoardSizeSelected,
         );
@@ -2853,7 +2853,7 @@ impl<'a> Client {
                 Screen::Game | Screen::GameReview => {
                     let (board, _) = self.board_and_heatmap();
                     match board.size() {
-                        BoardSize::_7 | BoardSize::_9 | BoardSize::_11 => {
+                        BoardSize::_7 | BoardSize::_9Linntafl | BoardSize::_11 => {
                             self.clear_numbers_except(2);
                             self.press_numbers[1] = !self.press_numbers[1];
                             self.press_letter_and_number();
@@ -2887,7 +2887,7 @@ impl<'a> Client {
                 Screen::Game | Screen::GameReview => {
                     let (board, _) = self.board_and_heatmap();
                     match board.size() {
-                        BoardSize::_7 | BoardSize::_9 | BoardSize::_11 => {
+                        BoardSize::_7 | BoardSize::_9Linntafl | BoardSize::_11 => {
                             self.clear_numbers_except(3);
                             self.press_numbers[2] = !self.press_numbers[2];
                             self.press_letter_and_number();
@@ -3109,7 +3109,7 @@ impl<'a> Client {
                 if self.admin_tournament {
                     match board_size {
                         BoardSize::_7 => self.send("tournament_board_size 7\n"),
-                        BoardSize::_9 => self.send("tournament_board_size 9\n"),
+                        BoardSize::_9Linntafl => self.send("tournament_board_size 9\n"),
                         BoardSize::_11 => self.send("tournament_board_size 11\n"),
                         BoardSize::_13 => self.send("tournament_board_size 13\n"),
                     }

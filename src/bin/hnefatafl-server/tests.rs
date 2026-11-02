@@ -128,7 +128,7 @@ fn server_full() -> anyhow::Result<()> {
             add_seconds: 10,
             milliseconds_left: 900_000,
         }),
-        board_size: 11,
+        board_size: "11".to_string(),
     };
     let new_game = serde_json::ser::to_string(&new_game)?;
 

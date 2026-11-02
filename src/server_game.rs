@@ -271,7 +271,7 @@ pub struct NewGame {
     pub role: Role,
     pub rated: bool,
     pub time_settings: TimeSettings,
-    pub board_size: usize,
+    pub board_size: String,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]

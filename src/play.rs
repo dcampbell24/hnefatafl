@@ -87,57 +87,57 @@ const RESTRICTED_SQUARES_7X7: [Vertex; 5] = [
     THRONE_7X7,
 ];
 
-pub const EXIT_SQUARES_9X9: [Vertex; 4] = [
+pub const EXIT_SQUARES_9X9_LINNTAFL: [Vertex; 4] = [
     Vertex {
-        size: BoardSize::_9,
+        size: BoardSize::_9Linntafl,
         x: 0,
         y: 0,
     },
     Vertex {
-        size: BoardSize::_9,
+        size: BoardSize::_9Linntafl,
         x: 8,
         y: 0,
     },
     Vertex {
-        size: BoardSize::_9,
+        size: BoardSize::_9Linntafl,
         x: 0,
         y: 8,
     },
     Vertex {
-        size: BoardSize::_9,
+        size: BoardSize::_9Linntafl,
         x: 8,
         y: 8,
     },
 ];
 
-pub const THRONE_9X9: Vertex = Vertex {
-    size: BoardSize::_9,
+pub const THRONE_9X9_LINNTAFL: Vertex = Vertex {
+    size: BoardSize::_9Linntafl,
     x: 4,
     y: 4,
 };
 
-const RESTRICTED_SQUARES_9X9: [Vertex; 5] = [
+const RESTRICTED_SQUARES_9X9_LINNTAFL: [Vertex; 5] = [
     Vertex {
-        size: BoardSize::_9,
+        size: BoardSize::_9Linntafl,
         x: 0,
         y: 0,
     },
     Vertex {
-        size: BoardSize::_9,
+        size: BoardSize::_9Linntafl,
         x: 8,
         y: 0,
     },
     Vertex {
-        size: BoardSize::_9,
+        size: BoardSize::_9Linntafl,
         x: 0,
         y: 8,
     },
     Vertex {
-        size: BoardSize::_9,
+        size: BoardSize::_9Linntafl,
         x: 8,
         y: 8,
     },
-    THRONE_9X9,
+    THRONE_9X9_LINNTAFL,
 ];
 
 pub const EXIT_SQUARES_11X11: [Vertex; 4] = [
@@ -449,17 +449,12 @@ pub struct Vertex {
 
 impl fmt::Display for Vertex {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let letters = match self.size {
-            BoardSize::_7 | BoardSize::_9 | BoardSize::_11 => &BOARD_LETTERS.to_lowercase(),
-            BoardSize::_13 => BOARD_LETTERS,
-        };
-
         let board_size: usize = self.size.into();
 
         write!(
             f,
             "{}{}",
-            letters.chars().collect::<Vec<_>>()[self.x],
+            BOARD_LETTERS.chars().collect::<Vec<_>>()[self.x],
             board_size - self.y
         )
     }
@@ -484,7 +479,7 @@ impl TryFrom<(BoardSize, &str)> for Vertex {
                 y = size - y;
 
                 return Ok(Self {
-                    size: size.try_into()?,
+                    size: board_size,
                     x,
                     y,
                 });
@@ -613,7 +608,7 @@ impl Vertex {
     pub fn on_exit_square(&self) -> bool {
         match self.size {
             BoardSize::_7 => EXIT_SQUARES_7X7.contains(self),
-            BoardSize::_9 => EXIT_SQUARES_9X9.contains(self),
+            BoardSize::_9Linntafl => EXIT_SQUARES_9X9_LINNTAFL.contains(self),
             BoardSize::_11 => EXIT_SQUARES_11X11.contains(self),
             BoardSize::_13 => EXIT_SQUARES_13X13.contains(self),
         }
@@ -624,7 +619,7 @@ impl Vertex {
     pub fn on_throne(&self) -> bool {
         match self.size {
             BoardSize::_7 => THRONE_7X7 == *self,
-            BoardSize::_9 => THRONE_9X9 == *self,
+            BoardSize::_9Linntafl => THRONE_9X9_LINNTAFL == *self,
             BoardSize::_11 => THRONE_11X11 == *self,
             BoardSize::_13 => THRONE_13X13 == *self,
         }
@@ -634,7 +629,7 @@ impl Vertex {
     pub fn on_restricted_square(&self) -> bool {
         match &self.size {
             BoardSize::_7 => RESTRICTED_SQUARES_7X7.contains(self),
-            BoardSize::_9 => RESTRICTED_SQUARES_9X9.contains(self),
+            BoardSize::_9Linntafl => RESTRICTED_SQUARES_9X9_LINNTAFL.contains(self),
             BoardSize::_11 => RESTRICTED_SQUARES_11X11.contains(self),
             BoardSize::_13 => RESTRICTED_SQUARES_13X13.contains(self),
         }

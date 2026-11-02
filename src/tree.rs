@@ -120,7 +120,7 @@ impl Tree {
     pub fn new(board_size: BoardSize) -> Self {
         let turn = match board_size {
             BoardSize::_7 => Role::Defender,
-            BoardSize::_9 | BoardSize::_11 | BoardSize::_13 => Role::Attacker,
+            BoardSize::_9Linntafl | BoardSize::_11 | BoardSize::_13 => Role::Attacker,
         };
 
         Self {

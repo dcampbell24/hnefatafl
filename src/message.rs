@@ -92,7 +92,7 @@ pub enum Message {
     ///  `board_size` 7 | `board_size` 11 | `board_size` 13
     ///
     ///  Sets the game to initial conditions with board size 7, 11, or 13.
-    BoardSize(usize),
+    BoardSize(String),
 
     /// The empty string or only comments and whitespace was passed.
     Empty,
@@ -213,7 +213,7 @@ impl TryFrom<(BoardSize, &str)> for Message {
         match *first {
             "board_size" => Ok(Self::BoardSize(
                 (*args.get(1).context(
-                    "expected: board_size 7, board_size 9, board_size 11, or board_size 13",
+                    "expected: board_size 7, board_size 9L, board_size 11, or board_size 13",
                 )?)
                 .parse()?,
             )),

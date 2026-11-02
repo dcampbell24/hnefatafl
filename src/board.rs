@@ -36,8 +36,8 @@ use thiserror::Error;
 use crate::{
     game::PreviousBoards,
     play::{
-        EXIT_SQUARES_7X7, EXIT_SQUARES_9X9, EXIT_SQUARES_11X11, EXIT_SQUARES_13X13, Plae, Play,
-        THRONE_9X9, Vertex,
+        EXIT_SQUARES_7X7, EXIT_SQUARES_9X9_LINNTAFL, EXIT_SQUARES_11X11, EXIT_SQUARES_13X13, Plae,
+        Play, THRONE_9X9_LINNTAFL, Vertex,
     },
     role::Role,
     space::Space,
@@ -331,7 +331,7 @@ impl Board {
     pub fn new(board_size: BoardSize) -> Self {
         match board_size {
             BoardSize::_7 => board_7x7(),
-            BoardSize::_9 => board_9x9(),
+            BoardSize::_9Linntafl => board_9x9(),
             BoardSize::_11 => board_11x11(),
             BoardSize::_13 => board_13x13(),
         }
@@ -430,7 +430,7 @@ impl Board {
                 attacker = 8 - attacker;
                 defender = 4 - defender;
             }
-            BoardSize::_9 => {
+            BoardSize::_9Linntafl => {
                 attacker = 16 - attacker;
                 defender = 8 - defender;
             }
@@ -909,14 +909,14 @@ impl Board {
     pub fn can_not_escape(&self) -> bool {
         let defenders_left = match self.size() {
             BoardSize::_7 => 4 - self.defenders_captured,
-            BoardSize::_9 => 8 - self.defenders_captured,
+            BoardSize::_9Linntafl => 8 - self.defenders_captured,
             BoardSize::_11 => 12 - self.defenders_captured,
             BoardSize::_13 => 16 - self.defenders_captured,
         };
 
         let attackers_left = match self.size() {
             BoardSize::_7 => 8 - self.attackers_captured,
-            BoardSize::_9 => 16 - self.attackers_captured,
+            BoardSize::_9Linntafl => 16 - self.attackers_captured,
             BoardSize::_11 => 24 - self.attackers_captured,
             BoardSize::_13 => 32 - self.attackers_captured,
         };
@@ -926,7 +926,7 @@ impl Board {
         }
 
         if let Some(defended_spaces) = self.closed_off_exits() {
-            ((defenders_left < 4 || self.size() == BoardSize::_9) && attackers_left >= 13)
+            ((defenders_left < 4 || self.size() == BoardSize::_9Linntafl) && attackers_left >= 13)
                 || (defenders_left < 6 && self.n_or_less_side_spaces(&defended_spaces, 3))
                 || self.n_or_less_side_spaces(&defended_spaces, 2)
         } else {
@@ -970,7 +970,7 @@ impl Board {
     pub fn exit_squares(&self) -> Vec<Vertex> {
         match self.size() {
             BoardSize::_7 => EXIT_SQUARES_7X7.into(),
-            BoardSize::_9 => EXIT_SQUARES_9X9.into(),
+            BoardSize::_9Linntafl => EXIT_SQUARES_9X9_LINNTAFL.into(),
             BoardSize::_11 => EXIT_SQUARES_11X11.into(),
             BoardSize::_13 => EXIT_SQUARES_13X13.into(),
         }
@@ -1043,7 +1043,7 @@ impl Board {
                     false
                 }
             }
-            BoardSize::_9 => {
+            BoardSize::_9Linntafl => {
                 if let Some(kings_vertex) = self.king
                     && role_from == Role::Attacker
                 {
@@ -1069,7 +1069,7 @@ impl Board {
                         } else {
                             false
                         }
-                    } else if let Some(right) = THRONE_9X9.right()
+                    } else if let Some(right) = THRONE_9X9_LINNTAFL.right()
                         && kings_vertex == right
                     {
                         if let Some(right_right) = right.right()
@@ -1088,7 +1088,7 @@ impl Board {
                         } else {
                             false
                         }
-                    } else if let Some(left) = THRONE_9X9.left()
+                    } else if let Some(left) = THRONE_9X9_LINNTAFL.left()
                         && kings_vertex == left
                     {
                         if let Some(left_left) = left.left()
@@ -1107,7 +1107,7 @@ impl Board {
                         } else {
                             false
                         }
-                    } else if let Some(up) = THRONE_9X9.up()
+                    } else if let Some(up) = THRONE_9X9_LINNTAFL.up()
                         && kings_vertex == up
                     {
                         if let Some(up_up) = up.up()
@@ -1126,7 +1126,7 @@ impl Board {
                         } else {
                             false
                         }
-                    } else if let Some(down) = THRONE_9X9.down()
+                    } else if let Some(down) = THRONE_9X9_LINNTAFL.down()
                         && kings_vertex == down
                     {
                         if let Some(down_down) = down.down()
@@ -1527,7 +1527,7 @@ impl Board {
 
         match len {
             49 => BoardSize::_7,
-            81 => BoardSize::_9,
+            81 => BoardSize::_9Linntafl,
             121 => BoardSize::_11,
             169 => BoardSize::_13,
             _ => {
@@ -1609,7 +1609,7 @@ impl Board {
         }
 
         if space_from == Space::King {
-            if size == BoardSize::_9 && play.to == THRONE_9X9 {
+            if size == BoardSize::_9Linntafl && play.to == THRONE_9X9_LINNTAFL {
                 return Err(InvalidMove::Restricted);
             }
         } else if play.to.on_restricted_square() {
@@ -1624,7 +1624,7 @@ impl Board {
             board.king = Some(play.to);
         }
 
-        if size == BoardSize::_9 {
+        if size == BoardSize::_9Linntafl {
             // The game is a draw if the board position is repeated three times.
         } else if turn == &Role::Defender && previous_boards.0.contains(&board) {
             return Err(InvalidMove::RepeatMove);
@@ -1842,7 +1842,7 @@ impl Board {
                 board.attackers_captured = 8 - attackers;
                 board.defenders_captured = 4 - defenders;
             }
-            BoardSize::_9 => {
+            BoardSize::_9Linntafl => {
                 board.attackers_captured = 16 - attackers;
                 board.defenders_captured = 8 - defenders;
             }
@@ -1902,7 +1902,7 @@ impl Board {
         }
 
         match board_size {
-            BoardSize::_7 | BoardSize::_9 => {}
+            BoardSize::_7 | BoardSize::_9Linntafl => {}
             BoardSize::_11 | BoardSize::_13 => {
                 if board.exit_forts() {
                     return Ok((board, captures, Status::DefenderWins));
@@ -1924,7 +1924,7 @@ impl Board {
                     return Ok((board, captures, Status::AttackerWins));
                 }
             }
-            BoardSize::_9 => {
+            BoardSize::_9Linntafl => {
                 // The game ends after 100 moves without a capture. It is done in play of Game.
             }
             BoardSize::_11 => {
@@ -2467,7 +2467,7 @@ impl<'de> Deserialize<'de> for OpenTaflBoard {
 )]
 pub enum BoardSize {
     _7,
-    _9,
+    _9Linntafl,
     #[default]
     _11,
     _13,
@@ -2477,20 +2477,20 @@ impl fmt::Display for BoardSize {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             BoardSize::_7 => write!(f, "7"),
-            BoardSize::_9 => write!(f, "9"),
+            BoardSize::_9Linntafl => write!(f, "9L"),
             BoardSize::_11 => write!(f, "11"),
             BoardSize::_13 => write!(f, "13"),
         }
     }
 }
 
-impl From<BoardSize> for usize {
+impl From<BoardSize> for String {
     fn from(size: BoardSize) -> Self {
         match size {
-            BoardSize::_7 => 7,
-            BoardSize::_9 => 9,
-            BoardSize::_11 => 11,
-            BoardSize::_13 => 13,
+            BoardSize::_7 => "7".to_string(),
+            BoardSize::_9Linntafl => "9L".to_string(),
+            BoardSize::_11 => "11".to_string(),
+            BoardSize::_13 => "13".to_string(),
         }
     }
 }
@@ -2501,28 +2501,23 @@ impl FromStr for BoardSize {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
             "7" => Ok(BoardSize::_7),
-            "9" => Ok(BoardSize::_9),
+            "9L" => Ok(BoardSize::_9Linntafl),
             "11" => Ok(BoardSize::_11),
             "13" => Ok(BoardSize::_13),
             _ => Err(anyhow::Error::msg(format!(
-                "expected 7, 9, 11, or 13, got {s}"
+                "expected 7, 9L, 11, or 13, got {s}"
             ))),
         }
     }
 }
 
-impl TryFrom<usize> for BoardSize {
-    type Error = anyhow::Error;
-
-    fn try_from(value: usize) -> Result<Self, Self::Error> {
-        match value {
-            7 => Ok(BoardSize::_7),
-            9 => Ok(BoardSize::_9),
-            11 => Ok(BoardSize::_11),
-            13 => Ok(BoardSize::_13),
-            _ => Err(anyhow::Error::msg(format!(
-                "an invalid board size was passed: {value}"
-            ))),
+impl From<BoardSize> for usize {
+    fn from(size: BoardSize) -> Self {
+        match size {
+            BoardSize::_7 => 7,
+            BoardSize::_9Linntafl => 9,
+            BoardSize::_11 => 11,
+            BoardSize::_13 => 13,
         }
     }
 }
@@ -2569,7 +2564,7 @@ fn board_9x9() -> Board {
         attackers_captured: 0,
         defenders_captured: 0,
         king: Some(Vertex {
-            size: BoardSize::_9,
+            size: BoardSize::_9Linntafl,
             x: 4,
             y: 4,
         }),
