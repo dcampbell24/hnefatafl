@@ -1509,7 +1509,7 @@ impl<'a> Client {
         );
 
         let size_9x9 = radio(
-            "9x9 (Tablut)",
+            "9x9 (Linntafl)",
             BoardSize::_9Linntafl,
             Some(self.game_settings.board_size),
             Message::BoardSizeSelected,
