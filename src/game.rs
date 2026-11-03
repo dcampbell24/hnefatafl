@@ -434,7 +434,7 @@ impl Game {
             BoardSize::_9Linntafl => {
                 game.last_capture = Some(0);
             }
-            BoardSize::_11 | BoardSize::_13 => {}
+            BoardSize::_9 | BoardSize::_11 | BoardSize::_13 => {}
         }
 
         game
@@ -447,7 +447,7 @@ impl Game {
         let board_size_usize = size.into();
         let vec_capacity = match size {
             BoardSize::_7 => 12,
-            BoardSize::_9Linntafl => 16,
+            BoardSize::_9 | BoardSize::_9Linntafl => 16,
             BoardSize::_11 => 20,
             BoardSize::_13 => 24,
         };
@@ -774,7 +774,7 @@ impl Game {
                     moves += 1;
                     escape_vec.set(neighbor, moves);
 
-                    if self.board.exit_squares().contains(neighbor) {
+                    if neighbor.on_exit_square() {
                         return (MovesToEscape::Moves(moves), escape_vec);
                     }
 

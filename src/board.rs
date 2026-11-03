@@ -148,45 +148,43 @@ impl fmt::Debug for Board {
 
 impl fmt::Display for Board {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let board_size: usize = self.size().into();
+        let board_size = self.size();
+        let board_size_usize: usize = board_size.into();
         let mut letters = " ".repeat(3).clone();
-        letters.push_str(&BOARD_LETTERS[..board_size * 2]);
-        let bar = "─".repeat(board_size * 2 + 1);
+        letters.push_str(&BOARD_LETTERS[..board_size_usize * 2]);
+        let bar = "─".repeat(board_size_usize * 2 + 1);
 
         writeln!(f, "\n{letters}\n  ┌{bar}┐")?;
-        for y in 0..board_size {
-            let y_label = board_size - y;
+        for y in 0..board_size_usize {
+            let y_label = board_size_usize - y;
             write!(f, "{y_label:2}│ ")?;
 
-            for x in 0..board_size {
-                if (((y, x) == (0, 0)
-                    || (y, x) == (6, 0)
-                    || (y, x) == (0, 6)
-                    || (y, x) == (6, 6)
-                    || (y, x) == (3, 3))
-                    && self.spaces[y * board_size + x] == Space::Empty
-                    && board_size == 7)
-                    || (((y, x) == (0, 0)
-                        || (y, x) == (8, 0)
-                        || (y, x) == (0, 8)
-                        || (y, x) == (8, 8)
-                        || (y, x) == (4, 4))
-                        && self.spaces[y * board_size + x] == Space::Empty
-                        && board_size == 9)
-                    || (((y, x) == (0, 0)
-                        || (y, x) == (10, 0)
-                        || (y, x) == (0, 10)
-                        || (y, x) == (10, 10)
-                        || (y, x) == (5, 5))
-                        && self.spaces[y * board_size + x] == Space::Empty
-                        && board_size == 11)
-                    || (((y, x) == (0, 0)
-                        || (y, x) == (12, 0)
-                        || (y, x) == (0, 12)
-                        || (y, x) == (12, 12)
-                        || (y, x) == (6, 6))
-                        && self.spaces[y * board_size + x] == Space::Empty
-                        && board_size == 13)
+            for x in 0..board_size_usize {
+                if self.spaces[y * board_size_usize + x] == Space::Empty
+                    && (board_size == BoardSize::_7
+                        && ((y, x) == (0, 0)
+                            || (y, x) == (6, 0)
+                            || (y, x) == (0, 6)
+                            || (y, x) == (6, 6)
+                            || (y, x) == (3, 3))
+                        || board_size == BoardSize::_9Linntafl
+                            && ((y, x) == (0, 0)
+                                || (y, x) == (8, 0)
+                                || (y, x) == (0, 8)
+                                || (y, x) == (8, 8)
+                                || (y, x) == (4, 4))
+                        || board_size == BoardSize::_11
+                            && ((y, x) == (0, 0)
+                                || (y, x) == (10, 0)
+                                || (y, x) == (0, 10)
+                                || (y, x) == (10, 10)
+                                || (y, x) == (5, 5))
+                        || board_size == BoardSize::_13
+                            && ((y, x) == (0, 0)
+                                || (y, x) == (12, 0)
+                                || (y, x) == (0, 12)
+                                || (y, x) == (12, 12)
+                                || (y, x) == (6, 6)))
                 {
                     if self.display_ascii {
                         write!(f, "{} ", "#".green())?;
@@ -194,9 +192,13 @@ impl fmt::Display for Board {
                         write!(f, "{} ", "⌘".green())?;
                     }
                 } else if self.display_ascii {
-                    write!(f, "{} ", self.spaces[y * board_size + x].display_ascii())?;
+                    write!(
+                        f,
+                        "{} ",
+                        self.spaces[y * board_size_usize + x].display_ascii()
+                    )?;
                 } else {
-                    write!(f, "{} ", self.spaces[y * board_size + x])?;
+                    write!(f, "{} ", self.spaces[y * board_size_usize + x])?;
                 }
             }
             writeln!(f, "│{y_label:2}")?;
@@ -331,7 +333,8 @@ impl Board {
     pub fn new(board_size: BoardSize) -> Self {
         match board_size {
             BoardSize::_7 => board_7x7(),
-            BoardSize::_9Linntafl => board_9x9(),
+            BoardSize::_9 => board_9x9(),
+            BoardSize::_9Linntafl => board_9x9_linntafl(),
             BoardSize::_11 => board_11x11(),
             BoardSize::_13 => board_13x13(),
         }
@@ -430,7 +433,7 @@ impl Board {
                 attacker = 8 - attacker;
                 defender = 4 - defender;
             }
-            BoardSize::_9Linntafl => {
+            BoardSize::_9 | BoardSize::_9Linntafl => {
                 attacker = 16 - attacker;
                 defender = 8 - defender;
             }
@@ -907,15 +910,23 @@ impl Board {
 
     #[must_use]
     pub fn can_not_escape(&self) -> bool {
-        let defenders_left = match self.size() {
+        let board_size = self.size();
+
+        if board_size == BoardSize::_9 {
+            return false;
+        }
+
+        let defenders_left = match board_size {
             BoardSize::_7 => 4 - self.defenders_captured,
+            BoardSize::_9 => unreachable!(),
             BoardSize::_9Linntafl => 8 - self.defenders_captured,
             BoardSize::_11 => 12 - self.defenders_captured,
             BoardSize::_13 => 16 - self.defenders_captured,
         };
 
-        let attackers_left = match self.size() {
+        let attackers_left = match board_size {
             BoardSize::_7 => 8 - self.attackers_captured,
+            BoardSize::_9 => unreachable!(),
             BoardSize::_9Linntafl => 16 - self.attackers_captured,
             BoardSize::_11 => 24 - self.attackers_captured,
             BoardSize::_13 => 32 - self.attackers_captured,
@@ -970,6 +981,7 @@ impl Board {
     pub fn exit_squares(&self) -> Vec<Vertex> {
         match self.size() {
             BoardSize::_7 => EXIT_SQUARES_7X7.into(),
+            BoardSize::_9 => unreachable!(),
             BoardSize::_9Linntafl => EXIT_SQUARES_9X9_LINNTAFL.into(),
             BoardSize::_11 => EXIT_SQUARES_11X11.into(),
             BoardSize::_13 => EXIT_SQUARES_13X13.into(),
@@ -1178,7 +1190,7 @@ impl Board {
                     false
                 }
             }
-            BoardSize::_11 | BoardSize::_13 => {
+            BoardSize::_9 | BoardSize::_11 | BoardSize::_13 => {
                 if let Some(kings_vertex) = self.king
                     && role_from == Role::Attacker
                     && let Some(right) = kings_vertex.right()
@@ -1527,7 +1539,14 @@ impl Board {
 
         match len {
             49 => BoardSize::_7,
-            81 => BoardSize::_9Linntafl,
+            // Fixme: when the king is captured we sometimes get the wrong size!
+            81 => {
+                if let Some(king) = self.king {
+                    king.size
+                } else {
+                    BoardSize::_9
+                }
+            }
             121 => BoardSize::_11,
             169 => BoardSize::_13,
             _ => {
@@ -1842,7 +1861,7 @@ impl Board {
                 board.attackers_captured = 8 - attackers;
                 board.defenders_captured = 4 - defenders;
             }
-            BoardSize::_9Linntafl => {
+            BoardSize::_9 | BoardSize::_9Linntafl => {
                 board.attackers_captured = 16 - attackers;
                 board.defenders_captured = 8 - defenders;
             }
@@ -1893,7 +1912,7 @@ impl Board {
         board.captures(&play.to, role_from, &mut captures);
         board.captures_shield_wall(role_from, &play.to, &mut captures);
 
-        if play.to.on_exit_square() {
+        if play.to.on_exit_square() && space_from == Space::King {
             return Ok((board, captures, Status::DefenderWins));
         }
 
@@ -1902,7 +1921,7 @@ impl Board {
         }
 
         match board_size {
-            BoardSize::_7 | BoardSize::_9Linntafl => {}
+            BoardSize::_7 | BoardSize::_9 | BoardSize::_9Linntafl => {}
             BoardSize::_11 | BoardSize::_13 => {
                 if board.exit_forts() {
                     return Ok((board, captures, Status::DefenderWins));
@@ -1921,6 +1940,11 @@ impl Board {
         match board_size {
             BoardSize::_7 => {
                 if turn_number > 100 {
+                    return Ok((board, captures, Status::AttackerWins));
+                }
+            }
+            BoardSize::_9 => {
+                if turn_number > 120 {
                     return Ok((board, captures, Status::AttackerWins));
                 }
             }
@@ -2467,6 +2491,7 @@ impl<'de> Deserialize<'de> for OpenTaflBoard {
 )]
 pub enum BoardSize {
     _7,
+    _9,
     _9Linntafl,
     #[default]
     _11,
@@ -2477,6 +2502,7 @@ impl fmt::Display for BoardSize {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             BoardSize::_7 => write!(f, "7"),
+            BoardSize::_9 => write!(f, "9"),
             BoardSize::_9Linntafl => write!(f, "9L"),
             BoardSize::_11 => write!(f, "11"),
             BoardSize::_13 => write!(f, "13"),
@@ -2488,6 +2514,7 @@ impl From<BoardSize> for String {
     fn from(size: BoardSize) -> Self {
         match size {
             BoardSize::_7 => "7".to_string(),
+            BoardSize::_9 => "9".to_string(),
             BoardSize::_9Linntafl => "9L".to_string(),
             BoardSize::_11 => "11".to_string(),
             BoardSize::_13 => "13".to_string(),
@@ -2501,11 +2528,12 @@ impl FromStr for BoardSize {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
             "7" => Ok(BoardSize::_7),
+            "9" => Ok(BoardSize::_9),
             "9L" => Ok(BoardSize::_9Linntafl),
             "11" => Ok(BoardSize::_11),
             "13" => Ok(BoardSize::_13),
             _ => Err(anyhow::Error::msg(format!(
-                "expected 7, 9L, 11, or 13, got {s}"
+                "expected 7, 9, 9L, 11, or 13, got {s}"
             ))),
         }
     }
@@ -2515,7 +2543,7 @@ impl From<BoardSize> for usize {
     fn from(size: BoardSize) -> Self {
         match size {
             BoardSize::_7 => 7,
-            BoardSize::_9Linntafl => 9,
+            BoardSize::_9 | BoardSize::_9Linntafl => 9,
             BoardSize::_11 => 11,
             BoardSize::_13 => 13,
         }
@@ -2554,6 +2582,34 @@ fn board_7x7() -> Board {
 #[allow(clippy::missing_panics_doc)]
 #[allow(clippy::unwrap_used)]
 fn board_9x9() -> Board {
+    let spaces: Vec<Space> = STARTING_POSITION_9X9
+        .iter()
+        .flat_map(|space| space.chars().map(|ch| ch.try_into().unwrap()))
+        .collect();
+
+    let mut board = Board {
+        spaces,
+        attackers_captured: 0,
+        defenders_captured: 0,
+        king: Some(Vertex {
+            size: BoardSize::_9,
+            x: 4,
+            y: 4,
+        }),
+        display_ascii: false,
+    };
+
+    let captured = board.captured();
+    board.attackers_captured = captured.attacker;
+    board.defenders_captured = captured.defender;
+
+    board
+}
+
+#[must_use]
+#[allow(clippy::missing_panics_doc)]
+#[allow(clippy::unwrap_used)]
+fn board_9x9_linntafl() -> Board {
     let spaces: Vec<Space> = STARTING_POSITION_9X9
         .iter()
         .flat_map(|space| space.chars().map(|ch| ch.try_into().unwrap()))

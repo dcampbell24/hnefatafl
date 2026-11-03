@@ -2259,7 +2259,7 @@ impl Server {
                         .ok()?;
                 }
             }
-            BoardSize::_9Linntafl | BoardSize::_11 | BoardSize::_13 => {
+            BoardSize::_9 | BoardSize::_9Linntafl | BoardSize::_11 | BoardSize::_13 => {
                 if let Some(channel) = attacker_channel {
                     channel
                         .send(format!("game {id} generate_move attacker"))
@@ -3044,23 +3044,18 @@ impl Server {
     }
 
     fn tournament_board_size(&mut self, the_rest: &[&str]) -> anyhow::Result<()> {
-        let Some(date) = the_rest.first() else {
+        let Some(size) = the_rest.first() else {
             return Err(anyhow::Error::msg("tournament_board_size: size is empty"));
         };
 
-        self.tournament.board_size = match date.parse::<u8>() {
-            Ok(7) => BoardSize::_7,
-            Ok(11) => BoardSize::_11,
-            Ok(13) => BoardSize::_13,
-            Ok(i) => {
-                return Err(anyhow::Error::msg(format!(
-                    "tournament_board_size: {i} is an invalid size"
-                )));
-            }
-            Err(error) => {
-                return Err(anyhow::Error::msg(format!(
-                    "tournament_board_size: {error}"
-                )));
+        self.tournament.board_size = match *size {
+            "7" => BoardSize::_7,
+            "9" => BoardSize::_9,
+            "9L" => BoardSize::_9Linntafl,
+            "11" => BoardSize::_11,
+            "13" => BoardSize::_13,
+            _ => {
+                return Err(anyhow::Error::msg(format!("tournament_board_size: {size}")));
             }
         };
 

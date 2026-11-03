@@ -87,6 +87,12 @@ const RESTRICTED_SQUARES_7X7: [Vertex; 5] = [
     THRONE_7X7,
 ];
 
+pub const THRONE_9X9: Vertex = Vertex {
+    size: BoardSize::_9,
+    x: 4,
+    y: 4,
+};
+
 pub const EXIT_SQUARES_9X9_LINNTAFL: [Vertex; 4] = [
     Vertex {
         size: BoardSize::_9Linntafl,
@@ -608,6 +614,7 @@ impl Vertex {
     pub fn on_exit_square(&self) -> bool {
         match self.size {
             BoardSize::_7 => EXIT_SQUARES_7X7.contains(self),
+            BoardSize::_9 => self.x == 0 || self.x == 8 || self.y == 0 || self.y == 8,
             BoardSize::_9Linntafl => EXIT_SQUARES_9X9_LINNTAFL.contains(self),
             BoardSize::_11 => EXIT_SQUARES_11X11.contains(self),
             BoardSize::_13 => EXIT_SQUARES_13X13.contains(self),
@@ -619,6 +626,7 @@ impl Vertex {
     pub fn on_throne(&self) -> bool {
         match self.size {
             BoardSize::_7 => THRONE_7X7 == *self,
+            BoardSize::_9 => THRONE_9X9 == *self,
             BoardSize::_9Linntafl => THRONE_9X9_LINNTAFL == *self,
             BoardSize::_11 => THRONE_11X11 == *self,
             BoardSize::_13 => THRONE_13X13 == *self,
@@ -629,6 +637,7 @@ impl Vertex {
     pub fn on_restricted_square(&self) -> bool {
         match &self.size {
             BoardSize::_7 => RESTRICTED_SQUARES_7X7.contains(self),
+            BoardSize::_9 => THRONE_9X9 == *self,
             BoardSize::_9Linntafl => RESTRICTED_SQUARES_9X9_LINNTAFL.contains(self),
             BoardSize::_11 => RESTRICTED_SQUARES_11X11.contains(self),
             BoardSize::_13 => RESTRICTED_SQUARES_13X13.contains(self),
