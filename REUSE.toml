@@ -102,7 +102,18 @@ SPDX-License-Identifier = "CC0-1.0"
 SPDX-FileCopyrightText = "NONE"
 
 # Automatically generated.
+
+[[annotations]]
+path = "copenhagen-T10-15x192-step673949.onnx"
+SPDX-License-Identifier = "GPL-3.0-or-later"
+SPDX-FileCopyrightText = "sovelin (github user name)"
+
 [[annotations]]
 path = "default_nn.onnx"
+SPDX-License-Identifier = "GPL-3.0-or-later"
+SPDX-FileCopyrightText = "sovelin (github user name)"
+
+[[annotations]]
+path = "tablut9x9.onnx"
 SPDX-License-Identifier = "GPL-3.0-or-later"
 SPDX-FileCopyrightText = "sovelin (github user name)"
