@@ -1055,6 +1055,106 @@ impl Board {
                     false
                 }
             }
+
+            BoardSize::_9 => {
+                if let Some(kings_vertex) = self.king
+                    && role_from == Role::Attacker
+                {
+                    if kings_vertex.on_throne() {
+                        if let Some(right) = kings_vertex.right()
+                            && let Some(left) = kings_vertex.left()
+                            && let Some(down) = kings_vertex.down()
+                            && let Some(up) = kings_vertex.up()
+                            && (*play_to == up
+                                || *play_to == left
+                                || *play_to == down
+                                || *play_to == right)
+                            && self.get(&up) == Space::Attacker
+                            && self.get(&left) == Space::Attacker
+                            && self.get(&down) == Space::Attacker
+                            && self.get(&right) == Space::Attacker
+                        {
+                            self.set(&kings_vertex, Space::Empty);
+                            self.king = None;
+                            captures.insert(kings_vertex);
+
+                            true
+                        } else {
+                            false
+                        }
+                    } else if let Some(up) = kings_vertex.up()
+                        && up.on_throne()
+                    {
+                        if let Some(right) = kings_vertex.right()
+                            && let Some(left) = kings_vertex.left()
+                            && let Some(down) = kings_vertex.down()
+                            && (*play_to == left || *play_to == right || *play_to == down)
+                            && self.get(&right) == Space::Attacker
+                            && self.get(&left) == Space::Attacker
+                            && self.get(&down) == Space::Attacker
+                        {
+                            self.set(&kings_vertex, Space::Empty);
+                            self.king = None;
+                            captures.insert(kings_vertex);
+
+                            return true;
+                        }
+
+                        false
+                    } else if let Some(down) = kings_vertex.down()
+                        && down.on_throne()
+                    {
+                        if let Some(right) = kings_vertex.right()
+                            && let Some(left) = kings_vertex.left()
+                            && let Some(up) = kings_vertex.up()
+                            && (*play_to == left || *play_to == right || *play_to == up)
+                            && self.get(&right) == Space::Attacker
+                            && self.get(&left) == Space::Attacker
+                            && self.get(&up) == Space::Attacker
+                        {
+                            self.set(&kings_vertex, Space::Empty);
+                            self.king = None;
+                            captures.insert(kings_vertex);
+
+                            return true;
+                        }
+
+                        false
+
+                    // Fixme!!!!
+                    } else {
+                        if let Some(right) = kings_vertex.right()
+                            && let Some(left) = kings_vertex.left()
+                            && (*play_to == left || *play_to == right)
+                            && (self.get(&right) == Space::Attacker || right.on_exit_square())
+                            && (self.get(&left) == Space::Attacker || left.on_exit_square())
+                        {
+                            self.set(&kings_vertex, Space::Empty);
+                            self.king = None;
+                            captures.insert(kings_vertex);
+
+                            return true;
+                        }
+
+                        if let Some(up) = kings_vertex.up()
+                            && let Some(down) = kings_vertex.down()
+                            && (*play_to == up || *play_to == down)
+                            && (self.get(&up) == Space::Attacker || up.on_exit_square())
+                            && (self.get(&down) == Space::Attacker || down.on_exit_square())
+                        {
+                            self.set(&kings_vertex, Space::Empty);
+                            self.king = None;
+                            captures.insert(kings_vertex);
+
+                            return true;
+                        }
+
+                        false
+                    }
+                } else {
+                    false
+                }
+            }
             BoardSize::_9Linntafl => {
                 if let Some(kings_vertex) = self.king
                     && role_from == Role::Attacker
@@ -1190,7 +1290,7 @@ impl Board {
                     false
                 }
             }
-            BoardSize::_9 | BoardSize::_11 | BoardSize::_13 => {
+            BoardSize::_11 | BoardSize::_13 => {
                 if let Some(kings_vertex) = self.king
                     && role_from == Role::Attacker
                     && let Some(right) = kings_vertex.right()

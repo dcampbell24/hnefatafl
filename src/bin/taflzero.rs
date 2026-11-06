@@ -34,6 +34,7 @@ use env_logger::Builder;
 use hnefatafl_copenhagen::{
     COPYRIGHT, SOFTWARE_ID, VERSION_ID,
     ai::{AI, AiMonteCarlo},
+    board::BoardSize,
     game::Game,
     opentafl::{OpenTaflGame, OpenTaflMoves},
     play::{Plae, Play, Vertex},
@@ -51,6 +52,7 @@ use taflzero::{
 
 const PORT: &str = ":49152";
 const ONNX_PATH: &str = "/usr/share/taflzero";
+const TABLUT_ONNX_FILE: &str = "tablut9x9.onnx";
 const COPENHAGEN_ONNX_FILE: &str = "copenhagen-T10-15x192-step673949.onnx";
 const MONTE_CARLO_SECONDS: u64 = 16;
 const MONTE_CARLO_DEPTH: u8 = 20;
@@ -71,6 +73,10 @@ struct Args {
     /// Use the neural network file from /usr/share/taflzero/
     #[arg(long)]
     neural_network: Option<String>,
+
+    /// Follow these rules
+    #[arg(long, default_value_t = BoardSize::_11)]
+    rules: BoardSize,
 
     /// attacker or defender
     #[arg(long, default_value_t = Role::Defender)]
@@ -211,7 +217,11 @@ fn main() -> anyhow::Result<()> {
     {
         path
     } else {
-        Path::new(COPENHAGEN_ONNX_FILE).to_path_buf()
+        match args.rules {
+            BoardSize::_7 | BoardSize::_9Linntafl | BoardSize::_13 => unimplemented!(),
+            BoardSize::_9 => Path::new(COPENHAGEN_ONNX_FILE).to_path_buf(),
+            BoardSize::_11 => Path::new(TABLUT_ONNX_FILE).to_path_buf(),
+        }
     };
 
     if let Some(id) = args.join_game {
@@ -230,10 +240,16 @@ fn main() -> anyhow::Result<()> {
         reader,
         tcp: tcp.try_clone()?,
         tx,
+        rules: args.rules,
     };
 
     thread::spawn(move || {
-        let mut board = Board::from_rules(RulesEnum::Copenhagen11x11);
+        let mut board = match args.rules {
+            BoardSize::_7 | BoardSize::_9Linntafl | BoardSize::_13 => unimplemented!(),
+            BoardSize::_9 => Board::from_rules(RulesEnum::Tablut9x9),
+            BoardSize::_11 => Board::from_rules(RulesEnum::Copenhagen11x11),
+        };
+
         let mut engine = Engine::new(path.to_string_lossy().to_string());
         let mut ai = AiMonteCarlo::new(Duration::from_secs(MONTE_CARLO_SECONDS), MONTE_CARLO_DEPTH);
 
@@ -344,6 +360,7 @@ struct TaflZero {
     reader: BufReader<TcpStream>,
     tcp: TcpStream,
     tx: Sender<(String, OpenTaflGame)>,
+    rules: BoardSize,
 }
 
 impl TaflZero {
@@ -358,7 +375,7 @@ impl TaflZero {
                     add_seconds: 10,
                     milliseconds_left: 900_000,
                 }),
-                board_size: "11".to_string(),
+                board_size: self.rules.to_string(),
             };
 
             let new_game = serde_json::ser::to_string(&new_game)?;
