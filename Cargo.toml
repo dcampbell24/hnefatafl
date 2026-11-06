@@ -91,7 +91,7 @@ password-hash = { version = "0.6", optional = true }
 rustrict = { version = "0.7", optional = true }
 
 # taflzero
-taflzero = { version = "0.1", optional = true }
+taflzero = { version = "0.3", optional = true }
 
 [features]
 default = ["client", "server", "taflzero"]

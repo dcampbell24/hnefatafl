@@ -44,11 +44,14 @@ use hnefatafl_copenhagen::{
 };
 use log::LevelFilter;
 use socket2::{Domain, SockAddr, Socket, TcpKeepalive, Type};
-use taflzero::{Engine, moves::mv::create_move_from_algebraic};
+use taflzero::{
+    Engine,
+    board::{Board, rules::RulesEnum},
+};
 
 const PORT: &str = ":49152";
 const ONNX_PATH: &str = "/usr/share/taflzero";
-const ONNX_FILE: &str = "default_nn.onnx";
+const COPENHAGEN_ONNX_FILE: &str = "copenhagen-T10-15x192-step673949.onnx";
 const MONTE_CARLO_SECONDS: u64 = 16;
 const MONTE_CARLO_DEPTH: u8 = 20;
 
@@ -208,7 +211,7 @@ fn main() -> anyhow::Result<()> {
     {
         path
     } else {
-        Path::new(ONNX_FILE).to_path_buf()
+        Path::new(COPENHAGEN_ONNX_FILE).to_path_buf()
     };
 
     if let Some(id) = args.join_game {
@@ -230,6 +233,7 @@ fn main() -> anyhow::Result<()> {
     };
 
     thread::spawn(move || {
+        let mut board = Board::from_rules(RulesEnum::Copenhagen11x11);
         let mut engine = Engine::new(path.to_string_lossy().to_string());
         let mut ai = AiMonteCarlo::new(Duration::from_secs(MONTE_CARLO_SECONDS), MONTE_CARLO_DEPTH);
 
@@ -243,8 +247,12 @@ fn main() -> anyhow::Result<()> {
 
             for (play, _captures) in moves.0 {
                 if let Plae::Play(play) = &play {
-                    let mv =
-                        create_move_from_algebraic(&format!("{}{}", play.from, play.to)).unwrap();
+                    let mv = board
+                        .create_move_from_algebraic(
+                            &format!("{}{}", play.from, play.to).to_ascii_lowercase(),
+                        )
+                        .unwrap();
+
                     engine.make_move(mv).unwrap();
                 }
             }
@@ -262,6 +270,7 @@ fn main() -> anyhow::Result<()> {
             if game.turn == role {
                 generate_move(
                     &mut ai,
+                    &mut board,
                     &mut engine,
                     args.search_ms,
                     game,
@@ -433,6 +442,7 @@ impl TaflZero {
 
 fn generate_move(
     ai: &mut AiMonteCarlo,
+    board: &mut Board,
     engine: &mut Engine,
     search_ms: u64,
     mut game: Game,
@@ -444,7 +454,7 @@ fn generate_move(
     engine.make_search(search_ms, None);
 
     if let Some(mv) = engine.best_move() {
-        let play = mv.to_string();
+        let play = board.move_to_algebraic(mv);
         let mut play = play.chars();
         let mut from = Vec::new();
 
@@ -480,8 +490,9 @@ fn generate_move(
 
             match &generate_move.play {
                 Plae::Play(play) => {
-                    let mv =
-                        create_move_from_algebraic(&format!("{}{}", play.from, play.to)).unwrap();
+                    let mv = board
+                        .create_move_from_algebraic(&format!("{}{}", play.from, play.to))
+                        .unwrap();
 
                     if let Err(invalid_play) = engine.make_move(mv) {
                         log::error!("invalid_play: {invalid_play:?}");
