@@ -10,7 +10,7 @@ cargo clippy --all-targets --all-features --keep-going
 cargo test --all-targets --all-features
 
 # cargo install zizmor --locked
-zizmor --pedantic .github/
+zizmor --offline --pedantic .github/
 
 # sudo apt-get install reuse
 reuse lint
