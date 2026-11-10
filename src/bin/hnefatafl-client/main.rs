@@ -2243,6 +2243,7 @@ impl<'a> Client {
     }
 
     fn locale_selection(&self) -> Row<'_, Message> {
+        //
         let locale = [
             Locale::English,
             Locale::Chinese,
@@ -2255,10 +2256,11 @@ impl<'a> Client {
             Locale::Japanese,
             Locale::Russian,
             Locale::German,
+            Locale::Korean,
+            Locale::Norwegian,
+            Locale::Swedish,
             Locale::Icelandic,
             Locale::IcelandicRunic,
-            Locale::Swedish,
-            Locale::Korean,
         ];
 
         row![

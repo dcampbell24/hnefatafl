@@ -43,7 +43,7 @@ default-features = false
 winapi = { version = "0.3", features = ["errhandlingapi"] }
 
 [target.'cfg(not(target_os = "redox"))'.dependencies]
-rfd = { version ="0.17", features = ["xdg-portal"], optional = true }
+rfd = { version ="0.18", features = ["xdg-portal"], optional = true }
 ###
 
 [dependencies]

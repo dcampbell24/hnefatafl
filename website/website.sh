@@ -13,13 +13,6 @@ mv --force ./book/html/* /var/www/html/
 
 ./replace_strings.sh
 
-cat << EOF > /var/www/html/robots.txt
-User-agent: *
-Allow: /
-
-Sitemap: https://hnefatafl.org/sitemap.xml
-EOF
-
 mkdir --parents /var/www/html/binaries/nsis/
 cp ../../www/hnefatafl-client-installer-*.exe /var/www/html/binaries/nsis/
 cp -r ../../www/apt/ /var/www/html/

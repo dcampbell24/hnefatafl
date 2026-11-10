@@ -38,6 +38,7 @@ pub enum Locale {
     IcelandicRunic,
     Swedish,
     Korean,
+    Norwegian,
 }
 
 impl Locale {
@@ -59,6 +60,7 @@ impl Locale {
             Self::IcelandicRunic => "is-RU".to_string(),
             Self::Swedish => "sv-SE".to_string(),
             Self::Korean => "ko".to_string(),
+            Self::Norwegian => "nb-NO".to_string(),
         }
     }
 }
@@ -82,6 +84,7 @@ impl TryFrom<&str> for Locale {
             "is" => Ok(Self::Icelandic),
             "sv" => Ok(Self::Swedish),
             "ko" => Ok(Self::Korean),
+            "nb" => Ok(Self::Norwegian),
             _ => Err(anyhow::Error::msg("can't find a locale")),
         }
     }
@@ -105,6 +108,7 @@ impl fmt::Display for Locale {
             Self::IcelandicRunic => write!(f, "ᛇᛋᛚᛂᚿᛋᚴᛁ ᚱᚤᛐᚢᚱᛁᚿᚿ (Íslenska Rúturinn)"),
             Self::Swedish => write!(f, "Svenska"),
             Self::Korean => write!(f, "한국인"),
+            Self::Norwegian => write!(f, "Norsk (bokmål)"),
         }
     }
 }
