@@ -1120,8 +1120,44 @@ impl Board {
                         }
 
                         false
+                    } else if let Some(right) = kings_vertex.right()
+                        && right.on_throne()
+                    {
+                        if let Some(up) = kings_vertex.up()
+                            && let Some(down) = kings_vertex.down()
+                            && let Some(left) = kings_vertex.left()
+                            && (*play_to == up || *play_to == down || *play_to == left)
+                            && self.get(&up) == Space::Attacker
+                            && self.get(&down) == Space::Attacker
+                            && self.get(&left) == Space::Attacker
+                        {
+                            self.set(&kings_vertex, Space::Empty);
+                            self.king = None;
+                            captures.insert(kings_vertex);
 
-                    // Fixme!!!!
+                            return true;
+                        }
+
+                        false
+                    } else if let Some(left) = kings_vertex.left()
+                        && left.on_throne()
+                    {
+                        if let Some(up) = kings_vertex.up()
+                            && let Some(down) = kings_vertex.down()
+                            && let Some(right) = kings_vertex.right()
+                            && (*play_to == up || *play_to == down || *play_to == right)
+                            && self.get(&up) == Space::Attacker
+                            && self.get(&down) == Space::Attacker
+                            && self.get(&right) == Space::Attacker
+                        {
+                            self.set(&kings_vertex, Space::Empty);
+                            self.king = None;
+                            captures.insert(kings_vertex);
+
+                            return true;
+                        }
+
+                        false
                     } else {
                         if let Some(right) = kings_vertex.right()
                             && let Some(left) = kings_vertex.left()
