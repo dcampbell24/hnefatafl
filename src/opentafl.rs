@@ -108,13 +108,19 @@ impl From<&ServerGame> for OpenTaflGame {
             .join(" ");
 
         let time_control = if let Plays::PlayRecordsTimed(plays) = &server_game.game.plays
-            && let Some(play) = plays.first()
             && let TimeSettings::Timed(time_settings) = server_game.game.defender_time
         {
-            Some(TimeControl {
-                main_time_seconds: play.defender_time.milliseconds_left / 1_000,
-                increment_length: time_settings.add_seconds,
-            })
+            if let Some(play) = plays.first() {
+                Some(TimeControl {
+                    main_time_seconds: play.defender_time.milliseconds_left / 1_000,
+                    increment_length: time_settings.add_seconds,
+                })
+            } else {
+                Some(TimeControl {
+                    main_time_seconds: time_settings.milliseconds_left / 1_000,
+                    increment_length: time_settings.add_seconds,
+                })
+            }
         } else {
             None
         };

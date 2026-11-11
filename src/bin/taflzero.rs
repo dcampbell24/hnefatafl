@@ -219,8 +219,8 @@ fn main() -> anyhow::Result<()> {
     } else {
         match args.rules {
             BoardSize::_7 | BoardSize::_9Linntafl | BoardSize::_13 => unimplemented!(),
-            BoardSize::_9 => Path::new(COPENHAGEN_ONNX_FILE).to_path_buf(),
-            BoardSize::_11 => Path::new(TABLUT_ONNX_FILE).to_path_buf(),
+            BoardSize::_9 => Path::new(TABLUT_ONNX_FILE).to_path_buf(),
+            BoardSize::_11 => Path::new(COPENHAGEN_ONNX_FILE).to_path_buf(),
         }
     };
 
@@ -244,13 +244,19 @@ fn main() -> anyhow::Result<()> {
     };
 
     thread::spawn(move || {
+        let mut engine = Engine::new(path.to_string_lossy().to_string());
         let mut board = match args.rules {
             BoardSize::_7 | BoardSize::_9Linntafl | BoardSize::_13 => unimplemented!(),
-            BoardSize::_9 => Board::from_rules(RulesEnum::Tablut9x9),
-            BoardSize::_11 => Board::from_rules(RulesEnum::Copenhagen11x11),
+            BoardSize::_9 => {
+                engine.set_variant(RulesEnum::Tablut9x9);
+                Board::from_rules(RulesEnum::Tablut9x9)
+            }
+            BoardSize::_11 => {
+                engine.set_variant(RulesEnum::Copenhagen11x11);
+                Board::from_rules(RulesEnum::Copenhagen11x11)
+            }
         };
 
-        let mut engine = Engine::new(path.to_string_lossy().to_string());
         let mut ai = AiMonteCarlo::new(Duration::from_secs(MONTE_CARLO_SECONDS), MONTE_CARLO_DEPTH);
 
         loop {
@@ -502,13 +508,18 @@ fn generate_move(
         log_play(&play, true);
 
         if game.play(&play).is_err() {
+            log::info!("changing play...");
             let generate_move = ai.generate_move(&mut game)?;
             log::info!("changed play to: {generate_move}");
 
             match &generate_move.play {
                 Plae::Play(play) => {
                     let mv = board
-                        .create_move_from_algebraic(&format!("{}{}", play.from, play.to))
+                        .create_move_from_algebraic(&format!(
+                            "{}{}",
+                            play.from.to_string().to_ascii_lowercase(),
+                            play.to.to_string().to_ascii_lowercase()
+                        ))
                         .unwrap();
 
                     if let Err(invalid_play) = engine.make_move(mv) {

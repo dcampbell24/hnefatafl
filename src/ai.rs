@@ -209,7 +209,7 @@ impl AI for AiMonteCarlo {
         let (tx, rx) = channel();
 
         trees.par_iter_mut().try_for_each_with(tx, |tx, tree| {
-            let nodes = tree.monte_carlo_tree_search(self.duration, self.depth);
+            let nodes = tree.monte_carlo_tree_search(game, self.duration, self.depth);
             tx.send(nodes)
         })?;
 
@@ -262,7 +262,7 @@ impl AI for AiMonteCarlo {
 
         game.play(play)?;
 
-        let here_tree = Tree::from(game.clone());
+        let here_tree = Tree::from(&*game);
         for tree in &mut trees {
             *tree = here_tree.clone();
         }
@@ -288,7 +288,7 @@ impl AiMonteCarlo {
         let mut trees = Vec::with_capacity(count);
 
         for _ in 0..count {
-            trees.push(Tree::new(game.clone()));
+            trees.push(Tree::new(game));
         }
 
         Ok(trees)

@@ -35,7 +35,6 @@ use crate::{
 #[derive(Clone, Debug)]
 pub struct Tree {
     here: u64,
-    pub game: Game,
     arena: FxHashMap<u64, Node>,
 }
 
@@ -65,7 +64,12 @@ impl Tree {
     #[allow(clippy::expect_used)]
     #[allow(clippy::missing_panics_doc)]
     #[must_use]
-    pub fn monte_carlo_tree_search(&mut self, duration: Duration, depth: u8) -> (u64, Vec<Node>) {
+    pub fn monte_carlo_tree_search(
+        &mut self,
+        game: &Game,
+        duration: Duration,
+        depth: u8,
+    ) -> (u64, Vec<Node>) {
         // Doesn't seem to do much... and makes the overall search slower, about 5%.
         /*
         if self.game.previous_boards.0.len() == 1 {
@@ -86,7 +90,7 @@ impl Tree {
             }
             loops += 1;
 
-            let mut game = self.game.clone();
+            let mut game = game.clone();
             let mut here = self.here;
 
             for _ in 0..depth {
@@ -176,7 +180,7 @@ impl Tree {
     }
 
     #[must_use]
-    pub fn new(game: Game) -> Self {
+    pub fn new(game: &Game) -> Self {
         let hash = game.calculate_hash();
         let mut arena = FxHashMap::default();
         arena.insert(
@@ -191,16 +195,12 @@ impl Tree {
             },
         );
 
-        Self {
-            here: hash,
-            game,
-            arena,
-        }
+        Self { here: hash, arena }
     }
 }
 
-impl From<Game> for Tree {
-    fn from(game: Game) -> Self {
+impl From<&Game> for Tree {
+    fn from(game: &Game) -> Self {
         let mut arena = FxHashMap::default();
 
         let play = match &game.plays {
@@ -233,11 +233,7 @@ impl From<Game> for Tree {
             },
         );
 
-        Self {
-            here: hash,
-            game,
-            arena,
-        }
+        Self { here: hash, arena }
     }
 }
 

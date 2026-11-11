@@ -493,6 +493,11 @@ impl Board {
         let size = self.size();
         let board_size_usize: usize = size.into();
 
+        match size {
+            BoardSize::_7 | BoardSize::_9 | BoardSize::_9Linntafl => return,
+            BoardSize::_11 | BoardSize::_13 => {}
+        }
+
         // bottom row
         for x_1 in 0..board_size_usize {
             let vertex_1 = Vertex {

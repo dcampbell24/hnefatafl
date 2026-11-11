@@ -42,18 +42,20 @@ fn assert_error_str<T: fmt::Debug>(result: anyhow::Result<T>, string: &str) {
 
 #[test]
 fn monte_carlo() {
-    let mut tree = Tree::new(Game::make(BoardSize::_11, &TimeSettings::UnTimed));
+    let game = Game::make(BoardSize::_11, &TimeSettings::UnTimed);
+    let mut tree = Tree::new(&game);
     let depth = 80;
-    let (loops, _plays) = tree.monte_carlo_tree_search(Duration::from_secs(1), depth);
+    let (loops, _plays) = tree.monte_carlo_tree_search(&game, Duration::from_secs(1), depth);
     println!("{loops}");
 }
 
 #[ignore = "takes too long"]
 #[test]
 fn monte_carlo_long() {
-    let mut tree = Tree::new(Game::make(BoardSize::_11, &TimeSettings::UnTimed));
+    let game = Game::make(BoardSize::_11, &TimeSettings::UnTimed);
+    let mut tree = Tree::new(&game);
     let depth = 40;
-    let (loops, _plays) = tree.monte_carlo_tree_search(Duration::from_secs(10), depth);
+    let (loops, _plays) = tree.monte_carlo_tree_search(&game, Duration::from_secs(10), depth);
     println!("{loops}");
 }
 
