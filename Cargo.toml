@@ -223,7 +223,8 @@ assets = [
     ["target/release/hnefatafl-client", "usr/games/", "755"],
     ["target/release/hnefatafl-server", "usr/games/", "755"],
     ["target/release/hnefatafl-text-protocol", "usr/games/", "755"],
-    ["default_nn.onnx", "usr/share/taflzero/", "644"]
+    ["copenhagen-T10-15x192-step673949.onnx", "usr/share/taflzero/", "644"],
+    ["tablut9x9.onnx", "usr/share/taflzero/", "644"],
 ]
 changelog = "packages/debian/changelog"
 revision = "1"
