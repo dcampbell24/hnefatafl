@@ -4,8 +4,6 @@ export RUST_MIN_STACK=67108864
 
 sed -i 's/cargo-/debian-/' src/lib.rs;
 
-cargo build --release
-
 ./target/release/taflzero --man --username ""
 ./target/release/hnefatafl-client --man
 ./target/release/hnefatafl-server --man
