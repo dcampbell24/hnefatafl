@@ -75,7 +75,7 @@ struct Args {
     neural_network: Option<String>,
 
     /// Follow these rules
-    #[arg(long, default_value_t = BoardSize::_11)]
+    #[arg(long, default_value_t = BoardSize::S11)]
     rules: BoardSize,
 
     /// attacker or defender
@@ -218,9 +218,9 @@ fn main() -> anyhow::Result<()> {
         path
     } else {
         match args.rules {
-            BoardSize::_7 | BoardSize::_9Linntafl | BoardSize::_13 => unimplemented!(),
-            BoardSize::_9 => Path::new(TABLUT_ONNX_FILE).to_path_buf(),
-            BoardSize::_11 => Path::new(COPENHAGEN_ONNX_FILE).to_path_buf(),
+            BoardSize::S7 | BoardSize::S9Linntafl | BoardSize::S13 => unimplemented!(),
+            BoardSize::S9 => Path::new(TABLUT_ONNX_FILE).to_path_buf(),
+            BoardSize::S11 => Path::new(COPENHAGEN_ONNX_FILE).to_path_buf(),
         }
     };
 
@@ -246,12 +246,12 @@ fn main() -> anyhow::Result<()> {
     thread::spawn(move || {
         let mut engine = Engine::new(path.to_string_lossy().to_string());
         let mut board = match args.rules {
-            BoardSize::_7 | BoardSize::_9Linntafl | BoardSize::_13 => unimplemented!(),
-            BoardSize::_9 => {
+            BoardSize::S7 | BoardSize::S9Linntafl | BoardSize::S13 => unimplemented!(),
+            BoardSize::S9 => {
                 engine.set_variant(RulesEnum::Tablut9x9);
                 Board::from_rules(RulesEnum::Tablut9x9)
             }
-            BoardSize::_11 => {
+            BoardSize::S11 => {
                 engine.set_variant(RulesEnum::Copenhagen11x11);
                 Board::from_rules(RulesEnum::Copenhagen11x11)
             }

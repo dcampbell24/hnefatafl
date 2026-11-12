@@ -36,51 +36,51 @@ pub const BOARD_LETTERS: &str = "ABCDEFGHIJKLM";
 
 pub const EXIT_SQUARES_7X7: [Vertex; 4] = [
     Vertex {
-        size: BoardSize::_7,
+        size: BoardSize::S7,
         x: 0,
         y: 0,
     },
     Vertex {
-        size: BoardSize::_7,
+        size: BoardSize::S7,
         x: 6,
         y: 0,
     },
     Vertex {
-        size: BoardSize::_7,
+        size: BoardSize::S7,
         x: 0,
         y: 6,
     },
     Vertex {
-        size: BoardSize::_7,
+        size: BoardSize::S7,
         x: 6,
         y: 6,
     },
 ];
 
 const THRONE_7X7: Vertex = Vertex {
-    size: BoardSize::_7,
+    size: BoardSize::S7,
     x: 3,
     y: 3,
 };
 
 const RESTRICTED_SQUARES_7X7: [Vertex; 5] = [
     Vertex {
-        size: BoardSize::_7,
+        size: BoardSize::S7,
         x: 0,
         y: 0,
     },
     Vertex {
-        size: BoardSize::_7,
+        size: BoardSize::S7,
         x: 6,
         y: 0,
     },
     Vertex {
-        size: BoardSize::_7,
+        size: BoardSize::S7,
         x: 0,
         y: 6,
     },
     Vertex {
-        size: BoardSize::_7,
+        size: BoardSize::S7,
         x: 6,
         y: 6,
     },
@@ -88,58 +88,58 @@ const RESTRICTED_SQUARES_7X7: [Vertex; 5] = [
 ];
 
 pub const THRONE_9X9: Vertex = Vertex {
-    size: BoardSize::_9,
+    size: BoardSize::S9,
     x: 4,
     y: 4,
 };
 
 pub const EXIT_SQUARES_9X9_LINNTAFL: [Vertex; 4] = [
     Vertex {
-        size: BoardSize::_9Linntafl,
+        size: BoardSize::S9Linntafl,
         x: 0,
         y: 0,
     },
     Vertex {
-        size: BoardSize::_9Linntafl,
+        size: BoardSize::S9Linntafl,
         x: 8,
         y: 0,
     },
     Vertex {
-        size: BoardSize::_9Linntafl,
+        size: BoardSize::S9Linntafl,
         x: 0,
         y: 8,
     },
     Vertex {
-        size: BoardSize::_9Linntafl,
+        size: BoardSize::S9Linntafl,
         x: 8,
         y: 8,
     },
 ];
 
 pub const THRONE_9X9_LINNTAFL: Vertex = Vertex {
-    size: BoardSize::_9Linntafl,
+    size: BoardSize::S9Linntafl,
     x: 4,
     y: 4,
 };
 
 const RESTRICTED_SQUARES_9X9_LINNTAFL: [Vertex; 5] = [
     Vertex {
-        size: BoardSize::_9Linntafl,
+        size: BoardSize::S9Linntafl,
         x: 0,
         y: 0,
     },
     Vertex {
-        size: BoardSize::_9Linntafl,
+        size: BoardSize::S9Linntafl,
         x: 8,
         y: 0,
     },
     Vertex {
-        size: BoardSize::_9Linntafl,
+        size: BoardSize::S9Linntafl,
         x: 0,
         y: 8,
     },
     Vertex {
-        size: BoardSize::_9Linntafl,
+        size: BoardSize::S9Linntafl,
         x: 8,
         y: 8,
     },
@@ -148,51 +148,51 @@ const RESTRICTED_SQUARES_9X9_LINNTAFL: [Vertex; 5] = [
 
 pub const EXIT_SQUARES_11X11: [Vertex; 4] = [
     Vertex {
-        size: BoardSize::_11,
+        size: BoardSize::S11,
         x: 0,
         y: 0,
     },
     Vertex {
-        size: BoardSize::_11,
+        size: BoardSize::S11,
         x: 10,
         y: 0,
     },
     Vertex {
-        size: BoardSize::_11,
+        size: BoardSize::S11,
         x: 0,
         y: 10,
     },
     Vertex {
-        size: BoardSize::_11,
+        size: BoardSize::S11,
         x: 10,
         y: 10,
     },
 ];
 
 const THRONE_11X11: Vertex = Vertex {
-    size: BoardSize::_11,
+    size: BoardSize::S11,
     x: 5,
     y: 5,
 };
 
 const RESTRICTED_SQUARES_11X11: [Vertex; 5] = [
     Vertex {
-        size: BoardSize::_11,
+        size: BoardSize::S11,
         x: 0,
         y: 0,
     },
     Vertex {
-        size: BoardSize::_11,
+        size: BoardSize::S11,
         x: 10,
         y: 0,
     },
     Vertex {
-        size: BoardSize::_11,
+        size: BoardSize::S11,
         x: 0,
         y: 10,
     },
     Vertex {
-        size: BoardSize::_11,
+        size: BoardSize::S11,
         x: 10,
         y: 10,
     },
@@ -201,51 +201,51 @@ const RESTRICTED_SQUARES_11X11: [Vertex; 5] = [
 
 pub const EXIT_SQUARES_13X13: [Vertex; 4] = [
     Vertex {
-        size: BoardSize::_13,
+        size: BoardSize::S13,
         x: 0,
         y: 0,
     },
     Vertex {
-        size: BoardSize::_13,
+        size: BoardSize::S13,
         x: 12,
         y: 0,
     },
     Vertex {
-        size: BoardSize::_13,
+        size: BoardSize::S13,
         x: 0,
         y: 12,
     },
     Vertex {
-        size: BoardSize::_13,
+        size: BoardSize::S13,
         x: 12,
         y: 12,
     },
 ];
 
 const THRONE_13X13: Vertex = Vertex {
-    size: BoardSize::_13,
+    size: BoardSize::S13,
     x: 6,
     y: 6,
 };
 
 const RESTRICTED_SQUARES_13X13: [Vertex; 5] = [
     Vertex {
-        size: BoardSize::_13,
+        size: BoardSize::S13,
         x: 0,
         y: 0,
     },
     Vertex {
-        size: BoardSize::_13,
+        size: BoardSize::S13,
         x: 12,
         y: 0,
     },
     Vertex {
-        size: BoardSize::_13,
+        size: BoardSize::S13,
         x: 0,
         y: 12,
     },
     Vertex {
-        size: BoardSize::_13,
+        size: BoardSize::S13,
         x: 12,
         y: 12,
     },
@@ -298,8 +298,8 @@ impl TryFrom<(&str, &Role)> for Plae {
 
         Ok(Self::Play(Play {
             role: *role,
-            from: Vertex::try_from((BoardSize::_11, from))?,
-            to: Vertex::try_from((BoardSize::_11, to))?,
+            from: Vertex::try_from((BoardSize::S11, from))?,
+            to: Vertex::try_from((BoardSize::S11, to))?,
         }))
     }
 }
@@ -613,11 +613,11 @@ impl Vertex {
     #[must_use]
     pub fn on_exit_square(&self) -> bool {
         match self.size {
-            BoardSize::_7 => EXIT_SQUARES_7X7.contains(self),
-            BoardSize::_9 => self.x == 0 || self.x == 8 || self.y == 0 || self.y == 8,
-            BoardSize::_9Linntafl => EXIT_SQUARES_9X9_LINNTAFL.contains(self),
-            BoardSize::_11 => EXIT_SQUARES_11X11.contains(self),
-            BoardSize::_13 => EXIT_SQUARES_13X13.contains(self),
+            BoardSize::S7 => EXIT_SQUARES_7X7.contains(self),
+            BoardSize::S9 => self.x == 0 || self.x == 8 || self.y == 0 || self.y == 8,
+            BoardSize::S9Linntafl => EXIT_SQUARES_9X9_LINNTAFL.contains(self),
+            BoardSize::S11 => EXIT_SQUARES_11X11.contains(self),
+            BoardSize::S13 => EXIT_SQUARES_13X13.contains(self),
         }
     }
 
@@ -625,22 +625,22 @@ impl Vertex {
     #[must_use]
     pub fn on_throne(&self) -> bool {
         match self.size {
-            BoardSize::_7 => THRONE_7X7 == *self,
-            BoardSize::_9 => THRONE_9X9 == *self,
-            BoardSize::_9Linntafl => THRONE_9X9_LINNTAFL == *self,
-            BoardSize::_11 => THRONE_11X11 == *self,
-            BoardSize::_13 => THRONE_13X13 == *self,
+            BoardSize::S7 => THRONE_7X7 == *self,
+            BoardSize::S9 => THRONE_9X9 == *self,
+            BoardSize::S9Linntafl => THRONE_9X9_LINNTAFL == *self,
+            BoardSize::S11 => THRONE_11X11 == *self,
+            BoardSize::S13 => THRONE_13X13 == *self,
         }
     }
 
     #[must_use]
     pub fn on_restricted_square(&self) -> bool {
         match &self.size {
-            BoardSize::_7 => RESTRICTED_SQUARES_7X7.contains(self),
-            BoardSize::_9 => THRONE_9X9 == *self,
-            BoardSize::_9Linntafl => RESTRICTED_SQUARES_9X9_LINNTAFL.contains(self),
-            BoardSize::_11 => RESTRICTED_SQUARES_11X11.contains(self),
-            BoardSize::_13 => RESTRICTED_SQUARES_13X13.contains(self),
+            BoardSize::S7 => RESTRICTED_SQUARES_7X7.contains(self),
+            BoardSize::S9 => THRONE_9X9 == *self,
+            BoardSize::S9Linntafl => RESTRICTED_SQUARES_9X9_LINNTAFL.contains(self),
+            BoardSize::S11 => RESTRICTED_SQUARES_11X11.contains(self),
+            BoardSize::S13 => RESTRICTED_SQUARES_13X13.contains(self),
         }
     }
 

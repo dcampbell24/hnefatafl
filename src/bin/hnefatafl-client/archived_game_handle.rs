@@ -42,8 +42,8 @@ impl ArchivedGameHandle {
         let mut boards = Tree::new(game.board_size);
 
         let mut turn = match game.board_size {
-            BoardSize::_7 => Role::Defender,
-            BoardSize::_9 | BoardSize::_9Linntafl | BoardSize::_11 | BoardSize::_13 => {
+            BoardSize::S7 => Role::Defender,
+            BoardSize::S9 | BoardSize::S9Linntafl | BoardSize::S11 | BoardSize::S13 => {
                 Role::Attacker
             }
         };

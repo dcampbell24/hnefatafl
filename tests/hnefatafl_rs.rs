@@ -92,7 +92,7 @@ pub fn game_records_from_path(string: &str) -> anyhow::Result<Vec<(usize, GameRe
     let mut game_records = Vec::with_capacity(1_752);
     for (i, result) in rdr.deserialize().enumerate() {
         let record: Record = result?;
-        let moves = OpenTaflMoves::try_from((BoardSize::_11, record.moves.as_str()))?;
+        let moves = OpenTaflMoves::try_from((BoardSize::S11, record.moves.as_str()))?;
 
         let game_record = GameRecord {
             moves,

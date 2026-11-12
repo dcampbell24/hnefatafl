@@ -107,7 +107,7 @@ fn archived_game_from_pgn(mut file: File) -> anyhow::Result<ArchivedGame> {
         }
     }
 
-    let mut game = Game::make(BoardSize::_11, &TimeSettings::UnTimed);
+    let mut game = Game::make(BoardSize::S11, &TimeSettings::UnTimed);
     let mut role = Role::Attacker;
 
     for play in plays {
@@ -115,8 +115,8 @@ fn archived_game_from_pgn(mut file: File) -> anyhow::Result<ArchivedGame> {
 
         game.play(&Plae::Play(Play {
             role,
-            from: Vertex::try_from((BoardSize::_11, from))?,
-            to: Vertex::try_from((BoardSize::_11, to))?,
+            from: Vertex::try_from((BoardSize::S11, from))?,
+            to: Vertex::try_from((BoardSize::S11, to))?,
         }))?;
 
         role = role.opposite();

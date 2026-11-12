@@ -2190,7 +2190,7 @@ impl Server {
 
         game.challenge_accepted = true;
 
-        if game.board_size == BoardSize::_7 {
+        if game.board_size == BoardSize::S7 {
             game.turn = Role::Defender;
         } else {
             game.turn = Role::Attacker;
@@ -2252,14 +2252,14 @@ impl Server {
         self.games.0.insert(id, new_game);
 
         match game.board_size {
-            BoardSize::_7 => {
+            BoardSize::S7 => {
                 if let Some(channel) = defender_channel {
                     channel
                         .send(format!("game {id} generate_move defender"))
                         .ok()?;
                 }
             }
-            BoardSize::_9 | BoardSize::_9Linntafl | BoardSize::_11 | BoardSize::_13 => {
+            BoardSize::S9 | BoardSize::S9Linntafl | BoardSize::S11 | BoardSize::S13 => {
                 if let Some(channel) = attacker_channel {
                     channel
                         .send(format!("game {id} generate_move attacker"))
@@ -2737,7 +2737,7 @@ impl Server {
 
         self.game_id += 1;
 
-        let turn = if board_size == BoardSize::_7 {
+        let turn = if board_size == BoardSize::S7 {
             Role::Defender
         } else {
             Role::Attacker
@@ -3049,11 +3049,11 @@ impl Server {
         };
 
         self.tournament.board_size = match *size {
-            "7" => BoardSize::_7,
-            "9" => BoardSize::_9,
-            "9L" => BoardSize::_9Linntafl,
-            "11" => BoardSize::_11,
-            "13" => BoardSize::_13,
+            "7" => BoardSize::S7,
+            "9" => BoardSize::S9,
+            "9L" => BoardSize::S9Linntafl,
+            "11" => BoardSize::S11,
+            "13" => BoardSize::S13,
             _ => {
                 return Err(anyhow::Error::msg(format!("tournament_board_size: {size}")));
             }

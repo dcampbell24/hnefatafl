@@ -428,13 +428,13 @@ impl Game {
         }
 
         match board_size {
-            BoardSize::_7 => {
+            BoardSize::S7 => {
                 game.turn = Role::Defender;
             }
-            BoardSize::_9Linntafl => {
+            BoardSize::S9Linntafl => {
                 game.last_capture = Some(0);
             }
-            BoardSize::_9 | BoardSize::_11 | BoardSize::_13 => {}
+            BoardSize::S9 | BoardSize::S11 | BoardSize::S13 => {}
         }
 
         game
@@ -446,10 +446,10 @@ impl Game {
         let size = self.board.size();
         let board_size_usize = size.into();
         let vec_capacity = match size {
-            BoardSize::_7 => 12,
-            BoardSize::_9 | BoardSize::_9Linntafl => 16,
-            BoardSize::_11 => 20,
-            BoardSize::_13 => 24,
+            BoardSize::S7 => 12,
+            BoardSize::S9 | BoardSize::S9Linntafl => 16,
+            BoardSize::S11 => 20,
+            BoardSize::S13 => 24,
         };
 
         let mut possible_vertexes = Vec::new();
@@ -484,7 +484,7 @@ impl Game {
                     to: vertex_to,
                 };
 
-                if size == BoardSize::_7
+                if size == BoardSize::S7
                     && play.to.on_throne()
                     && let Some(king) = self.board.king
                     && play.from != king
@@ -513,7 +513,7 @@ impl Game {
                     to: vertex_to,
                 };
 
-                if size == BoardSize::_7
+                if size == BoardSize::S7
                     && play.to.on_throne()
                     && let Some(king) = self.board.king
                     && play.from != king
@@ -544,7 +544,7 @@ impl Game {
                     to: vertex_to,
                 };
 
-                if size == BoardSize::_7
+                if size == BoardSize::S7
                     && play.to.on_throne()
                     && let Some(king) = self.board.king
                     && play.from != king
@@ -573,7 +573,7 @@ impl Game {
                     to: vertex_to,
                 };
 
-                if size == BoardSize::_7
+                if size == BoardSize::S7
                     && play.to.on_throne()
                     && let Some(king) = self.board.king
                     && play.from != king
@@ -937,7 +937,7 @@ impl Game {
                     }
 
                     if self.status == Status::Ongoing {
-                        if self.board.size() == BoardSize::_9Linntafl {
+                        if self.board.size() == BoardSize::S9Linntafl {
                             let repeated = self
                                 .previous_boards_repeated
                                 .entry(self.board.clone())

@@ -930,28 +930,28 @@ impl<'a> Client {
         let possible_moves = self.possible_moves();
 
         let board_dimension = match board_size {
-            BoardSize::_7 | BoardSize::_9 | BoardSize::_9Linntafl | BoardSize::_11 => {
+            BoardSize::S7 | BoardSize::S9 | BoardSize::S9Linntafl | BoardSize::S11 => {
                 self.window_height / 13.75
             }
-            BoardSize::_13 => self.window_height / 15.75,
+            BoardSize::S13 => self.window_height / 15.75,
         };
         let letter_size = match board_size {
-            BoardSize::_7 => self.window_height / 20.0,
-            BoardSize::_9 | BoardSize::_9Linntafl => self.window_height / 18.0,
-            BoardSize::_11 => self.window_height / 18.181_818,
-            BoardSize::_13 => self.window_height / 25.0,
+            BoardSize::S7 => self.window_height / 20.0,
+            BoardSize::S9 | BoardSize::S9Linntafl => self.window_height / 18.0,
+            BoardSize::S11 => self.window_height / 18.181_818,
+            BoardSize::S13 => self.window_height / 25.0,
         };
         let piece_size = match board_size {
-            BoardSize::_7 | BoardSize::_9 | BoardSize::_9Linntafl | BoardSize::_11 => {
+            BoardSize::S7 | BoardSize::S9 | BoardSize::S9Linntafl | BoardSize::S11 => {
                 self.window_height / 13.0
             }
-            BoardSize::_13 => self.window_height / 15.0,
+            BoardSize::S13 => self.window_height / 15.0,
         };
         let spacing = match board_size {
-            BoardSize::_7 => 8.0,
-            BoardSize::_9 | BoardSize::_9Linntafl => 2.0,
-            BoardSize::_11 => 2.5,
-            BoardSize::_13 => self.window_height / 75.0,
+            BoardSize::S7 => 8.0,
+            BoardSize::S9 | BoardSize::S9Linntafl => 2.0,
+            BoardSize::S11 => 2.5,
+            BoardSize::S13 => self.window_height / 75.0,
         };
 
         game_display = game_display.push(self.numbers(letter_size, spacing, board_size_usize));
@@ -1507,35 +1507,35 @@ impl<'a> Client {
 
         let size_7x7 = radio(
             "7x7 (Brandubh)",
-            BoardSize::_7,
+            BoardSize::S7,
             Some(self.game_settings.board_size),
             Message::BoardSizeSelected,
         );
 
         let size_9x9 = radio(
             "9x9 (Tablut)",
-            BoardSize::_9,
+            BoardSize::S9,
             Some(self.game_settings.board_size),
             Message::BoardSizeSelected,
         );
 
         let size_9x9_linntafl = radio(
             "9x9 (Linntafl)",
-            BoardSize::_9Linntafl,
+            BoardSize::S9Linntafl,
             Some(self.game_settings.board_size),
             Message::BoardSizeSelected,
         );
 
         let size_11x11 = radio(
             "11x11 (0)",
-            BoardSize::_11,
+            BoardSize::S11,
             Some(self.game_settings.board_size),
             Message::BoardSizeSelected,
         );
 
         let size_13x13 = radio(
             "13x13 (a)",
-            BoardSize::_13,
+            BoardSize::S13,
             Some(self.game_settings.board_size),
             Message::BoardSizeSelected,
         );
@@ -1670,8 +1670,8 @@ impl<'a> Client {
         let mut number = None;
         let mut letter = None;
 
-        for i in 0..13 {
-            if self.press_numbers[i] {
+        for (i, press_number) in self.press_numbers.iter().enumerate() {
+            if *press_number {
                 number = Some(i);
                 break;
             }
@@ -1707,9 +1707,7 @@ impl<'a> Client {
                 Move::None => {}
             }
 
-            for i in 0..13 {
-                self.press_numbers[i] = false;
-            }
+            self.press_numbers.fill(false);
             self.press_letters.clear();
         }
     }
@@ -2626,7 +2624,7 @@ impl<'a> Client {
                     TabId::AccountSettings => {
                         self.send(&format!("change_password {}\n", self.password));
                     }
-                    TabId::GameNew => self.game_settings.board_size = BoardSize::_13,
+                    TabId::GameNew => self.game_settings.board_size = BoardSize::S13,
                     TabId::Games => self.join_game_press(0, shift),
                     _ => {}
                 },
@@ -2871,12 +2869,12 @@ impl<'a> Client {
                 Screen::Game | Screen::GameReview => {
                     let (board, _) = self.board_and_heatmap();
                     match board.size() {
-                        BoardSize::_7 | BoardSize::_9 | BoardSize::_9Linntafl | BoardSize::_11 => {
+                        BoardSize::S7 | BoardSize::S9 | BoardSize::S9Linntafl | BoardSize::S11 => {
                             self.clear_numbers_except(2);
                             self.press_numbers[1] = !self.press_numbers[1];
                             self.press_letter_and_number();
                         }
-                        BoardSize::_13 => {
+                        BoardSize::S13 => {
                             if !self.press_numbers[0]
                                 && !self.press_numbers[1]
                                 && !self.press_numbers[11]
@@ -2905,12 +2903,12 @@ impl<'a> Client {
                 Screen::Game | Screen::GameReview => {
                     let (board, _) = self.board_and_heatmap();
                     match board.size() {
-                        BoardSize::_7 | BoardSize::_9 | BoardSize::_9Linntafl | BoardSize::_11 => {
+                        BoardSize::S7 | BoardSize::S9 | BoardSize::S9Linntafl | BoardSize::S11 => {
                             self.clear_numbers_except(3);
                             self.press_numbers[2] = !self.press_numbers[2];
                             self.press_letter_and_number();
                         }
-                        BoardSize::_13 => {
+                        BoardSize::S13 => {
                             if !self.press_numbers[0]
                                 && !self.press_numbers[2]
                                 && !self.press_numbers[12]
@@ -3015,7 +3013,7 @@ impl<'a> Client {
                 Screen::EmailEveryone => {}
                 Screen::Games => match self.active_tab {
                     TabId::AccountSettings => self.reset_email(),
-                    TabId::GameNew => self.game_settings.board_size = BoardSize::_11,
+                    TabId::GameNew => self.game_settings.board_size = BoardSize::S11,
                     TabId::Games | TabId::Users => self.users_sort_by = SortBy::Name,
                     _ => {}
                 },
@@ -3126,11 +3124,11 @@ impl<'a> Client {
             Message::TournamentBoardSize(board_size) => {
                 if self.admin_tournament {
                     match board_size {
-                        BoardSize::_7 => self.send("tournament_board_size 7\n"),
-                        BoardSize::_9 => self.send("tournament_board_size 9\n"),
-                        BoardSize::_9Linntafl => self.send("tournament_board_size 9L\n"),
-                        BoardSize::_11 => self.send("tournament_board_size 11\n"),
-                        BoardSize::_13 => self.send("tournament_board_size 13\n"),
+                        BoardSize::S7 => self.send("tournament_board_size 7\n"),
+                        BoardSize::S9 => self.send("tournament_board_size 9\n"),
+                        BoardSize::S9Linntafl => self.send("tournament_board_size 9L\n"),
+                        BoardSize::S11 => self.send("tournament_board_size 11\n"),
+                        BoardSize::S13 => self.send("tournament_board_size 13\n"),
                     }
                 }
             }
@@ -4972,35 +4970,35 @@ impl<'a> Client {
 
         let size_7x7 = radio(
             "7x7 (Brandubh)",
-            BoardSize::_7,
+            BoardSize::S7,
             Some(self.game_settings.board_size),
             Message::TournamentBoardSize,
         );
 
         let size_9x9 = radio(
             "9x9 (Tablut)",
-            BoardSize::_9,
+            BoardSize::S9,
             Some(self.game_settings.board_size),
             Message::BoardSizeSelected,
         );
 
         let size_9x9_linntafl = radio(
             "9x9 (Linntafl)",
-            BoardSize::_9Linntafl,
+            BoardSize::S9Linntafl,
             Some(self.game_settings.board_size),
             Message::BoardSizeSelected,
         );
 
         let size_11x11 = radio(
             "11x11",
-            BoardSize::_11,
+            BoardSize::S11,
             Some(self.tournament.board_size),
             Message::TournamentBoardSize,
         );
 
         let size_13x13 = radio(
             "13x13",
-            BoardSize::_13,
+            BoardSize::S13,
             Some(self.tournament.board_size),
             Message::TournamentBoardSize,
         );

@@ -114,7 +114,8 @@ impl HeatMap {
     pub fn draw(&self, role: Role) -> (Vec<Heat>, HashMap<(Role, Vertex), Vec<Heat>>) {
         let board_size: usize = self.board_size.into();
 
-        let mut spaces_from = if self.board_size == BoardSize::_11 {
+        // Fixme: there are other sizes than 11 and 13!
+        let mut spaces_from = if self.board_size == BoardSize::S11 {
             vec![Heat::default(); 11 * 11]
         } else {
             vec![Heat::default(); 13 * 13]
@@ -286,7 +287,7 @@ impl From<&Vec<&Node>> for HeatMap {
 
 impl fmt::Display for HeatMap {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let board_size = if self.board_size == BoardSize::_11 {
+        let board_size = if self.board_size == BoardSize::S11 {
             11
         } else {
             13
@@ -296,18 +297,18 @@ impl fmt::Display for HeatMap {
             writeln!(f, "vertex: {vertex}, role: {role}")?;
 
             match self.board_size {
-                BoardSize::_7 => {
+                BoardSize::S7 => {
                     writeln!(f, "   A       B       C       D       E       F       G")?;
                 }
-                BoardSize::_9 | BoardSize::_9Linntafl => writeln!(
+                BoardSize::S9 | BoardSize::S9Linntafl => writeln!(
                     f,
                     "   A       B       C       D       E       F       G       H       I"
                 )?,
-                BoardSize::_11 => writeln!(
+                BoardSize::S11 => writeln!(
                     f,
                     "   A       B       C       D       E       F       G       H       I       J       K"
                 )?,
-                BoardSize::_13 => writeln!(
+                BoardSize::S13 => writeln!(
                     f,
                     "   A       B       C       D       E       F       G       H       I       J       K       L       M"
                 )?,
@@ -315,10 +316,10 @@ impl fmt::Display for HeatMap {
 
             for y in 0..board_size {
                 match self.board_size {
-                    BoardSize::_7 => write!(f, "{:2} ", 7 - y)?,
-                    BoardSize::_9 | BoardSize::_9Linntafl => write!(f, "{:2} ", 9 - y)?,
-                    BoardSize::_11 => write!(f, "{:2} ", 11 - y)?,
-                    BoardSize::_13 => write!(f, "{:2} ", 13 - y)?,
+                    BoardSize::S7 => write!(f, "{:2} ", 7 - y)?,
+                    BoardSize::S9 | BoardSize::S9Linntafl => write!(f, "{:2} ", 9 - y)?,
+                    BoardSize::S11 => write!(f, "{:2} ", 11 - y)?,
+                    BoardSize::S13 => write!(f, "{:2} ", 13 - y)?,
                 }
 
                 for x in 0..board_size {
