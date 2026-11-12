@@ -49,3 +49,4 @@ cat Release | gpg -abs > Release.gpg
 cat Release | gpg -abs --clearsign > InRelease
 
 # uses libssl4 on Fedora, broken in trixie, #scp -r ../../../apt/ root@hnefatafl.org:~/www/
+cp -r ../../../apt/ ~/www/
