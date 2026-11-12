@@ -1,6 +1,6 @@
 #! /bin/bash -e
 
-VERSION='7.0.0-1'
+VERSION='7.0.0-2'
 PACKAGE="hnefatafl-copenhagen_${VERSION}_amd64.deb"
 
 packages/debian/deb.sh
@@ -48,5 +48,4 @@ do_hash 'SHA256' 'sha256sum' >> 'Release'
 cat Release | gpg -abs > Release.gpg
 cat Release | gpg -abs --clearsign > InRelease
 
-scp -r ../../../apt/ root@hnefatafl.org:~/www/
-
+# uses libssl4 on Fedora, broken in trixie, #scp -r ../../../apt/ root@hnefatafl.org:~/www/
