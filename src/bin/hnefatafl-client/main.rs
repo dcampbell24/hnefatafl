@@ -2243,7 +2243,6 @@ impl<'a> Client {
     }
 
     fn locale_selection(&self) -> Row<'_, Message> {
-        //
         let locale = [
             Locale::English,
             Locale::Chinese,
@@ -3856,7 +3855,10 @@ impl<'a> Client {
             Message::TournamentDelete => self.send("tournament_delete\n"),
             Message::TournamentTreeDelete => self.send("tournament_groups_delete\n"),
             Message::UsersSortedBy(sort_by) => self.users_sort_by = sort_by,
-            Message::VolumeChanged(volume) => self.volume.0 = volume,
+            Message::VolumeChanged(volume) => {
+                self.volume.0 = volume;
+                self.save_client_ron().expect("Saving should work!");
+            }
             Message::WindowResized((width, height)) => {
                 self.window_width = width;
                 self.window_height = height;
