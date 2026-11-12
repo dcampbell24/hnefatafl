@@ -12,7 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Add tablut 9x9.
+## [7.0.0] 2026-11-12
+
+- Add Tablut 9x9 and Linntafl 9x9.
 
 ## [6.4.1] - 2026-09-04
 
@@ -984,7 +986,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - hnefatafl-client: Make users and games scrollable.
 - Make all the features dependencies.
 
-[unreleased]: https://codeberg.org/dcampbell/hnefatafl/compare/v6.4.1...main
+[unreleased]: https://codeberg.org/dcampbell/hnefatafl/compare/v7.0.0...main
+[7.0.0]: https://codeberg.org/dcampbell/hnefatafl/compare/v6.4.1...v7.0.0
 [6.4.1]: https://codeberg.org/dcampbell/hnefatafl/compare/v6.4.0...v6.4.1
 [6.4.0]: https://codeberg.org/dcampbell/hnefatafl/compare/v6.3.0...v6.4.0
 [6.3.0]: https://codeberg.org/dcampbell/hnefatafl/compare/v6.2.3-1...v6.3.0
