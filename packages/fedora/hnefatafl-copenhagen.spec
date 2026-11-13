@@ -15,6 +15,7 @@ BuildRequires: openssl-devel
 BuildRequires: alsa-lib-devel
 BuildRequires: libappstream-glib
 BuildRequires: desktop-file-utils
+BuildRequires: systemd
 
 Requires:      glibc
 Requires:      hicolor-icon-theme
