@@ -14,7 +14,7 @@ gzip --no-name --best hnefatafl-server.1
 gzip --no-name --best hnefatafl-text-protocol.1
 gzip --no-name --best hnefatafl-client.1
 
-PACKAGE=$(cargo deb)
+PACKAGE=$(systemd-run --scope --user --property CPUQuota=50% cargo deb)
 
 sed -i 's/debian-/cargo-/' src/lib.rs;
 
