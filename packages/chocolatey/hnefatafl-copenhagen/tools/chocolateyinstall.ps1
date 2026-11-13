@@ -1,6 +1,6 @@
 ﻿$ErrorActionPreference = 'Stop'
 $toolsDir     = "$(Split-Path -parent $MyInvocation.MyCommand.Definition)"
-$fileLocation = Join-Path $toolsDir 'hnefatafl-client-installer-6.4.1.exe'
+$fileLocation = Join-Path $toolsDir 'hnefatafl-client-installer-7.0.0.exe'
 
 $packageArgs = @{
   packageName   = $env:ChocolateyPackageName
