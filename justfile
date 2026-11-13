@@ -7,7 +7,7 @@ git-tags:
 
 
 release:
-    systemd-run --scope --user --property CPUQuota=50% cargo build --release
+    systemd-run --scope --user --property CPUQuota=60% cargo build --release
 
 coverage:
     CARGO_INCREMENTAL=0 RUSTFLAGS='-Cinstrument-coverage' LLVM_PROFILE_FILE='./.coverage/cargo-test-%p-%m.profraw' cargo test
