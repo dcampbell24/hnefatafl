@@ -415,19 +415,27 @@ Based on the version that was last updated 2024-12-21.
 
 [Copenhagen]: https://aagenielsen.dk/copenhagen_rules.php
 
-## Brandubh 7x7
-
-![Brandubh](screenshots/brandubh.png)
-
-It is the same as above except:
-
-1. The defenders go first.
-2. Off the throne, the king is captured like any other piece.
-3. The throne is not hostile towards the king.
-4. Only the king can pass through the throne.
-5. There are no exit forts.
-
 ## Tablut 9X9
+
+```plain
+  ┌───────────────────┐
+ 9│ . . . A A A . . . │
+ 8│ . . . . A . . . . │
+ 7│ . . . . D . . . . │
+ 6│ A . . . D . . . A │
+ 5│ A A D D K D D A A │
+ 4│ A . . . D . . . A │
+ 3│ . . . . D . . . . │
+ 2│ . . . . A . . . . │
+ 1│ . . . A A A . . . │
+  └───────────────────┘
+    A B C D E F G H I
+```
+
+See <https://aagenielsen.dk/historical_hnefatafl_rules.php> for the rules. We
+follow the 6a variant. After 120 moves it is a draw.
+
+## Linntafl 9X9
 
 ```plain
   ┌───────────────────┐
@@ -445,3 +453,15 @@ It is the same as above except:
 ```
 
 See <https://codeberg.org/ruarq/linn#linn-tablut-engine> for the rules.
+
+## Brandubh 7x7
+
+![Brandubh](screenshots/brandubh.png)
+
+It is the same as above except:
+
+1. The defenders go first.
+2. Off the throne, the king is captured like any other piece.
+3. The throne is not hostile towards the king.
+4. Only the king can pass through the throne.
+5. There are no exit forts.
