@@ -5,6 +5,10 @@
 git-tags:
     git show-ref --tags -d
 
+
+release:
+    systemd-run --scope --user --property CPUQuota=50% cargo build --release
+
 coverage:
     CARGO_INCREMENTAL=0 RUSTFLAGS='-Cinstrument-coverage' LLVM_PROFILE_FILE='./.coverage/cargo-test-%p-%m.profraw' cargo test
     grcov ./.coverage \
