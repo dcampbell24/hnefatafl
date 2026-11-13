@@ -23,6 +23,8 @@ rustflags = ["-C", "link-arg=-fuse-ld=mold", "-C", "link-arg=-Wl,--no-rosegment"
 [profile.release]
 lto = "thin"
 panic = "abort"
+debug = false
+strip = "symbols"
 
 [profile.bench]
 inherits = "release"
