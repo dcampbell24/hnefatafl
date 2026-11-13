@@ -1,11 +1,12 @@
 Name:          hnefatafl-copenhagen
-Version:       6.4.1
+Version:       7.0.0
 Release:       1%{?dist}
 Summary:       Copenhagen Hnefatafl client, engine, server and artificial intelligence
 License:       AGPL-3.0-or-later
 URL:           https://hnefatafl.org
 Source0:       https://codeberg.org/dcampbell/hnefatafl/archive/v%{version}.tar.gz
-Source1:       https://codeberg.org/dcampbell/hnefatafl/media/branch/main/default_nn.onnx
+Source1:       https://codeberg.org/dcampbell/hnefatafl/media/branch/main/copenhagen-T10-15x192-step673949.onnx
+Source2:       https://codeberg.org/dcampbell/hnefatafl/media/branch/main/tablut9x9.onnx
 BuildRequires: clang
 BuildRequires: llvm
 BuildRequires: mold
@@ -75,13 +76,15 @@ install -Dm644 "hnefatafl-text-protocol.1.gz" -t "%{buildroot}%{_mandir}/man1"
 install -Dm644 "packages/hnefatafl-client.desktop" -t "%{buildroot}%{_datadir}/applications"
 install -Dm644 "packages/org.hnefatafl.hnefatafl_client.metainfo.xml" -t "%{buildroot}%{_metainfodir}"
 install -Dm644 "%{SOURCE1}" -t "%{buildroot}%{_datadir}/taflzero"
+install -Dm644 "%{SOURCE2}" -t "%{buildroot}%{_datadir}/taflzero"
 
 %files
 %{_bindir}/hnefatafl-client
 %{_bindir}/hnefatafl-server
 %{_bindir}/hnefatafl-text-protocol
 %{_bindir}/taflzero
-%{_datadir}/taflzero/default_nn.onnx
+%{_datadir}/taflzero/copenhagen-T10-15x192-step673949.onnx
+%{_datadir}/taflzero/tablut9x9.onnx
 %{_unitdir}/hnefatafl-ai-attacker.service
 %{_unitdir}/hnefatafl-ai-defender.service
 %{_unitdir}/hnefatafl.service
