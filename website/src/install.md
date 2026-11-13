@@ -94,9 +94,10 @@ yay --sync hnefatafl-copenhagen
 [AUR]: https://img.shields.io/aur/version/hnefatafl-copenhagen?logo=archlinux
 [aur-link]: https://aur.archlinux.org/packages/hnefatafl-copenhagen
 
-### Debian ![deb]
+### Debian [![deb]][debian-link]
 
 [deb]: https://img.shields.io/badge/-111111?logo=debian
+[debian-link]: https://www.debian.org/
 
 In your terminal run:
 
