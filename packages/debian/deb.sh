@@ -3,6 +3,7 @@
 export RUST_MIN_STACK=67108864
 
 sed -i 's/cargo-/debian-/' src/lib.rs;
+systemd-run --scope --user --property CPUQuota=60% cargo build --release
 
 ./target/release/taflzero --man --username ""
 ./target/release/hnefatafl-client --man
