@@ -12,5 +12,5 @@ cargo test --all-targets --all-features
 # cargo install zizmor --locked
 zizmor --offline --pedantic .github/
 
-# sudo apt-get install reuse
+# sudo dnf install reuse
 reuse lint
