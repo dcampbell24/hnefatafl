@@ -21,9 +21,9 @@ modules:
         url: https://codeberg.org/dcampbell/hnefatafl.git
         commit: c7e0f521924f0597e0c81281de9ef3d4227550de
         tag: v7.0.0
-      # - type: file
-      #   url: https://codeberg.org/dcampbell/hnefatafl/raw/branch/main/packages/org.hnefatafl.hnefatafl_client.metainfo.xml
-      #   sha256: 905beec593b53fb52b00c431b32cf1154548b3af62da4f36b89729113cdf4b80
+      - type: file
+        url: https://codeberg.org/dcampbell/hnefatafl/raw/branch/main/packages/org.hnefatafl.hnefatafl_client.metainfo.xml
+        sha256: 5682554bd24b244d9ed5584df8c6464768cc3887ad276cc6ca9313b89acfc378
       - cargo-sources.json
 
     build-options:
@@ -41,4 +41,4 @@ modules:
       - install -Dm755 target/release/hnefatafl-client /app/bin/$FLATPAK_ID
       - install -Dm644 website/src/images/helmet.svg /app/share/icons/hicolor/scalable/apps/$FLATPAK_ID.svg
       - install -Dm644 packages/$FLATPAK_ID.desktop -t /app/share/applications
-      - install -Dm644 packages/$FLATPAK_ID.metainfo.xml -t /app/share/metainfo
+      - install -Dm644 $FLATPAK_ID.metainfo.xml -t /app/share/metainfo
