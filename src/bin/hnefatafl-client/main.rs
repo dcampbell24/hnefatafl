@@ -1251,7 +1251,7 @@ impl<'a> Client {
     fn display_tournament(&self) -> Column<'_, Message> {
         let column_1 = if let Some(tournament) = &self.tournament.tournament {
             let tz = TimeZone::system();
-            let datetime = tournament.date.to_zoned(tz);
+            let datetime = tournament.date.to_zoned_datetime(tz);
             let tournament_string = t!("Tournament");
             let row_1 = text(tournament_string.to_string());
             let row_2 = text("-".repeat(tournament_string.len())).font(Font::MONOSPACE);
@@ -2400,7 +2400,7 @@ impl<'a> Client {
 
         for message in messages.iter().rev() {
             let tz = TimeZone::system();
-            let datetime = message.timestamp.to_zoned(tz);
+            let datetime = message.timestamp.to_zoned_datetime(tz);
             let timestamp = datetime.strftime("%F %T %Z").to_string();
             let timestamp = text(timestamp).color(GREY);
 
@@ -3650,7 +3650,7 @@ impl<'a> Client {
                                             Some("retried_too_soon") => {
                                                 if let Some(datetime) = text.next() && let Ok(timestamp) = datetime.parse::<Timestamp>() {
                                                     let tz = TimeZone::system();
-                                                    let datetime = timestamp.to_zoned(tz);
+                                                    let datetime = timestamp.to_zoned_datetime(tz);
 
                                                     format!("{} {}", t!("You tried to login again too soon, wait until:"), datetime.strftime("%X %z %Z"))
                                                 } else {
@@ -5073,7 +5073,7 @@ impl<'a> Client {
         let mut date = Row::new().spacing(SPACING);
         if let Some(timestamp) = self.tournament.date {
             let tz = TimeZone::system();
-            let datetime = timestamp.to_zoned(tz);
+            let datetime = timestamp.to_zoned_datetime(tz);
 
             date = date.push(text!(
                 "[{}] {}: {}, fischer {}: {}, {}: {}",

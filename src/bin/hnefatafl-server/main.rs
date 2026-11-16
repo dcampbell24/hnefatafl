@@ -75,7 +75,7 @@ use hnefatafl_copenhagen::{
     utils::{self, create_data_folder, data_file},
 };
 use itertools::Itertools;
-use jiff::{SignedDuration, Timestamp, Zoned};
+use jiff::{SignedDuration, Timestamp, ZonedDateTime};
 use lettre::{
     SmtpTransport, Transport,
     message::{Mailbox, header::ContentType},
@@ -2693,8 +2693,8 @@ impl Server {
             handle_error(tx.send(("0 server tournament_start".to_string(), None)));
 
             loop {
-                let now = Zoned::now().with_time_zone(jiff::tz::TimeZone::UTC);
-                match Zoned::now()
+                let now = ZonedDateTime::now().with_time_zone(jiff::tz::TimeZone::UTC);
+                match ZonedDateTime::now()
                     .with_time_zone(jiff::tz::TimeZone::UTC)
                     .end_of_day()
                 {
