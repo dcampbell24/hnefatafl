@@ -3,7 +3,7 @@
 INDEX="Join a friendly community and play Copenhagen Hnefatafl. Figure out how to \
 install the software, play by the rules, chat on Discord, find Help, and Donate."
 
-CANONICAL="<!-- Custom HTML head -->\n        <link rel=\"canonical\" href=\"https:\/\/hnefatafl.org\" \/>"
+CANONICAL="<!-- Custom HTML head -->\n        <link rel=\"canonical\" href=\"https:\/\/hnefatafl.org\/\" \/>"
 
 HISTORY="Get the history of Hnefatafl. It is a part of the games known Tafl games. \
 Other related games are Alea evangelii, Ard Rí, Brandubh, Tablut, and Tawlbwrdd"
