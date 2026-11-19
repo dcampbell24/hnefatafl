@@ -417,40 +417,14 @@ Based on the version that was last updated 2024-12-21.
 
 ## Tablut 9X9
 
-```plain
-  ┌───────────────────┐
- 9│ . . . A A A . . . │
- 8│ . . . . A . . . . │
- 7│ . . . . D . . . . │
- 6│ A . . . D . . . A │
- 5│ A A D D K D D A A │
- 4│ A . . . D . . . A │
- 3│ . . . . D . . . . │
- 2│ . . . . A . . . . │
- 1│ . . . A A A . . . │
-  └───────────────────┘
-    A B C D E F G H I
-```
+![Tablut](screenshots/tablut.png)
 
 See <https://aagenielsen.dk/historical_hnefatafl_rules.php> for the rules. We
 follow the 6a variant. After 120 moves it is a draw.
 
 ## Linntafl 9X9
 
-```plain
-  ┌───────────────────┐
- 9│ # . . A A A . . # │
- 8│ . . . . A . . . . │
- 7│ . . . . D . . . . │
- 6│ A . . . D . . . A │
- 5│ A A D D K D D A A │
- 4│ A . . . D . . . A │
- 3│ . . . . D . . . . │
- 2│ . . . . A . . . . │
- 1│ # . . A A A . . # │
-  └───────────────────┘
-    A B C D E F G H I
-```
+![Linntafl](screenshots/linntafl.png)
 
 See <https://codeberg.org/ruarq/linn#linn-tablut-engine> for the rules.
 
