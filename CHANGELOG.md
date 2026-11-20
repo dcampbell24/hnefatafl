@@ -17,8 +17,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Tablut 9x9 and Linntafl 9x9.
-- Save the volume when it is changed.
 - Norwegian Bokmål
+
+## Fixed
+
+- Save the volume when it is changed.
 
 ## [6.4.1] - 2026-09-04
 
